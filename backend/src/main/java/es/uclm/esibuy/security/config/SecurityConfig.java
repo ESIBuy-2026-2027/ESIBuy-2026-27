@@ -25,8 +25,7 @@ public class SecurityConfig {
         try {
             return http
                     .cors(Customizer.withDefaults())
-                    .csrf(csrf -> csrf
-                            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                    .csrf(csrf -> csrf.ignoringRequestMatchers("/api/users/register/**"))
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .authorizeHttpRequests(auth -> auth
                             .requestMatchers("/", "/api/users/register/**", "/actuator/health").permitAll()
@@ -43,8 +42,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:3000",
                 "http://localhost:5173",
-                "http://localhost:4200"
-        ));
+                "http://localhost:4200"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
