@@ -1,10 +1,9 @@
-package es.uclm.esibuy.config;
+package es.uclm.esibuy.common.exception;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import es.uclm.esibuy.user.DuplicateUserException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 

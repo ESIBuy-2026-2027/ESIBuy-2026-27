@@ -1,7 +1,6 @@
-package es.uclm.esibuy.user;
+package es.uclm.esibuy.users.model;
 
 import java.time.Instant;
-import java.time.LocalDate;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -18,17 +17,17 @@ public class User {
 
     private String firstName;
     private String lastName;
-    private LocalDate birthDate;
     private String nationalId;
     private String phone;
     private String passwordHash;
     private String profileImage;
     private UserRole role;
-    private CustomerType customerType;
-    private String defaultCategory;
-    private String businessName;
     private boolean active;
     private Instant createdAt;
+
+    private ClientProfile clientProfile;
+    private SellerProfile sellerProfile;
+    private AdminProfile adminProfile;
 
     protected User() {
     }
@@ -58,10 +57,6 @@ public class User {
         return lastName;
     }
 
-    public LocalDate getBirthDate() {
-        return birthDate;
-    }
-
     public String getNationalId() {
         return nationalId;
     }
@@ -82,18 +77,6 @@ public class User {
         return role;
     }
 
-    public CustomerType getCustomerType() {
-        return customerType;
-    }
-
-    public String getDefaultCategory() {
-        return defaultCategory;
-    }
-
-    public String getBusinessName() {
-        return businessName;
-    }
-
     public boolean isActive() {
         return active;
     }
@@ -102,8 +85,24 @@ public class User {
         return createdAt;
     }
 
-    public void setBirthDate(LocalDate birthDate) {
-        this.birthDate = birthDate;
+    public ClientProfile getClientProfile() {
+        return clientProfile;
+    }
+
+    public SellerProfile getSellerProfile() {
+        return sellerProfile;
+    }
+
+    public AdminProfile getAdminProfile() {
+        return adminProfile;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public void setNationalId(String nationalId) {
@@ -122,15 +121,23 @@ public class User {
         this.profileImage = profileImage;
     }
 
-    public void setCustomerType(CustomerType customerType) {
-        this.customerType = customerType;
+    public void setRole(UserRole role) {
+        this.role = role;
     }
 
-    public void setDefaultCategory(String defaultCategory) {
-        this.defaultCategory = defaultCategory;
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
-    public void setBusinessName(String businessName) {
-        this.businessName = businessName;
+    public void setClientProfile(ClientProfile clientProfile) {
+        this.clientProfile = clientProfile;
+    }
+
+    public void setSellerProfile(SellerProfile sellerProfile) {
+        this.sellerProfile = sellerProfile;
+    }
+
+    public void setAdminProfile(AdminProfile adminProfile) {
+        this.adminProfile = adminProfile;
     }
 }

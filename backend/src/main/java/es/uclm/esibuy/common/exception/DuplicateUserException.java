@@ -1,4 +1,4 @@
-package es.uclm.esibuy.user;
+package es.uclm.esibuy.common.exception;
 
 public class DuplicateUserException extends RuntimeException {
     public DuplicateUserException(String message) {
