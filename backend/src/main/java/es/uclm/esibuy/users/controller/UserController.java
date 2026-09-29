@@ -28,33 +28,27 @@ public class UserController {
     @PostMapping("/register/client")
     public ResponseEntity<Map<String, Object>> registerClient(@Valid @RequestBody ClientRegistrationRequest request) {
         User user = userService.registerClient(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "id", user.getId(),
-                "email", user.getEmail(),
-                "role", user.getRole(),
-                "active", user.isActive()
-        ));
+        return ResponseEntity.status(HttpStatus.CREATED).body(buildUserResponse(user));
     }
 
     @PostMapping("/register/seller")
     public ResponseEntity<Map<String, Object>> registerSeller(@Valid @RequestBody SellerRegistrationRequest request) {
         User user = userService.registerSeller(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "id", user.getId(),
-                "email", user.getEmail(),
-                "role", user.getRole(),
-                "active", user.isActive()
-        ));
+        return ResponseEntity.status(HttpStatus.CREATED).body(buildUserResponse(user));
     }
 
     @PostMapping("/admin")
     public ResponseEntity<Map<String, Object>> createAdmin(@Valid @RequestBody AdminCreateRequest request) {
         User user = userService.createAdmin(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+        return ResponseEntity.status(HttpStatus.CREATED).body(buildUserResponse(user));
+    }
+
+    private Map<String, Object> buildUserResponse(User user) {
+        return Map.of(
                 "id", user.getId(),
                 "email", user.getEmail(),
                 "role", user.getRole(),
                 "active", user.isActive()
-        ));
+        );
     }
 }

@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
+    private static final String MSG_DUPLICATE_EMAIL = "Ya existe un usuario con ese email";
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -29,7 +31,7 @@ public class UserService {
     public User registerClient(ClientRegistrationRequest request) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmailIgnoreCase(email)) {
-            throw new DuplicateUserException("Ya existe un usuario con ese email");
+            throw new DuplicateUserException(MSG_DUPLICATE_EMAIL);
         }
 
         User user = new User(email, request.getFirstName().trim(), request.getLastName().trim(), UserRole.CLIENT);
@@ -49,7 +51,7 @@ public class UserService {
     public User registerSeller(SellerRegistrationRequest request) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmailIgnoreCase(email)) {
-            throw new DuplicateUserException("Ya existe un usuario con ese email");
+            throw new DuplicateUserException(MSG_DUPLICATE_EMAIL);
         }
         String businessName = request.getBusinessName().trim();
         if (userRepository.existsBySellerProfileBusinessNameIgnoreCase(businessName)) {
@@ -73,7 +75,7 @@ public class UserService {
     public User createAdmin(AdminCreateRequest request) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmailIgnoreCase(email)) {
-            throw new DuplicateUserException("Ya existe un usuario con ese email");
+            throw new DuplicateUserException(MSG_DUPLICATE_EMAIL);
         }
 
         User user = new User(email, request.getFirstName().trim(), request.getLastName().trim(), UserRole.ADMIN);
