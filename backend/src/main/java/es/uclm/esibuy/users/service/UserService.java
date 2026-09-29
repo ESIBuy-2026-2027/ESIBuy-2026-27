@@ -5,7 +5,6 @@ import java.util.Locale;
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
-import es.uclm.esibuy.users.dto.RegisterRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.model.AdminProfile;
 import es.uclm.esibuy.users.model.ClientProfile;
@@ -65,7 +64,7 @@ public class UserService {
                 ? "avatar-seller-default"
                 : request.getProfileImage().trim());
 
-        SellerProfile sellerProfile = new SellerProfile(businessName, blankToNull(request.getDefaultCategory()));
+        SellerProfile sellerProfile = new SellerProfile(businessName, request.getDefaultCategory().trim());
         user.setSellerProfile(sellerProfile);
 
         return userRepository.save(user);
@@ -88,53 +87,6 @@ public class UserService {
         user.setAdminProfile(adminProfile);
 
         return userRepository.save(user);
-    }
-
-    /**
-     * Registro unificado mantenido para compatibilidad temporal con /api/users/register.
-     */
-    public User register(RegisterRequest request) {
-        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
-        if (userRepository.existsByEmailIgnoreCase(email)) {
-            throw new DuplicateUserException("Ya existe un usuario con ese email");
-        }
-
-        UserRole role = request.getRole();
-        if (role == UserRole.SELLER) {
-            String businessName = request.getBusinessName() != null ? request.getBusinessName().trim() : "";
-            if (userRepository.existsBySellerProfileBusinessNameIgnoreCase(businessName)) {
-                throw new DuplicateUserException("Ya existe un vendedor con ese nombre comercial");
-            }
-        }
-
-        User user = new User(email, request.getFirstName().trim(), request.getLastName().trim(), role);
-        user.setNationalId(request.getNationalId().trim());
-        user.setPhone(blankToNull(request.getPhone()));
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setProfileImage(request.getProfileImage() == null || request.getProfileImage().isBlank()
-                ? defaultProfileImage(role)
-                : request.getProfileImage().trim());
-
-        if (role == UserRole.CLIENT) {
-            ClientProfile clientProfile = new ClientProfile(request.getBirthDate(), request.getCustomerType());
-            user.setClientProfile(clientProfile);
-        } else if (role == UserRole.SELLER) {
-            SellerProfile sellerProfile = new SellerProfile(blankToNull(request.getBusinessName()), blankToNull(request.getDefaultCategory()));
-            user.setSellerProfile(sellerProfile);
-        } else if (role == UserRole.ADMIN) {
-            user.setAdminProfile(new AdminProfile());
-        }
-
-        return userRepository.save(user);
-    }
-
-    private String defaultProfileImage(UserRole role) {
-        if (role == UserRole.SELLER) {
-            return "avatar-seller-default";
-        } else if (role == UserRole.ADMIN) {
-            return "avatar-admin-default";
-        }
-        return "avatar-client-default";
     }
 
     private String blankToNull(String value) {

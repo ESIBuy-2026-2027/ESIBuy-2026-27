@@ -4,7 +4,6 @@ import java.util.Map;
 
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
-import es.uclm.esibuy.users.dto.RegisterRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.service.UserService;
@@ -17,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
@@ -33,7 +32,8 @@ public class UserController {
                 "id", user.getId(),
                 "email", user.getEmail(),
                 "role", user.getRole(),
-                "active", user.isActive()));
+                "active", user.isActive()
+        ));
     }
 
     @PostMapping("/register/seller")
@@ -43,7 +43,8 @@ public class UserController {
                 "id", user.getId(),
                 "email", user.getEmail(),
                 "role", user.getRole(),
-                "active", user.isActive()));
+                "active", user.isActive()
+        ));
     }
 
     @PostMapping("/admin")
@@ -53,19 +54,7 @@ public class UserController {
                 "id", user.getId(),
                 "email", user.getEmail(),
                 "role", user.getRole(),
-                "active", user.isActive()));
-    }
-
-    /**
-     * Endpoint unificado mantenido para retrocompatibilidad.
-     */
-    @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterRequest request) {
-        User user = userService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "id", user.getId(),
-                "email", user.getEmail(),
-                "role", user.getRole(),
-                "active", user.isActive()));
+                "active", user.isActive()
+        ));
     }
 }
