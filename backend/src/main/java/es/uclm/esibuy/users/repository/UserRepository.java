@@ -1,7 +1,8 @@
-package es.uclm.esibuy.user;
+package es.uclm.esibuy.users.repository;
 
 import java.util.Optional;
 
+import es.uclm.esibuy.users.model.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface UserRepository extends MongoRepository<User, String> {

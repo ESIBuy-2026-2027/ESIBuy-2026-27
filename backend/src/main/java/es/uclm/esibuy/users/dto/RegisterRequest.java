@@ -1,8 +1,10 @@
-package es.uclm.esibuy.user;
+package es.uclm.esibuy.users.dto;
 
 import java.time.LocalDate;
 import java.time.Period;
 
+import es.uclm.esibuy.users.model.CustomerType;
+import es.uclm.esibuy.users.model.UserRole;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -58,8 +60,8 @@ public class RegisterRequest {
 
     @AssertTrue(message = "Los datos del vendedor son obligatorios")
     public boolean isSellerDataComplete() {
-        return role != UserRole.SELLER || (defaultCategory != null && !defaultCategory.isBlank()
-                && businessName != null && !businessName.isBlank());
+        return role != UserRole.SELLER || (defaultCategory != null && !defaultCategory.isBlank() && businessName != null
+                && !businessName.isBlank());
     }
 
     @AssertTrue(message = "El alta publica solo permite clientes y vendedores")

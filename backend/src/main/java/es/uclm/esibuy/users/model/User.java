@@ -1,4 +1,4 @@
-package es.uclm.esibuy.user;
+package es.uclm.esibuy.users.model;
 
 import java.time.Instant;
 import java.time.LocalDate;

@@ -1,7 +1,12 @@
-package es.uclm.esibuy.user;
+package es.uclm.esibuy.users.service;
 
 import java.util.Locale;
 
+import es.uclm.esibuy.common.exception.DuplicateUserException;
+import es.uclm.esibuy.users.dto.RegisterRequest;
+import es.uclm.esibuy.users.model.User;
+import es.uclm.esibuy.users.model.UserRole;
+import es.uclm.esibuy.users.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +30,6 @@ public class UserService {
                 && userRepository.existsByBusinessNameIgnoreCase(request.getBusinessName().trim())) {
             throw new DuplicateUserException("Ya existe un vendedor con ese nombre comercial");
         }
-
         User user = new User(email, request.getFirstName().trim(), request.getLastName().trim(), request.getRole());
         user.setBirthDate(request.getBirthDate());
         user.setNationalId(request.getNationalId().trim());

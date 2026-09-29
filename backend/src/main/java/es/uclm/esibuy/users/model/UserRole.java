@@ -1,4 +1,4 @@
-package es.uclm.esibuy.user;
+package es.uclm.esibuy.users.model;
 
 public enum UserRole {
     CLIENT,

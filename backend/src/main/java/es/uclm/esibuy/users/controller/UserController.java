@@ -1,9 +1,11 @@
-package es.uclm.esibuy.user;
+package es.uclm.esibuy.users.controller;
 
 import java.util.Map;
 
+import es.uclm.esibuy.users.dto.RegisterRequest;
+import es.uclm.esibuy.users.model.User;
+import es.uclm.esibuy.users.service.UserService;
 import jakarta.validation.Valid;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,10 +26,7 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterRequest request) {
         User user = userService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "id", user.getId(),
-                "email", user.getEmail(),
-                "role", user.getRole(),
-                "active", user.isActive()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", user.getId(), "email", user.getEmail(),
+                "role", user.getRole(), "active", user.isActive()));
     }
 }
