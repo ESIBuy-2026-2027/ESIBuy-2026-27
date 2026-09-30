@@ -1,0 +1,95 @@
+package es.uclm.esibuy.products.controller;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import es.uclm.esibuy.common.exception.ApiExceptionHandler;
+import es.uclm.esibuy.common.exception.CategoryNotFoundException;
+import es.uclm.esibuy.products.dto.ProductCreateRequest;
+import es.uclm.esibuy.products.model.Product;
+import es.uclm.esibuy.products.service.ProductService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(ProductController.class)
+@Import(ApiExceptionHandler.class)
+class ProductControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    private ProductService productService;
+
+    @Test
+    @WithMockUser(username = "seller@example.com")
+    void shouldReturnCreatedProductAndUseAuthenticatedIdentity() throws Exception {
+        Product product = new Product(
+                "Auriculares", List.of("category-id"), 0, null,
+                new BigDecimal("19.99"), null, null, null, true, "seller-id");
+        when(productService.createProduct(any(ProductCreateRequest.class), eq("seller@example.com")))
+                .thenReturn(product);
+
+        mockMvc.perform(post("/api/products")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validRequest()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.nombre").value("Auriculares"))
+                .andExpect(jsonPath("$.categoriaIds[0]").value("category-id"))
+                .andExpect(jsonPath("$.vendedorId").value("seller-id"));
+
+        verify(productService).createProduct(any(ProductCreateRequest.class), eq("seller@example.com"));
+    }
+
+    @Test
+    @WithMockUser(username = "seller@example.com")
+    void shouldReturnAllFieldValidationErrors() throws Exception {
+        mockMvc.perform(post("/api/products")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"nombre":"","categoriaIds":[],"precio":0,"disponible":null}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.nombre").isNotEmpty())
+                .andExpect(jsonPath("$.errors.categoriaIds").isNotEmpty())
+                .andExpect(jsonPath("$.errors.precio").isNotEmpty())
+                .andExpect(jsonPath("$.errors.disponible").isNotEmpty());
+    }
+
+    @Test
+    @WithMockUser(username = "seller@example.com")
+    void shouldReturnClearBadRequestForUnknownCategory() throws Exception {
+        when(productService.createProduct(any(ProductCreateRequest.class), eq("seller@example.com")))
+                .thenThrow(new CategoryNotFoundException(List.of("category-id")));
+
+        mockMvc.perform(post("/api/products")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validRequest()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("No existen las categorías indicadas: category-id"));
+    }
+
+    private String validRequest() {
+        return """
+                {"nombre":"Auriculares","categoriaIds":["category-id"],"precio":19.99,"disponible":true}
+                """;
+    }
+}
