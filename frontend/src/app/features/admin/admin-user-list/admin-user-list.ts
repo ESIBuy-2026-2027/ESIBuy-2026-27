@@ -14,7 +14,7 @@ export class AdminUserList implements OnInit {
   cargando = true;
   error = '';
 
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
   ngOnInit(): void {
     this.cargarUsuarios();

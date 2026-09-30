@@ -1,79 +1,102 @@
 <div class="admin-container">
     <header class="admin-header">
         <h2>Gestión de Usuarios</h2>
-        <p>Listado completo de cuentas registradas en ESIBuy</p>
+        <p>Listado completo de cuentas registradas en el sistema ESIBuy.</p>
     </header>
 
-    <div *ngIf="cargando" class="loading-spinner">
-        <p>Cargando usuarios...</p>
+    <!-- Mensaje de Carga -->
+    @if (cargando) {
+    <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Cargando información de usuarios...</p>
     </div>
+    }
 
-    <div *ngIf="error" class="error-alert">
-        {{ error }}
+    <!-- Mensaje de Error -->
+    @if (error) {
+    <div class="error-alert">
+        <strong>⚠️ Acceso Denegado:</strong> {{ error }}
     </div>
+    }
 
-    <div class="table-container" *ngIf="!cargando && !error">
+    <!-- Tabla de Usuarios -->
+    @if (!cargando && !error) {
+    <div class="table-container">
         <table class="user-table">
             <thead>
                 <tr>
                     <th>Usuario</th>
                     <th>Contacto</th>
-                    <th>Rol</th>
+                    <th>Rol / Sede</th>
                     <th>Estado</th>
                     <th>Registro</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let user of usuarios">
-                    <!-- Columna: Avatar + Nombre -->
+                @for (user of usuarios; track user.email) {
+                <tr>
+                    <!-- Columna 1: Avatar + Nombre Completo -->
                     <td class="col-user">
-                        <img [src]="'/assets/images/avatars/' + (user.profileImage || 'av_all.jpeg')" alt="Avatar"
-                            class="avatar-img" />
-                        <div class="user-info">
-                            <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
-                            <span class="user-id">DNI: {{ user.nationalId || 'N/A' }}</span>
+                        <div class="user-cell-wrapper">
+                            <img [src]="'/assets/images/avatars/' + (user.profileImage || 'av_all.jpeg')" alt="Avatar"
+                                class="avatar-img" />
+                            <div class="user-info">
+                                <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
+                                <span class="user-id">DNI: {{ user.nationalId || 'N/A' }}</span>
+                            </div>
                         </div>
                     </td>
 
-                    <!-- Columna: Email y Teléfono -->
+                    <!-- Columna 2: Email y Teléfono -->
                     <td class="col-contact">
-                        <div class="contact-item">{{ user.email }}</div>
-                        <div class="contact-item text-muted">{{ user.phone || 'Sin teléfono' }}</div>
+                        <div class="contact-item email-text">{{ user.email }}</div>
+                        <div class="contact-item text-muted">📞 {{ user.phone || 'Sin teléfono' }}</div>
                     </td>
 
-                    <!-- Columna: Rol -->
+                    <!-- Columna 3: Rol (y Sede si es Admin) -->
                     <td class="col-role">
                         <span class="badge" [ngClass]="getRoleBadgeClass(user.role)">
-                            {{ user.role }}
+                            {{ user.role || 'DESCONOCIDO' }}
                         </span>
+                        @if (user.role === 'ADMIN' && user.adminProfile?.headquarters) {
+                        <div class="text-muted mt-1">
+                            📍 {{ user.adminProfile.headquarters }}
+                        </div>
+                        }
                     </td>
 
-                    <!-- Columna: Estado (Indicador visual) -->
+                    <!-- Columna 4: Estado (Punto de color visual) -->
                     <td class="col-status">
                         <div class="status-indicator">
                             <span class="status-dot" [class.active]="user.active"
                                 [class.inactive]="!user.active"></span>
-                            {{ user.active ? 'Activo' : 'Inactivo' }}
+                            {{ user.active ? 'Activa' : 'Inactiva' }}
                         </div>
                     </td>
 
-                    <!-- Columna: Fecha -->
-                    <td class="col-date">
+                    <!-- Columna 5: Fecha -->
+                    <td class="col-date text-muted">
                         {{ user.createdAt | date:'dd/MM/yyyy' }}
                     </td>
 
-                    <!-- Columna: Acciones rápidas (Para futuras HDU) -->
+                    <!-- Columna 6: Acciones -->
                     <td class="col-actions">
-                        <button class="btn-icon" title="Ver detalle">👁️</button>
-                        <button class="btn-icon" title="Editar (HDU 142)">✏️</button>
+                        <button class="btn-icon btn-edit" title="Modificar Usuario">✏️</button>
+                        <button class="btn-icon btn-delete" title="Eliminar / Bloquear">🗑️</button>
                     </td>
                 </tr>
+                } @empty {
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <p>No se encontraron usuarios en la base de datos.</p>
+                        </div>
+                    </td>
+                </tr>
+                }
             </tbody>
         </table>
-
-        <div *ngIf="usuarios.length === 0" class="empty-state">
-            <p>No se encontraron usuarios en el sistema.</p>
-        </div>
     </div>
+    }
 </div>
