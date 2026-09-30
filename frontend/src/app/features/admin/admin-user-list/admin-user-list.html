@@ -27,7 +27,7 @@
                 <tr>
                     <th>Usuario</th>
                     <th>Contacto</th>
-                    <th>Rol / Sede</th>
+                    <th>Rol</th>
                     <th>Estado</th>
                     <th>Registro</th>
                     <th>Acciones</th>
@@ -39,8 +39,7 @@
                     <!-- Columna 1: Avatar + Nombre Completo -->
                     <td class="col-user">
                         <div class="user-cell-wrapper">
-                            <img [src]="'/assets/images/avatars/' + (user.profileImage || 'av_all.jpeg')" alt="Avatar"
-                                class="avatar-img" />
+                            <img [src]="getAvatarUrl(user.profileImage)" alt="Avatar" class="avatar-img" />
                             <div class="user-info">
                                 <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
                                 <span class="user-id">DNI: {{ user.nationalId || 'N/A' }}</span>

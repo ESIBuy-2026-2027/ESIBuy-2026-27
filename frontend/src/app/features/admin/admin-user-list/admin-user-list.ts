@@ -34,6 +34,22 @@ export class AdminUserList implements OnInit {
     });
   }
 
+  getAvatarUrl(profileImage: string | null | undefined): string {
+    if (!profileImage) {
+      return '/assets/images/avatars/av_all.jpeg';
+    }
+
+    if (/^https?:\/\//i.test(profileImage)) {
+      return profileImage;
+    }
+
+    const imageName = profileImage
+      .replace(/^\/?assets\/images\/avatars\//, '')
+      .replace(/^\/+/, '');
+
+    return `/assets/images/avatars/${imageName}`;
+  }
+
   getRoleBadgeClass(role: string): string {
     switch (role) {
       case 'ADMIN': return 'badge-admin';
