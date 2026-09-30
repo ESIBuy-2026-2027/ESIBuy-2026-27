@@ -9,7 +9,7 @@ import es.uclm.esibuy.users.dto.PromoverAdminDTO;
 import es.uclm.esibuy.users.model.AdminProfile;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
-import es.uclm.esibuy.users.service.UserService;
+import es.uclm.esibuy.users.service.AdminService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,13 +31,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AdminControllerTest {
 
     @Mock
-    private UserService userService;
+    private AdminService adminService;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        AdminController adminController = new AdminController(userService);
+        AdminController adminController = new AdminController(adminService);
         mockMvc = MockMvcBuilders.standaloneSetup(adminController)
                 .setControllerAdvice(new ApiExceptionHandler())
                 .build();
@@ -48,7 +48,7 @@ class AdminControllerTest {
         CandidatoDTO c1 = new CandidatoDTO("1", "Ana", "García", "ana@esibuy.com", "CLIENT", true, "avatar1", null);
         CandidatoDTO c2 = new CandidatoDTO("2", "Carlos", "López", "carlos@esibuy.com", "SELLER", false, "avatar2", null);
 
-        when(userService.obtenerCandidatos()).thenReturn(List.of(c1, c2));
+        when(adminService.obtenerCandidatos()).thenReturn(List.of(c1, c2));
 
         mockMvc.perform(get("/api/admin/candidatos")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -74,7 +74,7 @@ class AdminControllerTest {
         promotedUser.setAdminProfile(new AdminProfile("Ciudad Real"));
         promotedUser.setProfileImage("avatar-laura");
 
-        when(userService.promoverAAdmin(eq("usr-1"), any(PromoverAdminDTO.class))).thenReturn(promotedUser);
+        when(adminService.promoverAAdmin(eq("usr-1"), any(PromoverAdminDTO.class))).thenReturn(promotedUser);
 
         mockMvc.perform(put("/api/admin/promover/usr-1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -116,7 +116,7 @@ class AdminControllerTest {
                 }
                 """;
 
-        when(userService.promoverAAdmin(eq("inexistente"), any(PromoverAdminDTO.class)))
+        when(adminService.promoverAAdmin(eq("inexistente"), any(PromoverAdminDTO.class)))
                 .thenThrow(new UserNotFoundException("Usuario no encontrado con ID: inexistente"));
 
         mockMvc.perform(put("/api/admin/promover/inexistente")

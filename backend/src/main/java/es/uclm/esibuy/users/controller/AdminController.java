@@ -7,7 +7,7 @@ import java.util.Map;
 import es.uclm.esibuy.users.dto.CandidatoDTO;
 import es.uclm.esibuy.users.dto.PromoverAdminDTO;
 import es.uclm.esibuy.users.model.User;
-import es.uclm.esibuy.users.service.UserService;
+import es.uclm.esibuy.users.service.AdminService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,22 +21,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/admin")
 public class AdminController {
 
-    private final UserService userService;
+    private final AdminService adminService;
 
-    public AdminController(UserService userService) {
-        this.userService = userService;
+    public AdminController(AdminService adminService) {
+        this.adminService = adminService;
     }
 
     @GetMapping("/candidatos")
     public ResponseEntity<List<CandidatoDTO>> obtenerCandidatos() {
-        return ResponseEntity.ok(userService.obtenerCandidatos());
+        return ResponseEntity.ok(adminService.obtenerCandidatos());
     }
 
     @PutMapping("/promover/{idUsuario}")
     public ResponseEntity<Map<String, Object>> promoverAAdmin(
             @PathVariable String idUsuario,
             @Valid @RequestBody PromoverAdminDTO request) {
-        User user = userService.promoverAAdmin(idUsuario, request);
+        User user = adminService.promoverAAdmin(idUsuario, request);
         return ResponseEntity.ok(buildAdminResponse(user));
     }
 
