@@ -49,7 +49,7 @@ export class ProductCreate implements OnInit {
       Validators.pattern(/\S/),
       Validators.maxLength(150),
     ] }),
-    categoriaIds: new FormControl<string[]>([], {
+    categoriaIds: new FormControl<string[]>({ value: [], disabled: true }, {
       nonNullable: true,
       validators: [Validators.required],
     }),
@@ -100,6 +100,9 @@ export class ProductCreate implements OnInit {
       next: (categories) => {
         this.categories = categories;
         this.categoriesLoading = false;
+        if (categories.length > 0) {
+          this.form.controls.categoriaIds.enable();
+        }
       },
       error: () => {
         this.categoriesError = true;

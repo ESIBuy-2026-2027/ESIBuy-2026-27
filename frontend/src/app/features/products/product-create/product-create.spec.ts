@@ -218,6 +218,23 @@ describe('ProductCreate', () => {
 
     const element = errorFixture.nativeElement as HTMLElement;
     expect(element.querySelectorAll('select[formControlName="categoriaIds"] option').length).toBe(0);
+    expect(element.querySelector<HTMLSelectElement>('select[formControlName="categoriaIds"]')?.disabled).toBe(true);
+    expect(element.querySelector('select[formControlName="categoriaIds"]')?.getAttribute('size')).toBe('1');
     expect(element.textContent).toContain('No se pudieron cargar las categorías');
+  });
+
+  it('should explain when the backend has no categories available', async () => {
+    fixture.destroy();
+    categoriesResponse = of([]);
+
+    const emptyFixture = TestBed.createComponent(ProductCreateComponent);
+    emptyFixture.detectChanges();
+    await emptyFixture.whenStable();
+    emptyFixture.detectChanges();
+
+    const element = emptyFixture.nativeElement as HTMLElement;
+    expect(element.textContent).toContain('No hay categorías disponibles en este momento.');
+    expect(element.querySelector<HTMLSelectElement>('select[formControlName="categoriaIds"]')?.disabled).toBe(true);
+    expect(element.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(true);
   });
 });

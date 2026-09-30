@@ -35,17 +35,20 @@
 
         <div class="form-field full-width">
           <label for="categoriaIds">Categorías *</label>
-          <select id="categoriaIds" formControlName="categoriaIds" multiple size="4"
+          <span id="categories-hint" class="field-hint">Puedes seleccionar varias categorías. Usa Ctrl o ⌘ para elegir más de una.</span>
+          <select id="categoriaIds" formControlName="categoriaIds" multiple
+            [size]="categories.length > 0 ? 4 : 1"
             aria-describedby="categories-hint">
             @for (category of categories; track category.id) {
               <option [value]="category.id">{{ category.nombre }}</option>
             }
           </select>
-          <span id="categories-hint" class="field-hint">Puedes seleccionar varias categorías. Usa Ctrl o ⌘ para elegir más de una.</span>
           @if (categoriesLoading) {
             <span class="field-hint" role="status">Cargando categorías…</span>
           } @else if (categoriesError) {
             <span class="field-error" role="alert">No se pudieron cargar las categorías. Vuelve a intentarlo más tarde.</span>
+          } @else if (categories.length === 0) {
+            <span class="field-hint" role="status">No hay categorías disponibles en este momento.</span>
           } @else if (form.controls.categoriaIds.touched && form.controls.categoriaIds.hasError('required')) {
             <span class="field-error">Selecciona al menos una categoría.</span>
           }
@@ -186,7 +189,8 @@
 
     <footer class="form-actions">
       <a class="cancel-action" routerLink="/seller/catalog">Cancelar</a>
-      <button class="submit-action" type="submit" [disabled]="submitting || categoriesLoading || categoriesError">
+      <button class="submit-action" type="submit"
+        [disabled]="submitting || categoriesLoading || categoriesError || categories.length === 0">
         {{ submitting ? 'Guardando…' : 'Guardar producto' }}
       </button>
     </footer>
