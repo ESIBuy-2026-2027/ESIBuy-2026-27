@@ -63,4 +63,9 @@ export class Login {
       }
     });
   }
+
+  showForgotPasswordMessage() {
+    alert('La recuperación de contraseña estará disponible próximamente.');
+  }
+
 }

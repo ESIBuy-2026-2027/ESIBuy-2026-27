@@ -320,3 +320,26 @@
     gap: 0.2rem;
   }
 }
+
+.forgot-password {
+  text-align: center;
+  margin-top: 1.25rem;
+}
+
+.forgot-password-link {
+  padding: 0;
+  border: none;
+  background: transparent;
+
+  color: #2563eb;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.forgot-password-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
