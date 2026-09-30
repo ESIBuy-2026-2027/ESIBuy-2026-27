@@ -7,6 +7,7 @@ import java.util.List;
 import es.uclm.esibuy.common.exception.UserNotFoundException;
 import es.uclm.esibuy.users.dto.CandidatoDTO;
 import es.uclm.esibuy.users.dto.PromoverAdminDTO;
+import es.uclm.esibuy.users.dto.UserAdminDTO;
 import es.uclm.esibuy.users.model.AdminProfile;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
@@ -62,5 +63,11 @@ public class AdminService {
 
     private String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    public List<UserAdminDTO> obtenerTodosLosUsuarios() {
+        return userRepository.findAll().stream()
+                .map(UserAdminDTO::fromUser)
+                .toList();
     }
 }

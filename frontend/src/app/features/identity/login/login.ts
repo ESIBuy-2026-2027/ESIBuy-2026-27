@@ -39,7 +39,7 @@ export class Login {
     });
   }
 
-  onSubmit() {
+onSubmit() {
     this.serverError = null;
 
     if (this.loginForm.invalid) {
@@ -53,7 +53,11 @@ export class Login {
       next: (response) => {
         this.loading = false;
         alert(`¡Bienvenido! Sesión iniciada como ${response.email} (${response.role})`);
-        this.router.navigate(['/']);
+        if (response.role === 'ADMIN') {
+          this.router.navigate(['/admin/usuarios']);
+        } else {
+          this.router.navigate(['/']);
+        }
       },
       error: (err) => {
         this.loading = false;

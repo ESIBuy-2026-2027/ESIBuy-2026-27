@@ -1,7 +1,7 @@
 package es.uclm.esibuy.users.controller;
 
 import java.util.List;
-
+import es.uclm.esibuy.users.dto.UserAdminDTO;
 import es.uclm.esibuy.common.exception.ApiExceptionHandler;
 import es.uclm.esibuy.common.exception.UserNotFoundException;
 import es.uclm.esibuy.users.dto.CandidatoDTO;
@@ -46,12 +46,13 @@ class AdminControllerTest {
     @Test
     void shouldReturnCandidatosList() throws Exception {
         CandidatoDTO c1 = new CandidatoDTO("1", "Ana", "García", "ana@esibuy.com", "CLIENT", true, "avatar1", null);
-        CandidatoDTO c2 = new CandidatoDTO("2", "Carlos", "López", "carlos@esibuy.com", "SELLER", false, "avatar2", null);
+        CandidatoDTO c2 = new CandidatoDTO("2", "Carlos", "López", "carlos@esibuy.com", "SELLER", false, "avatar2",
+                null);
 
         when(adminService.obtenerCandidatos()).thenReturn(List.of(c1, c2));
 
         mockMvc.perform(get("/api/admin/candidatos")
-                        .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].nombre").value("Ana"))
@@ -77,8 +78,8 @@ class AdminControllerTest {
         when(adminService.promoverAAdmin(eq("usr-1"), any(PromoverAdminDTO.class))).thenReturn(promotedUser);
 
         mockMvc.perform(put("/api/admin/promover/usr-1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nombre").value("Laura"))
                 .andExpect(jsonPath("$.apellidos").value("Sánchez"))
@@ -98,8 +99,8 @@ class AdminControllerTest {
                 """;
 
         mockMvc.perform(put("/api/admin/promover/usr-1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(invalidJson))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidJson))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("La solicitud contiene errores"))
                 .andExpect(jsonPath("$.errors.nombre").exists())
@@ -120,9 +121,24 @@ class AdminControllerTest {
                 .thenThrow(new UserNotFoundException("Usuario no encontrado con ID: inexistente"));
 
         mockMvc.perform(put("/api/admin/promover/inexistente")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Usuario no encontrado con ID: inexistente"));
+    }
+
+    @Test
+    void shouldReturnTodosLosUsuarios() throws Exception {
+        // Arrange: Simulamos que el servicio devuelve una lista (usaremos nuestro
+        // futuro DTO)
+        // Esto fallará porque obtenerTodosLosUsuarios() aún no existe en AdminService
+        when(adminService.obtenerTodosLosUsuarios()).thenReturn(List.of());
+
+        // Act & Assert: Verificamos que el nuevo endpoint responde con 200 OK y un
+        // array
+        mockMvc.perform(get("/api/admin/usuarios")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
     }
 }

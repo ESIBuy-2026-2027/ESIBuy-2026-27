@@ -3,7 +3,7 @@ package es.uclm.esibuy.users.controller;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
+import es.uclm.esibuy.users.dto.UserAdminDTO;
 import es.uclm.esibuy.users.dto.CandidatoDTO;
 import es.uclm.esibuy.users.dto.PromoverAdminDTO;
 import es.uclm.esibuy.users.model.User;
@@ -51,5 +51,10 @@ public class AdminController {
         response.put("sede", user.getAdminProfile() != null ? user.getAdminProfile().getHeadquarters() : null);
         response.put("profileImage", user.getProfileImage());
         return response;
+    }
+
+    @GetMapping("/usuarios")
+    public ResponseEntity<List<UserAdminDTO>> obtenerTodosLosUsuarios() {
+        return ResponseEntity.ok(adminService.obtenerTodosLosUsuarios());
     }
 }
