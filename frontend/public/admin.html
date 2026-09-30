@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESIBuy - Zona de Administradores | Alta de Administrador</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- Barra de Navegación -->
+  <header class="admin-navbar">
+    <div class="brand-wrapper">
+      <span class="brand-logo">ESIBuy</span>
+      <span class="brand-badge">Zona de Administración</span>
+    </div>
+    <div style="font-size: 0.85rem; color: #64748b;">
+      Gestión de Permisos y Roles
+    </div>
+  </header>
+
+  <main class="main-container">
+
+    <!-- Notificación de Éxito Global -->
+    <div id="alertaExito" class="alert-box alert-success d-none" role="alert">
+      <div class="alert-title">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>Operación Completada</span>
+      </div>
+      <p id="mensajeExito" style="font-size: 0.9rem; margin-top: 0.2rem;"></p>
+    </div>
+
+    <!-- TARJETA 1: Selección de Candidato Elegible -->
+    <section class="card">
+      <div class="card-header">
+        <h1 class="card-title">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--primary);">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          Paso 1: Seleccionar Usuario Elegible
+        </h1>
+        <p class="card-subtitle">
+          De acuerdo a las reglas de negocio, los administradores deben promoverse a partir de usuarios registrados (rol CLIENTE o VENDEDOR).
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label for="selectorCandidatos" class="form-label">
+          Usuarios Candidatos <span class="required">*</span>
+        </label>
+        <select id="selectorCandidatos" class="form-control">
+          <option value="">Cargando candidatos...</option>
+        </select>
+        <div id="infoCandidatos" class="alert-box alert-info d-none" style="margin-top: 0.8rem;"></div>
+      </div>
+    </section>
+
+    <!-- TARJETA 2: Formulario de Alta de Administrador -->
+    <section id="seccionFormulario" class="card d-none">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--success);">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          Paso 2: Formulario de Alta de Administrador
+        </h2>
+        <p class="card-subtitle">
+          Modifique los datos permitidos del candidato y asigne la sede. El email se conservará intacto.
+        </p>
+      </div>
+
+      <!-- Contenedor Unificado de Errores de Validación -->
+      <div id="contenedorAlertas" class="alert-box alert-danger d-none" role="alert">
+        <div class="alert-title">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>Se encontraron los siguientes errores en la solicitud:</span>
+        </div>
+        <ul id="listaErrores" class="alert-list"></ul>
+      </div>
+
+      <form id="formPromocion" novalidate>
+        <input type="hidden" id="idUsuario">
+
+        <div class="form-row">
+          <!-- Nombre (Obligatorio, Editable) -->
+          <div class="form-group">
+            <label for="nombre" class="form-label">
+              Nombre <span class="required">*</span>
+            </label>
+            <input type="text" id="nombre" name="nombre" class="form-control" required placeholder="Nombre del usuario">
+          </div>
+
+          <!-- Apellidos (Obligatorio, Editable) -->
+          <div class="form-group">
+            <label for="apellidos" class="form-label">
+              Apellidos <span class="required">*</span>
+            </label>
+            <input type="text" id="apellidos" name="apellidos" class="form-control" required placeholder="Apellidos del usuario">
+          </div>
+        </div>
+
+        <!-- Email (Obligatorio, No Editable / Readonly) -->
+        <div class="form-group">
+          <label for="email" class="form-label">
+            Email de Cuenta <span class="required">*</span>
+          </label>
+          <input type="email" id="email" name="email" class="form-control" readonly placeholder="usuario@esibuy.com">
+          <div class="locked-indicator">
+            <svg fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+            </svg>
+            <span>Campo bloqueado (No editable). El email de la base de datos se conserva protegido.</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <!-- Sede (Opcional, Editable) -->
+          <div class="form-group">
+            <label for="sede" class="form-label">
+              Sede (Exclusivo Administrador)
+            </label>
+            <input type="text" id="sede" name="sede" class="form-control" placeholder="Ej: Ciudad Real, Toledo, Albacete...">
+          </div>
+
+          <!-- Fecha de incorporación (Obligatorio, No Editable / Readonly) -->
+          <div class="form-group">
+            <label for="fechaIncorporacion" class="form-label">
+              Fecha de Incorporación <span class="badge-auto">Automático</span>
+            </label>
+            <input type="text" id="fechaIncorporacion" name="fechaIncorporacion" class="form-control" readonly value="Se generará automáticamente al guardar">
+            <div class="locked-indicator">
+              <svg fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+              </svg>
+              <span>Se generará automáticamente al guardar con la fecha y hora actual del servidor.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Imagen de Perfil (Opcional, Editable con File Input) -->
+        <div class="form-group">
+          <label class="form-label">Imagen de Perfil</label>
+          <div class="avatar-upload-wrapper">
+            <div class="avatar-preview-box">
+              <img id="avatarPreview" src="https://api.dicebear.com/7.x/bottts/svg?seed=admin_default" alt="Avatar Previo">
+            </div>
+            <div class="avatar-input-container">
+              <input type="file" id="imagenPerfilFile" class="form-control" accept="image/*">
+              <p class="avatar-hint">
+                Opcional. Si no se selecciona ninguna imagen, se asignará el avatar oficial de administrador por defecto.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="btn-wrapper">
+          <button type="button" id="btnCancelar" class="btn btn-secondary">
+            Cancelar
+          </button>
+          <button type="submit" id="btnPromover" class="btn btn-primary">
+            <span id="btnSpinner" class="spinner d-none"></span>
+            <span id="btnTexto">Promover a Administrador</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>
