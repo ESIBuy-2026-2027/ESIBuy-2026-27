@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -65,7 +65,8 @@ export class AdminUserCreate implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {
 
     this.form = this.fb.group({
@@ -107,6 +108,7 @@ export class AdminUserCreate implements OnInit {
 
     this.loadingCandidatos = true;
     this.serverErrors = [];
+    this.cdr.markForCheck();
 
     this.authService.getCandidatos().subscribe({
 
@@ -114,6 +116,7 @@ export class AdminUserCreate implements OnInit {
 
         this.candidatos = data || [];
         this.loadingCandidatos = false;
+        this.cdr.detectChanges();
 
       },
 
@@ -130,6 +133,7 @@ export class AdminUserCreate implements OnInit {
         this.serverErrors = [
           'No se pudieron cargar los usuarios candidatos. Verifique que el servidor esté disponible.'
         ];
+        this.cdr.detectChanges();
 
       }
 
@@ -159,6 +163,7 @@ export class AdminUserCreate implements OnInit {
       this.selectedAvatarUrl =
         this.avatars[0].url;
 
+      this.cdr.detectChanges();
       return;
     }
 
@@ -175,6 +180,7 @@ export class AdminUserCreate implements OnInit {
 
 
     if (!this.candidatoSeleccionado) {
+      this.cdr.detectChanges();
       return;
     }
 
@@ -233,12 +239,15 @@ export class AdminUserCreate implements OnInit {
       this.candidatoSeleccionado.imagenPerfil ||
       this.avatars[0].url;
 
+    this.cdr.detectChanges();
+
   }
 
 
   selectAvatar(url: string): void {
 
     this.selectedAvatarUrl = url;
+    this.cdr.markForCheck();
 
   }
 
@@ -255,6 +264,7 @@ export class AdminUserCreate implements OnInit {
     this.serverErrors = [];
 
     this.successMessage = null;
+    this.cdr.detectChanges();
 
   }
 
@@ -333,6 +343,7 @@ export class AdminUserCreate implements OnInit {
 
 
           this.cargarCandidatos();
+          this.cdr.detectChanges();
 
         },
 
@@ -372,6 +383,8 @@ export class AdminUserCreate implements OnInit {
             ];
 
           }
+
+          this.cdr.detectChanges();
 
         }
 
