@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
 import { Category, CreatedProduct, ProductCreateRequest, ProductsService } from '../products.service';
 import { ProductCreate as ProductCreateComponent } from './product-create';
@@ -11,7 +11,6 @@ describe('ProductCreate', () => {
     { id: 'category-home', name: 'Hogar' },
   ];
   let fixture: ComponentFixture<ProductCreateComponent>;
-  let router: Router;
   let productService: Pick<ProductsService, 'getCategories' | 'createProduct'>;
   let createProduct: ReturnType<typeof vi.fn<(request: ProductCreateRequest) => Observable<CreatedProduct>>>;
   let categoriesResponse: Observable<Category[]>;
@@ -33,9 +32,8 @@ describe('ProductCreate', () => {
         { provide: ProductsService, useValue: productService },
       ],
     }).compileComponents();
-
     fixture = TestBed.createComponent(ProductCreateComponent);
-    router = TestBed.inject(Router);
+    fixture = TestBed.createComponent(ProductCreateComponent);
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -95,8 +93,7 @@ describe('ProductCreate', () => {
     expect(createProduct).not.toHaveBeenCalled();
   });
 
-  it('should submit category IDs and optional product data to the API', async () => {
-    const navigateSpy = vi.spyOn(router, 'navigate');
+  it('should confirm product creation on the same page', async () => {
     fixture.componentInstance.form.setValue({
       nombre: '  Auriculares  ',
       categoriaIds: ['category-tech', 'category-home'],
@@ -122,10 +119,9 @@ describe('ProductCreate', () => {
       imageUrl: 'https://example.com/auriculares.png',
       available: true,
     } satisfies ProductCreateRequest);
-    expect(navigateSpy).toHaveBeenCalledWith(['/seller/catalog'], {
-      state: { productCreated: true },
-    });
-    expect(router.url).toBe('/seller/catalog');
+    expect(fixture.componentInstance.submitting()).toBe(false);
+    expect(fixture.componentInstance.submitSuccess()).toBe(true);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Producto registrado correctamente.');
   });
 
   it('should show all backend validation errors under their fields', () => {
@@ -184,7 +180,7 @@ describe('ProductCreate', () => {
     fixture.componentInstance.onSubmit();
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.submitError).toBe(message);
+    expect(fixture.componentInstance.submitError()).toBe(message);
     expect(fixture.componentInstance.serverFieldErrors.categoriaIds).toBe(message);
   });
 

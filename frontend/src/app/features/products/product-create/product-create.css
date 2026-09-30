@@ -252,6 +252,16 @@ h1 {
   font-size: 13px;
 }
 
+.submit-success {
+  padding: 13px 15px;
+  border: 1px solid #b7e5d7;
+  border-radius: 8px;
+  background: #effaf6;
+  color: #168c75;
+  font-size: 13px;
+  font-weight: 650;
+}
+
 .form-actions {
   display: flex;
   align-items: center;

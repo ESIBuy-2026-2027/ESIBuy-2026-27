@@ -1,7 +1,7 @@
-import { DestroyRef, Component, OnInit, inject } from '@angular/core';
+import { DestroyRef, Component, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Category, ProductCreateRequest, ProductsService } from '../products.service';
 
@@ -40,7 +40,6 @@ const PRODUCT_FORM_FIELDS: readonly ProductFormField[] = [
 })
 export class ProductCreate implements OnInit {
   private readonly productsService = inject(ProductsService);
-  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly form = new FormGroup<ProductFormControls>({
@@ -86,14 +85,16 @@ export class ProductCreate implements OnInit {
   categories: Category[] = [];
   categoriesLoading = true;
   categoriesError = false;
-  submitting = false;
-  submitError: string | null = null;
+  submitting = signal(false);
+  submitSuccess = signal(false);
+  submitError = signal<string | null>(null);
   serverFieldErrors: Partial<Record<ProductFormField, string>> = {};
 
   ngOnInit(): void {
     this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.submitSuccess.set(false);
       this.serverFieldErrors = {};
-      this.submitError = null;
+      this.submitError.set(null);
     });
 
     this.productsService.getCategories().subscribe({
@@ -112,22 +113,23 @@ export class ProductCreate implements OnInit {
   }
 
   onSubmit(): void {
-    this.submitError = null;
+    this.submitSuccess.set(false);
+    this.submitError.set(null);
 
     if (this.form.invalid || this.categoriesLoading || this.categoriesError
-      || this.categories.length === 0 || this.submitting) {
+      || this.categories.length === 0 || this.submitting()) {
       this.form.markAllAsTouched();
       return;
     }
 
-    this.submitting = true;
+    this.submitting.set(true);
     this.productsService.createProduct(this.toRequest()).subscribe({
       next: () => {
-        this.submitting = false;
-        void this.router.navigate(['/seller/catalog'], { state: { productCreated: true } });
+        this.submitting.set(false);
+        this.submitSuccess.set(true);
       },
       error: (error: unknown) => {
-        this.submitting = false;
+        this.submitting.set(false);
         this.handleSubmitError(error);
       },
     });
@@ -137,7 +139,7 @@ export class ProductCreate implements OnInit {
     this.serverFieldErrors = {};
 
     if (!(error instanceof HttpErrorResponse) || !this.isRecord(error.error)) {
-      this.submitError = 'No se pudo guardar el producto. Inténtalo de nuevo.';
+      this.submitError.set('No se pudo guardar el producto. Inténtalo de nuevo.');
       return;
     }
 
@@ -161,13 +163,13 @@ export class ProductCreate implements OnInit {
 
     if (message && /categor[ií]as?/i.test(message) && /no existen|no existe|no válid/i.test(message)) {
       this.serverFieldErrors.categoriaIds = message;
-      this.submitError = message;
+      this.submitError.set(message);
     } else if (unrecognizedErrors.length > 0) {
-      this.submitError = [message, ...unrecognizedErrors].filter(Boolean).join('. ');
+      this.submitError.set([message, ...unrecognizedErrors].filter(Boolean).join('. '));
     } else if (Object.keys(this.serverFieldErrors).length > 0) {
-      this.submitError = 'Revisa los campos marcados y vuelve a intentarlo.';
+      this.submitError.set('Revisa los campos marcados y vuelve a intentarlo.');
     } else {
-      this.submitError = message || this.getFallbackError(error.status);
+      this.submitError.set(message || this.getFallbackError(error.status));
     }
   }
 

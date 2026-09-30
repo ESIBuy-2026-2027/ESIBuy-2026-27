@@ -183,15 +183,19 @@
       </div>
     </section>
 
-    @if (submitError) {
-      <div class="submit-error" role="alert">{{ submitError }}</div>
+    @if (submitSuccess()) {
+      <div class="submit-success" role="status">Producto registrado correctamente.</div>
+    }
+
+    @if (submitError(); as error) {
+      <div class="submit-error" role="alert">{{ error }}</div>
     }
 
     <footer class="form-actions">
       <a class="cancel-action" routerLink="/seller/catalog">Cancelar</a>
       <button class="submit-action" type="submit"
-        [disabled]="submitting || categoriesLoading || categoriesError || categories.length === 0">
-        {{ submitting ? 'Guardando…' : 'Guardar producto' }}
+        [disabled]="submitting() || categoriesLoading || categoriesError || categories.length === 0">
+        {{ submitting() ? 'Guardando…' : 'Guardar producto' }}
       </button>
     </footer>
   </form>

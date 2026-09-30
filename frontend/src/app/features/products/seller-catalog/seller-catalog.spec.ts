@@ -52,14 +52,6 @@ describe('SellerCatalog', () => {
     expect(element.textContent).toContain('Catálogo activo');
   });
 
-  it('should show a success message after returning from product creation', () => {
-    fixture.componentInstance.productCreated.set(true);
-    fixture.detectChanges();
-
-    const successMessage = (fixture.nativeElement as HTMLElement).querySelector('[role="status"]');
-    expect(successMessage?.textContent).toContain('Producto registrado correctamente.');
-  });
-
   it('should link to the product creation route', () => {
     const element = fixture.nativeElement as HTMLElement;
     const createLinks = element.querySelectorAll('a[href="/products/new"]');
