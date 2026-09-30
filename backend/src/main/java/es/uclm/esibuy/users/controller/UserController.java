@@ -4,6 +4,7 @@ import java.util.Map;
 
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
+import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.service.UserService;
@@ -43,12 +44,17 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(buildUserResponse(user));
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
+        User user = userService.login(request);
+        return ResponseEntity.ok(buildUserResponse(user));
+    }
+
     private Map<String, Object> buildUserResponse(User user) {
         return Map.of(
                 "id", user.getId(),
                 "email", user.getEmail(),
                 "role", user.getRole(),
-                "active", user.isActive()
-        );
+                "active", user.isActive());
     }
 }
