@@ -41,11 +41,25 @@ export class Register {
   form: FormGroup;
   serverError: string | null = null;
   loading = false;
+  showPassword = false;
 
-  defaultAvatars = {
-    cliente: 'https://api.dicebear.com/7.x/bottts/svg?seed=cliente_desconocido',
-    vendedor: 'https://api.dicebear.com/7.x/bottts/svg?seed=vendedor_desconocido'
-  };
+  clientAvatars = [
+    'assets/images/avatars/av_client_1.jpeg',
+    'assets/images/avatars/av_client_2.jpeg',
+    'assets/images/avatars/av_client_3.jpeg',
+    'assets/images/avatars/av_client_4.jpeg',
+    'assets/images/avatars/av_client_5.jpeg'
+  ];
+
+  sellerAvatars = [
+    'assets/images/avatars/av_seller_1.jpeg',
+    'assets/images/avatars/av_seller_2.jpeg',
+    'assets/images/avatars/av_seller_3.jpeg',
+    'assets/images/avatars/av_seller_4.jpeg',
+    'assets/images/avatars/av_seller_5.jpeg'
+  ];
+
+  selectedAvatar: string = this.clientAvatars[0];
 
   categories = ['Electrónica', 'Hogar', 'Moda', 'Deportes', 'Libros', 'Otros'];
 
@@ -60,7 +74,16 @@ export class Register {
   setRole(role: 'cliente' | 'vendedor') {
     this.userRole = role;
     this.serverError = null;
+    this.selectedAvatar = role === 'cliente' ? this.clientAvatars[0] : this.sellerAvatars[0];
     this.form = this.createForm();
+  }
+
+  selectAvatar(avatarPath: string) {
+    this.selectedAvatar = avatarPath;
+  }
+
+  get currentAvatarList(): string[] {
+    return this.userRole === 'cliente' ? this.clientAvatars : this.sellerAvatars;
   }
 
   createForm(): FormGroup {
@@ -94,10 +117,6 @@ export class Register {
     }
   }
 
-  get profileImage(): string {
-    return this.defaultAvatars[this.userRole];
-  }
-
   onSubmit() {
     this.serverError = null;
 
@@ -117,7 +136,7 @@ export class Register {
         email: this.form.value.email,
         phone: this.form.value.phone || null,
         customerType: this.form.value.customerType,
-        profileImage: this.profileImage,
+        profileImage: this.selectedAvatar,
         password: this.form.value.password,
         repeatedPassword: this.form.value.repeatedPassword
       };
@@ -142,7 +161,7 @@ export class Register {
         nationalId: this.form.value.nationalId,
         email: this.form.value.email,
         phone: this.form.value.phone || null,
-        profileImage: this.profileImage,
+        profileImage: this.selectedAvatar,
         password: this.form.value.password,
         repeatedPassword: this.form.value.repeatedPassword
       };
