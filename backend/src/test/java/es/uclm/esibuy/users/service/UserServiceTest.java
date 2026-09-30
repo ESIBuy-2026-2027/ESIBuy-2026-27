@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
+import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.model.CustomerType;
 import es.uclm.esibuy.users.model.User;
@@ -385,5 +386,105 @@ class UserServiceTest {
 
         assertNull(savedUser.getPhone());
         assertEquals("avatar-client-default", savedUser.getProfileImage());
+    }
+
+    // ============================================================
+    // LOGIN
+    // ============================================================
+
+    @Test
+    void shouldLoginSuccessfullyWhenUserIsActive() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("user@example.com");
+        request.setPassword("Password123!");
+
+        User mockUser = new User("user@example.com", "Juan", "Pérez", UserRole.CLIENT);
+        mockUser.setPasswordHash("hashed-pwd");
+        mockUser.setActive(true);
+
+        when(userRepository.findByEmailIgnoreCase("user@example.com")).thenReturn(java.util.Optional.of(mockUser));
+        when(passwordEncoder.matches("Password123!", "hashed-pwd")).thenReturn(true);
+
+        User result = userService.login(request);
+
+        assertNotNull(result);
+        assertEquals("user@example.com", result.getEmail());
+        assertTrue(result.isActive()); // Vital para el controlador
+    }
+
+    @Test
+    void shouldLoginSuccessfullyButReturnInactiveStatus() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("nuevo@example.com");
+        request.setPassword("Password123!");
+
+        User mockUser = new User("nuevo@example.com", "Ana", "López", UserRole.SELLER);
+        mockUser.setPasswordHash("hashed-pwd");
+        mockUser.setActive(false); // Usuario recién registrado
+
+        when(userRepository.findByEmailIgnoreCase("nuevo@example.com")).thenReturn(java.util.Optional.of(mockUser));
+        when(passwordEncoder.matches("Password123!", "hashed-pwd")).thenReturn(true);
+
+        User result = userService.login(request);
+
+        assertNotNull(result);
+        assertEquals("nuevo@example.com", result.getEmail());
+        assertFalse(result.isActive()); // El controlador usará esto para redirigir a "Perfil en revisión"
+    }
+
+    @Test
+    void shouldSanitizeEmailOnLogin() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("  ADMIN@ESIBUY.COM  "); // Espacios y mayúsculas
+        request.setPassword("Admin123!");
+
+        User mockUser = new User("admin@esibuy.com", "Admin", "Root", UserRole.ADMIN);
+        mockUser.setPasswordHash("hashed-admin-pwd");
+
+        when(userRepository.findByEmailIgnoreCase("admin@esibuy.com")).thenReturn(java.util.Optional.of(mockUser));
+        when(passwordEncoder.matches("Admin123!", "hashed-admin-pwd")).thenReturn(true);
+
+        User result = userService.login(request);
+
+        assertEquals("admin@esibuy.com", result.getEmail());
+        verify(userRepository).findByEmailIgnoreCase("admin@esibuy.com"); // Verifica que se buscó en minúsculas y sin
+                                                                          // espacios
+    }
+
+    @Test
+    void shouldThrowGenericExceptionWhenLoginEmailNotFound() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("ghost@example.com");
+        request.setPassword("AnyPassword!");
+
+        when(userRepository.findByEmailIgnoreCase("ghost@example.com")).thenReturn(java.util.Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.login(request));
+
+        // El mensaje DEBE ser aséptico para no revelar información
+        assertEquals("Credenciales incorrectas", exception.getMessage());
+        verifyNoInteractions(passwordEncoder);
+    }
+
+    @Test
+    void shouldThrowGenericExceptionWhenLoginPasswordIsIncorrect() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("user@example.com");
+        request.setPassword("WrongPassword!");
+
+        User mockUser = new User("user@example.com", "Juan", "Pérez", UserRole.CLIENT);
+        mockUser.setPasswordHash("hashed-pwd");
+
+        when(userRepository.findByEmailIgnoreCase("user@example.com")).thenReturn(java.util.Optional.of(mockUser));
+        when(passwordEncoder.matches("WrongPassword!", "hashed-pwd")).thenReturn(false);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.login(request));
+
+        // El mensaje DEBE ser exactamente igual al de email no encontrado
+        assertEquals("Credenciales incorrectas", exception.getMessage());
     }
 }
