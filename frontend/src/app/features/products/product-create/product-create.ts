@@ -1,135 +1,136 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core';
+import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { Category, ProductCreateRequest, ProductsService } from '../products.service';
+
+interface ProductFormControls {
+  nombre: FormControl<string>;
+  categoriaIds: FormControl<string[]>;
+  stock: FormControl<number | null>;
+  descripcion: FormControl<string>;
+  precio: FormControl<number | null>;
+  descuento: FormControl<number | null>;
+  descuentoPremium: FormControl<number | null>;
+  imagen: FormControl<string>;
+  disponible: FormControl<boolean | null>;
+}
 
 @Component({
   selector: 'app-product-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
-  template: `
-    <div class="product-create-container">
-      <h2>Alta de Producto</h2>
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label>Nombre del Producto *</label>
-          <input type="text" formControlName="nombre" />
-          <span class="error" *ngIf="form.get('nombre')?.touched && form.get('nombre')?.hasError('required')">El nombre es obligatorio</span>
-        </div>
-
-        <div class="form-group">
-          <label>Categoría *</label>
-          <select formControlName="categoria">
-            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
-          </select>
-          <span class="error" *ngIf="form.get('categoria')?.touched && form.get('categoria')?.hasError('required')">La categoría es obligatoria</span>
-        </div>
-
-        <div class="form-group">
-          <label>Stock</label>
-          <input type="number" formControlName="stock" min="0" />
-        </div>
-
-        <div class="form-group">
-          <label>Descripción</label>
-          <textarea formControlName="descripcion" rows="4"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Precio (€) *</label>
-          <input type="number" step="0.01" formControlName="precio" min="0" />
-          <span class="error" *ngIf="form.get('precio')?.touched && form.get('precio')?.hasError('required')">El precio es obligatorio</span>
-        </div>
-
-        <div class="form-group">
-          <label>Descuento General (%)</label>
-          <input type="number" formControlName="descuento" min="0" max="100" />
-        </div>
-
-        <div class="form-group">
-          <label>Descuento Premium (%) (no acumulable con general)</label>
-          <input type="number" formControlName="descuentoPremium" min="0" max="100" />
-        </div>
-
-        <div class="form-group">
-          <label>Imagen del Producto</label>
-          <div class="radio-options">
-            <label><input type="radio" name="imgOpt" [(ngModel)]="imageOption" [ngModelOptions]="{standalone: true}" value="default" /> Imagen por defecto</label>
-            <label><input type="radio" name="imgOpt" [(ngModel)]="imageOption" [ngModelOptions]="{standalone: true}" value="upload" /> Subir imagen</label>
-          </div>
-          <div *ngIf="imageOption === 'upload'" style="margin-top: 0.5rem;">
-            <input type="file" (change)="onFileSelected($event)" accept="image/*" />
-          </div>
-          <div class="avatar-preview" style="margin-top: 0.5rem;">
-            <img [src]="productImage" alt="Imagen del producto" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #ccc;" />
-          </div>
-        </div>
-
-        <div class="form-group checkbox-group">
-          <label>
-            <input type="checkbox" formControlName="disponible" />
-            Disponible / Visible *
-          </label>
-        </div>
-
-        <button type="submit" class="btn-submit">Crear Producto</button>
-      </form>
-    </div>
-  `,
-  styles: [`
-    .product-create-container { max-width: 600px; margin: 2rem auto; padding: 2rem; border: 1px solid #ccc; border-radius: 8px; font-family: sans-serif; }
-    .form-group { display: flex; flex-direction: column; margin-bottom: 1rem; }
-    .checkbox-group { flex-direction: row; align-items: center; gap: 0.5rem; }
-    .form-group label { font-weight: bold; margin-bottom: 0.3rem; }
-    .form-group input, .form-group select, .form-group textarea { padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
-    .error { color: red; font-size: 0.85rem; }
-    .btn-submit { width: 100%; padding: 0.75rem; background: #28a745; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-  `]
+  imports: [ReactiveFormsModule, RouterLink],
+  templateUrl: './product-create.html',
+  styleUrl: './product-create.css',
 })
-export class ProductCreate {
-  form: FormGroup;
-  categories = ['Electrónica', 'Hogar', 'Moda', 'Deportes', 'Libros', 'Otros'];
-  imageOption: 'default' | 'upload' = 'default';
-  uploadedImageBase64: string | null = null;
-  defaultProductImage = 'https://via.placeholder.com/150?text=Producto';
+export class ProductCreate implements OnInit {
+  private readonly productsService = inject(ProductsService);
+  private readonly router = inject(Router);
 
-  constructor(private fb: FormBuilder, private router: Router) {
-    this.form = this.fb.group({
-      nombre: ['', [Validators.required]],
-      categoria: [this.categories[0], [Validators.required]],
-      stock: [0, [Validators.min(0)]],
-      descripcion: [''],
-      precio: [null, [Validators.required, Validators.min(0)]],
-      descuento: [0, [Validators.min(0), Validators.max(100)]],
-      descuentoPremium: [0, [Validators.min(0), Validators.max(100)]],
-      disponible: [true, [Validators.required]]
+  readonly form = new FormGroup<ProductFormControls>({
+    nombre: new FormControl('', { nonNullable: true, validators: [
+      Validators.required,
+      Validators.pattern(/\S/),
+      Validators.maxLength(150),
+    ] }),
+    categoriaIds: new FormControl<string[]>([], {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    stock: new FormControl<number | null>(null, [
+      Validators.min(0),
+      Validators.pattern(/^\d+$/),
+    ]),
+    descripcion: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(2000)],
+    }),
+    precio: new FormControl<number | null>(null, [
+      Validators.required,
+      Validators.min(Number.MIN_VALUE),
+    ]),
+    descuento: new FormControl<number | null>(null, [
+      Validators.min(0),
+      Validators.max(100),
+    ]),
+    descuentoPremium: new FormControl<number | null>(null, [
+      Validators.min(0),
+      Validators.max(100),
+    ]),
+    imagen: new FormControl('', {
+      nonNullable: true,
+      validators: [
+        Validators.maxLength(2000),
+        Validators.pattern(/^$|^https?:\/\/\S+$/i),
+      ],
+    }),
+    disponible: new FormControl<boolean | null>(true, [Validators.required]),
+  });
+
+  categories: Category[] = [];
+  categoriesLoading = true;
+  categoriesError = false;
+  submitting = false;
+  submitError: string | null = null;
+
+  ngOnInit(): void {
+    this.productsService.getCategories().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+        this.categoriesLoading = false;
+      },
+      error: () => {
+        this.categoriesError = true;
+        this.categoriesLoading = false;
+      },
     });
   }
 
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => { this.uploadedImageBase64 = reader.result as string; };
-      reader.readAsDataURL(file);
-    }
-  }
+  onSubmit(): void {
+    this.submitError = null;
 
-  get productImage(): string {
-    return (this.imageOption === 'upload' && this.uploadedImageBase64) ? this.uploadedImageBase64 : this.defaultProductImage;
-  }
-
-  onSubmit() {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.categoriesError || this.submitting) {
       this.form.markAllAsTouched();
       return;
     }
-    const payload = {
-      ...this.form.value,
-      imagen: this.productImage
+
+    this.submitting = true;
+    this.productsService.createProduct(this.toRequest()).subscribe({
+      next: () => {
+        this.submitting = false;
+        void this.router.navigate(['/seller/catalog']);
+      },
+      error: () => {
+        this.submitting = false;
+        this.submitError = 'No se pudo guardar el producto. Inténtalo de nuevo.';
+      },
+    });
+  }
+
+  private toRequest(): ProductCreateRequest {
+    const value = this.form.getRawValue();
+    const request: ProductCreateRequest = {
+      nombre: value.nombre.trim(),
+      categoriaIds: value.categoriaIds,
+      precio: value.precio ?? 0,
+      disponible: value.disponible ?? false,
     };
-    console.log('Alta de Producto:', payload);
-    alert('Producto creado exitosamente.');
-    this.router.navigate(['/']);
+
+    if (value.stock !== null) {
+      request.stock = value.stock;
+    }
+    if (value.descripcion.trim()) {
+      request.descripcion = value.descripcion.trim();
+    }
+    if (value.descuento !== null) {
+      request.descuento = value.descuento;
+    }
+    if (value.descuentoPremium !== null) {
+      request.descuentoPremium = value.descuentoPremium;
+    }
+    if (value.imagen.trim()) {
+      request.imagen = value.imagen.trim();
+    }
+
+    return request;
   }
 }
