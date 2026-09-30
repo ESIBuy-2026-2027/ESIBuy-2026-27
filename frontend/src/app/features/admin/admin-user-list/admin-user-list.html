@@ -1,0 +1,79 @@
+<div class="admin-container">
+    <header class="admin-header">
+        <h2>Gestión de Usuarios</h2>
+        <p>Listado completo de cuentas registradas en ESIBuy</p>
+    </header>
+
+    <div *ngIf="cargando" class="loading-spinner">
+        <p>Cargando usuarios...</p>
+    </div>
+
+    <div *ngIf="error" class="error-alert">
+        {{ error }}
+    </div>
+
+    <div class="table-container" *ngIf="!cargando && !error">
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Contacto</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Registro</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let user of usuarios">
+                    <!-- Columna: Avatar + Nombre -->
+                    <td class="col-user">
+                        <img [src]="'/assets/images/avatars/' + (user.profileImage || 'av_all.jpeg')" alt="Avatar"
+                            class="avatar-img" />
+                        <div class="user-info">
+                            <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
+                            <span class="user-id">DNI: {{ user.nationalId || 'N/A' }}</span>
+                        </div>
+                    </td>
+
+                    <!-- Columna: Email y Teléfono -->
+                    <td class="col-contact">
+                        <div class="contact-item">{{ user.email }}</div>
+                        <div class="contact-item text-muted">{{ user.phone || 'Sin teléfono' }}</div>
+                    </td>
+
+                    <!-- Columna: Rol -->
+                    <td class="col-role">
+                        <span class="badge" [ngClass]="getRoleBadgeClass(user.role)">
+                            {{ user.role }}
+                        </span>
+                    </td>
+
+                    <!-- Columna: Estado (Indicador visual) -->
+                    <td class="col-status">
+                        <div class="status-indicator">
+                            <span class="status-dot" [class.active]="user.active"
+                                [class.inactive]="!user.active"></span>
+                            {{ user.active ? 'Activo' : 'Inactivo' }}
+                        </div>
+                    </td>
+
+                    <!-- Columna: Fecha -->
+                    <td class="col-date">
+                        {{ user.createdAt | date:'dd/MM/yyyy' }}
+                    </td>
+
+                    <!-- Columna: Acciones rápidas (Para futuras HDU) -->
+                    <td class="col-actions">
+                        <button class="btn-icon" title="Ver detalle">👁️</button>
+                        <button class="btn-icon" title="Editar (HDU 142)">✏️</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div *ngIf="usuarios.length === 0" class="empty-state">
+            <p>No se encontraron usuarios en el sistema.</p>
+        </div>
+    </div>
+</div>
