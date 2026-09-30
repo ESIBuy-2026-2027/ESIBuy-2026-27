@@ -5,6 +5,7 @@ import java.util.Locale;
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
+import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.model.AdminProfile;
 import es.uclm.esibuy.users.model.ClientProfile;
@@ -89,6 +90,18 @@ public class UserService {
         user.setAdminProfile(adminProfile);
 
         return userRepository.save(user);
+    }
+
+    public User login(LoginRequest request) {
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new IllegalArgumentException("Contraseña incorrecta");
+        }
+
+        return user;
     }
 
     private String blankToNull(String value) {
