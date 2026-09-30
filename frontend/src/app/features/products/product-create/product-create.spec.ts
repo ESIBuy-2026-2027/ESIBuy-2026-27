@@ -236,5 +236,7 @@ describe('ProductCreate', () => {
     expect(element.textContent).toContain('No hay categorías disponibles en este momento.');
     expect(element.querySelector<HTMLSelectElement>('select[formControlName="categoriaIds"]')?.disabled).toBe(true);
     expect(element.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(true);
+    emptyFixture.componentInstance.onSubmit();
+    expect(createProduct).not.toHaveBeenCalled();
   });
 });

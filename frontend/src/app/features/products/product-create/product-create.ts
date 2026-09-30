@@ -114,7 +114,8 @@ export class ProductCreate implements OnInit {
   onSubmit(): void {
     this.submitError = null;
 
-    if (this.form.invalid || this.categoriesError || this.submitting) {
+    if (this.form.invalid || this.categoriesLoading || this.categoriesError
+      || this.categories.length === 0 || this.submitting) {
       this.form.markAllAsTouched();
       return;
     }
