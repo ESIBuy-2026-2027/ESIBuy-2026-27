@@ -24,10 +24,13 @@ public class SecurityConfig {
         try {
             return http
                     .cors(Customizer.withDefaults())
-                    .csrf(csrf -> csrf.ignoringRequestMatchers("/api/users/register/**", "/api/admin/**"))
+                    .csrf(csrf -> csrf.ignoringRequestMatchers("/api/users/register/**", "/api/users/login",
+                            "/api/admin/**"))
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .authorizeHttpRequests(auth -> auth
-                            .requestMatchers("/", "/api/users/register/**", "/api/admin/**", "/actuator/health").permitAll()
+                            .requestMatchers("/", "/api/users/register/**", "/api/users/login", "/api/admin/**",
+                                    "/actuator/health")
+                            .permitAll()
                             .anyRequest().authenticated())
                     .build();
         } catch (Exception exception) {

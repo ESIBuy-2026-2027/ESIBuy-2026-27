@@ -22,6 +22,10 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/admin`, data);
   }
 
+  login(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/login`, data);
+  }
+
   getCandidatos(): Observable<any[]> {
     return this.http.get<any[]>('/api/admin/candidatos');
   }
