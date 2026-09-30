@@ -21,4 +21,13 @@ export class AuthService {
   createAdmin(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/admin`, data);
   }
+
+  getCandidatos(): Observable<any[]> {
+    return this.http.get<any[]>('/api/admin/candidatos');
+  }
+
+  promoverAAdmin(idUsuario: string, data: any): Observable<any> {
+    return this.http.put<any>(`/api/admin/promover/${idUsuario}`, data);
+  }
 }
+

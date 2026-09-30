@@ -1,8 +1,11 @@
 package es.uclm.esibuy.users.repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import es.uclm.esibuy.users.model.User;
+import es.uclm.esibuy.users.model.UserRole;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface UserRepository extends MongoRepository<User, String> {
@@ -11,4 +14,6 @@ public interface UserRepository extends MongoRepository<User, String> {
     boolean existsBySellerProfileBusinessNameIgnoreCase(String businessName);
 
     Optional<User> findByEmailIgnoreCase(String email);
+
+    List<User> findByRoleIn(Collection<UserRole> roles);
 }

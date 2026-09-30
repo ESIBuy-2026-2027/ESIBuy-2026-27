@@ -1,19 +1,24 @@
 package es.uclm.esibuy.users.model;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 public class AdminProfile {
 
     private String headquarters;
-    private Instant hireDate;
+    private LocalDateTime hireDate;
 
     public AdminProfile() {
-        this.hireDate = Instant.now();
+        this.hireDate = LocalDateTime.now();
     }
 
     public AdminProfile(String headquarters) {
         this.headquarters = headquarters;
-        this.hireDate = Instant.now();
+        this.hireDate = LocalDateTime.now();
+    }
+
+    public AdminProfile(String headquarters, LocalDateTime hireDate) {
+        this.headquarters = headquarters;
+        this.hireDate = hireDate != null ? hireDate : LocalDateTime.now();
     }
 
     public String getHeadquarters() {
@@ -24,11 +29,11 @@ public class AdminProfile {
         this.headquarters = headquarters;
     }
 
-    public Instant getHireDate() {
+    public LocalDateTime getHireDate() {
         return hireDate;
     }
 
-    public void setHireDate(Instant hireDate) {
+    public void setHireDate(LocalDateTime hireDate) {
         this.hireDate = hireDate;
     }
 }
