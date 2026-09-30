@@ -19,7 +19,14 @@ export function isAdultValidator(control: AbstractControl): ValidationErrors | n
 export function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value;
   const repeatedPassword = group.get('repeatedPassword')?.value;
-  return (password && repeatedPassword && password === repeatedPassword) ? null : { passwordMismatch: true };
+
+  if (!password || !repeatedPassword) {
+    return null;
+  }
+
+  return password === repeatedPassword
+    ? null
+    : { passwordMismatch: true };
 }
 
 @Component({
@@ -34,7 +41,7 @@ export class Register {
   form: FormGroup;
   serverError: string | null = null;
   loading = false;
-  
+
   defaultAvatars = {
     cliente: 'https://api.dicebear.com/7.x/bottts/svg?seed=cliente_desconocido',
     vendedor: 'https://api.dicebear.com/7.x/bottts/svg?seed=vendedor_desconocido'
@@ -57,12 +64,12 @@ export class Register {
   }
 
   createForm(): FormGroup {
-    const phonePattern = /^[0-9]{9}$/;
+    const phonePattern = /^\d{9}$/;
     const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S+$/;
 
     if (this.userRole === 'cliente') {
       return this.fb.group({
-        firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+        firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25)]],
         lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
         birthDate: ['', [Validators.required, isAdultValidator]],
         nationalId: ['', [Validators.required, Validators.maxLength(20)]],
@@ -74,7 +81,7 @@ export class Register {
       }, { validators: passwordMatchValidator });
     } else {
       return this.fb.group({
-        firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+        firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25)]],
         lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
         defaultCategory: [this.categories[0], [Validators.required]],
         businessName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
