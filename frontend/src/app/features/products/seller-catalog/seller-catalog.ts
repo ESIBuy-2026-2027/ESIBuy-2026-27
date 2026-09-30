@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ProductSummary, SellerCatalogService } from './seller-catalog.service';
@@ -12,11 +13,15 @@ import { ProductSummary, SellerCatalogService } from './seller-catalog.service';
 export class SellerCatalog implements OnInit {
   private readonly catalogService = inject(SellerCatalogService);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
 
   summary = signal<ProductSummary | null>(null);
   loading = signal(true);
   loadError = signal(false);
-  productCreated = signal(this.router.currentNavigation()?.extras.state?.['productCreated'] === true);
+  productCreated = signal(
+    this.router.currentNavigation()?.extras.state?.['productCreated'] === true
+      || this.hasProductCreatedState(this.location.getState()),
+  );
 
   ngOnInit(): void {
     this.loadSummary();
@@ -37,5 +42,12 @@ export class SellerCatalog implements OnInit {
         this.loadError.set(true);
       },
     });
+  }
+
+  private hasProductCreatedState(state: unknown): boolean {
+    return typeof state === 'object'
+      && state !== null
+      && 'productCreated' in state
+      && state.productCreated === true;
   }
 }

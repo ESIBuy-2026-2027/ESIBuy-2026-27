@@ -1,116 +1,395 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators
+} from '@angular/forms';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-admin-user-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
-  template: `
-    <div class="admin-create-container">
-      <h2>Alta de Administrador</h2>
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label>Nombre *</label>
-          <input type="text" formControlName="nombre" />
-          <span class="error" *ngIf="form.get('nombre')?.touched && form.get('nombre')?.hasError('required')">Nombre obligatorio</span>
-        </div>
-
-        <div class="form-group">
-          <label>Apellidos *</label>
-          <input type="text" formControlName="apellidos" />
-          <span class="error" *ngIf="form.get('apellidos')?.touched && form.get('apellidos')?.hasError('required')">Apellidos obligatorios</span>
-        </div>
-
-        <div class="form-group">
-          <label>Email (único) *</label>
-          <input type="email" formControlName="email" />
-          <span class="error" *ngIf="form.get('email')?.touched && form.get('email')?.hasError('required')">Email obligatorio</span>
-          <span class="error" *ngIf="form.get('email')?.touched && form.get('email')?.hasError('email')">Email no válido</span>
-        </div>
-
-        <div class="form-group">
-          <label>Sede</label>
-          <input type="text" formControlName="sede" placeholder="Ej: Madrid, Ciudad Real..." />
-        </div>
-
-        <div class="form-group">
-          <label>Fecha de incorporación * (Automática y no editable)</label>
-          <input type="text" formControlName="fechaIncorporacion" readonly />
-        </div>
-
-        <div class="form-group">
-          <label>Imagen de Perfil</label>
-          <div class="radio-options">
-            <label><input type="radio" name="imgOpt" [(ngModel)]="imageOption" [ngModelOptions]="{standalone: true}" value="default" /> Avatar por defecto</label>
-            <label><input type="radio" name="imgOpt" [(ngModel)]="imageOption" [ngModelOptions]="{standalone: true}" value="upload" /> Subir imagen</label>
-          </div>
-          <div *ngIf="imageOption === 'upload'" style="margin-top: 0.5rem;">
-            <input type="file" (change)="onFileSelected($event)" accept="image/*" />
-          </div>
-          <div class="avatar-preview" style="margin-top: 0.5rem;">
-            <img [src]="profileImage" alt="Avatar Admin" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;" />
-          </div>
-        </div>
-
-        <button type="submit" class="btn-submit">Dar de Alta Administrador</button>
-      </form>
-    </div>
-  `,
-  styles: [`
-    .admin-create-container { max-width: 500px; margin: 2rem auto; padding: 2rem; border: 1px solid #ccc; border-radius: 8px; font-family: sans-serif; }
-    .form-group { display: flex; flex-direction: column; margin-bottom: 1rem; }
-    .form-group label { font-weight: bold; margin-bottom: 0.3rem; }
-    .form-group input { padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
-    .form-group input[readonly] { background-color: #e9ecef; cursor: not-allowed; }
-    .error { color: red; font-size: 0.85rem; }
-    .btn-submit { width: 100%; padding: 0.75rem; background: #007bff; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-  `]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule
+  ],
+  templateUrl: './admin-user-create.html',
+  styleUrls: ['./admin-user-create.css']
 })
-export class AdminUserCreate {
+export class AdminUserCreate implements OnInit {
+
   form: FormGroup;
-  imageOption: 'default' | 'upload' = 'default';
-  uploadedImageBase64: string | null = null;
-  defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_default';
 
-  constructor(private fb: FormBuilder, private router: Router) {
-    const todayISO = new Date().toISOString().split('T')[0];
-    this.form = this.fb.group({
-      nombre: ['', [Validators.required]],
-      apellidos: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
-      sede: [''],
-      fechaIncorporacion: [{ value: todayISO, disabled: false }, [Validators.required]]
-    });
-  }
+  candidatos: any[] = [];
+  candidatoSeleccionado: any = null;
 
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => { this.uploadedImageBase64 = reader.result as string; };
-      reader.readAsDataURL(file);
+  loadingCandidatos = false;
+  submitting = false;
+
+  serverErrors: string[] = [];
+  successMessage: string | null = null;
+
+  avatars = [
+    {
+      id: 'admin1',
+      label: 'Admin Clásico',
+      url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_default'
+    },
+    {
+      id: 'admin2',
+      label: 'Admin Guardián',
+      url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_shield'
+    },
+    {
+      id: 'admin3',
+      label: 'Admin Operaciones',
+      url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_gear'
+    },
+    {
+      id: 'admin4',
+      label: 'Admin Seguridad',
+      url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_security'
+    },
+    {
+      id: 'admin5',
+      label: 'Admin Estrella',
+      url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_star'
     }
+  ];
+
+  selectedAvatarUrl =
+    'https://api.dicebear.com/7.x/bottts/svg?seed=admin_default';
+
+
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
+  ) {
+
+    this.form = this.fb.group({
+
+      nombre: [
+        '',
+        [Validators.required]
+      ],
+
+      apellidos: [
+        '',
+        [Validators.required]
+      ],
+
+      email: [
+        '',
+        [Validators.required]
+      ],
+
+      sede: [
+        ''
+      ],
+
+      fechaIncorporacion: [
+        ''
+      ]
+
+    });
+
   }
 
-  get profileImage(): string {
-    return (this.imageOption === 'upload' && this.uploadedImageBase64) ? this.uploadedImageBase64 : this.defaultAvatar;
+
+  ngOnInit(): void {
+    this.cargarCandidatos();
   }
 
-  onSubmit() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+
+  cargarCandidatos(): void {
+
+    this.loadingCandidatos = true;
+    this.serverErrors = [];
+    this.cdr.markForCheck();
+
+    this.authService.getCandidatos().subscribe({
+
+      next: (data) => {
+
+        this.candidatos = data || [];
+        this.loadingCandidatos = false;
+        this.cdr.detectChanges();
+
+      },
+
+      error: (err) => {
+
+        console.error(
+          'Error cargando candidatos:',
+          err
+        );
+
+        this.candidatos = [];
+        this.loadingCandidatos = false;
+
+        this.serverErrors = [
+          'No se pudieron cargar los usuarios candidatos. Verifique que el servidor esté disponible.'
+        ];
+        this.cdr.detectChanges();
+
+      }
+
+    });
+
+  }
+
+
+  onCandidatoChange(event: Event): void {
+
+    const select =
+      event.target as HTMLSelectElement;
+
+    const id =
+      select.value;
+
+    this.serverErrors = [];
+    this.successMessage = null;
+
+
+    if (!id) {
+
+      this.candidatoSeleccionado = null;
+
+      this.form.reset();
+
+      this.selectedAvatarUrl =
+        this.avatars[0].url;
+
+      this.cdr.detectChanges();
       return;
     }
-    const payload = {
-      ...this.form.getRawValue(),
-      rol: 'admin',
-      imagenPerfil: this.profileImage,
-      activo: true // Admin por defecto activado
-    };
-    console.log('Alta de Administrador:', payload);
-    alert('Administrador dado de alta correctamente (Activado por defecto).');
-    this.router.navigate(['/']);
+
+
+    /*
+     * Se convierte el ID a String para evitar problemas
+     * si el backend devuelve el ID como número y el
+     * <select> devuelve siempre un string.
+     */
+    this.candidatoSeleccionado =
+      this.candidatos.find(
+        c => String(c.id) === String(id)
+      );
+
+
+    if (!this.candidatoSeleccionado) {
+      this.cdr.detectChanges();
+      return;
+    }
+
+
+    const fechaBD =
+      this.candidatoSeleccionado.fechaIncorporacion ||
+      this.candidatoSeleccionado.fechaRegistro;
+
+
+    let fechaFormateada = '';
+
+
+    if (fechaBD) {
+
+      try {
+
+        fechaFormateada =
+          typeof fechaBD === 'string' &&
+            fechaBD.includes('T')
+            ? fechaBD.split('T')[0]
+            : new Date(fechaBD)
+              .toISOString()
+              .split('T')[0];
+
+      } catch {
+
+        fechaFormateada =
+          String(fechaBD);
+
+      }
+
+    }
+
+
+    this.form.patchValue({
+
+      nombre:
+        this.candidatoSeleccionado.nombre || '',
+
+      apellidos:
+        this.candidatoSeleccionado.apellidos || '',
+
+      email:
+        this.candidatoSeleccionado.email || '',
+
+      sede:
+        this.candidatoSeleccionado.sede || '',
+
+      fechaIncorporacion:
+        fechaFormateada
+
+    });
+
+
+    this.selectedAvatarUrl =
+      this.candidatoSeleccionado.imagenPerfil ||
+      this.avatars[0].url;
+
+    this.cdr.detectChanges();
+
   }
+
+
+  selectAvatar(url: string): void {
+
+    this.selectedAvatarUrl = url;
+    this.cdr.markForCheck();
+
+  }
+
+
+  cancelar(): void {
+
+    this.candidatoSeleccionado = null;
+
+    this.form.reset();
+
+    this.selectedAvatarUrl =
+      this.avatars[0].url;
+
+    this.serverErrors = [];
+
+    this.successMessage = null;
+    this.cdr.detectChanges();
+
+  }
+
+
+  onSubmit(): void {
+
+    this.serverErrors = [];
+    this.successMessage = null;
+
+
+    if (!this.candidatoSeleccionado) {
+
+      this.serverErrors = [
+        'Debe seleccionar un usuario candidato elegible.'
+      ];
+
+      return;
+    }
+
+
+    if (this.form.invalid) {
+
+      this.form.markAllAsTouched();
+
+      return;
+    }
+
+
+    this.submitting = true;
+
+
+    const payload = {
+
+      nombre:
+        this.form.value.nombre?.trim(),
+
+      apellidos:
+        this.form.value.apellidos?.trim(),
+
+      email:
+        this.form.value.email?.trim(),
+
+      sede:
+        this.form.value.sede?.trim() || null,
+
+      imagenPerfil:
+        this.selectedAvatarUrl
+
+    };
+
+
+    this.authService
+      .promoverAAdmin(
+        this.candidatoSeleccionado.id,
+        payload
+      )
+      .subscribe({
+
+        next: (res) => {
+
+          this.submitting = false;
+
+
+          this.successMessage =
+            `¡El usuario "${payload.nombre} ${payload.apellidos}" ` +
+            `ha sido promovido a Administrador con éxito! ` +
+            `Su cuenta ha quedado activada automáticamente.`;
+
+
+          this.candidatoSeleccionado = null;
+
+          this.form.reset();
+
+          this.selectedAvatarUrl =
+            this.avatars[0].url;
+
+
+          this.cargarCandidatos();
+          this.cdr.detectChanges();
+
+        },
+
+
+        error: (err) => {
+
+          this.submitting = false;
+
+
+          if (
+            err?.error?.errors &&
+            typeof err.error.errors === 'object'
+          ) {
+
+            this.serverErrors =
+              Object.entries(
+                err.error.errors
+              ).map(
+                ([field, msg]) =>
+                  `${field.toUpperCase()}: ${msg}`
+              );
+
+          }
+
+          else if (err?.error?.message) {
+
+            this.serverErrors = [
+              err.error.message
+            ];
+
+          }
+
+          else {
+
+            this.serverErrors = [
+              'Error al procesar la solicitud en el servidor.'
+            ];
+
+          }
+
+          this.cdr.detectChanges();
+
+        }
+
+      });
+
+  }
+
 }

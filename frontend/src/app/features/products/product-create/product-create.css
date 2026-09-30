@@ -154,11 +154,20 @@ h1 {
 .form-field select[multiple] {
   min-height: 118px;
   padding: 5px;
+  color: #203b4e;
+  background: #fff;
 }
 
 .form-field select[multiple] option {
   padding: 8px;
   border-radius: 4px;
+  color: #203b4e;
+  background: #fff;
+}
+
+.form-field select[multiple] option:checked {
+  color: #173247;
+  background: #e9f7f3;
 }
 
 .form-field input:focus,

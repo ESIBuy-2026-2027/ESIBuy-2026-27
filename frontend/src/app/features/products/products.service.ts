@@ -4,19 +4,19 @@ import { Observable } from 'rxjs';
 
 export interface Category {
   id: string;
-  nombre: string;
+  name: string;
 }
 
 export interface ProductCreateRequest {
-  nombre: string;
-  categoriaIds: string[];
+  name: string;
+  categoryIds: string[];
   stock?: number;
-  descripcion?: string;
-  precio: number;
-  descuento?: number;
-  descuentoPremium?: number;
-  imagen?: string;
-  disponible: boolean;
+  description?: string;
+  price: number;
+  discount?: number;
+  premiumDiscount?: number;
+  imageUrl?: string;
+  available: boolean;
 }
 
 export interface CreatedProduct {

@@ -18,7 +18,7 @@ describe('ProductsService', () => {
   afterEach(() => httpTesting.verify());
 
   it('should load available categories from the backend', () => {
-    const categories = [{ id: 'category-1', nombre: 'Electrónica' }];
+    const categories = [{ id: 'category-1', name: 'Electrónica' }];
 
     service.getCategories().subscribe((result) => expect(result).toEqual(categories));
 
@@ -29,10 +29,10 @@ describe('ProductsService', () => {
 
   it('should submit product data to the product creation endpoint', () => {
     const product = {
-      nombre: 'Auriculares',
-      categoriaIds: ['category-1'],
-      precio: 19.99,
-      disponible: true,
+      name: 'Auriculares',
+      categoryIds: ['category-1'],
+      price: 19.99,
+      available: true,
     };
 
     service.createProduct(product).subscribe((result) => expect(result.id).toBe('product-1'));

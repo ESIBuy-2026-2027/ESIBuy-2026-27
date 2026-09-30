@@ -1,0 +1,101 @@
+<div class="admin-container">
+    <header class="admin-header">
+        <h2>Gestión de Usuarios</h2>
+        <p>Listado completo de cuentas registradas en el sistema ESIBuy.</p>
+    </header>
+
+    <!-- Mensaje de Carga -->
+    @if (cargando()) {
+    <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Cargando información de usuarios...</p>
+    </div>
+    }
+
+    <!-- Mensaje de Error -->
+    @if (error()) {
+    <div class="error-alert">
+        <strong>⚠️ Acceso Denegado:</strong> {{ error() }}
+    </div>
+    }
+
+    <!-- Tabla de Usuarios -->
+    @if (!cargando() && !error()) {
+    <div class="table-container">
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Contacto</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Registro</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (user of usuarios(); track user.email) {
+                <tr>
+                    <!-- Columna 1: Avatar + Nombre Completo -->
+                    <td class="col-user">
+                        <div class="user-cell-wrapper">
+                            <img [src]="getAvatarUrl(user.profileImage)" alt="Avatar" class="avatar-img" />
+                            <div class="user-info">
+                                <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
+                                <span class="user-id">DNI: {{ user.nationalId || 'N/A' }}</span>
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- Columna 2: Email y Teléfono -->
+                    <td class="col-contact">
+                        <div class="contact-item email-text">{{ user.email }}</div>
+                        <div class="contact-item text-muted">📞 {{ user.phone || 'Sin teléfono' }}</div>
+                    </td>
+
+                    <!-- Columna 3: Rol (y Sede si es Admin) -->
+                    <td class="col-role">
+                        <span class="badge" [ngClass]="getRoleBadgeClass(user.role)">
+                            {{ user.role || 'DESCONOCIDO' }}
+                        </span>
+                        @if (user.role === 'ADMIN' && user.adminProfile?.headquarters) {
+                        <div class="text-muted mt-1">
+                            📍 {{ user.adminProfile.headquarters }}
+                        </div>
+                        }
+                    </td>
+
+                    <!-- Columna 4: Estado (Punto de color visual) -->
+                    <td class="col-status">
+                        <div class="status-indicator">
+                            <span class="status-dot" [class.active]="user.active"
+                                [class.inactive]="!user.active"></span>
+                            {{ user.active ? 'Activa' : 'Inactiva' }}
+                        </div>
+                    </td>
+
+                    <!-- Columna 5: Fecha -->
+                    <td class="col-date text-muted">
+                        {{ user.createdAt | date:'dd/MM/yyyy' }}
+                    </td>
+
+                    <!-- Columna 6: Acciones -->
+                    <td class="col-actions">
+                        <button class="btn-icon btn-edit" title="Modificar Usuario">✏️</button>
+                        <button class="btn-icon btn-delete" title="Eliminar / Bloquear">🗑️</button>
+                    </td>
+                </tr>
+                } @empty {
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <p>No se encontraron usuarios en la base de datos.</p>
+                        </div>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    }
+</div>

@@ -57,7 +57,7 @@ describe('SellerCatalog', () => {
     fixture.detectChanges();
 
     const successMessage = (fixture.nativeElement as HTMLElement).querySelector('[role="status"]');
-    expect(successMessage?.textContent).toContain('Producto guardado correctamente.');
+    expect(successMessage?.textContent).toContain('Producto registrado correctamente.');
   });
 
   it('should link to the product creation route', () => {

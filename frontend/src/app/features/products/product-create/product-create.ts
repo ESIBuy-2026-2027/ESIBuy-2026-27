@@ -194,26 +194,26 @@ export class ProductCreate implements OnInit {
   private toRequest(): ProductCreateRequest {
     const value = this.form.getRawValue();
     const request: ProductCreateRequest = {
-      nombre: value.nombre.trim(),
-      categoriaIds: value.categoriaIds,
-      precio: value.precio ?? 0,
-      disponible: value.disponible ?? false,
+      name: value.nombre.trim(),
+      categoryIds: value.categoriaIds,
+      price: value.precio ?? 0,
+      available: value.disponible ?? false,
     };
 
     if (value.stock !== null) {
       request.stock = value.stock;
     }
     if (value.descripcion.trim()) {
-      request.descripcion = value.descripcion.trim();
+      request.description = value.descripcion.trim();
     }
     if (value.descuento !== null) {
-      request.descuento = value.descuento;
+      request.discount = value.descuento;
     }
     if (value.descuentoPremium !== null) {
-      request.descuentoPremium = value.descuentoPremium;
+      request.premiumDiscount = value.descuentoPremium;
     }
     if (value.imagen.trim()) {
-      request.imagen = value.imagen.trim();
+      request.imageUrl = value.imagen.trim();
     }
 
     return request;

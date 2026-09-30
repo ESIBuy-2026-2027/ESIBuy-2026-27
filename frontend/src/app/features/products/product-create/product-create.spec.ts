@@ -7,8 +7,8 @@ import { ProductCreate as ProductCreateComponent } from './product-create';
 
 describe('ProductCreate', () => {
   const categories: Category[] = [
-    { id: 'category-tech', nombre: 'Electrónica' },
-    { id: 'category-home', nombre: 'Hogar' },
+    { id: 'category-tech', name: 'Electrónica' },
+    { id: 'category-home', name: 'Hogar' },
   ];
   let fixture: ComponentFixture<ProductCreateComponent>;
   let router: Router;
@@ -45,7 +45,12 @@ describe('ProductCreate', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     expect(element.querySelector('h1')?.textContent).toContain('Añadir producto');
-    expect(element.querySelectorAll('select[formControlName="categoriaIds"] option').length).toBe(2);
+    const options = element.querySelectorAll<HTMLOptionElement>('select[formControlName="categoriaIds"] option');
+    expect(options.length).toBe(2);
+    expect(options[0].textContent).toBe('Electrónica');
+    fixture.componentInstance.form.controls.categoriaIds.setValue(['category-tech']);
+    fixture.detectChanges();
+    expect(options[0].selected).toBe(true);
     for (const field of [
       'nombre',
       'categoriaIds',
@@ -108,14 +113,14 @@ describe('ProductCreate', () => {
     await fixture.whenStable();
 
     expect(createProduct).toHaveBeenCalledWith({
-      nombre: 'Auriculares',
-      categoriaIds: ['category-tech', 'category-home'],
+      name: 'Auriculares',
+      categoryIds: ['category-tech', 'category-home'],
       stock: 7,
-      descripcion: 'Auriculares inalámbricos',
-      precio: 19.99,
-      descuentoPremium: 15,
-      imagen: 'https://example.com/auriculares.png',
-      disponible: true,
+      description: 'Auriculares inalámbricos',
+      price: 19.99,
+      premiumDiscount: 15,
+      imageUrl: 'https://example.com/auriculares.png',
+      available: true,
     } satisfies ProductCreateRequest);
     expect(navigateSpy).toHaveBeenCalledWith(['/seller/catalog'], {
       state: { productCreated: true },
@@ -199,10 +204,10 @@ describe('ProductCreate', () => {
     fixture.componentInstance.onSubmit();
 
     expect(createProduct).toHaveBeenCalledWith({
-      nombre: 'Producto nuevo',
-      categoriaIds: ['category-tech'],
-      precio: 5,
-      disponible: true,
+      name: 'Producto nuevo',
+      categoryIds: ['category-tech'],
+      price: 5,
+      available: true,
     } satisfies ProductCreateRequest);
   });
 
