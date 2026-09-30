@@ -5,7 +5,7 @@
     </header>
 
     <!-- Mensaje de Carga -->
-    @if (cargando) {
+    @if (cargando()) {
     <div class="loading-spinner">
         <div class="spinner"></div>
         <p>Cargando información de usuarios...</p>
@@ -13,14 +13,14 @@
     }
 
     <!-- Mensaje de Error -->
-    @if (error) {
+    @if (error()) {
     <div class="error-alert">
-        <strong>⚠️ Acceso Denegado:</strong> {{ error }}
+        <strong>⚠️ Acceso Denegado:</strong> {{ error() }}
     </div>
     }
 
     <!-- Tabla de Usuarios -->
-    @if (!cargando && !error) {
+    @if (!cargando() && !error()) {
     <div class="table-container">
         <table class="user-table">
             <thead>
@@ -34,7 +34,7 @@
                 </tr>
             </thead>
             <tbody>
-                @for (user of usuarios; track user.email) {
+                @for (user of usuarios(); track user.email) {
                 <tr>
                     <!-- Columna 1: Avatar + Nombre Completo -->
                     <td class="col-user">

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService, UserAdmin } from '../../../core/services/auth.service';
 
@@ -10,9 +10,9 @@ import { AuthService, UserAdmin } from '../../../core/services/auth.service';
   styleUrls: ['./admin-user-list.css']
 })
 export class AdminUserList implements OnInit {
-  usuarios: UserAdmin[] = [];
-  cargando = true;
-  error = '';
+  usuarios = signal<UserAdmin[]>([]);
+  cargando = signal(true);
+  error = signal('');
 
   constructor(private readonly authService: AuthService) {}
 
@@ -23,12 +23,12 @@ export class AdminUserList implements OnInit {
   cargarUsuarios(): void {
     this.authService.obtenerTodosLosUsuarios().subscribe({
       next: (data) => {
-        this.usuarios = data;
-        this.cargando = false;
+        this.usuarios.set(data);
+        this.cargando.set(false);
       },
       error: (err) => {
-        this.error = 'Error al cargar los usuarios. Verifica tus permisos.';
-        this.cargando = false;
+        this.error.set('Error al cargar los usuarios. Verifica tus permisos.');
+        this.cargando.set(false);
         console.error(err);
       }
     });
