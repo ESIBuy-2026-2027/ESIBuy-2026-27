@@ -118,7 +118,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const candidato = listaCandidatos.find(c => c.id === idSeleccionado);
     if (!candidato) return;
 
-    const todayISO = new Date().toISOString().split('T')[0];
+    const fechaBD = candidato.fechaIncorporacion || candidato.fechaRegistro;
+    let fechaFormateada = '';
+    if (fechaBD) {
+      try {
+        fechaFormateada = typeof fechaBD === 'string' && fechaBD.includes('T')
+          ? fechaBD.split('T')[0]
+          : new Date(fechaBD).toISOString().split('T')[0];
+      } catch {
+        fechaFormateada = String(fechaBD);
+      }
+    }
 
     // Rellenar valores
     inputIdUsuario.value = candidato.id;
@@ -126,9 +136,11 @@ document.addEventListener('DOMContentLoaded', () => {
     inputApellidos.value = candidato.apellidos || '';
     inputEmail.value = candidato.email || '';
     inputSede.value = candidato.sede || '';
-    inputFechaIncorporacion.value = todayISO;
+    inputFechaIncorporacion.value = fechaFormateada;
     if (fechaIndicador) {
-      fechaIndicador.textContent = `Fecha asignada automáticamente hoy: ${todayISO}`;
+      fechaIndicador.textContent = fechaFormateada
+        ? `Fecha de registro original en base de datos: ${fechaFormateada}`
+        : 'Fecha original tomada de la base de datos.';
     }
 
     // Avatar seleccionado

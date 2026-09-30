@@ -82,10 +82,10 @@ class AdminServiceTest {
         assertTrue(result.isActive());
         // Regla: Avatar por defecto si nulo
         assertEquals("avatar-admin-default", result.getProfileImage());
-        // Regla: Sede y fecha de incorporacion autogenerada
+        // Regla: Sede y fecha de incorporacion tomada del registro en BD (createdAt)
         assertNotNull(result.getAdminProfile());
         assertEquals("Ciudad Real", result.getAdminProfile().getHeadquarters());
-        assertNotNull(result.getAdminProfile().getHireDate());
+        assertEquals(java.time.LocalDateTime.ofInstant(existingUser.getCreatedAt(), java.time.ZoneOffset.UTC), result.getAdminProfile().getHireDate());
 
         verify(userRepository).save(existingUser);
     }

@@ -68,9 +68,9 @@ import { AuthService } from '../../../core/services/auth.service';
         </div>
 
         <div class="form-group">
-          <label>Fecha de incorporación * (Automática y no editable)</label>
+          <label>Fecha de incorporación * (Registro en base de datos, no editable)</label>
           <input type="text" formControlName="fechaIncorporacion" readonly class="input-locked" />
-          <small class="hint">Fecha asignada automáticamente hoy: {{ form.get('fechaIncorporacion')?.value }}</small>
+          <small class="hint">Fecha original de registro del usuario: {{ form.get('fechaIncorporacion')?.value || 'Seleccione un candidato para cargar su fecha' }}</small>
         </div>
 
         <div class="form-group">
@@ -147,13 +147,12 @@ export class AdminUserCreate implements OnInit {
     private router: Router,
     private authService: AuthService
   ) {
-    const todayISO = new Date().toISOString().split('T')[0];
     this.form = this.fb.group({
       nombre: ['', [Validators.required]],
       apellidos: ['', [Validators.required]],
       email: [{ value: '', disabled: false }, [Validators.required]],
       sede: [''],
-      fechaIncorporacion: [{ value: todayISO, disabled: false }]
+      fechaIncorporacion: [{ value: '', disabled: false }]
     });
   }
 
@@ -186,15 +185,26 @@ export class AdminUserCreate implements OnInit {
       return;
     }
 
-    const todayISO = new Date().toISOString().split('T')[0];
     this.candidatoSeleccionado = this.candidatos.find(c => c.id === id);
     if (this.candidatoSeleccionado) {
+      const fechaBD = this.candidatoSeleccionado.fechaIncorporacion || this.candidatoSeleccionado.fechaRegistro;
+      let fechaFormateada = '';
+      if (fechaBD) {
+        try {
+          fechaFormateada = typeof fechaBD === 'string' && fechaBD.includes('T')
+            ? fechaBD.split('T')[0]
+            : new Date(fechaBD).toISOString().split('T')[0];
+        } catch {
+          fechaFormateada = String(fechaBD);
+        }
+      }
+
       this.form.patchValue({
         nombre: this.candidatoSeleccionado.nombre || '',
         apellidos: this.candidatoSeleccionado.apellidos || '',
         email: this.candidatoSeleccionado.email || '',
         sede: this.candidatoSeleccionado.sede || '',
-        fechaIncorporacion: todayISO
+        fechaIncorporacion: fechaFormateada
       });
       this.selectedAvatarUrl = this.candidatoSeleccionado.imagenPerfil || this.avatars[0].url;
     }

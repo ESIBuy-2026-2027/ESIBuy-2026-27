@@ -1,5 +1,6 @@
 package es.uclm.esibuy.users.dto;
 
+import java.time.Instant;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import es.uclm.esibuy.users.model.User;
 
@@ -13,11 +14,16 @@ public class CandidatoDTO {
     private boolean activo;
     private String imagenPerfil;
     private String sede;
+    private Instant fechaRegistro;
 
     public CandidatoDTO() {
     }
 
     public CandidatoDTO(String id, String nombre, String apellidos, String email, String rol, boolean activo, String imagenPerfil, String sede) {
+        this(id, nombre, apellidos, email, rol, activo, imagenPerfil, sede, null);
+    }
+
+    public CandidatoDTO(String id, String nombre, String apellidos, String email, String rol, boolean activo, String imagenPerfil, String sede, Instant fechaRegistro) {
         this.id = id;
         this.nombre = nombre;
         this.apellidos = apellidos;
@@ -26,6 +32,7 @@ public class CandidatoDTO {
         this.activo = activo;
         this.imagenPerfil = imagenPerfil;
         this.sede = sede;
+        this.fechaRegistro = fechaRegistro;
     }
 
     public static CandidatoDTO fromUser(User user) {
@@ -41,7 +48,8 @@ public class CandidatoDTO {
                 user.getRole() != null ? user.getRole().name() : null,
                 user.isActive(),
                 user.getProfileImage(),
-                sede
+                sede,
+                user.getCreatedAt()
         );
     }
 
@@ -113,5 +121,19 @@ public class CandidatoDTO {
 
     public void setSede(String sede) {
         this.sede = sede;
+    }
+
+    @JsonProperty("fechaRegistro")
+    public Instant getFechaRegistro() {
+        return fechaRegistro;
+    }
+
+    public void setFechaRegistro(Instant fechaRegistro) {
+        this.fechaRegistro = fechaRegistro;
+    }
+
+    @JsonProperty("fechaIncorporacion")
+    public Instant getFechaIncorporacion() {
+        return fechaRegistro;
     }
 }

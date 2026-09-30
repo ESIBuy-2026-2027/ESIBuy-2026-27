@@ -1,6 +1,7 @@
 package es.uclm.esibuy.users.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import es.uclm.esibuy.common.exception.UserNotFoundException;
@@ -46,7 +47,11 @@ public class AdminService {
                 : request.getImagenPerfil().trim();
         user.setProfileImage(profileImage);
 
-        AdminProfile adminProfile = new AdminProfile(blankToNull(request.getSede()), LocalDateTime.now());
+        LocalDateTime hireDate = user.getCreatedAt() != null
+                ? LocalDateTime.ofInstant(user.getCreatedAt(), ZoneOffset.UTC)
+                : LocalDateTime.now();
+
+        AdminProfile adminProfile = new AdminProfile(blankToNull(request.getSede()), hireDate);
         user.setAdminProfile(adminProfile);
 
         user.setRole(UserRole.ADMIN);
