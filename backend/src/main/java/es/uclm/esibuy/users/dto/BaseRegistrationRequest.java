@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 public abstract class BaseRegistrationRequest {
 
     @NotBlank(message = "El nombre es obligatorio")
-    @Size(min = 2, max = 50, message = "El nombre debe tener entre 2 y 50 caracteres")
+    @Size(min = 2, max = 25, message = "El nombre debe tener entre 2 y 25 caracteres")
     private String firstName;
 
     @NotBlank(message = "Los apellidos son obligatorios")
@@ -17,7 +17,7 @@ public abstract class BaseRegistrationRequest {
     private String lastName;
 
     @NotBlank(message = "El email es obligatorio")
-    @Email(message = "El formato de email no es valido")
+    @Email(message = "El formato de email no es válido")
     @Size(max = 120, message = "El email no puede superar los 120 caracteres")
     private String email;
 
@@ -26,24 +26,21 @@ public abstract class BaseRegistrationRequest {
     private String nationalId;
 
     @Size(max = 20)
-    @Pattern(regexp = "^$|^[0-9]{9}$", message = "El telefono debe contener exactamente 9 digitos numericos")
+    @Pattern(regexp = "^$|^\\d{9}$", message = "El teléfono debe contener exactamente 9 dígitos numéricos")
     private String phone;
 
     @Size(max = 500, message = "La imagen de perfil no puede superar los 500 caracteres")
     private String profileImage;
 
-    @NotBlank(message = "La contrasena es obligatoria")
-    @Size(min = 12, max = 128, message = "La contrasena debe tener entre 12 y 128 caracteres")
-    @Pattern(
-        regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9])\\S+$",
-        message = "La contrasena debe tener mayuscula, minuscula, numero y caracter especial"
-    )
+    @NotBlank(message = "La contraseña es obligatoria")
+    @Size(min = 12, max = 128, message = "La contraseña debe tener entre 12 y 128 caracteres")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9])\\S+$", message = "La contraseña debe tener mayúscula, minúscula, número y caracter especial")
     private String password;
 
-    @NotBlank(message = "Debe repetir la contrasena")
+    @NotBlank(message = "Debe repetir la contraseña")
     private String repeatedPassword;
 
-    @AssertTrue(message = "Las contrasenas no coinciden")
+    @AssertTrue(message = "Las contraseñas no coinciden")
     public boolean isPasswordConfirmed() {
         return password != null && password.equals(repeatedPassword);
     }

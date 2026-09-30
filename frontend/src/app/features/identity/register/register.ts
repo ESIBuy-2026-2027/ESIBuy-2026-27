@@ -19,7 +19,14 @@ export function isAdultValidator(control: AbstractControl): ValidationErrors | n
 export function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value;
   const repeatedPassword = group.get('repeatedPassword')?.value;
-  return (password && repeatedPassword && password === repeatedPassword) ? null : { passwordMismatch: true };
+
+  if (!password || !repeatedPassword) {
+    return null;
+  }
+
+  return password === repeatedPassword
+    ? null
+    : { passwordMismatch: true };
 }
 
 @Component({
@@ -34,11 +41,25 @@ export class Register {
   form: FormGroup;
   serverError: string | null = null;
   loading = false;
-  
-  defaultAvatars = {
-    cliente: 'https://api.dicebear.com/7.x/bottts/svg?seed=cliente_desconocido',
-    vendedor: 'https://api.dicebear.com/7.x/bottts/svg?seed=vendedor_desconocido'
-  };
+  showPassword = false;
+
+  clientAvatars = [
+    'assets/images/avatars/av_client_1.jpeg',
+    'assets/images/avatars/av_client_2.jpeg',
+    'assets/images/avatars/av_client_3.jpeg',
+    'assets/images/avatars/av_client_4.jpeg',
+    'assets/images/avatars/av_client_5.jpeg'
+  ];
+
+  sellerAvatars = [
+    'assets/images/avatars/av_seller_1.jpeg',
+    'assets/images/avatars/av_seller_2.jpeg',
+    'assets/images/avatars/av_seller_3.jpeg',
+    'assets/images/avatars/av_seller_4.jpeg',
+    'assets/images/avatars/av_seller_5.jpeg'
+  ];
+
+  selectedAvatar: string = this.clientAvatars[0];
 
   categories = ['Electrónica', 'Hogar', 'Moda', 'Deportes', 'Libros', 'Otros'];
 
@@ -53,16 +74,25 @@ export class Register {
   setRole(role: 'cliente' | 'vendedor') {
     this.userRole = role;
     this.serverError = null;
+    this.selectedAvatar = role === 'cliente' ? this.clientAvatars[0] : this.sellerAvatars[0];
     this.form = this.createForm();
   }
 
+  selectAvatar(avatarPath: string) {
+    this.selectedAvatar = avatarPath;
+  }
+
+  get currentAvatarList(): string[] {
+    return this.userRole === 'cliente' ? this.clientAvatars : this.sellerAvatars;
+  }
+
   createForm(): FormGroup {
-    const phonePattern = /^[0-9]{9}$/;
+    const phonePattern = /^\d{9}$/;
     const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S+$/;
 
     if (this.userRole === 'cliente') {
       return this.fb.group({
-        firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+        firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25)]],
         lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
         birthDate: ['', [Validators.required, isAdultValidator]],
         nationalId: ['', [Validators.required, Validators.maxLength(20)]],
@@ -74,7 +104,7 @@ export class Register {
       }, { validators: passwordMatchValidator });
     } else {
       return this.fb.group({
-        firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+        firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25)]],
         lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
         defaultCategory: [this.categories[0], [Validators.required]],
         businessName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
@@ -85,10 +115,6 @@ export class Register {
         repeatedPassword: ['', [Validators.required]]
       }, { validators: passwordMatchValidator });
     }
-  }
-
-  get profileImage(): string {
-    return this.defaultAvatars[this.userRole];
   }
 
   onSubmit() {
@@ -110,7 +136,7 @@ export class Register {
         email: this.form.value.email,
         phone: this.form.value.phone || null,
         customerType: this.form.value.customerType,
-        profileImage: this.profileImage,
+        profileImage: this.selectedAvatar,
         password: this.form.value.password,
         repeatedPassword: this.form.value.repeatedPassword
       };
@@ -135,7 +161,7 @@ export class Register {
         nationalId: this.form.value.nationalId,
         email: this.form.value.email,
         phone: this.form.value.phone || null,
-        profileImage: this.profileImage,
+        profileImage: this.selectedAvatar,
         password: this.form.value.password,
         repeatedPassword: this.form.value.repeatedPassword
       };

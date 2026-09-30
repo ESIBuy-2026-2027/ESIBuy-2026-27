@@ -5,7 +5,7 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   font-family: Arial, sans-serif;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
@@ -56,16 +56,78 @@ h2 {
   margin-bottom: 0.3rem;
 }
 
-.form-group input, .form-group select {
+.form-group input,
+.form-group select {
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
 }
 
-.radio-options {
+.password-wrapper {
+  position: relative;
   display: flex;
-  gap: 1.5rem;
+  align-items: center;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.password-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #666;
+}
+
+.password-toggle:hover {
+  color: #333;
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.avatar-selector-grid {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.avatar-item {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.avatar-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-item:hover {
+  transform: scale(1.08);
+}
+
+.avatar-item.selected {
+  border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
 }
 
 .error {
@@ -89,4 +151,9 @@ h2 {
 
 .btn-submit:hover {
   background: #218838;
+}
+
+.btn-submit:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
 }

@@ -9,8 +9,8 @@ public class SellerRegistrationRequest extends BaseRegistrationRequest {
     @Size(min = 2, max = 100, message = "El nombre comercial debe tener entre 2 y 100 caracteres")
     private String businessName;
 
-    @NotBlank(message = "La categoria por defecto es obligatoria")
-    @Size(min = 2, max = 50, message = "La categoria por defecto debe tener entre 2 y 50 caracteres")
+    @NotBlank(message = "La categoría por defecto es obligatoria")
+    @Size(min = 2, max = 50, message = "La categoría por defecto debe tener entre 2 y 50 caracteres")
     private String defaultCategory;
 
     public String getBusinessName() {
