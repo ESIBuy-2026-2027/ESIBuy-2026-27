@@ -40,4 +40,14 @@ public class ApiExceptionHandler {
     public ResponseEntity<Map<String, String>> handleDuplicateUser(DuplicateUserException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MESSAGE, exception.getMessage()));
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleUserNotFound(UserNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(MESSAGE, exception.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalState(IllegalStateException exception) {
+        return ResponseEntity.badRequest().body(Map.of(MESSAGE, exception.getMessage()));
+    }
 }
