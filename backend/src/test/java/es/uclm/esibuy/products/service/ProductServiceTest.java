@@ -8,6 +8,7 @@ import es.uclm.esibuy.categories.model.Category;
 import es.uclm.esibuy.categories.repository.CategoryRepository;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
+import es.uclm.esibuy.products.dto.ProductSummaryResponse;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
 import es.uclm.esibuy.users.model.User;
@@ -110,6 +111,36 @@ class ProductServiceTest {
                 () -> productService.createProduct(request, "client@example.com"));
         verify(categoryRepository, never()).findAllById(any());
         verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    void shouldReturnSummaryForAuthenticatedSeller() {
+        User seller = org.mockito.Mockito.mock(User.class);
+        when(seller.getId()).thenReturn("seller-id");
+        when(seller.getRole()).thenReturn(UserRole.SELLER);
+        when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(Optional.of(seller));
+        when(productRepository.countByVendedorId("seller-id")).thenReturn(12L);
+        when(productRepository.countByVendedorIdAndStock("seller-id", 0)).thenReturn(2L);
+        when(productRepository.countByVendedorIdAndStockGreaterThanAndStockLessThanEqual(
+                "seller-id", 0, 5)).thenReturn(3L);
+
+        ProductSummaryResponse result = productService.getSummary("seller@example.com");
+
+        assertEquals(12L, result.totalProductos());
+        assertEquals(2L, result.productosSinStock());
+        assertEquals(3L, result.productosStockBajo());
+        assertEquals(5, result.umbralStockBajo());
+    }
+
+    @Test
+    void shouldRejectNonSellerSummaryRequest() {
+        User client = org.mockito.Mockito.mock(User.class);
+        when(client.getRole()).thenReturn(UserRole.CLIENT);
+        when(userRepository.findByEmailIgnoreCase("client@example.com")).thenReturn(Optional.of(client));
+
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                () -> productService.getSummary("client@example.com"));
+        verify(productRepository, never()).countByVendedorId(any());
     }
 
     private ProductCreateRequest validRequest() {

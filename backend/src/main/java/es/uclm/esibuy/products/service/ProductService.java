@@ -8,6 +8,7 @@ import es.uclm.esibuy.categories.model.Category;
 import es.uclm.esibuy.categories.repository.CategoryRepository;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
+import es.uclm.esibuy.products.dto.ProductSummaryResponse;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
 import es.uclm.esibuy.users.model.User;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ProductService {
+
+    private static final int LOW_STOCK_THRESHOLD = 5;
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
@@ -33,11 +36,7 @@ public class ProductService {
     }
 
     public Product createProduct(ProductCreateRequest request, String authenticatedEmail) {
-        User seller = userRepository.findByEmailIgnoreCase(authenticatedEmail)
-                .orElseThrow(() -> new AccessDeniedException("No se encontró el vendedor autenticado"));
-        if (seller.getRole() != UserRole.SELLER) {
-            throw new AccessDeniedException("Solo un vendedor puede crear productos");
-        }
+        User seller = findSeller(authenticatedEmail);
 
         List<String> categoryIds = List.copyOf(request.getCategoriaIds());
         Set<String> existingCategoryIds = categoryRepository.findAllById(categoryIds).stream()
@@ -63,5 +62,24 @@ public class ProductService {
                 Boolean.TRUE.equals(request.getDisponible()),
                 seller.getId());
         return productRepository.save(product);
+    }
+
+    public ProductSummaryResponse getSummary(String authenticatedEmail) {
+        String sellerId = findSeller(authenticatedEmail).getId();
+        return new ProductSummaryResponse(
+                productRepository.countByVendedorId(sellerId),
+                productRepository.countByVendedorIdAndStock(sellerId, 0),
+                productRepository.countByVendedorIdAndStockGreaterThanAndStockLessThanEqual(
+                        sellerId, 0, LOW_STOCK_THRESHOLD),
+                LOW_STOCK_THRESHOLD);
+    }
+
+    private User findSeller(String authenticatedEmail) {
+        User seller = userRepository.findByEmailIgnoreCase(authenticatedEmail)
+                .orElseThrow(() -> new AccessDeniedException("No se encontró el vendedor autenticado"));
+        if (seller.getRole() != UserRole.SELLER) {
+            throw new AccessDeniedException("Solo un vendedor puede acceder a este recurso");
+        }
+        return seller;
     }
 }

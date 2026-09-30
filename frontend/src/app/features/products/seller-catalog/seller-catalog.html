@@ -42,13 +42,51 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">VISTA GENERAL</p>
-            <h2>Resumen</h2>
+            <h2>Tu catálogo, de un vistazo</h2>
           </div>
         </div>
-        <div class="summary-placeholder">
-          <span class="summary-placeholder-icon" aria-hidden="true">✳</span>
-          <p>El resumen de tu catálogo aparecerá aquí.</p>
-        </div>
+        @if (loading()) {
+          <p class="metrics-message" role="status">Cargando las métricas del catálogo…</p>
+        } @else if (loadError()) {
+          <div class="metrics-error" role="alert">
+            <span>No se pudieron cargar las métricas. Inténtalo de nuevo.</span>
+            <button type="button" aria-label="Reintentar carga de métricas" (click)="loadSummary()">Reintentar</button>
+          </div>
+        } @else if (summary(); as metrics) {
+          <div class="metric-grid" aria-live="polite">
+            <article class="metric-card">
+              <span class="metric-icon products-icon" aria-hidden="true">▦</span>
+              <div>
+                <p class="metric-label">Total de productos</p>
+                <p class="metric-value">{{ metrics.totalProductos }}</p>
+                <p class="metric-detail">Productos en tu catálogo</p>
+              </div>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon stock-icon" aria-hidden="true">!</span>
+              <div>
+                <p class="metric-label">Avisos de stock</p>
+                <p class="metric-value">{{ metrics.productosSinStock + metrics.productosStockBajo }} avisos</p>
+                <p class="metric-detail">
+                  {{ metrics.productosSinStock }} sin stock · {{ metrics.productosStockBajo }}
+                  entre 1 y {{ metrics.umbralStockBajo }} unidades
+                </p>
+              </div>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon status-icon" aria-hidden="true">✓</span>
+              <div>
+                <p class="metric-label">Estado del catálogo</p>
+                <p class="metric-value">
+                  {{ metrics.totalProductos > 0 ? 'Catálogo activo' : 'Catálogo vacío' }}
+                </p>
+                <p class="metric-detail">
+                  {{ metrics.totalProductos > 0 ? 'Tu oferta está en marcha' : 'Añade tu primer producto' }}
+                </p>
+              </div>
+            </article>
+          </div>
+        }
       </section>
 
       <section class="products-region" aria-label="Productos del catálogo">
@@ -59,9 +97,8 @@
           </div>
         </div>
         <div class="empty-state">
-          <span class="empty-state-icon" aria-hidden="true">▤</span>
-          <h3>Tu catálogo está listo para crecer</h3>
-          <p>Añade tu primer producto para empezar a ofrecerlo en ESIBuy.</p>
+          <h3>La gestión de tus productos</h3>
+          <p>El listado de productos aparecerá en esta sección.</p>
           <a class="secondary-action" routerLink="/products/new">Crear mi primer producto</a>
         </div>
       </section>

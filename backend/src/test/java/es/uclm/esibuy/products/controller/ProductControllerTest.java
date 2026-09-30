@@ -7,6 +7,7 @@ import es.uclm.esibuy.common.exception.ApiExceptionHandler;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
 import es.uclm.esibuy.products.model.Product;
+import es.uclm.esibuy.products.dto.ProductSummaryResponse;
 import es.uclm.esibuy.products.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -85,6 +87,20 @@ class ProductControllerTest {
                         .content(validRequest()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("No existen las categorías indicadas: category-id"));
+    }
+
+    @Test
+    @WithMockUser(username = "seller@example.com")
+    void shouldReturnSellerSummary() throws Exception {
+        when(productService.getSummary("seller@example.com"))
+                .thenReturn(new ProductSummaryResponse(12, 2, 3, 5));
+
+        mockMvc.perform(get("/api/products/resumen"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalProductos").value(12))
+                .andExpect(jsonPath("$.productosSinStock").value(2))
+                .andExpect(jsonPath("$.productosStockBajo").value(3))
+                .andExpect(jsonPath("$.umbralStockBajo").value(5));
     }
 
     private String validRequest() {
