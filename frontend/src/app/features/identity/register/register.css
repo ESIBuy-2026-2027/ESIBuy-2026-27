@@ -5,7 +5,7 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   font-family: Arial, sans-serif;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
@@ -56,7 +56,8 @@ h2 {
   margin-bottom: 0.3rem;
 }
 
-.form-group input, .form-group select {
+.form-group input,
+.form-group select {
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -75,12 +76,25 @@ h2 {
 }
 
 .password-toggle {
-  position: absolute;
-  right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  background: transparent;
   cursor: pointer;
-  user-select: none;
-  font-size: 1.2rem;
   color: #666;
+}
+
+.password-toggle:hover {
+  color: #333;
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
 }
 
 .avatar-selector-grid {
