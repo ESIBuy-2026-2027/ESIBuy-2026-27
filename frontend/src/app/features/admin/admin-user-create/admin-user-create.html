@@ -61,7 +61,7 @@
                 </label>
 
 
-                <select id="candidatoSelect" class="form-select" (change)="onCandidatoChange($event)">
+                <select id="selectorCandidatos" class="form-select" (change)="onCandidatoChange($event)">
                     <option value="">-- Seleccionar usuario candidato --</option>
 
                     <option *ngFor="let c of candidatos" [value]="c.id">
@@ -69,6 +69,11 @@
                     </option>
                 </select>
 
+
+                <!-- Cargando candidatos -->
+                <div *ngIf="loadingCandidatos" class="alert-box alert-info">
+                    Cargando usuarios candidatos elegibles...
+                </div>
 
                 <!-- Sin candidatos -->
                 <div *ngIf="candidatos.length === 0 && !loadingCandidatos" class="alert-box alert-info">
