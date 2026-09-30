@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { Category, CreatedProduct, ProductCreateRequest, ProductsService } from '../products.service';
 import { ProductCreate as ProductCreateComponent } from './product-create';
 
@@ -91,6 +91,7 @@ describe('ProductCreate', () => {
   });
 
   it('should submit category IDs and optional product data to the API', async () => {
+    const navigateSpy = vi.spyOn(router, 'navigate');
     fixture.componentInstance.form.setValue({
       nombre: '  Auriculares  ',
       categoriaIds: ['category-tech', 'category-home'],
@@ -116,7 +117,70 @@ describe('ProductCreate', () => {
       imagen: 'https://example.com/auriculares.png',
       disponible: true,
     } satisfies ProductCreateRequest);
+    expect(navigateSpy).toHaveBeenCalledWith(['/seller/catalog'], {
+      state: { productCreated: true },
+    });
     expect(router.url).toBe('/seller/catalog');
+  });
+
+  it('should show all backend validation errors under their fields', () => {
+    createProduct.mockReturnValue(throwError(() => new HttpErrorResponse({
+      status: 400,
+      error: {
+        message: 'La solicitud contiene errores',
+        errors: {
+          nombre: 'El nombre no puede estar vacío.',
+          precio: 'El precio debe ser mayor que 0.',
+        },
+      },
+    })));
+    fixture.componentInstance.form.setValue({
+      nombre: 'Producto',
+      categoriaIds: ['category-tech'],
+      stock: null,
+      descripcion: '',
+      precio: 5,
+      descuento: null,
+      descuentoPremium: null,
+      imagen: '',
+      disponible: true,
+    });
+
+    fixture.componentInstance.onSubmit();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.textContent).toContain('El nombre no puede estar vacío.');
+    expect(element.textContent).toContain('El precio debe ser mayor que 0.');
+    expect(fixture.componentInstance.serverFieldErrors).toEqual({
+      nombre: 'El nombre no puede estar vacío.',
+      precio: 'El precio debe ser mayor que 0.',
+    });
+  });
+
+  it('should show the backend message when a selected category does not exist', () => {
+    const message = 'No existen las categorías indicadas: category-unknown';
+    createProduct.mockReturnValue(throwError(() => new HttpErrorResponse({
+      status: 400,
+      error: { message },
+    })));
+    fixture.componentInstance.form.setValue({
+      nombre: 'Producto',
+      categoriaIds: ['category-unknown'],
+      stock: null,
+      descripcion: '',
+      precio: 5,
+      descuento: null,
+      descuentoPremium: null,
+      imagen: '',
+      disponible: true,
+    });
+
+    fixture.componentInstance.onSubmit();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.submitError).toBe(message);
+    expect(fixture.componentInstance.serverFieldErrors.categoriaIds).toBe(message);
   });
 
   it('should omit blank optional fields when submitting', () => {

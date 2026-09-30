@@ -112,6 +112,10 @@
   padding: 42px 44px 64px;
 }
 
+.success-message {
+  color: #168c75;
+}
+
 .topbar-link {
   color: #476476;
   font-size: 12px;

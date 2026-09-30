@@ -28,6 +28,9 @@
           } @else if (form.controls.nombre.touched && form.controls.nombre.hasError('maxlength')) {
             <span class="field-error">El nombre no puede superar los 150 caracteres.</span>
           }
+          @if (serverFieldErrors.nombre) {
+            <span class="field-error" role="alert">{{ serverFieldErrors.nombre }}</span>
+          }
         </div>
 
         <div class="form-field full-width">
@@ -46,6 +49,9 @@
           } @else if (form.controls.categoriaIds.touched && form.controls.categoriaIds.hasError('required')) {
             <span class="field-error">Selecciona al menos una categoría.</span>
           }
+          @if (serverFieldErrors.categoriaIds) {
+            <span class="field-error" role="alert">{{ serverFieldErrors.categoriaIds }}</span>
+          }
         </div>
 
         <div class="form-field">
@@ -60,6 +66,9 @@
           } @else if (form.controls.precio.touched && form.controls.precio.hasError('min')) {
             <span class="field-error">El precio debe ser mayor que 0.</span>
           }
+          @if (serverFieldErrors.precio) {
+            <span class="field-error" role="alert">{{ serverFieldErrors.precio }}</span>
+          }
         </div>
 
         <div class="form-field">
@@ -71,6 +80,9 @@
           } @else if (form.controls.stock.touched && form.controls.stock.hasError('pattern')) {
             <span class="field-error">El stock debe ser un número entero.</span>
           }
+          @if (serverFieldErrors.stock) {
+            <span class="field-error" role="alert">{{ serverFieldErrors.stock }}</span>
+          }
         </div>
 
         <div class="form-field full-width">
@@ -80,6 +92,9 @@
           <span class="field-hint">{{ form.controls.descripcion.value.length }} / 2000 caracteres</span>
           @if (form.controls.descripcion.touched && form.controls.descripcion.hasError('maxlength')) {
             <span class="field-error">La descripción no puede superar los 2000 caracteres.</span>
+          }
+          @if (serverFieldErrors.descripcion) {
+            <span class="field-error" role="alert">{{ serverFieldErrors.descripcion }}</span>
           }
         </div>
       </div>
@@ -105,6 +120,9 @@
           @if (form.controls.descuento.touched && (form.controls.descuento.hasError('min') || form.controls.descuento.hasError('max'))) {
             <span class="field-error">El descuento debe estar entre 0 y 100 %.</span>
           }
+          @if (serverFieldErrors.descuento) {
+            <span class="field-error" role="alert">{{ serverFieldErrors.descuento }}</span>
+          }
         </div>
 
         <div class="form-field">
@@ -116,6 +134,9 @@
           </div>
           @if (form.controls.descuentoPremium.touched && (form.controls.descuentoPremium.hasError('min') || form.controls.descuentoPremium.hasError('max'))) {
             <span class="field-error">El descuento premium debe estar entre 0 y 100 %.</span>
+          }
+          @if (serverFieldErrors.descuentoPremium) {
+            <span class="field-error" role="alert">{{ serverFieldErrors.descuentoPremium }}</span>
           }
         </div>
       </div>
@@ -141,6 +162,9 @@
           } @else if (form.controls.imagen.touched && form.controls.imagen.hasError('maxlength')) {
             <span class="field-error">La URL no puede superar los 2000 caracteres.</span>
           }
+          @if (serverFieldErrors.imagen) {
+            <span class="field-error" role="alert">{{ serverFieldErrors.imagen }}</span>
+          }
         </div>
 
         <label class="visibility-toggle" for="disponible">
@@ -148,6 +172,9 @@
           <span>
             <strong>Producto visible en la tienda</strong>
             <small>Los clientes podrán encontrar este producto en ESIBuy.</small>
+            @if (serverFieldErrors.disponible) {
+              <small class="field-error" role="alert">{{ serverFieldErrors.disponible }}</small>
+            }
           </span>
         </label>
       </div>

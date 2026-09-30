@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ProductSummary, SellerCatalogService } from './seller-catalog.service';
 
 @Component({
@@ -11,10 +11,12 @@ import { ProductSummary, SellerCatalogService } from './seller-catalog.service';
 })
 export class SellerCatalog implements OnInit {
   private readonly catalogService = inject(SellerCatalogService);
+  private readonly router = inject(Router);
 
   summary = signal<ProductSummary | null>(null);
   loading = signal(true);
   loadError = signal(false);
+  productCreated = signal(this.router.currentNavigation()?.extras.state?.['productCreated'] === true);
 
   ngOnInit(): void {
     this.loadSummary();
