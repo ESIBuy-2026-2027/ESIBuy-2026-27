@@ -1,0 +1,249 @@
+:host {
+    display: block;
+    min-height: 100%;
+}
+
+
+/* ==========================================================================
+   CONTENEDOR PRINCIPAL
+   ========================================================================== */
+
+.home-container {
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+
+    color: #1e293b;
+    background-color: #f8fafc;
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================================
+   TARJETA PRINCIPAL
+   ========================================================================== */
+
+.home-card {
+    width: 100%;
+    max-width: 700px;
+
+    padding: 3rem 2.5rem;
+
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+    text-align: center;
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================================
+   MARCA
+   ========================================================================== */
+
+.brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+
+    margin-bottom: 2.5rem;
+}
+
+.brand-name {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #2563eb;
+    letter-spacing: -0.5px;
+}
+
+.brand-badge {
+    display: inline-block;
+
+    padding: 0.3rem 0.75rem;
+
+    background-color: #eff6ff;
+    color: #2563eb;
+
+    border-radius: 9999px;
+
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+
+/* ==========================================================================
+   BIENVENIDA
+   ========================================================================== */
+
+.welcome-section {
+    margin-bottom: 2.5rem;
+}
+
+.welcome-section h1 {
+    margin: 0;
+
+    font-size: 2rem;
+    font-weight: 700;
+
+    color: #0f172a;
+}
+
+.welcome-text {
+    max-width: 520px;
+
+    margin: 0.8rem auto 0;
+
+    color: #64748b;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+
+/* ==========================================================================
+   BOTONES
+   ========================================================================== */
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+
+    width: 100%;
+    max-width: 420px;
+
+    margin: 0 auto;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    min-height: 46px;
+
+    padding: 0.75rem 1.25rem;
+
+    border-radius: 6px;
+
+    font-size: 0.95rem;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    box-sizing: border-box;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+/* BOTÓN PRINCIPAL */
+
+.btn-primary {
+    background-color: #2563eb;
+    color: white;
+
+    border: 1px solid #2563eb;
+
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+    border-color: #1d4ed8;
+
+    transform: translateY(-1px);
+
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.25);
+}
+
+
+/* BOTÓN SECUNDARIO */
+
+.btn-secondary {
+    background-color: white;
+    color: #2563eb;
+
+    border: 1px solid #2563eb;
+}
+
+.btn-secondary:hover {
+    background-color: #eff6ff;
+
+    transform: translateY(-1px);
+}
+
+
+/* BOTÓN TERCIARIO */
+
+.btn-tertiary {
+    background-color: #f8fafc;
+    color: #475569;
+
+    border: 1px solid #cbd5e1;
+}
+
+.btn-tertiary:hover {
+    background-color: #f1f5f9;
+    color: #1e293b;
+
+    transform: translateY(-1px);
+}
+
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 640px) {
+
+    .home-container {
+        padding: 1rem 0.75rem;
+    }
+
+    .home-card {
+        padding: 2rem 1.25rem;
+        border-radius: 12px;
+    }
+
+    .brand {
+        margin-bottom: 2rem;
+    }
+
+    .brand-name {
+        font-size: 1.7rem;
+    }
+
+    .welcome-section h1 {
+        font-size: 1.6rem;
+    }
+
+    .welcome-text {
+        font-size: 0.9rem;
+    }
+
+    .actions {
+        max-width: none;
+    }
+}
