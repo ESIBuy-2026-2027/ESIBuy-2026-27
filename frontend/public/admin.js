@@ -27,13 +27,41 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputEmail = document.getElementById('email');
   const inputSede = document.getElementById('sede');
   const inputFechaIncorporacion = document.getElementById('fechaIncorporacion');
-  const inputImagenFile = document.getElementById('imagenPerfilFile');
-  const imgAvatarPreview = document.getElementById('avatarPreview');
+  const fechaIndicador = document.getElementById('fechaIndicador');
+  const avatarGrid = document.getElementById('avatarGrid');
+
+  // Lista de Avatares Oficiales de Administrador (Dicebear Bottts)
+  const AVATARES = [
+    { id: 'admin1', label: 'Admin Clásico', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_default' },
+    { id: 'admin2', label: 'Admin Guardián', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_shield' },
+    { id: 'admin3', label: 'Admin Operaciones', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_gear' },
+    { id: 'admin4', label: 'Admin Seguridad', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_security' },
+    { id: 'admin5', label: 'Admin Estrella', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_star' }
+  ];
 
   // Estado local
   let listaCandidatos = [];
-  let avatarBase64 = null;
-  const AVATAR_DEFAULT = 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_default';
+  let avatarSeleccionadoUrl = AVATARES[0].url;
+
+  function renderizarAvatares() {
+    if (!avatarGrid) return;
+    avatarGrid.innerHTML = '';
+    AVATARES.forEach(av => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `avatar-item ${avatarSeleccionadoUrl === av.url ? 'selected' : ''}`;
+      btn.title = av.label;
+      btn.innerHTML = `
+        <img src="${av.url}" alt="${av.label}">
+        ${avatarSeleccionadoUrl === av.url ? '<span class="avatar-check">✓</span>' : ''}
+      `;
+      btn.addEventListener('click', () => {
+        avatarSeleccionadoUrl = av.url;
+        renderizarAvatares();
+      });
+      avatarGrid.appendChild(btn);
+    });
+  }
 
   // 1. Cargar lista de candidatos elegibles (GET /api/admin/candidatos)
   async function cargarCandidatos() {
@@ -83,12 +111,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!idSeleccionado) {
       seccionFormulario.classList.add('d-none');
       formPromocion.reset();
-      avatarBase64 = null;
+      avatarSeleccionadoUrl = AVATARES[0].url;
       return;
     }
 
     const candidato = listaCandidatos.find(c => c.id === idSeleccionado);
     if (!candidato) return;
+
+    const todayISO = new Date().toISOString().split('T')[0];
 
     // Rellenar valores
     inputIdUsuario.value = candidato.id;
@@ -96,37 +126,18 @@ document.addEventListener('DOMContentLoaded', () => {
     inputApellidos.value = candidato.apellidos || '';
     inputEmail.value = candidato.email || '';
     inputSede.value = candidato.sede || '';
-    inputFechaIncorporacion.value = 'Se generará automáticamente al guardar';
+    inputFechaIncorporacion.value = todayISO;
+    if (fechaIndicador) {
+      fechaIndicador.textContent = `Fecha asignada automáticamente hoy: ${todayISO}`;
+    }
 
-    // Imagen de perfil / Avatar
-    avatarBase64 = candidato.imagenPerfil && candidato.imagenPerfil.startsWith('data:')
-      ? candidato.imagenPerfil
-      : null;
-    imgAvatarPreview.src = candidato.imagenPerfil && candidato.imagenPerfil.startsWith('http')
-      ? candidato.imagenPerfil
-      : AVATAR_DEFAULT;
+    // Avatar seleccionado
+    avatarSeleccionadoUrl = candidato.imagenPerfil || AVATARES[0].url;
+    renderizarAvatares();
 
     // Mostrar sección con animación
     seccionFormulario.classList.remove('d-none');
     inputNombre.focus();
-  });
-
-  // Previsualización y lectura de imagen de perfil
-  inputImagenFile.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        mostrarErrores({ errors: { imagenPerfil: 'La imagen no puede superar los 2MB de tamaño.' } });
-        inputImagenFile.value = '';
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = () => {
-        avatarBase64 = reader.result;
-        imgAvatarPreview.src = avatarBase64;
-      };
-      reader.readAsDataURL(file);
-    }
   });
 
   // 3. Capturar submit y enviar PUT /api/admin/promover/{idUsuario}
@@ -146,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
       apellidos: inputApellidos.value.trim(),
       email: inputEmail.value.trim(), // Se envía pero el backend lo protege
       sede: inputSede.value.trim() || null,
-      imagenPerfil: avatarBase64 || null
+      imagenPerfil: avatarSeleccionadoUrl
     };
 
     setLoading(true);
@@ -175,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Ocultar formulario y recargar candidatos para actualizar el selector
       seccionFormulario.classList.add('d-none');
       formPromocion.reset();
-      avatarBase64 = null;
+      avatarSeleccionadoUrl = AVATARES[0].url;
       await cargarCandidatos();
 
     } catch (err) {
@@ -191,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selectorCandidatos.value = '';
     seccionFormulario.classList.add('d-none');
     formPromocion.reset();
-    avatarBase64 = null;
+    avatarSeleccionadoUrl = AVATARES[0].url;
     ocultarAlertas();
   });
 

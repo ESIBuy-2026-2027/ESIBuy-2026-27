@@ -70,21 +70,25 @@ import { AuthService } from '../../../core/services/auth.service';
         <div class="form-group">
           <label>Fecha de incorporación * (Automática y no editable)</label>
           <input type="text" formControlName="fechaIncorporacion" readonly class="input-locked" />
-          <small class="hint">Se generará automáticamente al guardar en el servidor.</small>
+          <small class="hint">Fecha asignada automáticamente hoy: {{ form.get('fechaIncorporacion')?.value }}</small>
         </div>
 
         <div class="form-group">
-          <label>Imagen de Perfil</label>
-          <div class="radio-options">
-            <label><input type="radio" name="imgOpt" [(ngModel)]="imageOption" [ngModelOptions]="{standalone: true}" value="default" /> Avatar por defecto</label>
-            <label><input type="radio" name="imgOpt" [(ngModel)]="imageOption" [ngModelOptions]="{standalone: true}" value="upload" /> Subir imagen</label>
+          <label>Avatar de Administrador (Selecciona un avatar) *</label>
+          <div class="avatar-grid">
+            <button
+              type="button"
+              *ngFor="let av of avatars"
+              class="avatar-item"
+              [class.selected]="selectedAvatarUrl === av.url"
+              (click)="selectAvatar(av.url)"
+              [title]="av.label"
+            >
+              <img [src]="av.url" [alt]="av.label" />
+              <span class="avatar-check" *ngIf="selectedAvatarUrl === av.url">✓</span>
+            </button>
           </div>
-          <div *ngIf="imageOption === 'upload'" style="margin-top: 0.5rem;">
-            <input type="file" (change)="onFileSelected($event)" accept="image/*" />
-          </div>
-          <div class="avatar-preview" style="margin-top: 0.5rem;">
-            <img [src]="profileImage" alt="Avatar Admin" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd;" />
-          </div>
+          <small class="hint">Haz clic sobre un avatar para asignarlo al perfil del administrador.</small>
         </div>
 
         <button type="submit" class="btn-submit" [disabled]="submitting">
@@ -108,7 +112,12 @@ import { AuthService } from '../../../core/services/auth.service';
     .form-group input:focus { outline: none; border-color: #2563eb; }
     .input-locked { background-color: #f1f5f9 !important; color: #64748b !important; cursor: not-allowed; border-color: #cbd5e1 !important; }
     .hint { color: #64748b; font-size: 0.8rem; margin-top: 0.25rem; }
-    .radio-options { display: flex; gap: 1.5rem; font-size: 0.9rem; margin-top: 0.25rem; }
+    .avatar-grid { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    .avatar-item { position: relative; width: 68px; height: 68px; border-radius: 50%; border: 3px solid #cbd5e1; background: #f8fafc; cursor: pointer; padding: 0; overflow: hidden; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
+    .avatar-item:hover { border-color: #93c5fd; transform: translateY(-2px); }
+    .avatar-item.selected { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25); transform: scale(1.05); }
+    .avatar-item img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-check { position: absolute; bottom: 2px; right: 2px; background: #2563eb; color: white; font-size: 11px; font-weight: bold; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border: 1.5px solid white; }
     .error { color: #dc2626; font-size: 0.82rem; margin-top: 0.25rem; }
     .btn-submit { width: 100%; padding: 0.8rem; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 1rem; }
     .btn-submit:hover:not(:disabled) { background: #1d4ed8; }
@@ -124,21 +133,27 @@ export class AdminUserCreate implements OnInit {
   serverErrors: string[] = [];
   successMessage: string | null = null;
 
-  imageOption: 'default' | 'upload' = 'default';
-  uploadedImageBase64: string | null = null;
-  defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_default';
+  avatars = [
+    { id: 'admin1', label: 'Admin Clásico', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_default' },
+    { id: 'admin2', label: 'Admin Guardián', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_shield' },
+    { id: 'admin3', label: 'Admin Operaciones', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_gear' },
+    { id: 'admin4', label: 'Admin Seguridad', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_security' },
+    { id: 'admin5', label: 'Admin Estrella', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_star' }
+  ];
+  selectedAvatarUrl: string = 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_default';
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private authService: AuthService
   ) {
+    const todayISO = new Date().toISOString().split('T')[0];
     this.form = this.fb.group({
       nombre: ['', [Validators.required]],
       apellidos: ['', [Validators.required]],
       email: [{ value: '', disabled: false }, [Validators.required]],
       sede: [''],
-      fechaIncorporacion: [{ value: 'Se generará automáticamente al guardar', disabled: false }]
+      fechaIncorporacion: [{ value: todayISO, disabled: false }]
     });
   }
 
@@ -171,6 +186,7 @@ export class AdminUserCreate implements OnInit {
       return;
     }
 
+    const todayISO = new Date().toISOString().split('T')[0];
     this.candidatoSeleccionado = this.candidatos.find(c => c.id === id);
     if (this.candidatoSeleccionado) {
       this.form.patchValue({
@@ -178,25 +194,14 @@ export class AdminUserCreate implements OnInit {
         apellidos: this.candidatoSeleccionado.apellidos || '',
         email: this.candidatoSeleccionado.email || '',
         sede: this.candidatoSeleccionado.sede || '',
-        fechaIncorporacion: 'Se generará automáticamente al guardar'
+        fechaIncorporacion: todayISO
       });
-      this.uploadedImageBase64 = this.candidatoSeleccionado.imagenPerfil || null;
+      this.selectedAvatarUrl = this.candidatoSeleccionado.imagenPerfil || this.avatars[0].url;
     }
   }
 
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => { this.uploadedImageBase64 = reader.result as string; };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  get profileImage(): string {
-    return (this.imageOption === 'upload' && this.uploadedImageBase64)
-      ? this.uploadedImageBase64
-      : this.defaultAvatar;
+  selectAvatar(url: string): void {
+    this.selectedAvatarUrl = url;
   }
 
   onSubmit(): void {
@@ -219,7 +224,7 @@ export class AdminUserCreate implements OnInit {
       apellidos: this.form.value.apellidos,
       email: this.form.value.email,
       sede: this.form.value.sede || null,
-      imagenPerfil: (this.imageOption === 'upload' && this.uploadedImageBase64) ? this.uploadedImageBase64 : null
+      imagenPerfil: this.selectedAvatarUrl
     };
 
     this.authService.promoverAAdmin(this.candidatoSeleccionado.id, payload).subscribe({
