@@ -9,6 +9,9 @@ export const routes: Routes = [
   { path: '', component: Home },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
+  { path: 'admin', redirectTo: 'admin/users/new', pathMatch: 'full' },
+  { path: 'admin/users', redirectTo: 'admin/users/new', pathMatch: 'full' },
+  { path: 'admin.html', redirectTo: 'admin/users/new', pathMatch: 'full' },
   { path: 'admin/users/new', component: AdminUserCreate },
   { path: 'products/new', component: ProductCreate },
   { path: '**', redirectTo: '' }
