@@ -26,7 +26,7 @@ public class CategoryDataInitializer implements CommandLineRunner {
     public void run(String... args) {
         Set<String> existingNames = new HashSet<>();
         categoryRepository.findAll().stream()
-                .map(Category::getNombre)
+                .map(Category::getName)
                 .filter(name -> name != null && !name.isBlank())
                 .map(CategoryDataInitializer::normalizeName)
                 .forEach(existingNames::add);

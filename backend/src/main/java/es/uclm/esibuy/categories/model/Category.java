@@ -3,31 +3,31 @@ package es.uclm.esibuy.categories.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document("categorias")
+@Document("categories")
 public class Category {
 
     @Id
     private String id;
 
-    private String nombre;
+    private String name;
 
     protected Category() {
     }
 
-    public Category(String nombre) {
-        this.nombre = nombre;
+    public Category(String name) {
+        this.name = name;
     }
 
-    public Category(String id, String nombre) {
+    public Category(String id, String name) {
         this.id = id;
-        this.nombre = nombre;
+        this.name = name;
     }
 
     public String getId() {
         return id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getName() {
+        return name;
     }
 }

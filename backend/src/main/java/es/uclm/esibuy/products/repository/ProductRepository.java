@@ -5,12 +5,12 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface ProductRepository extends MongoRepository<Product, String> {
 
-    long countByVendedorId(String vendedorId);
+    long countBySellerId(String sellerId);
 
-    long countByVendedorIdAndStock(String vendedorId, int stock);
+    long countBySellerIdAndStock(String sellerId, int stock);
 
-    long countByVendedorIdAndStockGreaterThanAndStockLessThanEqual(
-            String vendedorId,
-            int minimoExclusivo,
-            int maximoInclusivo);
+    long countBySellerIdAndStockGreaterThanAndStockLessThanEqual(
+            String sellerId,
+            int minimumExclusive,
+            int maximumInclusive);
 }

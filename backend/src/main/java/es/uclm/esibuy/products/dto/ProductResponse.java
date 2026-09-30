@@ -7,33 +7,33 @@ import es.uclm.esibuy.products.model.Product;
 
 public record ProductResponse(
         String id,
-        String nombre,
-        List<String> categoriaIds,
+        String name,
+        List<String> categoryIds,
         int stock,
-        String descripcion,
-        BigDecimal precio,
-        BigDecimal descuento,
-        BigDecimal descuentoPremium,
-        String imagen,
-        boolean disponible,
-        String vendedorId) {
+        String description,
+        BigDecimal price,
+        BigDecimal discount,
+        BigDecimal premiumDiscount,
+        String imageUrl,
+        boolean available,
+        String sellerId) {
 
     public ProductResponse {
-        categoriaIds = List.copyOf(categoriaIds);
+        categoryIds = List.copyOf(categoryIds);
     }
 
     public static ProductResponse from(Product product) {
         return new ProductResponse(
                 product.getId(),
-                product.getNombre(),
-                product.getCategoriaIds(),
+                product.getName(),
+                product.getCategoryIds(),
                 product.getStock(),
-                product.getDescripcion(),
-                product.getPrecio(),
-                product.getDescuento(),
-                product.getDescuentoPremium(),
-                product.getImagen(),
-                product.isDisponible(),
-                product.getVendedorId());
+                product.getDescription(),
+                product.getPrice(),
+                product.getDiscount(),
+                product.getPremiumDiscount(),
+                product.getImageUrl(),
+                product.isAvailable(),
+                product.getSellerId());
     }
 }

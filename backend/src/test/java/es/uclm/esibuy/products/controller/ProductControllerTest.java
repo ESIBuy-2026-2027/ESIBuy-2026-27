@@ -52,9 +52,9 @@ class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validRequest()))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.nombre").value("Auriculares"))
-                .andExpect(jsonPath("$.categoriaIds[0]").value("category-id"))
-                .andExpect(jsonPath("$.vendedorId").value("seller-id"));
+                .andExpect(jsonPath("$.name").value("Auriculares"))
+                .andExpect(jsonPath("$.categoryIds[0]").value("category-id"))
+                .andExpect(jsonPath("$.sellerId").value("seller-id"));
 
         verify(productService).createProduct(any(ProductCreateRequest.class), eq("seller@example.com"));
     }
@@ -66,13 +66,13 @@ class ProductControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"nombre":"","categoriaIds":[],"precio":0,"disponible":null}
+                                {"name":"","categoryIds":[],"price":0,"available":null}
                                 """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.nombre").isNotEmpty())
-                .andExpect(jsonPath("$.errors.categoriaIds").isNotEmpty())
-                .andExpect(jsonPath("$.errors.precio").isNotEmpty())
-                .andExpect(jsonPath("$.errors.disponible").isNotEmpty());
+                .andExpect(jsonPath("$.errors.name").isNotEmpty())
+                .andExpect(jsonPath("$.errors.categoryIds").isNotEmpty())
+                .andExpect(jsonPath("$.errors.price").isNotEmpty())
+                .andExpect(jsonPath("$.errors.available").isNotEmpty());
     }
 
     @Test
@@ -95,17 +95,17 @@ class ProductControllerTest {
         when(productService.getSummary("seller@example.com"))
                 .thenReturn(new ProductSummaryResponse(12, 2, 3, 5));
 
-        mockMvc.perform(get("/api/products/resumen"))
+        mockMvc.perform(get("/api/products/summary"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalProductos").value(12))
-                .andExpect(jsonPath("$.productosSinStock").value(2))
-                .andExpect(jsonPath("$.productosStockBajo").value(3))
-                .andExpect(jsonPath("$.umbralStockBajo").value(5));
+                .andExpect(jsonPath("$.totalProducts").value(12))
+                .andExpect(jsonPath("$.outOfStockProducts").value(2))
+                .andExpect(jsonPath("$.lowStockProducts").value(3))
+                .andExpect(jsonPath("$.lowStockThreshold").value(5));
     }
 
     private String validRequest() {
         return """
-                {"nombre":"Auriculares","categoriaIds":["category-id"],"precio":19.99,"disponible":true}
+                {"name":"Auriculares","categoryIds":["category-id"],"price":19.99,"available":true}
                 """;
     }
 }

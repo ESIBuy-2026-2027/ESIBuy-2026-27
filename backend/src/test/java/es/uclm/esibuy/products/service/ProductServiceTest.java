@@ -59,10 +59,10 @@ class ProductServiceTest {
 
         Product result = productService.createProduct(request, "seller@example.com");
 
-        assertEquals("seller-id", result.getVendedorId());
-        assertEquals(List.of("category-id"), result.getCategoriaIds());
+        assertEquals("seller-id", result.getSellerId());
+        assertEquals(List.of("category-id"), result.getCategoryIds());
         assertEquals(0, result.getStock());
-        assertEquals(new BigDecimal("19.99"), result.getPrecio());
+        assertEquals(new BigDecimal("19.99"), result.getPrice());
         verify(productRepository).save(any(Product.class));
     }
 
@@ -70,8 +70,8 @@ class ProductServiceTest {
     void shouldPreserveProvidedStockAndDiscounts() {
         ProductCreateRequest request = validRequest();
         request.setStock(7);
-        request.setDescuento(new BigDecimal("10"));
-        request.setDescuentoPremium(new BigDecimal("20"));
+        request.setDiscount(new BigDecimal("10"));
+        request.setPremiumDiscount(new BigDecimal("20"));
         User seller = org.mockito.Mockito.mock(User.class);
         when(seller.getId()).thenReturn("seller-id");
         when(seller.getRole()).thenReturn(UserRole.SELLER);
@@ -83,8 +83,8 @@ class ProductServiceTest {
         Product result = productService.createProduct(request, "seller@example.com");
 
         assertEquals(7, result.getStock());
-        assertEquals(new BigDecimal("10"), result.getDescuento());
-        assertEquals(new BigDecimal("20"), result.getDescuentoPremium());
+        assertEquals(new BigDecimal("10"), result.getDiscount());
+        assertEquals(new BigDecimal("20"), result.getPremiumDiscount());
     }
 
     @Test
@@ -119,17 +119,17 @@ class ProductServiceTest {
         when(seller.getId()).thenReturn("seller-id");
         when(seller.getRole()).thenReturn(UserRole.SELLER);
         when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(Optional.of(seller));
-        when(productRepository.countByVendedorId("seller-id")).thenReturn(12L);
-        when(productRepository.countByVendedorIdAndStock("seller-id", 0)).thenReturn(2L);
-        when(productRepository.countByVendedorIdAndStockGreaterThanAndStockLessThanEqual(
+        when(productRepository.countBySellerId("seller-id")).thenReturn(12L);
+        when(productRepository.countBySellerIdAndStock("seller-id", 0)).thenReturn(2L);
+        when(productRepository.countBySellerIdAndStockGreaterThanAndStockLessThanEqual(
                 "seller-id", 0, 5)).thenReturn(3L);
 
         ProductSummaryResponse result = productService.getSummary("seller@example.com");
 
-        assertEquals(12L, result.totalProductos());
-        assertEquals(2L, result.productosSinStock());
-        assertEquals(3L, result.productosStockBajo());
-        assertEquals(5, result.umbralStockBajo());
+        assertEquals(12L, result.totalProducts());
+        assertEquals(2L, result.outOfStockProducts());
+        assertEquals(3L, result.lowStockProducts());
+        assertEquals(5, result.lowStockThreshold());
     }
 
     @Test
@@ -140,15 +140,15 @@ class ProductServiceTest {
 
         assertThrows(org.springframework.security.access.AccessDeniedException.class,
                 () -> productService.getSummary("client@example.com"));
-        verify(productRepository, never()).countByVendedorId(any());
+        verify(productRepository, never()).countBySellerId(any());
     }
 
     private ProductCreateRequest validRequest() {
         ProductCreateRequest request = new ProductCreateRequest();
-        request.setNombre("Auriculares");
-        request.setCategoriaIds(List.of("category-id"));
-        request.setPrecio(new BigDecimal("19.99"));
-        request.setDisponible(true);
+        request.setName("Auriculares");
+        request.setCategoryIds(List.of("category-id"));
+        request.setPrice(new BigDecimal("19.99"));
+        request.setAvailable(true);
         return request;
     }
 }

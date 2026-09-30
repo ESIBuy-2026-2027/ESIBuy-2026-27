@@ -15,49 +15,49 @@ public class ProductCreateRequest {
 
     @NotBlank(message = "El nombre es obligatorio")
     @Size(max = 150, message = "El nombre no puede superar los 150 caracteres")
-    private String nombre;
+    private String name;
 
     @NotEmpty(message = "Debe seleccionar al menos una categoría")
-    private List<@NotBlank(message = "La referencia de categoría no puede estar vacía") String> categoriaIds;
+    private List<@NotBlank(message = "La referencia de categoría no puede estar vacía") String> categoryIds;
 
     @PositiveOrZero(message = "El stock no puede ser negativo")
     private Integer stock;
 
     @Size(max = 2000, message = "La descripción no puede superar los 2000 caracteres")
-    private String descripcion;
+    private String description;
 
     @NotNull(message = "El precio es obligatorio")
     @DecimalMin(value = "0.0", inclusive = false, message = "El precio debe ser mayor que 0")
-    private BigDecimal precio;
+    private BigDecimal price;
 
     @DecimalMin(value = "0.0", message = "El descuento no puede ser menor que 0")
     @DecimalMax(value = "100.0", message = "El descuento no puede superar el 100")
-    private BigDecimal descuento;
+    private BigDecimal discount;
 
     @DecimalMin(value = "0.0", message = "El descuento premium no puede ser menor que 0")
     @DecimalMax(value = "100.0", message = "El descuento premium no puede superar el 100")
-    private BigDecimal descuentoPremium;
+    private BigDecimal premiumDiscount;
 
     @Size(max = 2000, message = "La imagen no puede superar los 2000 caracteres")
-    private String imagen;
+    private String imageUrl;
 
     @NotNull(message = "Debe indicar si el producto está disponible")
-    private Boolean disponible;
+    private Boolean available;
 
-    public String getNombre() {
-        return nombre;
+    public String getName() {
+        return name;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public List<String> getCategoriaIds() {
-        return categoriaIds;
+    public List<String> getCategoryIds() {
+        return categoryIds;
     }
 
-    public void setCategoriaIds(List<String> categoriaIds) {
-        this.categoriaIds = categoriaIds;
+    public void setCategoryIds(List<String> categoryIds) {
+        this.categoryIds = categoryIds;
     }
 
     public Integer getStock() {
@@ -68,51 +68,51 @@ public class ProductCreateRequest {
         this.stock = stock;
     }
 
-    public String getDescripcion() {
-        return descripcion;
+    public String getDescription() {
+        return description;
     }
 
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public BigDecimal getPrecio() {
-        return precio;
+    public BigDecimal getPrice() {
+        return price;
     }
 
-    public void setPrecio(BigDecimal precio) {
-        this.precio = precio;
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
-    public BigDecimal getDescuento() {
-        return descuento;
+    public BigDecimal getDiscount() {
+        return discount;
     }
 
-    public void setDescuento(BigDecimal descuento) {
-        this.descuento = descuento;
+    public void setDiscount(BigDecimal discount) {
+        this.discount = discount;
     }
 
-    public BigDecimal getDescuentoPremium() {
-        return descuentoPremium;
+    public BigDecimal getPremiumDiscount() {
+        return premiumDiscount;
     }
 
-    public void setDescuentoPremium(BigDecimal descuentoPremium) {
-        this.descuentoPremium = descuentoPremium;
+    public void setPremiumDiscount(BigDecimal premiumDiscount) {
+        this.premiumDiscount = premiumDiscount;
     }
 
-    public String getImagen() {
-        return imagen;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setImagen(String imagen) {
-        this.imagen = imagen;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
-    public Boolean getDisponible() {
-        return disponible;
+    public Boolean getAvailable() {
+        return available;
     }
 
-    public void setDisponible(Boolean disponible) {
-        this.disponible = disponible;
+    public void setAvailable(Boolean available) {
+        this.available = available;
     }
 }

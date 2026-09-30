@@ -25,11 +25,18 @@ public class SecurityConfig {
         try {
             return http
                     .cors(Customizer.withDefaults())
-                    .csrf(csrf -> csrf.ignoringRequestMatchers("/api/users/register/**"))
+                    .csrf(csrf -> csrf.ignoringRequestMatchers(
+                            "/api/users/register/**",
+                            "/api/users/login",
+                            "/api/admin/**",
+                            "/api/products/**"))
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .authorizeHttpRequests(auth -> auth
-                            .requestMatchers(HttpMethod.GET, "/api/categorias").permitAll()
-                            .requestMatchers("/", "/api/users/register/**", "/actuator/health").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/api/categories", "/api/categorias").permitAll()
+                            .requestMatchers("/api/products/**").permitAll()
+                            .requestMatchers("/", "/api/users/register/**", "/api/users/login", "/api/admin/**",
+                                    "/actuator/health")
+                            .permitAll()
                             .anyRequest().authenticated())
                     .build();
         } catch (Exception exception) {

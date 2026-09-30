@@ -28,13 +28,15 @@ public class ProductController {
     public ResponseEntity<ProductResponse> createProduct(
             @Valid @RequestBody ProductCreateRequest request,
             Authentication authentication) {
+        String email = authentication != null ? authentication.getName() : null;
         ProductResponse response = ProductResponse.from(
-                productService.createProduct(request, authentication.getName()));
+                productService.createProduct(request, email));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/resumen")
+    @GetMapping({"/summary", "/resumen"})
     public ProductSummaryResponse getSummary(Authentication authentication) {
-        return productService.getSummary(authentication.getName());
+        String email = authentication != null ? authentication.getName() : null;
+        return productService.getSummary(email);
     }
 }

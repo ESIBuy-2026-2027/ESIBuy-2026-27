@@ -35,8 +35,7 @@ class CategoryDataInitializerTest {
 
         categoryDataInitializer.run();
 
-        verify(categoryRepository).saveAll(argThat(categories ->
-                namesOf(categories).equals(DEFAULT_CATEGORY_NAMES)));
+        verify(categoryRepository).saveAll(argThat(categories -> namesOf(categories).equals(DEFAULT_CATEGORY_NAMES)));
     }
 
     @Test
@@ -48,8 +47,7 @@ class CategoryDataInitializerTest {
         categoryDataInitializer.run();
 
         List<String> missingDefaultNames = DEFAULT_CATEGORY_NAMES.subList(1, DEFAULT_CATEGORY_NAMES.size());
-        verify(categoryRepository).saveAll(argThat(categories ->
-                namesOf(categories).equals(missingDefaultNames)));
+        verify(categoryRepository).saveAll(argThat(categories -> namesOf(categories).equals(missingDefaultNames)));
     }
 
     @Test
@@ -65,7 +63,7 @@ class CategoryDataInitializerTest {
 
     private List<String> namesOf(Iterable<Category> categories) {
         var names = new ArrayList<String>();
-        categories.forEach(category -> names.add(category.getNombre()));
+        categories.forEach(category -> names.add(category.getName()));
         return names;
     }
 }

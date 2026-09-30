@@ -6,90 +6,90 @@ import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document("productos")
+@Document("products")
 public class Product {
 
     @Id
     private String id;
 
-    private String nombre;
-    private List<String> categoriaIds;
+    private String name;
+    private List<String> categoryIds;
     private int stock;
-    private String descripcion;
-    private BigDecimal precio;
-    private BigDecimal descuento;
-    private BigDecimal descuentoPremium;
-    private String imagen;
-    private boolean disponible;
-    private String vendedorId;
+    private String description;
+    private BigDecimal price;
+    private BigDecimal discount;
+    private BigDecimal premiumDiscount;
+    private String imageUrl;
+    private boolean available;
+    private String sellerId;
 
     protected Product() {
     }
 
     public Product(
-            String nombre,
-            List<String> categoriaIds,
+            String name,
+            List<String> categoryIds,
             int stock,
-            String descripcion,
-            BigDecimal precio,
-            BigDecimal descuento,
-            BigDecimal descuentoPremium,
-            String imagen,
-            boolean disponible,
-            String vendedorId) {
-        this.nombre = nombre;
-        this.categoriaIds = List.copyOf(categoriaIds);
+            String description,
+            BigDecimal price,
+            BigDecimal discount,
+            BigDecimal premiumDiscount,
+            String imageUrl,
+            boolean available,
+            String sellerId) {
+        this.name = name;
+        this.categoryIds = List.copyOf(categoryIds);
         this.stock = stock;
-        this.descripcion = descripcion;
-        this.precio = precio;
-        this.descuento = descuento;
-        this.descuentoPremium = descuentoPremium;
-        this.imagen = imagen;
-        this.disponible = disponible;
-        this.vendedorId = vendedorId;
+        this.description = description;
+        this.price = price;
+        this.discount = discount;
+        this.premiumDiscount = premiumDiscount;
+        this.imageUrl = imageUrl;
+        this.available = available;
+        this.sellerId = sellerId;
     }
 
     public String getId() {
         return id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getName() {
+        return name;
     }
 
-    public List<String> getCategoriaIds() {
-        return categoriaIds;
+    public List<String> getCategoryIds() {
+        return categoryIds;
     }
 
     public int getStock() {
         return stock;
     }
 
-    public String getDescripcion() {
-        return descripcion;
+    public String getDescription() {
+        return description;
     }
 
-    public BigDecimal getPrecio() {
-        return precio;
+    public BigDecimal getPrice() {
+        return price;
     }
 
-    public BigDecimal getDescuento() {
-        return descuento;
+    public BigDecimal getDiscount() {
+        return discount;
     }
 
-    public BigDecimal getDescuentoPremium() {
-        return descuentoPremium;
+    public BigDecimal getPremiumDiscount() {
+        return premiumDiscount;
     }
 
-    public String getImagen() {
-        return imagen;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public boolean isDisponible() {
-        return disponible;
+    public boolean isAvailable() {
+        return available;
     }
 
-    public String getVendedorId() {
-        return vendedorId;
+    public String getSellerId() {
+        return sellerId;
     }
 }
