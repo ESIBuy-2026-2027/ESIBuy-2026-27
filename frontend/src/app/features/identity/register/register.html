@@ -132,7 +132,7 @@
 
     <!-- SELECCIÓN DE AVATAR -->
     <div class="form-group image-section">
-      <label>Selecciona tu Imagen de Perfil / Avatar</label>
+      <label>Selecciona tu Imagen de Perfil</label>
       <div class="avatar-selector-grid">
         <div *ngFor="let avatar of currentAvatarList" class="avatar-item" [class.selected]="selectedAvatar === avatar"
           (click)="selectAvatar(avatar)">
@@ -144,7 +144,12 @@
     <!-- CONTRASEÑAS (COMÚN) -->
     <div class="form-group">
       <label>Contraseña *</label>
-      <input type="password" formControlName="password" />
+      <div class="password-wrapper">
+        <input [type]="showPassword ? 'text' : 'password'" formControlName="password" />
+        <span class="password-toggle" (click)="showPassword = !showPassword" role="button"
+          [innerHTML]="showPassword ? '👁' : '⌣'">
+        </span>
+      </div>
       <span class="error" *ngIf="form.get('password')?.touched && form.get('password')?.hasError('required')">La
         contraseña es obligatoria</span>
       <span class="error" *ngIf="form.get('password')?.touched && form.get('password')?.hasError('minlength')">Debe
@@ -155,7 +160,9 @@
 
     <div class="form-group">
       <label>Repetir Contraseña *</label>
-      <input type="password" formControlName="repeatedPassword" />
+      <div class="password-wrapper">
+        <input [type]="showPassword ? 'text' : 'password'" formControlName="repeatedPassword" />
+      </div>
       <span class="error"
         *ngIf="form.get('repeatedPassword')?.touched && form.get('repeatedPassword')?.hasError('required')">Debe repetir
         la contraseña</span>
