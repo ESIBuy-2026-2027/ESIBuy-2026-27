@@ -4,12 +4,14 @@ import { Login } from './features/identity/login/login';
 import { Register } from './features/identity/register/register';
 import { AdminUserCreate } from './features/admin/admin-user-create/admin-user-create';
 import { ProductCreate } from './features/products/product-create/product-create';
+import { SellerCatalog } from './features/products/seller-catalog/seller-catalog';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
   { path: 'admin/users/new', component: AdminUserCreate },
+  { path: 'seller/catalog', component: SellerCatalog },
   { path: 'products/new', component: ProductCreate },
   { path: '**', redirectTo: '' }
 ];

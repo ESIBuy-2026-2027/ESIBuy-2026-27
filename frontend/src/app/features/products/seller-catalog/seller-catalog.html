@@ -1,0 +1,70 @@
+<div class="seller-layout">
+  <aside class="sidebar" aria-label="Panel del vendedor">
+    <a class="brand" routerLink="/" aria-label="ESIBuy, inicio">
+      <span class="brand-mark" aria-hidden="true">E</span>
+      <span>ESI<span class="brand-accent">Buy</span></span>
+    </a>
+
+    <div class="sidebar-caption">GESTIÓN DE VENTA</div>
+    <nav class="seller-navigation" aria-label="Navegación del vendedor">
+      <a class="navigation-link is-active" routerLink="/seller/catalog" aria-current="page">
+        <span class="navigation-icon" aria-hidden="true">▦</span>
+        <span>Mi catálogo</span>
+      </a>
+      <a class="navigation-link" routerLink="/products/new">
+        <span class="navigation-icon" aria-hidden="true">＋</span>
+        <span>Añadir producto</span>
+      </a>
+    </nav>
+
+  </aside>
+
+  <div class="workspace">
+    <header class="topbar">
+      <span class="breadcrumb">Panel del vendedor <span aria-hidden="true">/</span> Catálogo</span>
+      <a class="topbar-link" routerLink="/">Volver a ESIBuy</a>
+    </header>
+
+    <main class="catalog-content">
+      <section class="page-heading" aria-labelledby="catalog-title">
+        <div>
+          <p class="eyebrow">TU ESPACIO DE VENTA</p>
+          <h1 id="catalog-title">Catálogo de productos</h1>
+          <p class="page-description">Organiza y amplía la oferta de tu tienda en ESIBuy.</p>
+        </div>
+        <a class="primary-action" routerLink="/products/new">
+          <span aria-hidden="true">＋</span>
+          Añadir producto
+        </a>
+      </section>
+
+      <section class="summary-region" aria-label="Resumen del catálogo">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">VISTA GENERAL</p>
+            <h2>Resumen</h2>
+          </div>
+        </div>
+        <div class="summary-placeholder">
+          <span class="summary-placeholder-icon" aria-hidden="true">✳</span>
+          <p>El resumen de tu catálogo aparecerá aquí.</p>
+        </div>
+      </section>
+
+      <section class="products-region" aria-label="Productos del catálogo">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">INVENTARIO</p>
+            <h2>Mis productos</h2>
+          </div>
+        </div>
+        <div class="empty-state">
+          <span class="empty-state-icon" aria-hidden="true">▤</span>
+          <h3>Tu catálogo está listo para crecer</h3>
+          <p>Añade tu primer producto para empezar a ofrecerlo en ESIBuy.</p>
+          <a class="secondary-action" routerLink="/products/new">Crear mi primer producto</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
