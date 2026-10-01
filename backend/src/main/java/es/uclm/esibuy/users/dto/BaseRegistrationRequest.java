@@ -13,7 +13,7 @@ public abstract class BaseRegistrationRequest {
     private String firstName;
 
     @NotBlank(message = "Los apellidos son obligatorios")
-    @Size(min = 2, max = 100, message = "Los apellidos deben tener entre 2 y 100 caracteres")
+    @Size(min = 2, max = 50, message = "Los apellidos deben tener entre 2 y 50 caracteres")
     private String lastName;
 
     @NotBlank(message = "El email es obligatorio")

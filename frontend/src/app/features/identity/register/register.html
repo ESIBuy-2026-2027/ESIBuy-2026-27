@@ -97,7 +97,7 @@
           <span class="error" *ngIf="form.get('lastName')?.touched &&
                    (form.get('lastName')?.hasError('minlength') ||
                     form.get('lastName')?.hasError('maxlength'))">
-            Debe tener entre 2 y 100 caracteres
+            Debe tener entre 2 y 50 caracteres
           </span>
 
         </div>
@@ -224,6 +224,12 @@
 
           <span class="error" *ngIf="form.get('lastName')?.touched && form.get('lastName')?.hasError('required')">
             Los apellidos son obligatorios
+          </span>
+
+          <span class="error" *ngIf="form.get('lastName')?.touched &&
+                   (form.get('lastName')?.hasError('minlength') ||
+                    form.get('lastName')?.hasError('maxlength'))">
+            Debe tener entre 2 y 50 caracteres
           </span>
 
         </div>

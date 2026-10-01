@@ -21,7 +21,7 @@ export class AdminUserDetail implements OnInit {
   readonly form = this.formBuilder.nonNullable.group({
     firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25),
       Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
-    lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100),
+    lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50),
       Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
     phone: ['', [Validators.maxLength(10), Validators.pattern(/^$|^\+?\d{9}$/)]]
   });
