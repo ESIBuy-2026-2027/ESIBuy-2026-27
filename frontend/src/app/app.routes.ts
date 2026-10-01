@@ -11,14 +11,16 @@ export const routes: Routes = [
   { path: '', component: Home },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
-  { path: 'admin/users/new', component: AdminUserCreate },
-  { path: 'admin/usuarios', component: AdminUserList },
-  { path: 'admin/usuarios/:id/editar', component: AdminUserDetail },
+  { path: 'admin/altas', component: AdminUserCreate },
+  { path: 'admin', component: AdminUserList },
+  { path: 'admin/modify', component: AdminUserDetail },
 
-  // Redirecciones
-  { path: 'admin', redirectTo: 'admin/usuarios', pathMatch: 'full' },
-  { path: 'admin/users', redirectTo: 'admin/usuarios', pathMatch: 'full' },
-  { path: 'admin.html', redirectTo: 'admin/usuarios', pathMatch: 'full' },
+
+  // Redirecciones compatibles
+  { path: 'admin/usuarios', redirectTo: 'admin', pathMatch: 'full' },
+  { path: 'admin/users', redirectTo: 'admin', pathMatch: 'full' },
+  { path: 'admin/users/new', redirectTo: 'admin/altas', pathMatch: 'full' },
+  { path: 'admin.html', redirectTo: 'admin', pathMatch: 'full' },
 
   { path: 'products/new', component: ProductCreate },
   { path: '**', redirectTo: '' }
