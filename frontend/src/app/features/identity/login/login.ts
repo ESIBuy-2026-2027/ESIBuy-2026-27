@@ -54,7 +54,7 @@ onSubmit() {
         this.loading = false;
         alert(`¡Bienvenido! Sesión iniciada como ${response.email} (${response.role})`);
         if (response.role === 'ADMIN') {
-          this.router.navigate(['/admin/usuarios']);
+          this.router.navigate(['/admin']);
         } else {
           this.router.navigate(['/']);
         }
