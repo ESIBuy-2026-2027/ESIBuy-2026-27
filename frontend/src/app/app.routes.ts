@@ -7,13 +7,17 @@ import { Register } from './features/identity/register/register';
 import { AdminUserCreate } from './features/admin/admin-user-create/admin-user-create';
 import { ProductCreate } from './features/products/product-create/product-create';
 import { AdminUserList } from './features/admin/admin-user-list/admin-user-list';
+import { AdminUserDetail } from './features/admin/admin-user-detail/admin-user-detail';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
+
   { path: 'admin/users/new', component: AdminUserCreate, canActivate: [authGuard, roleGuard('ADMIN')] },
+  { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
   { path: 'admin/usuarios', component: AdminUserList, canActivate: [authGuard, roleGuard('ADMIN')] },
+  { path: 'admin/usuarios/:id/editar', component: AdminUserDetail, canActivate: [authGuard, roleGuard('ADMIN')] },
 
   // Redirecciones
   { path: 'admin', redirectTo: 'admin/usuarios', pathMatch: 'full' },

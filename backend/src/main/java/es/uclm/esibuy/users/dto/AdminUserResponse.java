@@ -2,6 +2,7 @@ package es.uclm.esibuy.users.dto;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import es.uclm.esibuy.users.model.CustomerType;
 import es.uclm.esibuy.users.model.User;
@@ -51,6 +52,6 @@ public record AdminUserResponse(
     public record SellerProfileResponse(String businessName, String defaultCategory) {
     }
 
-    public record AdminProfileResponse(String headquarters, Instant hireDate) {
+    public record AdminProfileResponse(String headquarters, LocalDateTime hireDate) {
     }
 }

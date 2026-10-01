@@ -2,14 +2,16 @@ package es.uclm.esibuy.users.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public class LoginRequest {
-
     @NotBlank(message = "El email es obligatorio")
     @Email(message = "El formato de email no es válido")
+    @Size(max = 120, message = "El email no puede superar los 120 caracteres")
     private String email;
 
     @NotBlank(message = "La contraseña es obligatoria")
+    @Size(max = 128, message = "La contraseña no puede superar los 128 caracteres")
     private String password;
 
     public String getEmail() {

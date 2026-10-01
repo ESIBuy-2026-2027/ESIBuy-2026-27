@@ -3,6 +3,7 @@ package es.uclm.esibuy.security.config;
 import java.io.IOException;
 import java.util.List;
 
+import es.uclm.esibuy.common.filter.CorrelationIdFilter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -25,13 +27,15 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -41,7 +45,7 @@ public class SecurityConfig {
 
     @Bean
     CookieCsrfTokenRepository csrfTokenRepository(
-            @Value("${server.servlet.session.cookie.secure:true}") boolean secureCookie,
+            @Value("${server.servlet.session.cookie.secure:false}") boolean secureCookie,
             @Value("${server.servlet.session.cookie.same-site:Lax}") String sameSite) {
         CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         repository.setCookieCustomizer(cookie -> cookie
@@ -59,37 +63,48 @@ public class SecurityConfig {
         try {
             return http
                     .cors(Customizer.withDefaults())
-                    .csrf(csrf -> csrf.ignoringRequestMatchers(
-                            "/api/users/register/**",
-                            "/api/users/login")
+                    .csrf(csrf -> csrf
                             .csrfTokenRepository(csrfTokenRepository)
-                            .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
+                            .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                            .ignoringRequestMatchers("/api/users/register/**"))
                     .securityContext(context -> context.securityContextRepository(securityContextRepository))
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                    .exceptionHandling(exceptions -> exceptions
-                            .authenticationEntryPoint((request, response, exception) -> {
-                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                                response.getWriter().write("{\"message\":\"Autenticación requerida\"}");
-                            })
-                            .accessDeniedHandler((request, response, exception) -> {
-                                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                                response.getWriter().write("{\"message\":\"Acceso denegado\"}");
-                            }))
+                    .exceptionHandling(errors -> errors
+                            .authenticationEntryPoint((request, response, exception) -> writeSecurityError(
+                                    request, response, HttpServletResponse.SC_UNAUTHORIZED,
+                                    "Autenticación requerida"))
+                            .accessDeniedHandler((request, response, exception) -> writeSecurityError(
+                                    request, response, HttpServletResponse.SC_FORBIDDEN,
+                                    "No tiene permisos para realizar esta acción")))
                     .authorizeHttpRequests(auth -> auth
                             .requestMatchers(HttpMethod.GET, "/api/categories", "/api/categorias").permitAll()
-                            .requestMatchers("/api/users/register/**", "/api/users/login", "/", "/actuator/health")
+                            .requestMatchers(
+                                    "/", "/api/users/register/**", "/api/users/login", "/actuator/health")
                             .permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/users/admin").hasRole("ADMIN")
-                            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                            .requestMatchers("/api/admin/**", "/api/v1/admin/**").hasRole("ADMIN")
                             .requestMatchers("/api/products/**").hasRole("SELLER")
                             .anyRequest().authenticated())
+                    .addFilterBefore(new CorrelationIdFilter(), UsernamePasswordAuthenticationFilter.class)
                     .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)
                     .build();
         } catch (Exception exception) {
             throw new IllegalStateException("No se pudo construir la configuracion de seguridad", exception);
         }
+    }
+
+    private void writeSecurityError(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            int status,
+            String message) throws IOException {
+        Object correlationId = request.getAttribute(CorrelationIdFilter.ATTRIBUTE);
+        String id = correlationId == null ? "" : correlationId.toString();
+        response.setStatus(status);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setHeader(CorrelationIdFilter.HEADER, id);
+        response.getWriter().write("{\"success\":false,\"message\":\"" + message
+                + "\",\"correlationId\":\"" + id + "\"}");
     }
 
     @Bean
@@ -108,6 +123,11 @@ public class SecurityConfig {
         return source;
     }
 
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
     private static final class CsrfCookieFilter extends OncePerRequestFilter {
 
         @Override
@@ -121,10 +141,5 @@ public class SecurityConfig {
             }
             filterChain.doFilter(request, response);
         }
-    }
-
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }

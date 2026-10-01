@@ -11,9 +11,9 @@ public record ProductResponse(
         List<String> categoryIds,
         int stock,
         String description,
-        long price,
-        float discount,
-        float premiumDiscount,
+        BigDecimal price,
+        BigDecimal discount,
+        BigDecimal premiumDiscount,
         String imageUrl,
         boolean available,
         String sellerId) {

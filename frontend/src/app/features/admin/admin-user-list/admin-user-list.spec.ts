@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
@@ -15,6 +16,7 @@ describe('AdminUserList', () => {
     await TestBed.configureTestingModule({
       imports: [AdminUserList],
       providers: [
+        provideRouter([]),
         { provide: AuthService, useValue: { obtenerTodosLosUsuarios } },
       ],
     }).compileComponents();
@@ -27,6 +29,30 @@ describe('AdminUserList', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('renders users returned by the admin endpoint and links to admin creation', () => {
+    const users = [{
+      id: 'user-1',
+      email: 'ana@example.com',
+      firstName: 'Ana',
+      lastName: 'López',
+      nationalId: '12345678Z',
+      phone: '600123456',
+      profileImage: '',
+      role: 'CLIENT',
+      active: true,
+      createdAt: '2026-01-01T00:00:00Z',
+    }];
+    obtenerTodosLosUsuarios.mockReturnValue(of(users));
+
+    component.cargarUsuarios();
+    fixture.detectChanges();
+
+    const rendered = fixture.nativeElement as HTMLElement;
+    expect(rendered.textContent).toContain('Ana López');
+    expect(rendered.textContent).toContain('ana@example.com');
+    expect(rendered.querySelector('#btnDarAltaAdmin')?.getAttribute('href')).toContain('/admin/altas');
   });
 
   it('loads and displays the users returned by the admin endpoint', () => {

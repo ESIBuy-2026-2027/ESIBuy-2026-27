@@ -15,7 +15,7 @@
       </p>
     </header>
 
-    <div *ngIf="serverError" class="server-error-banner">
+    <div *ngIf="serverError" class="server-error-banner" role="alert">
       {{ serverError }}
     </div>
 
@@ -79,6 +79,13 @@
               loginForm.get('password')?.hasError('required')
             ">
             La contraseña es obligatoria
+          </span>
+
+          <span class="error" *ngIf="
+              loginForm.get('password')?.touched &&
+              loginForm.get('password')?.hasError('maxlength')
+            ">
+            La contraseña no puede superar los 128 caracteres
           </span>
 
         </div>

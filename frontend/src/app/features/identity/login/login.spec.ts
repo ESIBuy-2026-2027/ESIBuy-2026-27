@@ -37,7 +37,7 @@ describe('Login', () => {
     expect(component).toBeTruthy();
   });
 
-  it('accepts a short password and routes sellers to product creation', () => {
+  it('accepts an existing short password and routes sellers to product creation', () => {
     login.mockReturnValue(of({
       id: 'seller-1',
       email: 'seller@example.com',
@@ -80,5 +80,13 @@ describe('Login', () => {
     fixture = TestBed.createComponent(Login);
 
     expect(fixture.componentInstance.serverError).toBe('Tu sesión ha expirado');
+  });
+
+  it('shows the forgot password information message', () => {
+    component.showForgotPasswordMessage();
+
+    expect(component.forgotPasswordMessage).toBe(
+      'La recuperación de contraseña estará disponible próximamente.'
+    );
   });
 });

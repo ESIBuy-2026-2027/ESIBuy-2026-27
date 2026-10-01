@@ -96,11 +96,10 @@ public class UserService {
 
     public User login(LoginRequest request) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
-        User user = userRepository.findByEmailIgnoreCase(email)
-                .filter(candidate -> candidate.getPasswordHash() != null
-                        && passwordEncoder.matches(request.getPassword(), candidate.getPasswordHash()))
+        return userRepository.findByEmailIgnoreCase(email)
+                .filter(user -> user.getPasswordHash() != null
+                        && passwordEncoder.matches(request.getPassword(), user.getPasswordHash()))
                 .orElseThrow(InvalidCredentialsException::new);
-        return user;
     }
 
     public List<User> findAllUsers() {
