@@ -58,7 +58,7 @@ h1 {
 
 .page-description {
   margin-bottom: 0;
-  color: #72828e;
+  color: #58778e;
   font-size: 14px;
   line-height: 1.6;
 }
@@ -89,7 +89,7 @@ h1 {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 9px;
-  background: #e9f7f3;
+  background: #abedff;
   color: #16538c;
   font-size: 11px;
   font-weight: 750;
@@ -103,7 +103,7 @@ h1 {
 
 .section-heading p {
   margin-bottom: 0;
-  color: #72828e;
+  color: #6ba3ce;
   font-size: 12px;
   line-height: 1.5;
 }
@@ -257,7 +257,7 @@ h1 {
   border: 1px solid #b7e5d7;
   border-radius: 8px;
   background: #effaf6;
-  color: #709ccc;
+  color: #9ac3e3;
   font-size: 13px;
   font-weight: 650;
 }
