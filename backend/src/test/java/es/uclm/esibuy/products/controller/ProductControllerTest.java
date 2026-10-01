@@ -9,6 +9,7 @@ import es.uclm.esibuy.products.dto.ProductCreateRequest;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.dto.ProductSummaryResponse;
 import es.uclm.esibuy.products.service.ProductService;
+import es.uclm.esibuy.security.config.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -23,13 +24,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductController.class)
-@Import(ApiExceptionHandler.class)
+@Import({ApiExceptionHandler.class, SecurityConfig.class})
 class ProductControllerTest {
 
     @Autowired
@@ -39,7 +41,7 @@ class ProductControllerTest {
     private ProductService productService;
 
     @Test
-    @WithMockUser(username = "seller@example.com")
+    @WithMockUser(username = "seller@example.com", roles = "SELLER")
     void shouldReturnCreatedProductAndUseAuthenticatedIdentity() throws Exception {
         Product product = new Product(
                 "Auriculares", List.of("category-id"), 0, null,
@@ -60,7 +62,7 @@ class ProductControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "seller@example.com")
+    @WithMockUser(username = "seller@example.com", roles = "SELLER")
     void shouldReturnAllFieldValidationErrors() throws Exception {
         mockMvc.perform(post("/api/products")
                         .with(csrf())
@@ -76,7 +78,7 @@ class ProductControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "seller@example.com")
+    @WithMockUser(username = "seller@example.com", roles = "SELLER")
     void shouldReturnClearBadRequestForUnknownCategory() throws Exception {
         when(productService.createProduct(any(ProductCreateRequest.class), eq("seller@example.com")))
                 .thenThrow(new CategoryNotFoundException(List.of("category-id")));
@@ -90,7 +92,7 @@ class ProductControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "seller@example.com")
+    @WithMockUser(username = "seller@example.com", roles = "SELLER")
     void shouldReturnSellerSummary() throws Exception {
         when(productService.getSummary("seller@example.com"))
                 .thenReturn(new ProductSummaryResponse(12, 2, 3, 5));
@@ -101,6 +103,22 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.outOfStockProducts").value(2))
                 .andExpect(jsonPath("$.lowStockProducts").value(3))
                 .andExpect(jsonPath("$.lowStockThreshold").value(5));
+    }
+
+    @Test
+    void shouldRejectClientFromProductEndpoints() throws Exception {
+        mockMvc.perform(get("/api/products/summary")
+                        .with(user("client@example.com").roles("CLIENT")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldReturnUnauthorizedForProductCreationWithoutSession() throws Exception {
+        mockMvc.perform(post("/api/products")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validRequest()))
+                .andExpect(status().isUnauthorized());
     }
 
     private String validRequest() {

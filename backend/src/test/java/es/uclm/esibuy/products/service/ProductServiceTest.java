@@ -114,6 +114,18 @@ class ProductServiceTest {
     }
 
     @Test
+    void shouldRejectMissingAuthenticatedSellerWithoutSelectingAnySeller() {
+        ProductCreateRequest request = validRequest();
+
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                () -> productService.createProduct(request, null));
+        verify(userRepository, never()).findAll();
+        verify(userRepository, never()).findByEmailIgnoreCase(any());
+        verify(categoryRepository, never()).findAllById(any());
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
     void shouldReturnSummaryForAuthenticatedSeller() {
         User seller = org.mockito.Mockito.mock(User.class);
         when(seller.getId()).thenReturn("seller-id");

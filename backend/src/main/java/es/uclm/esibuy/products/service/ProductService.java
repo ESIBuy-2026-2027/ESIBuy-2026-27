@@ -76,10 +76,7 @@ public class ProductService {
 
     private User findSeller(String authenticatedEmail) {
         if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
-            return userRepository.findAll().stream()
-                    .filter(user -> user.getRole() == UserRole.SELLER)
-                    .findFirst()
-                    .orElseThrow(() -> new AccessDeniedException("No se encontró ningún vendedor registrado en el sistema"));
+            throw new AccessDeniedException("Se requiere una sesión de vendedor autenticada");
         }
         User seller = userRepository.findByEmailIgnoreCase(authenticatedEmail)
                 .orElseThrow(() -> new AccessDeniedException("No se encontró el vendedor autenticado"));
