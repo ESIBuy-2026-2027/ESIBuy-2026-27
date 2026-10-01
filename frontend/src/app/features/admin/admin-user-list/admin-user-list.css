@@ -145,30 +145,62 @@
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
     overflow: hidden;
+    width: 100%;
 }
 
 .user-table {
     width: 100%;
-    min-width: 860px;
+    table-layout: fixed;
     border-collapse: collapse;
     text-align: left;
 }
 
+/* Anchos fijos y proporcionales de columnas para que la tabla nunca se mueva ni desborde */
+.col-user {
+    width: 27%;
+}
+
+.col-contact {
+    width: 27%;
+}
+
+.col-role {
+    width: 14%;
+}
+
+.col-status {
+    width: 11%;
+}
+
+.col-date {
+    width: 10%;
+}
+
+.col-actions {
+    width: 11%;
+}
+
 .user-table th {
     background-color: #f8fafc;
-    padding: 1rem 1.5rem;
+    padding: 0.85rem 0.75rem;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #64748b;
     text-transform: uppercase;
-    letter-spacing: 0;
+    letter-spacing: 0.03em;
     border-bottom: 1px solid #e2e8f0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
 .user-table td {
-    padding: 1rem 1.5rem;
+    padding: 0.85rem 0.75rem;
     border-bottom: 1px solid #f1f5f9;
     vertical-align: middle;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .user-table tbody tr:hover {
@@ -180,12 +212,16 @@
 .user-cell-wrapper {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.7rem;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .avatar-img {
-    width: 40px;
-    height: 40px;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid #e2e8f0;
@@ -194,31 +230,112 @@
 .user-info {
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
 }
 
+/* Contenedor de nombre y apellido con tamaño limitado a la columna y scroll horizontal si sobrepasa */
 .user-name {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
     font-weight: 600;
     color: #111827;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+    -webkit-overflow-scrolling: touch;
+}
+
+.user-name::-webkit-scrollbar {
+    height: 3px;
+}
+
+.user-name::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.user-name::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.user-name::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 .text-muted,
 .user-id {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
+/* Contenedor de email con scroll horizontal si sobrepasa el tamaño de la columna */
 .email-text {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
     color: #334155;
     font-weight: 500;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+    -webkit-overflow-scrolling: touch;
+}
+
+.email-text::-webkit-scrollbar {
+    height: 3px;
+}
+
+.email-text::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.email-text::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.email-text::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.sede-text {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.sede-text::-webkit-scrollbar {
+    height: 3px;
+}
+
+.sede-text::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
 }
 
 /* Insignias de Roles (Badges) */
 .badge {
-    padding: 0.25rem 0.75rem;
+    padding: 0.25rem 0.65rem;
     border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 600;
     display: inline-block;
+    white-space: nowrap;
 }
 
 .badge-admin {
@@ -247,11 +364,12 @@
 
 /* Indicador de Estado Visual */
 .status-indicator {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     font-weight: 500;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
 }
 
 .status-dot {
@@ -259,6 +377,7 @@
     height: 8px;
     border-radius: 50%;
     display: inline-block;
+    flex-shrink: 0;
 }
 
 .status-dot.active {
@@ -271,25 +390,28 @@
 }
 
 /* Botones de Acción */
-.col-actions {
+.actions-wrapper {
     display: flex;
-    gap: 0.5rem;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: nowrap;
 }
 
 .btn-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
     background: #f8fafc;
     color: #475569;
     border: 1px solid #e2e8f0;
     cursor: pointer;
-    padding: 0.4rem;
+    padding: 0.25rem;
     border-radius: 6px;
     transition: background-color 0.2s ease, color 0.2s ease;
-    font-size: 1.1rem;
+    font-size: 1rem;
 }
 
 .btn-edit:hover {
@@ -311,7 +433,7 @@
 
 @media (max-width: 640px) {
     .admin-container {
-        padding: 1.25rem 0.75rem;
+        padding: 1.25rem 0.5rem;
     }
 
     .admin-header h2 {
@@ -343,11 +465,23 @@
     }
 
     .table-container {
-        overflow-x: auto;
+        overflow: hidden;
     }
 
     .user-table th,
     .user-table td {
-        padding: 0.8rem 1rem;
+        padding: 0.65rem 0.4rem;
+        font-size: 0.75rem;
+    }
+
+    .avatar-img {
+        width: 30px;
+        height: 30px;
+    }
+
+    .btn-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
     }
 }
