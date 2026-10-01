@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService, UserAdmin } from '../../../core/services/auth.service';
@@ -15,22 +15,31 @@ export class AdminUserList implements OnInit {
   cargando = signal(true);
   error = signal('');
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.cargarUsuarios();
   }
 
   cargarUsuarios(): void {
+    this.cargando.set(true);
+    this.error.set('');
+    this.cdr.markForCheck();
+
     this.authService.obtenerTodosLosUsuarios().subscribe({
       next: (data) => {
-        this.usuarios.set(data);
+        this.usuarios.set(data || []);
         this.cargando.set(false);
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        this.error.set('Error al cargar los usuarios. Verifica tus permisos.');
+        this.error.set('Error al cargar los usuarios. Verifica tus permisos o que el servidor esté activo.');
         this.cargando.set(false);
         console.error(err);
+        this.cdr.detectChanges();
       }
     });
   }

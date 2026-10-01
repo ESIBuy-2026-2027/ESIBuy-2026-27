@@ -7,15 +7,46 @@
     color: #333;
 }
 
-.admin-header h2 {
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.header-text h2 {
     margin-bottom: 0.5rem;
     color: #111827;
     font-size: 1.75rem;
 }
 
-.admin-header p {
+.header-text p {
     color: #6b7280;
-    margin-bottom: 2rem;
+    margin: 0;
+}
+
+.btn-alta-admin {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background-color: #2563eb;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    text-decoration: none;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-alta-admin:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.25);
 }
 
 /* Spinner y Alertas */
