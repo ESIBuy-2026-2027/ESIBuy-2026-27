@@ -21,7 +21,10 @@ export const routes: Routes = [
 
   // Redirecciones
   { path: 'admin', redirectTo: 'admin/usuarios', pathMatch: 'full' },
+
+  // Redirecciones compatibles
   { path: 'admin/users', redirectTo: 'admin/usuarios', pathMatch: 'full' },
+  { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
   { path: 'admin.html', redirectTo: 'admin/usuarios', pathMatch: 'full' },
 
   { path: 'products/new', component: ProductCreate, canActivate: [authGuard, roleGuard('SELLER')] },

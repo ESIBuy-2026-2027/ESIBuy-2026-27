@@ -14,6 +14,25 @@
         </div>
     </header>
 
+    <!-- Barra de Filtros -->
+    <div class="filters-bar"
+        style="display: flex; gap: 1rem; margin-bottom: 1.5rem; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <select [(ngModel)]="filtroRol" (change)="aplicarFiltros()"
+            style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc; flex: 1; max-width: 200px;">
+            <option value="">Todos los Roles</option>
+            <option value="CLIENTE">Clientes</option>
+            <option value="VENDEDOR">Vendedores</option>
+            <option value="ADMIN">Administradores</option>
+        </select>
+
+        <select [(ngModel)]="filtroEstado" (change)="aplicarFiltros()"
+            style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc; flex: 1; max-width: 200px;">
+            <option value="">Cualquier Estado</option>
+            <option value="activo">Activos</option>
+            <option value="inactivo">Inactivos / Bloqueados</option>
+        </select>
+    </div>
+
     <!-- Mensaje de Carga -->
     @if (cargando()) {
     <div class="loading-spinner">
@@ -35,12 +54,12 @@
         <table class="user-table">
             <thead>
                 <tr>
-                    <th>Usuario</th>
-                    <th>Contacto</th>
-                    <th>Rol</th>
-                    <th>Estado</th>
-                    <th>Registro</th>
-                    <th>Acciones</th>
+                    <th class="col-user">Usuario</th>
+                    <th class="col-contact">Contacto</th>
+                    <th class="col-role">Rol</th>
+                    <th class="col-status">Estado</th>
+                    <th class="col-date">Registro</th>
+                    <th class="col-actions">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -51,7 +70,7 @@
                         <div class="user-cell-wrapper">
                             <img [src]="getAvatarUrl(user.profileImage)" alt="Avatar" class="avatar-img" />
                             <div class="user-info">
-                                <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
+                                <span class="user-name" [title]="user.firstName + ' ' + user.lastName">{{ user.firstName }} {{ user.lastName }}</span>
                                 <span class="user-id">DNI: {{ user.nationalId || 'N/A' }}</span>
                             </div>
                         </div>
@@ -59,7 +78,7 @@
 
                     <!-- Columna 2: Email y Teléfono -->
                     <td class="col-contact">
-                        <div class="contact-item email-text">{{ user.email }}</div>
+                        <div class="contact-item email-text" [title]="user.email">{{ user.email }}</div>
                         <div class="contact-item text-muted">📞 {{ user.phone || 'Sin teléfono' }}</div>
                     </td>
 
@@ -69,7 +88,7 @@
                             {{ user.role || 'DESCONOCIDO' }}
                         </span>
                         @if (user.role === 'ADMIN' && user.adminProfile?.headquarters) {
-                        <div class="text-muted mt-1">
+                        <div class="text-muted mt-1 sede-text" [title]="user.adminProfile.headquarters">
                             📍 {{ user.adminProfile.headquarters }}
                         </div>
                         }
@@ -91,17 +110,19 @@
 
                     <!-- Columna 6: Acciones -->
                     <td class="col-actions">
-                        <button class="btn-icon btn-edit" title="Modificar Usuario"
-                            [routerLink]="['/admin/usuarios', user.id, 'editar']"
-                            [attr.aria-label]="'Modificar usuario ' + user.firstName + ' ' + user.lastName">✏️</button>
-                        <button class="btn-icon btn-delete" title="Eliminar / Bloquear">🗑️</button>
+                        <div class="actions-wrapper">
+                            <button class="btn-icon btn-edit" title="Modificar Usuario"
+                                [routerLink]="['/admin/usuarios', user.id, 'editar']"
+                                [attr.aria-label]="'Modificar usuario ' + user.firstName + ' ' + user.lastName">✏️</button>
+                            <button class="btn-icon btn-delete" title="Eliminar / Bloquear">🗑️</button>
+                        </div>
                     </td>
                 </tr>
                 } @empty {
                 <tr>
                     <td colspan="6">
                         <div class="empty-state">
-                            <p>No se encontraron usuarios en la base de datos.</p>
+                            <p>No se encontraron usuarios con estos filtros.</p>
                         </div>
                     </td>
                 </tr>

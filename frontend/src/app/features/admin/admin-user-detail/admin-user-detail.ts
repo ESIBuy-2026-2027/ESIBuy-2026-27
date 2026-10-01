@@ -17,16 +17,18 @@ export class AdminUserDetail implements OnInit {
   readonly guardando = signal(false);
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
+  readonly credentialMask = '••••••••••••';
   readonly form = this.formBuilder.nonNullable.group({
     firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25),
       Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
-    lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100),
+    lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50),
       Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
-    phone: ['', [Validators.maxLength(20), Validators.pattern(/^$|^\+?\d{7,15}$/)]]
+    phone: ['', [Validators.maxLength(10), Validators.pattern(/^$|^\+?\d{9}$/)]]
   });
 
   private userId = '';
   private email = '';
+  private role = '';
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -44,6 +46,7 @@ export class AdminUserDetail implements OnInit {
     this.authService.obtenerUsuarioAdmin(this.userId).subscribe({
       next: ({ data }) => {
         this.email = data.email;
+        this.role = data.role;
         this.form.patchValue({
           firstName: data.firstName,
           lastName: data.lastName,
@@ -60,6 +63,10 @@ export class AdminUserDetail implements OnInit {
 
   getEmail(): string {
     return this.email;
+  }
+
+  getRole(): string {
+    return this.role;
   }
 
   onSubmit(): void {

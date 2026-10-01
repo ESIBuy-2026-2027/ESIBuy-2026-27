@@ -163,7 +163,7 @@ export class Register {
           [
             Validators.required,
             Validators.minLength(2),
-            Validators.maxLength(100)
+            Validators.maxLength(50)
           ]
         ],
 
@@ -244,7 +244,7 @@ export class Register {
           [
             Validators.required,
             Validators.minLength(2),
-            Validators.maxLength(100)
+            Validators.maxLength(50)
           ]
         ],
 

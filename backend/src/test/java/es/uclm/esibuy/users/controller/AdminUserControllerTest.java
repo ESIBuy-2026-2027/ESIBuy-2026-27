@@ -55,7 +55,7 @@ class AdminUserControllerTest {
                 .andExpect(header().exists("X-Correlation-ID"))
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.email").value("cliente@example.com"))
-                .andExpect(jsonPath("$.data.role").doesNotExist())
+                .andExpect(jsonPath("$.data.role").value("CLIENT"))
                 .andExpect(jsonPath("$.data.password").doesNotExist());
 
         verify(adminUserService).actualizar(eq("user-1"), any(UpdateUserRequestDTO.class));

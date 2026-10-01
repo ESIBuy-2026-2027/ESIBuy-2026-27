@@ -39,6 +39,7 @@ export interface UserResponse {
   firstName: string;
   lastName: string;
   phone: string | null;
+  role: string;
 }
 
 export interface AdminCandidate {
@@ -134,6 +135,17 @@ export class AuthService {
 
   obtenerTodosLosUsuarios(): Observable<UserAdmin[]> {
     return this.http.get<UserAdmin[]>('/api/admin/usuarios', { withCredentials: true });
+  obtenerTodosLosUsuarios(rol?: string, estado?: string): Observable<UserAdmin[]> {
+    let params = new HttpParams();
+
+    if (rol) {
+      params = params.set('rol', rol);
+    }
+    if (estado) {
+      params = params.set('estado', estado);
+    }
+
+    return this.http.get<UserAdmin[]>('/api/admin/usuarios', { params });
   }
 
   obtenerUsuarioAdmin(id: string): Observable<ApiResponse<UserResponse>> {
