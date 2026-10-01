@@ -31,17 +31,17 @@
           <h2 class="section-title" id="account-heading">Información de la cuenta</h2>
           <div class="form-row readonly-row">
             <div class="form-group">
-              <label class="form-label" for="accountEmail">Correo electrónico <span class="locked-badge">Inamovible</span></label>
+              <label class="form-label" for="accountEmail">Correo electrónico</label>
               <input id="accountEmail" type="email" class="form-control readonly-control" [value]="getEmail()" readonly aria-readonly="true" />
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="accountRole">Rol <span class="locked-badge">Inamovible</span></label>
+              <label class="form-label" for="accountRole">Rol</label>
               <input id="accountRole" type="text" class="form-control readonly-control" [value]="getRole()" readonly aria-readonly="true" />
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="accountCredential">Contraseña <span class="locked-badge">Inamovible</span></label>
+              <label class="form-label" for="accountCredential">Contraseña</label>
               <input id="accountCredential" type="password" class="form-control readonly-control"
                 [value]="credentialMask" readonly aria-readonly="true" autocomplete="off" />
             </div>
