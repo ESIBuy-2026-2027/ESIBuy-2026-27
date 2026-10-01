@@ -1,7 +1,17 @@
 <div class="admin-container">
     <header class="admin-header">
-        <h2>Gestión de Usuarios</h2>
-        <p>Listado completo de cuentas registradas en el sistema ESIBuy.</p>
+        <div class="header-content">
+            <div class="header-text">
+                <h2>Gestión de Usuarios</h2>
+                <p>Listado completo de cuentas registradas en el sistema ESIBuy.</p>
+            </div>
+            <a routerLink="/admin/altas" class="btn-alta-admin" id="btnDarAltaAdmin">
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Dar Alta Administrador
+            </a>
+        </div>
     </header>
 
     <!-- Barra de Filtros -->
@@ -46,7 +56,7 @@
                 <tr>
                     <th>Usuario</th>
                     <th>Contacto</th>
-                    <th>Rol / Sede</th>
+                    <th>Rol</th>
                     <th>Estado</th>
                     <th>Registro</th>
                     <th>Acciones</th>
@@ -100,7 +110,9 @@
 
                     <!-- Columna 6: Acciones -->
                     <td class="col-actions">
-                        <button class="btn-icon btn-edit" title="Modificar Usuario">✏️</button>
+                        <button class="btn-icon btn-edit" title="Modificar Usuario"
+                            [routerLink]="['/admin/usuarios', user.id, 'editar']"
+                            [attr.aria-label]="'Modificar usuario ' + user.firstName + ' ' + user.lastName">✏️</button>
                         <button class="btn-icon btn-delete" title="Eliminar / Bloquear">🗑️</button>
                     </td>
                 </tr>

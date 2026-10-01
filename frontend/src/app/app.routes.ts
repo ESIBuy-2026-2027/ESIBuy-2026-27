@@ -5,13 +5,15 @@ import { Register } from './features/identity/register/register';
 import { AdminUserCreate } from './features/admin/admin-user-create/admin-user-create';
 import { ProductCreate } from './features/products/product-create/product-create';
 import { AdminUserList } from './features/admin/admin-user-list/admin-user-list';
+import { AdminUserDetail } from './features/admin/admin-user-detail/admin-user-detail';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
-  { path: 'admin', component: AdminUserList },
-  { path: 'admin/altas', component: AdminUserCreate },
+  { path: 'admin/users/new', component: AdminUserCreate },
+  { path: 'admin/usuarios', component: AdminUserList },
+  { path: 'admin/usuarios/:id/editar', component: AdminUserDetail },
 
   // Redirecciones compatibles
   { path: 'admin/usuarios', redirectTo: 'admin', pathMatch: 'full' },

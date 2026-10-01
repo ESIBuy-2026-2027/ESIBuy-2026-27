@@ -8,6 +8,9 @@ import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.service.UserService;
+import es.uclm.esibuy.security.service.SessionAuthenticationService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final SessionAuthenticationService sessionAuthenticationService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, SessionAuthenticationService sessionAuthenticationService) {
         this.userService = userService;
+        this.sessionAuthenticationService = sessionAuthenticationService;
     }
 
     @PostMapping("/register/client")
@@ -45,8 +50,10 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest request,
+            HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         User user = userService.login(request);
+        sessionAuthenticationService.authenticate(user, servletRequest, servletResponse);
         return ResponseEntity.ok(buildUserResponse(user));
     }
 

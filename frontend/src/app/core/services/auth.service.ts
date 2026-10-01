@@ -18,6 +18,28 @@ export interface UserAdmin {
   adminProfile?: any;
 }
 
+export interface UpdateUserRequest {
+  firstName: string;
+  lastName: string;
+  phone: string;
+}
+
+export interface UserResponse {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string | null;
+  role: string;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  correlationId: string | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -61,5 +83,13 @@ export class AuthService {
     }
 
     return this.http.get<UserAdmin[]>('/api/admin/usuarios', { params });
+  }
+
+  obtenerUsuarioAdmin(id: string): Observable<ApiResponse<UserResponse>> {
+    return this.http.get<ApiResponse<UserResponse>>(`/api/v1/admin/users/${encodeURIComponent(id)}`);
+  }
+
+  actualizarUsuarioAdmin(id: string, data: UpdateUserRequest): Observable<ApiResponse<UserResponse>> {
+    return this.http.put<ApiResponse<UserResponse>>(`/api/v1/admin/users/${encodeURIComponent(id)}`, data);
   }
 }
