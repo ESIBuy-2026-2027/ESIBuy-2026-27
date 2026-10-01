@@ -1,5 +1,4 @@
 package es.uclm.esibuy.users.controller;
-
 import java.util.List;
 import es.uclm.esibuy.users.dto.UserAdminDTO;
 import es.uclm.esibuy.common.exception.ApiExceptionHandler;
@@ -129,12 +128,7 @@ class AdminControllerTest {
 
     @Test
     void shouldReturnTodosLosUsuarios() throws Exception {
-        // Arrange: Simulamos que el servicio devuelve una lista (usaremos nuestro
-        // futuro DTO)
-        when(adminService.obtenerUsuariosFiltrados(any(), any())).thenReturn(List.of());
-
-        // Act & Assert: Verificamos que el nuevo endpoint responde con 200 OK y un
-        // array
+        when(adminService.obtenerTodosLosUsuarios()).thenReturn(List.of());
         mockMvc.perform(get("/api/admin/usuarios")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

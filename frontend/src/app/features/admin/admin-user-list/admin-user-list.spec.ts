@@ -1,92 +1,98 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AdminUserList } from './admin-user-list';
-import { AuthService, UserAdmin } from '../../../core/services/auth.service';
-import { of } from 'rxjs';
 import { provideRouter } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { of, throwError } from 'rxjs';
+import { vi } from 'vitest';
+import { AuthService } from '../../../core/services/auth.service';
+import { AdminUserList } from './admin-user-list';
 
 describe('AdminUserList', () => {
   let component: AdminUserList;
   let fixture: ComponentFixture<AdminUserList>;
-  let authServiceSpy: any;
-
-  const mockUsers: UserAdmin[] = [
-    {
-      id: '1',
-      firstName: 'Tomas',
-      lastName: 'Alarma',
-      email: 'tomas@example.com',
-      nationalId: '12345678A',
-      phone: '600111222',
-      role: 'ADMIN',
-      active: true,
-      profileImage: 'assets/images/avatars/av_all.jpeg',
-      createdAt: '2026-09-29T20:46:58.860Z',
-      adminProfile: { headquarters: 'Ciudad Real', hireDate: '2026-09-29T20:46:58.86' }
-    },
-    {
-      id: '2',
-      firstName: 'Celia',
-      lastName: 'Nuñez',
-      email: 'celia@example.com',
-      nationalId: '87654321B',
-      phone: '600333444',
-      role: 'SELLER',
-      active: false,
-      profileImage: 'https://example.com/avatar.svg',
-      createdAt: '2026-09-30T08:27:30.026Z'
-    }
-  ];
+  let obtenerTodosLosUsuarios: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    authServiceSpy = {
-      obtenerTodosLosUsuarios: vi.fn().mockReturnValue(of(mockUsers))
-    };
-
+    obtenerTodosLosUsuarios = vi.fn().mockReturnValue(of([]));
     await TestBed.configureTestingModule({
       imports: [AdminUserList],
       providers: [
         provideRouter([]),
-        { provide: AuthService, useValue: authServiceSpy }
-      ]
+        { provide: AuthService, useValue: { obtenerTodosLosUsuarios } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AdminUserList);
     component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
-  it('should create the component', () => {
+  it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load and render users in table and not show loading spinner', async () => {
+  it('renders users returned by the admin endpoint and links to admin creation', () => {
+    const users = [{
+      id: 'user-1',
+      email: 'ana@example.com',
+      firstName: 'Ana',
+      lastName: 'López',
+      nationalId: '12345678Z',
+      phone: '600123456',
+      profileImage: '',
+      role: 'CLIENT',
+      active: true,
+      createdAt: '2026-01-01T00:00:00Z',
+    }];
+    obtenerTodosLosUsuarios.mockReturnValue(of(users));
+
+    component.cargarUsuarios();
     fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
 
-    expect(authServiceSpy.obtenerTodosLosUsuarios).toHaveBeenCalled();
-    expect(component.cargando()).toBe(false);
-    expect(component.usuarios().length).toBe(2);
-
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.loading-spinner')).toBeNull();
-
-    const rows = compiled.querySelectorAll('.user-table tbody tr');
-    expect(rows.length).toBe(2);
-    expect(compiled.textContent).toContain('Tomas Alarma');
-    expect(compiled.textContent).toContain('tomas@example.com');
-    expect(compiled.textContent).toContain('Celia Nuñez');
-    expect(compiled.textContent).toContain('celia@example.com');
+    const rendered = fixture.nativeElement as HTMLElement;
+    expect(rendered.textContent).toContain('Ana López');
+    expect(rendered.textContent).toContain('ana@example.com');
+    expect(rendered.querySelector('#btnDarAltaAdmin')?.getAttribute('href')).toContain('/admin/altas');
   });
 
-  it('should have a button to navigate to /admin/altas', async () => {
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+  it('loads and displays the users returned by the admin endpoint', () => {
+    const users = [{
+      id: 'user-1',
+      email: 'client@example.com',
+      firstName: 'Ana',
+      lastName: 'López',
+      nationalId: '12345678Z',
+      phone: '',
+      profileImage: '',
+      role: 'CLIENT',
+      active: true,
+      createdAt: '2026-01-01T00:00:00Z',
+    }];
+    obtenerTodosLosUsuarios.mockReturnValue(of(users));
 
-    const compiled = fixture.nativeElement as HTMLElement;
-    const btnAlta = compiled.querySelector('#btnDarAltaAdmin') as HTMLAnchorElement;
-    expect(btnAlta).not.toBeNull();
-    expect(btnAlta.textContent).toContain('Dar Alta Administrador');
-    expect(btnAlta.getAttribute('routerLink') || btnAlta.getAttribute('href')).toContain('/admin/altas');
+    component.cargarUsuarios();
+
+    expect(component.usuarios()).toEqual(users);
+    expect(component.cargando()).toBe(false);
+    expect(obtenerTodosLosUsuarios).toHaveBeenCalled();
+  });
+
+  it('shows a permissions error only when the endpoint returns 403', () => {
+    obtenerTodosLosUsuarios.mockReturnValue(throwError(() =>
+      new HttpErrorResponse({ status: 403, statusText: 'Forbidden' })));
+
+    component.cargarUsuarios();
+
+    expect(component.error()).toBe('No tienes permisos para consultar los usuarios.');
+    expect(component.cargando()).toBe(false);
+  });
+
+  it('shows a general message for errors other than permission failures', () => {
+    obtenerTodosLosUsuarios.mockReturnValue(throwError(() =>
+      new HttpErrorResponse({ status: 404, statusText: 'Not Found' })));
+
+    component.cargarUsuarios();
+
+    expect(component.error()).toBe('No se pudo cargar la lista de usuarios. Inténtalo de nuevo.');
   });
 });

@@ -1,8 +1,10 @@
 package es.uclm.esibuy.users.service;
 
 import java.util.Locale;
+import java.util.List;
 
 import es.uclm.esibuy.common.exception.DuplicateUserException;
+import es.uclm.esibuy.common.exception.InvalidCredentialsException;
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
 import es.uclm.esibuy.users.dto.LoginRequest;
@@ -94,14 +96,14 @@ public class UserService {
 
     public User login(LoginRequest request) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
-        User user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        return userRepository.findByEmailIgnoreCase(email)
+                .filter(user -> user.getPasswordHash() != null
+                        && passwordEncoder.matches(request.getPassword(), user.getPasswordHash()))
+                .orElseThrow(InvalidCredentialsException::new);
+    }
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new IllegalArgumentException("Contraseña incorrecta");
-        }
-
-        return user;
+    public List<User> findAllUsers() {
+        return userRepository.findAll();
     }
 
     private String blankToNull(String value) {

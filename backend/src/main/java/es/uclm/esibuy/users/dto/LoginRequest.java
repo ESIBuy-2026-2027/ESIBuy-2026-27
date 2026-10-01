@@ -2,7 +2,6 @@ package es.uclm.esibuy.users.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class LoginRequest {
@@ -12,8 +11,7 @@ public class LoginRequest {
     private String email;
 
     @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 12, max = 128, message = "La contraseña debe tener entre 12 y 128 caracteres")
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9])\\S+$", message = "La contraseña debe tener mayúscula, minúscula, número y caracter especial")
+    @Size(max = 128, message = "La contraseña no puede superar los 128 caracteres")
     private String password;
 
     public String getEmail() {

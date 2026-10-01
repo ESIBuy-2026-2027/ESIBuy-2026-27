@@ -1,5 +1,6 @@
-import { Component, OnInit, signal, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms'; // <-- IMPORTANTE: Añadido para los filtros
 import { AuthService, UserAdmin } from '../../../core/services/auth.service';
@@ -35,15 +36,18 @@ export class AdminUserList implements OnInit {
 
     this.authService.obtenerTodosLosUsuarios(this.filtroRol, this.filtroEstado).subscribe({
       next: (data) => {
-        this.usuarios.set(data || []);
+        this.usuarios.set(data);
         this.cargando.set(false);
-        this.cdr.detectChanges();
       },
-      error: (err) => {
-        this.error.set('Error al cargar los usuarios. Verifica tus permisos o que el servidor esté activo.');
+      error: (err: unknown) => {
+        if (err instanceof HttpErrorResponse && err.status === 403) {
+          this.error.set('No tienes permisos para consultar los usuarios.');
+        } else if (err instanceof HttpErrorResponse && err.status === 401) {
+          this.error.set('Tu sesión no es válida. Inicia sesión de nuevo.');
+        } else {
+          this.error.set('No se pudo cargar la lista de usuarios. Inténtalo de nuevo.');
+        }
         this.cargando.set(false);
-        console.error(err);
-        this.cdr.detectChanges();
       }
     });
   }

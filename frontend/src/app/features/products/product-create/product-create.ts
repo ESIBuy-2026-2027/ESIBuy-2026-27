@@ -1,135 +1,223 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { DestroyRef, Component, OnInit, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Category, ProductCreateRequest, ProductsService } from '../products.service';
+
+interface ProductFormControls {
+  nombre: FormControl<string>;
+  categoriaIds: FormControl<string[]>;
+  stock: FormControl<number | null>;
+  descripcion: FormControl<string>;
+  precio: FormControl<number | null>;
+  descuento: FormControl<number | null>;
+  descuentoPremium: FormControl<number | null>;
+  imagen: FormControl<string>;
+  disponible: FormControl<boolean | null>;
+}
+
+type ProductFormField = keyof ProductFormControls;
+
+const PRODUCT_FORM_FIELDS: readonly ProductFormField[] = [
+  'nombre',
+  'categoriaIds',
+  'stock',
+  'descripcion',
+  'precio',
+  'descuento',
+  'descuentoPremium',
+  'imagen',
+  'disponible',
+];
 
 @Component({
   selector: 'app-product-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
-  template: `
-    <div class="product-create-container">
-      <h2>Alta de Producto</h2>
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label>Nombre del Producto *</label>
-          <input type="text" formControlName="nombre" />
-          <span class="error" *ngIf="form.get('nombre')?.touched && form.get('nombre')?.hasError('required')">El nombre es obligatorio</span>
-        </div>
-
-        <div class="form-group">
-          <label>Categoría *</label>
-          <select formControlName="categoria">
-            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
-          </select>
-          <span class="error" *ngIf="form.get('categoria')?.touched && form.get('categoria')?.hasError('required')">La categoría es obligatoria</span>
-        </div>
-
-        <div class="form-group">
-          <label>Stock</label>
-          <input type="number" formControlName="stock" min="0" />
-        </div>
-
-        <div class="form-group">
-          <label>Descripción</label>
-          <textarea formControlName="descripcion" rows="4"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Precio (€) *</label>
-          <input type="number" step="0.01" formControlName="precio" min="0" />
-          <span class="error" *ngIf="form.get('precio')?.touched && form.get('precio')?.hasError('required')">El precio es obligatorio</span>
-        </div>
-
-        <div class="form-group">
-          <label>Descuento General (%)</label>
-          <input type="number" formControlName="descuento" min="0" max="100" />
-        </div>
-
-        <div class="form-group">
-          <label>Descuento Premium (%) (no acumulable con general)</label>
-          <input type="number" formControlName="descuentoPremium" min="0" max="100" />
-        </div>
-
-        <div class="form-group">
-          <label>Imagen del Producto</label>
-          <div class="radio-options">
-            <label><input type="radio" name="imgOpt" [(ngModel)]="imageOption" [ngModelOptions]="{standalone: true}" value="default" /> Imagen por defecto</label>
-            <label><input type="radio" name="imgOpt" [(ngModel)]="imageOption" [ngModelOptions]="{standalone: true}" value="upload" /> Subir imagen</label>
-          </div>
-          <div *ngIf="imageOption === 'upload'" style="margin-top: 0.5rem;">
-            <input type="file" (change)="onFileSelected($event)" accept="image/*" />
-          </div>
-          <div class="avatar-preview" style="margin-top: 0.5rem;">
-            <img [src]="productImage" alt="Imagen del producto" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #ccc;" />
-          </div>
-        </div>
-
-        <div class="form-group checkbox-group">
-          <label>
-            <input type="checkbox" formControlName="disponible" />
-            Disponible / Visible *
-          </label>
-        </div>
-
-        <button type="submit" class="btn-submit">Crear Producto</button>
-      </form>
-    </div>
-  `,
-  styles: [`
-    .product-create-container { max-width: 600px; margin: 2rem auto; padding: 2rem; border: 1px solid #ccc; border-radius: 8px; font-family: sans-serif; }
-    .form-group { display: flex; flex-direction: column; margin-bottom: 1rem; }
-    .checkbox-group { flex-direction: row; align-items: center; gap: 0.5rem; }
-    .form-group label { font-weight: bold; margin-bottom: 0.3rem; }
-    .form-group input, .form-group select, .form-group textarea { padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
-    .error { color: red; font-size: 0.85rem; }
-    .btn-submit { width: 100%; padding: 0.75rem; background: #28a745; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-  `]
+  imports: [ReactiveFormsModule, RouterLink],
+  templateUrl: './product-create.html',
+  styleUrl: './product-create.css',
 })
-export class ProductCreate {
-  form: FormGroup;
-  categories = ['Electrónica', 'Hogar', 'Moda', 'Deportes', 'Libros', 'Otros'];
-  imageOption: 'default' | 'upload' = 'default';
-  uploadedImageBase64: string | null = null;
-  defaultProductImage = 'https://via.placeholder.com/150?text=Producto';
+export class ProductCreate implements OnInit {
+  private readonly productsService = inject(ProductsService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  constructor(private fb: FormBuilder, private router: Router) {
-    this.form = this.fb.group({
-      nombre: ['', [Validators.required]],
-      categoria: [this.categories[0], [Validators.required]],
-      stock: [0, [Validators.min(0)]],
-      descripcion: [''],
-      precio: [null, [Validators.required, Validators.min(0)]],
-      descuento: [0, [Validators.min(0), Validators.max(100)]],
-      descuentoPremium: [0, [Validators.min(0), Validators.max(100)]],
-      disponible: [true, [Validators.required]]
+  readonly form = new FormGroup<ProductFormControls>({
+    nombre: new FormControl('', { nonNullable: true, validators: [
+      Validators.required,
+      Validators.pattern(/\S/),
+      Validators.maxLength(150),
+    ] }),
+    categoriaIds: new FormControl<string[]>({ value: [], disabled: true }, {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    stock: new FormControl<number | null>(null, [
+      Validators.min(0),
+      Validators.pattern(/^\d+$/),
+    ]),
+    descripcion: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(2000)],
+    }),
+    precio: new FormControl<number | null>(null, [
+      Validators.required,
+      Validators.min(Number.MIN_VALUE),
+    ]),
+    descuento: new FormControl<number | null>(null, [
+      Validators.min(0),
+      Validators.max(100),
+    ]),
+    descuentoPremium: new FormControl<number | null>(null, [
+      Validators.min(0),
+      Validators.max(100),
+    ]),
+    imagen: new FormControl('', {
+      nonNullable: true,
+      validators: [
+        Validators.maxLength(2000),
+        Validators.pattern(/^$|^https?:\/\/\S+$/i),
+      ],
+    }),
+    disponible: new FormControl<boolean | null>(true, [Validators.required]),
+  });
+
+  categories: Category[] = [];
+  categoriesLoading = true;
+  categoriesError = false;
+  submitting = signal(false);
+  submitSuccess = signal(false);
+  submitError = signal<string | null>(null);
+  serverFieldErrors: Partial<Record<ProductFormField, string>> = {};
+
+  ngOnInit(): void {
+    this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.submitSuccess.set(false);
+      this.serverFieldErrors = {};
+      this.submitError.set(null);
+    });
+
+    this.productsService.getCategories().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+        this.categoriesLoading = false;
+        if (categories.length > 0) {
+          this.form.controls.categoriaIds.enable();
+        }
+      },
+      error: () => {
+        this.categoriesError = true;
+        this.categoriesLoading = false;
+      },
     });
   }
 
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => { this.uploadedImageBase64 = reader.result as string; };
-      reader.readAsDataURL(file);
-    }
-  }
+  onSubmit(): void {
+    this.submitSuccess.set(false);
+    this.submitError.set(null);
 
-  get productImage(): string {
-    return (this.imageOption === 'upload' && this.uploadedImageBase64) ? this.uploadedImageBase64 : this.defaultProductImage;
-  }
-
-  onSubmit() {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.categoriesLoading || this.categoriesError
+      || this.categories.length === 0 || this.submitting()) {
       this.form.markAllAsTouched();
       return;
     }
-    const payload = {
-      ...this.form.value,
-      imagen: this.productImage
+
+    this.submitting.set(true);
+    this.productsService.createProduct(this.toRequest()).subscribe({
+      next: () => {
+        this.submitting.set(false);
+        this.submitSuccess.set(true);
+      },
+      error: (error: unknown) => {
+        this.submitting.set(false);
+        this.handleSubmitError(error);
+      },
+    });
+  }
+
+  private handleSubmitError(error: unknown): void {
+    this.serverFieldErrors = {};
+
+    if (!(error instanceof HttpErrorResponse) || !this.isRecord(error.error)) {
+      this.submitError.set('No se pudo guardar el producto. Inténtalo de nuevo.');
+      return;
+    }
+
+    const response = error.error;
+    const message = typeof response['message'] === 'string' ? response['message'] : null;
+    const errors = this.isRecord(response['errors']) ? response['errors'] : {};
+    const unrecognizedErrors: string[] = [];
+
+    for (const [field, fieldError] of Object.entries(errors)) {
+      if (typeof fieldError !== 'string') {
+        continue;
+      }
+
+      const matchingField = PRODUCT_FORM_FIELDS.find((formField) => formField === field);
+      if (matchingField) {
+        this.serverFieldErrors[matchingField] = fieldError;
+      } else {
+        unrecognizedErrors.push(`${field}: ${fieldError}`);
+      }
+    }
+
+    if (message && /categor[ií]as?/i.test(message) && /no existen|no existe|no válid/i.test(message)) {
+      this.serverFieldErrors.categoriaIds = message;
+      this.submitError.set(message);
+    } else if (unrecognizedErrors.length > 0) {
+      this.submitError.set([message, ...unrecognizedErrors].filter(Boolean).join('. '));
+    } else if (Object.keys(this.serverFieldErrors).length > 0) {
+      this.submitError.set('Revisa los campos marcados y vuelve a intentarlo.');
+    } else {
+      this.submitError.set(message || this.getFallbackError(error.status));
+    }
+  }
+
+  private getFallbackError(status: number): string {
+    if (status === 0) {
+      return 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
+    }
+    if (status === 401) {
+      return 'Tu sesión ha caducado. Inicia sesión de nuevo para guardar el producto.';
+    }
+    if (status === 403) {
+      return 'No tienes permiso para crear productos.';
+    }
+    if (status >= 500) {
+      return 'El servidor no pudo guardar el producto. Inténtalo de nuevo más tarde.';
+    }
+    return 'No se pudo guardar el producto. Inténtalo de nuevo.';
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  }
+
+  private toRequest(): ProductCreateRequest {
+    const value = this.form.getRawValue();
+    const request: ProductCreateRequest = {
+      name: value.nombre.trim(),
+      categoryIds: value.categoriaIds,
+      price: value.precio ?? 0,
+      available: value.disponible ?? false,
     };
-    console.log('Alta de Producto:', payload);
-    alert('Producto creado exitosamente.');
-    this.router.navigate(['/']);
+
+    if (value.stock !== null) {
+      request.stock = value.stock;
+    }
+    if (value.descripcion.trim()) {
+      request.description = value.descripcion.trim();
+    }
+    if (value.descuento !== null) {
+      request.discount = value.descuento;
+    }
+    if (value.descuentoPremium !== null) {
+      request.premiumDiscount = value.descuentoPremium;
+    }
+    if (value.imagen.trim()) {
+      request.imageUrl = value.imagen.trim();
+    }
+
+    return request;
   }
 }

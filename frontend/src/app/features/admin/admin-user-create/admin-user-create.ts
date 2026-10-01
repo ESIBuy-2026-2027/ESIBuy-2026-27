@@ -6,7 +6,7 @@ import {
   FormGroup,
   Validators
 } from '@angular/forms';
-import { AuthService } from '../../../core/services/auth.service';
+import { AdminCandidate, AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-admin-user-create',
@@ -22,8 +22,8 @@ export class AdminUserCreate implements OnInit {
 
   form: FormGroup;
 
-  candidatos: any[] = [];
-  candidatoSeleccionado: any = null;
+  candidatos: AdminCandidate[] = [];
+  candidatoSeleccionado: AdminCandidate | null = null;
 
   loadingCandidatos = false;
   submitting = false;
@@ -176,7 +176,7 @@ export class AdminUserCreate implements OnInit {
     this.candidatoSeleccionado =
       this.candidatos.find(
         c => String(c.id) === String(id)
-      );
+      ) ?? null;
 
 
     if (!this.candidatoSeleccionado) {

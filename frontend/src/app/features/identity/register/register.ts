@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -10,6 +11,7 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { Category, ProductsService } from '../../products/products.service';
 
 export function isAdultValidator(control: AbstractControl): ValidationErrors | null {
   if (!control.value) return null;
@@ -83,21 +85,36 @@ export class Register {
 
   selectedAvatar: string = this.clientAvatars[0];
 
-  categories = [
-    'Electrónica',
-    'Hogar',
-    'Moda',
-    'Deportes',
-    'Libros',
-    'Otros'
-  ];
+  categories: Category[] = [];
+
+  categoriesLoading = true;
+
+  categoriesError = false;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private productsService: ProductsService
   ) {
     this.form = this.createForm();
+    this.loadCategories();
+  }
+
+  private loadCategories(): void {
+    this.productsService.getCategories()
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: (categories) => {
+          this.categories = categories;
+          this.categoriesLoading = false;
+          this.form.get('defaultCategory')?.setValue(categories[0]?.name ?? '');
+        },
+        error: () => {
+          this.categoriesLoading = false;
+          this.categoriesError = true;
+        }
+      });
   }
 
   setRole(role: 'cliente' | 'vendedor'): void {
@@ -232,7 +249,7 @@ export class Register {
         ],
 
         defaultCategory: [
-          this.categories[0],
+          this.categories[0]?.name ?? '',
           [
             Validators.required
           ]
@@ -380,4 +397,3 @@ export class Register {
     }
   }
 }
-

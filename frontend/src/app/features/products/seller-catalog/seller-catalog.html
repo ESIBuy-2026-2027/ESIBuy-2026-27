@@ -1,0 +1,107 @@
+<div class="seller-layout">
+  <aside class="sidebar" aria-label="Panel del vendedor">
+    <a class="brand" routerLink="/" aria-label="ESIBuy, inicio">
+      <span class="brand-mark" aria-hidden="true">E</span>
+      <span>ESI<span class="brand-accent">Buy</span></span>
+    </a>
+
+    <div class="sidebar-caption">GESTIÓN DE VENTA</div>
+    <nav class="seller-navigation" aria-label="Navegación del vendedor">
+      <a class="navigation-link is-active" routerLink="/seller/catalog" aria-current="page">
+        <span class="navigation-icon" aria-hidden="true">▦</span>
+        <span>Mi catálogo</span>
+      </a>
+      <a class="navigation-link" routerLink="/products/new">
+        <span class="navigation-icon" aria-hidden="true">＋</span>
+        <span>Añadir producto</span>
+      </a>
+    </nav>
+
+  </aside>
+
+  <div class="workspace">
+    <header class="topbar">
+      <span class="breadcrumb">Panel del vendedor <span aria-hidden="true">/</span> Catálogo</span>
+      <a class="topbar-link" routerLink="/">Volver a ESIBuy</a>
+    </header>
+
+    <main class="catalog-content">
+      <section class="page-heading" aria-labelledby="catalog-title">
+        <div>
+          <p class="eyebrow">TU ESPACIO DE VENTA</p>
+          <h1 id="catalog-title">Catálogo de productos</h1>
+          <p class="page-description">Organiza y amplía la oferta de tu tienda en ESIBuy.</p>
+        </div>
+        <a class="primary-action" routerLink="/products/new">
+          <span aria-hidden="true">＋</span>
+          Añadir producto
+        </a>
+      </section>
+
+      <section class="summary-region" aria-label="Resumen del catálogo">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">VISTA GENERAL</p>
+            <h2>Tu catálogo, de un vistazo</h2>
+          </div>
+        </div>
+        @if (loading()) {
+          <p class="metrics-message" role="status">Cargando las métricas del catálogo…</p>
+        } @else if (loadError()) {
+          <div class="metrics-error" role="alert">
+            <span>No se pudieron cargar las métricas. Inténtalo de nuevo.</span>
+            <button type="button" aria-label="Reintentar carga de métricas" (click)="loadSummary()">Reintentar</button>
+          </div>
+        } @else if (summary(); as metrics) {
+          <div class="metric-grid" aria-live="polite">
+            <article class="metric-card">
+              <span class="metric-icon products-icon" aria-hidden="true">▦</span>
+              <div>
+                <p class="metric-label">Total de productos</p>
+                <p class="metric-value">{{ metrics.totalProductos }}</p>
+                <p class="metric-detail">Productos en tu catálogo</p>
+              </div>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon stock-icon" aria-hidden="true">!</span>
+              <div>
+                <p class="metric-label">Avisos de stock</p>
+                <p class="metric-value">{{ metrics.productosSinStock + metrics.productosStockBajo }} avisos</p>
+                <p class="metric-detail">
+                  {{ metrics.productosSinStock }} sin stock · {{ metrics.productosStockBajo }}
+                  entre 1 y {{ metrics.umbralStockBajo }} unidades
+                </p>
+              </div>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon status-icon" aria-hidden="true">✓</span>
+              <div>
+                <p class="metric-label">Estado del catálogo</p>
+                <p class="metric-value">
+                  {{ metrics.totalProductos > 0 ? 'Catálogo activo' : 'Catálogo vacío' }}
+                </p>
+                <p class="metric-detail">
+                  {{ metrics.totalProductos > 0 ? 'Tu oferta está en marcha' : 'Añade tu primer producto' }}
+                </p>
+              </div>
+            </article>
+          </div>
+        }
+      </section>
+
+      <section class="products-region" aria-label="Productos del catálogo">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">INVENTARIO</p>
+            <h2>Mis productos</h2>
+          </div>
+        </div>
+        <div class="empty-state">
+          <h3>La gestión de tus productos</h3>
+          <p>El listado de productos aparecerá en esta sección.</p>
+          <a class="secondary-action" routerLink="/products/new">Crear mi primer producto</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>

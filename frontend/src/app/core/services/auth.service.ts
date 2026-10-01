@@ -1,21 +1,30 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { computed, Injectable, signal } from '@angular/core';
+import { Observable, catchError, of, tap, throwError } from 'rxjs';
+
+export type UserRole = 'CLIENT' | 'SELLER' | 'ADMIN';
+
+export interface AuthenticatedUser {
+  id: string;
+  email: string;
+  role: UserRole;
+  active: boolean;
+}
 
 export interface UserAdmin {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  nationalId: string;
-  phone: string;
-  profileImage: string;
-  role: string;
+  nationalId: string | null;
+  phone: string | null;
+  profileImage: string | null;
+  role: UserRole;
   active: boolean;
-  createdAt: string;
-  clientProfile?: any;
-  sellerProfile?: any;
-  adminProfile?: any;
+  createdAt: string | null;
+  clientProfile?: { birthDate?: string; customerType?: string } | null;
+  sellerProfile?: { businessName?: string; defaultCategory?: string } | null;
+  adminProfile?: { headquarters?: string; hireDate?: string } | null;
 }
 
 export interface UpdateUserRequest {
@@ -33,6 +42,19 @@ export interface UserResponse {
   role: string;
 }
 
+export interface AdminCandidate {
+  id: string;
+  nombre: string;
+  apellidos: string;
+  email: string;
+  rol: UserRole | null;
+  activo: boolean;
+  imagenPerfil: string | null;
+  sede: string | null;
+  fechaRegistro: string | null;
+  fechaIncorporacion: string | null;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -40,38 +62,79 @@ export interface ApiResponse<T> {
   correlationId: string | null;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+export interface PromotionRequest {
+  nombre: string;
+  apellidos: string;
+  sede: string | null;
+  imagenPerfil: string;
+}
+
+@Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly apiUrl = '/api/users';
+  private readonly currentUserSignal = signal<AuthenticatedUser | null>(null);
+  readonly currentUser = this.currentUserSignal.asReadonly();
+  readonly isAuthenticated = computed(() => this.currentUserSignal() !== null);
 
   constructor(private readonly http: HttpClient) {}
 
-  registerClient(data: any): Observable<any> {
+  registerClient(data: unknown): Observable<unknown> {
     return this.http.post(`${this.apiUrl}/register/client`, data);
   }
 
-  registerSeller(data: any): Observable<any> {
+  registerSeller(data: unknown): Observable<unknown> {
     return this.http.post(`${this.apiUrl}/register/seller`, data);
   }
 
-  createAdmin(data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/admin`, data);
+  createAdmin(data: unknown): Observable<unknown> {
+    return this.http.post(`${this.apiUrl}/admin`, data, { withCredentials: true });
   }
 
-  login(data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, data);
+  login(data: { email: string; password: string }): Observable<AuthenticatedUser> {
+    return this.http.post<AuthenticatedUser>(`${this.apiUrl}/login`, data, { withCredentials: true })
+      .pipe(tap((user) => this.currentUserSignal.set(user)));
   }
 
-  getCandidatos(): Observable<any[]> {
-    return this.http.get<any[]>('/api/admin/candidatos');
+  me(): Observable<AuthenticatedUser> {
+    return this.http.get<AuthenticatedUser>(`${this.apiUrl}/me`, { withCredentials: true })
+      .pipe(tap((user) => this.currentUserSignal.set(user)));
   }
 
-  promoverAAdmin(idUsuario: string, data: any): Observable<any> {
-    return this.http.put<any>(`/api/admin/promover/${idUsuario}`, data);
+  loadCurrentUser(): Observable<AuthenticatedUser | null> {
+    return this.me().pipe(
+      catchError((error: unknown) => {
+        if (error instanceof HttpErrorResponse && error.status === 401) {
+          this.clearCurrentUser();
+          return of(null);
+        }
+        return throwError(() => error);
+      }),
+    );
   }
 
+  logout(): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/logout`, {}, { withCredentials: true })
+      .pipe(tap(() => this.clearCurrentUser()));
+  }
+
+  clearCurrentUser(): void {
+    this.currentUserSignal.set(null);
+  }
+
+  getCandidatos(): Observable<AdminCandidate[]> {
+    return this.http.get<AdminCandidate[]>('/api/admin/candidatos', { withCredentials: true });
+  }
+
+  promoverAAdmin(idUsuario: string, data: PromotionRequest): Observable<unknown> {
+    return this.http.put<unknown>(
+      `/api/admin/promover/${encodeURIComponent(idUsuario)}`,
+      data,
+      { withCredentials: true },
+    );
+  }
+
+  obtenerTodosLosUsuarios(): Observable<UserAdmin[]> {
+    return this.http.get<UserAdmin[]>('/api/admin/usuarios', { withCredentials: true });
   obtenerTodosLosUsuarios(rol?: string, estado?: string): Observable<UserAdmin[]> {
     let params = new HttpParams();
 
@@ -86,10 +149,17 @@ export class AuthService {
   }
 
   obtenerUsuarioAdmin(id: string): Observable<ApiResponse<UserResponse>> {
-    return this.http.get<ApiResponse<UserResponse>>(`/api/v1/admin/users/${encodeURIComponent(id)}`);
+    return this.http.get<ApiResponse<UserResponse>>(
+      `/api/v1/admin/users/${encodeURIComponent(id)}`,
+      { withCredentials: true },
+    );
   }
 
   actualizarUsuarioAdmin(id: string, data: UpdateUserRequest): Observable<ApiResponse<UserResponse>> {
-    return this.http.put<ApiResponse<UserResponse>>(`/api/v1/admin/users/${encodeURIComponent(id)}`, data);
+    return this.http.put<ApiResponse<UserResponse>>(
+      `/api/v1/admin/users/${encodeURIComponent(id)}`,
+      data,
+      { withCredentials: true },
+    );
   }
 }

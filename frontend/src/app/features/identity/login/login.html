@@ -15,7 +15,7 @@
       </p>
     </header>
 
-    <div *ngIf="serverError" class="server-error-banner">
+    <div *ngIf="serverError" class="server-error-banner" role="alert">
       {{ serverError }}
     </div>
 
@@ -83,16 +83,9 @@
 
           <span class="error" *ngIf="
               loginForm.get('password')?.touched &&
-              loginForm.get('password')?.hasError('minlength')
+              loginForm.get('password')?.hasError('maxlength')
             ">
-            Debe tener al menos 12 caracteres
-          </span>
-
-          <span class="error" *ngIf="
-              loginForm.get('password')?.touched &&
-              loginForm.get('password')?.hasError('pattern')
-            ">
-            Debe tener mayúscula, minúscula, número y carácter especial
+            La contraseña no puede superar los 128 caracteres
           </span>
 
         </div>
@@ -109,6 +102,9 @@
       <button type="button" class="forgot-password-link" (click)="showForgotPasswordMessage()">
         ¿Has olvidado tu contraseña?
       </button>
+      <p *ngIf="forgotPasswordMessage" class="forgot-password-message" role="status">
+        {{ forgotPasswordMessage }}
+      </p>
     </div>
 
     <div class="auth-links">

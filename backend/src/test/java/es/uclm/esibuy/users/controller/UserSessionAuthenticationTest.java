@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import es.uclm.esibuy.security.config.SecurityConfig;
 import es.uclm.esibuy.security.service.SessionAuthenticationService;
 import es.uclm.esibuy.users.dto.LoginRequest;
@@ -46,6 +47,7 @@ class UserSessionAuthenticationTest {
         when(adminUserService.obtenerPorId("admin-1")).thenReturn(admin);
 
         MvcResult loginResult = mockMvc.perform(post("/api/users/login")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {"email":"admin@example.com","password":"AdminPassword123!"}
@@ -67,6 +69,7 @@ class UserSessionAuthenticationTest {
         when(userService.login(any(LoginRequest.class))).thenReturn(client);
 
         MvcResult loginResult = mockMvc.perform(post("/api/users/login")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {"email":"client@example.com","password":"ClientPassword123!"}

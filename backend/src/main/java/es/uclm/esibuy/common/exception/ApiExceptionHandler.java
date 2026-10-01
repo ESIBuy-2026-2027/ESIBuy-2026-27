@@ -4,12 +4,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.http.HttpServletRequest;
+import es.uclm.esibuy.common.filter.CorrelationIdFilter;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import es.uclm.esibuy.common.filter.CorrelationIdFilter;
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -30,41 +32,28 @@ public class ApiExceptionHandler {
             HttpServletRequest request) {
         Map<String, String> errors = new LinkedHashMap<>();
         exception.getBindingResult().getFieldErrors()
-                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+                .forEach(error -> addError(errors, error.getField(), error.getDefaultMessage()));
         exception.getBindingResult().getGlobalErrors()
                 .forEach(error -> errors.put(error.getObjectName(), error.getDefaultMessage()));
-        return ResponseEntity.badRequest().body(Map.of(
-                MESSAGE, "La solicitud contiene errores",
-                "errors", errors,
-                CORRELATION_ID, correlationId(request)));
+        return ResponseEntity.badRequest().body(Map.of(MESSAGE, "La solicitud contiene errores", "errors", errors));
     }
-
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, String>> handleMalformedRequest(HttpMessageNotReadableException exception,
-            HttpServletRequest request) {
-        return ResponseEntity.badRequest().body(Map.of(
-                MESSAGE, "El formato de la solicitud no es válido",
-                CORRELATION_ID, correlationId(request)));
-    }
-
-        @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-        public ResponseEntity<Map<String, String>> handleMethodNotSupported(
-                        HttpRequestMethodNotSupportedException exception, HttpServletRequest request) {
-                return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(Map.of(
-                                MESSAGE, "El método HTTP no está permitido para este recurso",
-                                CORRELATION_ID, correlationId(request)));
-        }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException exception,
-            HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException exception) {
         Map<String, String> errors = exception.getConstraintViolations().stream()
                 .collect(Collectors.toMap(violation -> violation.getPropertyPath().toString(),
                         ConstraintViolation::getMessage, (first, ignored) -> first, LinkedHashMap::new));
-        return ResponseEntity.badRequest().body(Map.of(
-                MESSAGE, "La solicitud contiene errores",
-                "errors", errors,
-                CORRELATION_ID, correlationId(request)));
+        return ResponseEntity.badRequest().body(Map.of(MESSAGE, "La solicitud contiene errores", "errors", errors));
+    }
+
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleCategoryNotFound(CategoryNotFoundException exception) {
+        return ResponseEntity.badRequest().body(Map.of(MESSAGE, exception.getMessage()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, String>> handleAccessDenied(AccessDeniedException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(MESSAGE, exception.getMessage()));
     }
 
     @ExceptionHandler(DuplicateUserException.class)
@@ -100,5 +89,14 @@ public class ApiExceptionHandler {
     private String correlationId(HttpServletRequest request) {
         Object correlationId = request.getAttribute(CorrelationIdFilter.ATTRIBUTE);
         return correlationId == null ? "" : correlationId.toString();
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidCredentials(InvalidCredentialsException exception) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(MESSAGE, exception.getMessage()));
+    }
+
+    private void addError(Map<String, String> errors, String field, String message) {
+        errors.merge(field, message, (existing, next) -> existing.equals(next) ? existing : existing + "; " + next);
     }
 }

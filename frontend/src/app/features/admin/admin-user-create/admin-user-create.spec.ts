@@ -99,7 +99,7 @@ describe('AdminUserCreate', () => {
     fixture.detectChanges();
 
     expect(component.candidatoSeleccionado).not.toBeNull();
-    expect(component.candidatoSeleccionado.id).toBe('cand-1');
+    expect(component.candidatoSeleccionado?.id).toBe('cand-1');
     expect(component.form.get('nombre')?.value).toBe('Celia');
     expect(component.form.get('apellidos')?.value).toBe('Nuñez');
     expect(component.form.get('email')?.value).toBe('c@c.es');
