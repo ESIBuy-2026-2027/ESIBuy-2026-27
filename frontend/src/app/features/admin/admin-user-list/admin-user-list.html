@@ -54,12 +54,12 @@
         <table class="user-table">
             <thead>
                 <tr>
-                    <th>Usuario</th>
-                    <th>Contacto</th>
-                    <th>Rol</th>
-                    <th>Estado</th>
-                    <th>Registro</th>
-                    <th>Acciones</th>
+                    <th class="col-user">Usuario</th>
+                    <th class="col-contact">Contacto</th>
+                    <th class="col-role">Rol</th>
+                    <th class="col-status">Estado</th>
+                    <th class="col-date">Registro</th>
+                    <th class="col-actions">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -70,7 +70,7 @@
                         <div class="user-cell-wrapper">
                             <img [src]="getAvatarUrl(user.profileImage)" alt="Avatar" class="avatar-img" />
                             <div class="user-info">
-                                <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
+                                <span class="user-name" [title]="user.firstName + ' ' + user.lastName">{{ user.firstName }} {{ user.lastName }}</span>
                                 <span class="user-id">DNI: {{ user.nationalId || 'N/A' }}</span>
                             </div>
                         </div>
@@ -78,7 +78,7 @@
 
                     <!-- Columna 2: Email y Teléfono -->
                     <td class="col-contact">
-                        <div class="contact-item email-text">{{ user.email }}</div>
+                        <div class="contact-item email-text" [title]="user.email">{{ user.email }}</div>
                         <div class="contact-item text-muted">📞 {{ user.phone || 'Sin teléfono' }}</div>
                     </td>
 
@@ -88,7 +88,7 @@
                             {{ user.role || 'DESCONOCIDO' }}
                         </span>
                         @if (user.role === 'ADMIN' && user.adminProfile?.headquarters) {
-                        <div class="text-muted mt-1">
+                        <div class="text-muted mt-1 sede-text" [title]="user.adminProfile.headquarters">
                             📍 {{ user.adminProfile.headquarters }}
                         </div>
                         }

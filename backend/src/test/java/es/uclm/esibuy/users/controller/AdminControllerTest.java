@@ -131,8 +131,7 @@ class AdminControllerTest {
     void shouldReturnTodosLosUsuarios() throws Exception {
         // Arrange: Simulamos que el servicio devuelve una lista (usaremos nuestro
         // futuro DTO)
-        // Esto fallará porque obtenerTodosLosUsuarios() aún no existe en AdminService
-        when(adminService.obtenerTodosLosUsuarios()).thenReturn(List.of());
+        when(adminService.obtenerUsuariosFiltrados(any(), any())).thenReturn(List.of());
 
         // Act & Assert: Verificamos que el nuevo endpoint responde con 200 OK y un
         // array
