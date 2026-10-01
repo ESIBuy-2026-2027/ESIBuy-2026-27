@@ -94,14 +94,11 @@ public class UserService {
 
     public User login(LoginRequest request) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
-
-        // Buscamos al usuario. Si no existe, lanzamos el mensaje genérico aséptico.
         User user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new IllegalArgumentException("Credenciales incorrectas"));
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
-        // Comprobamos la contraseña. Si falla, lanzamos EXACTAMENTE el mismo mensaje.
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new IllegalArgumentException("Credenciales incorrectas");
+            throw new IllegalArgumentException("Contraseña incorrecta");
         }
 
         return user;

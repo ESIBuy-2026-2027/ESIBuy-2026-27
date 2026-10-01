@@ -70,4 +70,35 @@ public class AdminService {
                 .map(UserAdminDTO::fromUser)
                 .toList();
     }
+
+    public List<UserAdminDTO> obtenerUsuariosFiltrados(String rol, String estado) {
+        return userRepository.findAll().stream()
+                .filter(u -> {
+                    // Filtro de Rol
+                    if (rol == null || rol.isBlank())
+                        return true;
+                    if (u.getRole() == null)
+                        return false;
+
+                    String roleName = u.getRole().name();
+                    if (rol.equalsIgnoreCase("CLIENTE") && roleName.equals("CLIENT"))
+                        return true;
+                    if (rol.equalsIgnoreCase("VENDEDOR") && roleName.equals("SELLER"))
+                        return true;
+                    if (rol.equalsIgnoreCase("ADMIN") && roleName.equals("ADMIN"))
+                        return true;
+
+                    return roleName.equalsIgnoreCase(rol);
+                })
+                .filter(u -> {
+                    // Filtro de Estado
+                    if (estado == null || estado.isBlank())
+                        return true;
+
+                    boolean isActivo = estado.equalsIgnoreCase("activo");
+                    return u.isActive() == isActivo;
+                })
+                .map(UserAdminDTO::fromUser)
+                .toList();
+    }
 }

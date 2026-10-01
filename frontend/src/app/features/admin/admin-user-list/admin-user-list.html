@@ -14,6 +14,25 @@
         </div>
     </header>
 
+    <!-- Barra de Filtros -->
+    <div class="filters-bar"
+        style="display: flex; gap: 1rem; margin-bottom: 1.5rem; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <select [(ngModel)]="filtroRol" (change)="aplicarFiltros()"
+            style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc; flex: 1; max-width: 200px;">
+            <option value="">Todos los Roles</option>
+            <option value="CLIENTE">Clientes</option>
+            <option value="VENDEDOR">Vendedores</option>
+            <option value="ADMIN">Administradores</option>
+        </select>
+
+        <select [(ngModel)]="filtroEstado" (change)="aplicarFiltros()"
+            style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc; flex: 1; max-width: 200px;">
+            <option value="">Cualquier Estado</option>
+            <option value="activo">Activos</option>
+            <option value="inactivo">Inactivos / Bloqueados</option>
+        </select>
+    </div>
+
     <!-- Mensaje de Carga -->
     @if (cargando()) {
     <div class="loading-spinner">
@@ -101,7 +120,7 @@
                 <tr>
                     <td colspan="6">
                         <div class="empty-state">
-                            <p>No se encontraron usuarios en la base de datos.</p>
+                            <p>No se encontraron usuarios con estos filtros.</p>
                         </div>
                     </td>
                 </tr>

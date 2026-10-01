@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface UserAdmin {
@@ -43,7 +43,6 @@ export interface ApiResponse<T> {
 @Injectable({
   providedIn: 'root'
 })
-
 export class AuthService {
   private readonly apiUrl = '/api/users';
 
@@ -72,8 +71,18 @@ export class AuthService {
   promoverAAdmin(idUsuario: string, data: any): Observable<any> {
     return this.http.put<any>(`/api/admin/promover/${idUsuario}`, data);
   }
-  obtenerTodosLosUsuarios(): Observable<UserAdmin[]> {
-    return this.http.get<UserAdmin[]>('/api/admin/usuarios');
+
+  obtenerTodosLosUsuarios(rol?: string, estado?: string): Observable<UserAdmin[]> {
+    let params = new HttpParams();
+
+    if (rol) {
+      params = params.set('rol', rol);
+    }
+    if (estado) {
+      params = params.set('estado', estado);
+    }
+
+    return this.http.get<UserAdmin[]>('/api/admin/usuarios', { params });
   }
 
   obtenerUsuarioAdmin(id: string): Observable<ApiResponse<UserResponse>> {
@@ -84,4 +93,3 @@ export class AuthService {
     return this.http.put<ApiResponse<UserResponse>>(`/api/v1/admin/users/${encodeURIComponent(id)}`, data);
   }
 }
-
