@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService, UserAdmin } from '../../../core/services/auth.service';
 
 @Component({
@@ -26,10 +27,15 @@ export class AdminUserList implements OnInit {
         this.usuarios.set(data);
         this.cargando.set(false);
       },
-      error: (err) => {
-        this.error.set('Error al cargar los usuarios. Verifica tus permisos.');
+      error: (err: unknown) => {
+        if (err instanceof HttpErrorResponse && err.status === 403) {
+          this.error.set('No tienes permisos para consultar los usuarios.');
+        } else if (err instanceof HttpErrorResponse && err.status === 401) {
+          this.error.set('Tu sesión no es válida. Inicia sesión de nuevo.');
+        } else {
+          this.error.set('No se pudo cargar la lista de usuarios. Inténtalo de nuevo.');
+        }
         this.cargando.set(false);
-        console.error(err);
       }
     });
   }

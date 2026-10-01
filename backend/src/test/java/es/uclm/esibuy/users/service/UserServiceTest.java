@@ -178,4 +178,13 @@ class UserServiceTest {
 
         assertThrows(InvalidCredentialsException.class, () -> userService.login(request));
     }
+
+    @Test
+    void shouldListAllUsersForAdminWorkflow() {
+        User admin = new User("admin@example.com", "Admin", "Root", UserRole.ADMIN);
+        when(userRepository.findAll()).thenReturn(java.util.List.of(admin));
+
+        assertEquals(java.util.List.of(admin), userService.findAllUsers());
+        verify(userRepository).findAll();
+    }
 }

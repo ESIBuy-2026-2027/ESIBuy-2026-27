@@ -1,6 +1,7 @@
 package es.uclm.esibuy.users.service;
 
 import java.util.Locale;
+import java.util.List;
 
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.common.exception.InvalidCredentialsException;
@@ -100,6 +101,10 @@ public class UserService {
                         && passwordEncoder.matches(request.getPassword(), candidate.getPasswordHash()))
                 .orElseThrow(InvalidCredentialsException::new);
         return user;
+    }
+
+    public List<User> findAllUsers() {
+        return userRepository.findAll();
     }
 
     private String blankToNull(String value) {
