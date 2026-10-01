@@ -1,6 +1,7 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { computed, Injectable, signal } from '@angular/core';
 import { Observable, catchError, of, tap, throwError } from 'rxjs';
+
 
 export type UserRole = 'CLIENT' | 'SELLER' | 'ADMIN';
 
@@ -133,9 +134,9 @@ export class AuthService {
     );
   }
 
-  obtenerTodosLosUsuarios(): Observable<UserAdmin[]> {
-    return this.http.get<UserAdmin[]>('/api/admin/usuarios', { withCredentials: true });
-  obtenerTodosLosUsuarios(rol?: string, estado?: string): Observable<UserAdmin[]> {
+  
+    
+    obtenerTodosLosUsuarios(rol?: string, estado?: string): Observable<UserAdmin[]> {
     let params = new HttpParams();
 
     if (rol) {
@@ -145,7 +146,10 @@ export class AuthService {
       params = params.set('estado', estado);
     }
 
-    return this.http.get<UserAdmin[]>('/api/admin/usuarios', { params });
+    return this.http.get<UserAdmin[]>('/api/admin/usuarios', {
+      params,
+      withCredentials: true,
+    });
   }
 
   obtenerUsuarioAdmin(id: string): Observable<ApiResponse<UserResponse>> {
