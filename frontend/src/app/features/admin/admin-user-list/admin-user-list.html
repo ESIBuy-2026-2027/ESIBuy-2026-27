@@ -91,7 +91,9 @@
 
                     <!-- Columna 6: Acciones -->
                     <td class="col-actions">
-                        <button class="btn-icon btn-edit" title="Modificar Usuario">✏️</button>
+                        <button class="btn-icon btn-edit" title="Modificar Usuario"
+                            [routerLink]="['/admin/usuarios', user.id, 'editar']"
+                            [attr.aria-label]="'Modificar usuario ' + user.firstName + ' ' + user.lastName">✏️</button>
                         <button class="btn-icon btn-delete" title="Eliminar / Bloquear">🗑️</button>
                     </td>
                 </tr>
