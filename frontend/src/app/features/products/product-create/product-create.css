@@ -32,12 +32,12 @@
 
 .back-link:hover,
 .cancel-action:hover {
-  color: #087e68;
+  color: #083d7e;
 }
 
 .eyebrow {
   margin: 0 0 8px;
-  color: #168c75;
+  color: #165b8c;
   font-size: 10px;
   font-weight: 750;
   letter-spacing: 1.15px;
@@ -90,7 +90,7 @@ h1 {
   place-items: center;
   border-radius: 9px;
   background: #e9f7f3;
-  color: #168c75;
+  color: #16538c;
   font-size: 11px;
   font-weight: 750;
 }
@@ -173,7 +173,7 @@ h1 {
 .form-field input:focus,
 .form-field select:focus,
 .form-field textarea:focus {
-  border-color: #168c75;
+  border-color: #16638c;
   outline: 3px solid #168c7526;
 }
 
@@ -224,7 +224,7 @@ h1 {
   width: 17px;
   height: 17px;
   margin: 1px 0 0;
-  accent-color: #087e68;
+  accent-color: #074b8b;
 }
 
 .visibility-toggle span {
@@ -238,7 +238,7 @@ h1 {
 }
 
 .visibility-toggle small {
-  color: #72828e;
+  color: #475569;
   font-size: 11px;
   line-height: 1.5;
 }
@@ -257,7 +257,7 @@ h1 {
   border: 1px solid #b7e5d7;
   border-radius: 8px;
   background: #effaf6;
-  color: #168c75;
+  color: #709ccc;
   font-size: 13px;
   font-weight: 650;
 }
@@ -275,7 +275,7 @@ h1 {
   padding: 0 19px;
   border: 0;
   border-radius: 8px;
-  background: #087e68;
+  background: #709ccc;
   color: #fff;
   cursor: pointer;
   font: inherit;
@@ -284,7 +284,7 @@ h1 {
 }
 
 .submit-action:hover:not(:disabled) {
-  background: #066b59;
+  background: #709ccc;
 }
 
 .submit-action:disabled {
@@ -295,7 +295,7 @@ h1 {
 .submit-action:focus-visible,
 .back-link:focus-visible,
 .cancel-action:focus-visible {
-  outline: 3px solid #56d9b8;
+  outline: 3px solid #00aaff;
   outline-offset: 3px;
 }
 

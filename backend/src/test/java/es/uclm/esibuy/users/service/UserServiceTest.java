@@ -3,8 +3,10 @@ package es.uclm.esibuy.users.service;
 import java.time.LocalDate;
 
 import es.uclm.esibuy.common.exception.DuplicateUserException;
+import es.uclm.esibuy.common.exception.InvalidCredentialsException;
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
+import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.model.CustomerType;
 import es.uclm.esibuy.users.model.User;
@@ -147,5 +149,33 @@ class UserServiceTest {
         assertNotNull(result.getAdminProfile());
         assertEquals("Ciudad Real", result.getAdminProfile().getHeadquarters());
         assertNotNull(result.getAdminProfile().getHireDate());
+    }
+
+    @Test
+    void shouldAuthenticateUserWithEmailAndPassword() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail(" SELLER@example.com ");
+        request.setPassword("Password123!");
+        User seller = new User("seller@example.com", "Carlos", "Lopez", UserRole.SELLER);
+        seller.setPasswordHash("hashed-pwd");
+
+        when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(java.util.Optional.of(seller));
+        when(passwordEncoder.matches("Password123!", "hashed-pwd")).thenReturn(true);
+
+        assertEquals(seller, userService.login(request));
+    }
+
+    @Test
+    void shouldRejectInvalidLoginCredentials() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("seller@example.com");
+        request.setPassword("wrong-password");
+        User seller = new User("seller@example.com", "Carlos", "Lopez", UserRole.SELLER);
+        seller.setPasswordHash("hashed-pwd");
+
+        when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(java.util.Optional.of(seller));
+        when(passwordEncoder.matches("wrong-password", "hashed-pwd")).thenReturn(false);
+
+        assertThrows(InvalidCredentialsException.class, () -> userService.login(request));
     }
 }

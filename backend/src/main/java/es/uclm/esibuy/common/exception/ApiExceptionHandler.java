@@ -50,6 +50,11 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MESSAGE, exception.getMessage()));
     }
 
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidCredentials(InvalidCredentialsException exception) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(MESSAGE, exception.getMessage()));
+    }
+
     private void addError(Map<String, String> errors, String field, String message) {
         errors.merge(field, message, (existing, next) -> existing.equals(next) ? existing : existing + "; " + next);
     }

@@ -4,6 +4,7 @@ import java.util.Map;
 
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
+import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.service.UserService;
@@ -41,6 +42,11 @@ public class UserController {
     public ResponseEntity<Map<String, Object>> createAdmin(@Valid @RequestBody AdminCreateRequest request) {
         User user = userService.createAdmin(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(buildUserResponse(user));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(buildUserResponse(userService.login(request)));
     }
 
     private Map<String, Object> buildUserResponse(User user) {
