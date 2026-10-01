@@ -7,13 +7,15 @@ public class UserResponseDTO {
     private final String firstName;
     private final String lastName;
     private final String phone;
+    private final String role;
 
-    public UserResponseDTO(String id, String email, String firstName, String lastName, String phone) {
+    public UserResponseDTO(String id, String email, String firstName, String lastName, String phone, String role) {
         this.id = id;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
+        this.role = role;
     }
 
     public String getId() {
@@ -34,5 +36,9 @@ public class UserResponseDTO {
 
     public String getPhone() {
         return phone;
+    }
+
+    public String getRole() {
+        return role;
     }
 }

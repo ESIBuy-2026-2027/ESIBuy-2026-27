@@ -30,6 +30,7 @@ export interface UserResponse {
   firstName: string;
   lastName: string;
   phone: string | null;
+  role: string;
 }
 
 export interface ApiResponse<T> {
@@ -46,7 +47,7 @@ export interface ApiResponse<T> {
 export class AuthService {
   private readonly apiUrl = '/api/users';
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   registerClient(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/register/client`, data);
