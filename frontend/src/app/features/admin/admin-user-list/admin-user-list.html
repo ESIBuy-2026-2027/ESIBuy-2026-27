@@ -1,18 +1,27 @@
 <div class="admin-container">
     <header class="admin-header">
-        <div class="header-content">
-            <div class="header-text">
-                <h2>Gestión de Usuarios</h2>
-                <p>Listado completo de cuentas registradas en el sistema ESIBuy.</p>
-            </div>
-            <a routerLink="/admin/altas" class="btn-alta-admin" id="btnDarAltaAdmin">
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Dar Alta Administrador
-            </a>
-        </div>
+        <h2>Gestión de Usuarios</h2>
+        <p>Listado completo de cuentas registradas en el sistema ESIBuy.</p>
     </header>
+
+    <!-- Barra de Filtros -->
+    <div class="filters-bar"
+        style="display: flex; gap: 1rem; margin-bottom: 1.5rem; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <select [(ngModel)]="filtroRol" (change)="aplicarFiltros()"
+            style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc; flex: 1; max-width: 200px;">
+            <option value="">Todos los Roles</option>
+            <option value="CLIENTE">Clientes</option>
+            <option value="VENDEDOR">Vendedores</option>
+            <option value="ADMIN">Administradores</option>
+        </select>
+
+        <select [(ngModel)]="filtroEstado" (change)="aplicarFiltros()"
+            style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc; flex: 1; max-width: 200px;">
+            <option value="">Cualquier Estado</option>
+            <option value="activo">Activos</option>
+            <option value="inactivo">Inactivos / Bloqueados</option>
+        </select>
+    </div>
 
     <!-- Mensaje de Carga -->
     @if (cargando()) {
@@ -37,7 +46,7 @@
                 <tr>
                     <th>Usuario</th>
                     <th>Contacto</th>
-                    <th>Rol</th>
+                    <th>Rol / Sede</th>
                     <th>Estado</th>
                     <th>Registro</th>
                     <th>Acciones</th>
@@ -99,7 +108,7 @@
                 <tr>
                     <td colspan="6">
                         <div class="empty-state">
-                            <p>No se encontraron usuarios en la base de datos.</p>
+                            <p>No se encontraron usuarios con estos filtros.</p>
                         </div>
                     </td>
                 </tr>

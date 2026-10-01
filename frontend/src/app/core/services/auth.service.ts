@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface UserAdmin {
@@ -17,14 +17,14 @@ export interface UserAdmin {
   sellerProfile?: any;
   adminProfile?: any;
 }
+
 @Injectable({
   providedIn: 'root'
 })
-
 export class AuthService {
-  private apiUrl = '/api/users';
+  private readonly apiUrl = '/api/users';
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   registerClient(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/register/client`, data);
@@ -49,8 +49,17 @@ export class AuthService {
   promoverAAdmin(idUsuario: string, data: any): Observable<any> {
     return this.http.put<any>(`/api/admin/promover/${idUsuario}`, data);
   }
-  obtenerTodosLosUsuarios(): Observable<UserAdmin[]> {
-    return this.http.get<UserAdmin[]>('/api/admin/usuarios');
+
+  obtenerTodosLosUsuarios(rol?: string, estado?: string): Observable<UserAdmin[]> {
+    let params = new HttpParams();
+
+    if (rol) {
+      params = params.set('rol', rol);
+    }
+    if (estado) {
+      params = params.set('estado', estado);
+    }
+
+    return this.http.get<UserAdmin[]>('/api/admin/usuarios', { params });
   }
 }
-
