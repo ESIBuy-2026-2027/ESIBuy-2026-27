@@ -76,27 +76,27 @@ public class ProductCreateRequest {
         this.description = description;
     }
 
-    public BigDecimal getPrice() {
+    public long getPrice() {
         return price;
     }
 
-    public void setPrice(BigDecimal price) {
+    public void setPrice(long price) {
         this.price = price;
     }
 
-    public BigDecimal getDiscount() {
+    public float getDiscount() {
         return discount;
     }
 
-    public void setDiscount(BigDecimal discount) {
+    public void setDiscount(float discount) {
         this.discount = discount;
     }
 
-    public BigDecimal getPremiumDiscount() {
+    public float getPremiumDiscount() {
         return premiumDiscount;
     }
 
-    public void setPremiumDiscount(BigDecimal premiumDiscount) {
+    public void setPremiumDiscount(float premiumDiscount) {
         this.premiumDiscount = premiumDiscount;
     }
 

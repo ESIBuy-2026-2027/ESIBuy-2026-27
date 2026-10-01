@@ -16,9 +16,9 @@ public class Product {
     private List<String> categoryIds;
     private int stock;
     private String description;
-    private BigDecimal price;
-    private BigDecimal discount;
-    private BigDecimal premiumDiscount;
+    private long price;
+    private float discount;
+    private float premiumDiscount;
     private String imageUrl;
     private boolean available;
     private String sellerId;
@@ -31,9 +31,9 @@ public class Product {
             List<String> categoryIds,
             int stock,
             String description,
-            BigDecimal price,
-            BigDecimal discount,
-            BigDecimal premiumDiscount,
+            long price,
+            float discount,
+            float premiumDiscount,
             String imageUrl,
             boolean available,
             String sellerId) {
@@ -69,15 +69,15 @@ public class Product {
         return description;
     }
 
-    public BigDecimal getPrice() {
+    public long getPrice() {
         return price;
     }
 
-    public BigDecimal getDiscount() {
+    public float getDiscount() {
         return discount;
     }
 
-    public BigDecimal getPremiumDiscount() {
+    public float getPremiumDiscount() {
         return premiumDiscount;
     }
 

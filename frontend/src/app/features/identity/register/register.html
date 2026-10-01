@@ -211,6 +211,14 @@
             El nombre es obligatorio
           </span>
 
+          <span class="error" *ngIf="form.get('firstName')?.touched && form.get('firstName')?.hasError('minlength')">
+            El nombre debe tener al menos 2 caracteres
+          </span>
+
+          <span class="error" *ngIf="form.get('firstName')?.touched && form.get('firstName')?.hasError('maxlength')">
+            El nombre no puede superar los 25 caracteres
+          </span>
+
         </div>
 
 
@@ -226,6 +234,14 @@
             Los apellidos son obligatorios
           </span>
 
+          <span class="error" *ngIf="form.get('lastName')?.touched && form.get('lastName')?.hasError('minlength')">
+            Los apellidos deben tener al menos 2 caracteres
+          </span>
+
+          <span class="error" *ngIf="form.get('lastName')?.touched && form.get('lastName')?.hasError('maxlength')">
+            Los apellidos no pueden superar los 100 caracteres
+          </span>
+
         </div>
 
 
@@ -236,10 +252,28 @@
           </label>
 
           <select id="defaultCategory" formControlName="defaultCategory">
-            <option *ngFor="let cat of categories" [value]="cat">
-              {{ cat }}
+            <option *ngFor="let cat of categories" [value]="cat.name">
+              {{ cat.name }}
             </option>
           </select>
+
+          <span class="error" *ngIf="categoriesLoading" role="status">
+            Cargando categorías…
+          </span>
+
+          <span class="error" *ngIf="categoriesError" role="alert">
+            No se pudieron cargar las categorías. Vuelve a intentarlo más tarde.
+          </span>
+
+          <span class="error"
+            *ngIf="!categoriesLoading && !categoriesError && categories.length === 0" role="status">
+            No hay categorías disponibles en este momento.
+          </span>
+
+          <span class="error"
+            *ngIf="form.get('defaultCategory')?.touched && form.get('defaultCategory')?.hasError('required')">
+            Selecciona una categoría
+          </span>
 
         </div>
 
@@ -255,6 +289,16 @@
           <span class="error"
             *ngIf="form.get('businessName')?.touched && form.get('businessName')?.hasError('required')">
             El nombre comercial es obligatorio
+          </span>
+
+          <span class="error"
+            *ngIf="form.get('businessName')?.touched && form.get('businessName')?.hasError('minlength')">
+            El nombre comercial debe tener al menos 2 caracteres
+          </span>
+
+          <span class="error"
+            *ngIf="form.get('businessName')?.touched && form.get('businessName')?.hasError('maxlength')">
+            El nombre comercial no puede superar los 100 caracteres
           </span>
 
         </div>
@@ -436,7 +480,8 @@
            BOTÓN
            ========================================================== -->
 
-      <button type="submit" class="btn-submit" [disabled]="loading">
+      <button type="submit" class="btn-submit"
+        [disabled]="loading || (userRole === 'vendedor' && (categoriesLoading || categoriesError || categories.length === 0))">
         {{ loading ? 'Enviando al backend...' : 'Completar Registro' }}
       </button>
 
