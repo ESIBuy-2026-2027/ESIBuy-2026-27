@@ -124,7 +124,7 @@ class AdminControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Usuario no encontrado con ID: inexistente"));
+                .andExpect(jsonPath("$.message").value("Usuario no encontrado"));
     }
 
     @Test

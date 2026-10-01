@@ -1,0 +1,64 @@
+<main class="edit-page">
+  <header class="page-header">
+    <a class="back-link" routerLink="/admin/usuarios" aria-label="Volver al listado de usuarios">← Usuarios</a>
+    <p class="eyebrow">Administración / Cuentas</p>
+    <h1>Editar usuario</h1>
+  </header>
+
+  @if (cargando()) {
+    <p class="status" role="status">Cargando datos del usuario...</p>
+  } @else {
+    @if (successMessage()) {
+      <div class="notice notice-success" role="status" aria-live="polite">{{ successMessage() }}</div>
+    }
+    @if (errorMessage()) {
+      <div class="notice notice-error" role="alert" aria-live="assertive">{{ errorMessage() }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="edit-form" novalidate>
+      <div class="form-intro">
+        <div>
+          <h2>Información de la cuenta</h2>
+          <p>El correo, el rol y las credenciales no se modifican en este formulario.</p>
+        </div>
+        <span class="account-email">{{ getEmail() }}</span>
+      </div>
+
+      <div class="field-grid">
+        <div class="field">
+          <label for="firstName">Nombre</label>
+          <input id="firstName" type="text" formControlName="firstName" autocomplete="given-name"
+            [attr.aria-invalid]="form.controls.firstName.invalid && form.controls.firstName.touched" />
+          @if (form.controls.firstName.touched && form.controls.firstName.invalid) {
+            <small class="field-error">Indique un nombre válido de 2 a 25 caracteres.</small>
+          }
+        </div>
+
+        <div class="field">
+          <label for="lastName">Apellidos</label>
+          <input id="lastName" type="text" formControlName="lastName" autocomplete="family-name"
+            [attr.aria-invalid]="form.controls.lastName.invalid && form.controls.lastName.touched" />
+          @if (form.controls.lastName.touched && form.controls.lastName.invalid) {
+            <small class="field-error">Indique apellidos válidos de 2 a 100 caracteres.</small>
+          }
+        </div>
+
+        <div class="field">
+          <label for="phone">Teléfono <span>Opcional</span></label>
+          <input id="phone" type="tel" formControlName="phone" autocomplete="tel" inputmode="tel"
+            [attr.aria-invalid]="form.controls.phone.invalid && form.controls.phone.touched" />
+          @if (form.controls.phone.touched && form.controls.phone.invalid) {
+            <small class="field-error">El teléfono debe contener exactamente 9 dígitos numéricos</small>
+          }
+        </div>
+      </div>
+
+      <footer class="form-actions">
+        <a class="button button-secondary" routerLink="/admin/usuarios">Cancelar</a>
+        <button class="button button-primary" type="submit" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+      </footer>
+    </form>
+  }
+</main>
