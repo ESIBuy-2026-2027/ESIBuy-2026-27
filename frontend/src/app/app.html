@@ -1,1 +1,15 @@
+<header class="app-header">
+  <a class="app-brand" routerLink="/">ESIBuy</a>
+  @if (authService.currentUser(); as user) {
+    <div class="app-session">
+      <span>{{ user.email }}</span>
+      <button type="button" (click)="logout()">Cerrar sesión</button>
+    </div>
+  }
+</header>
+
+@if (logoutError(); as error) {
+  <p class="logout-error" role="alert">{{ error }}</p>
+}
+
 <router-outlet />

@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -14,16 +15,16 @@ import { AuthService } from '../../../core/services/auth.service';
 export class Login {
   loginForm: FormGroup;
   serverError: string | null = null;
+  forgotPasswordMessage: string | null = null;
   loading = false;
   showPassword = false;
 
   constructor(
     private fb: FormBuilder,
+    private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService
   ) {
-    const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S+$/;
-
     this.loginForm = this.fb.group({
       email: ['', [
         Validators.required,
@@ -32,14 +33,16 @@ export class Login {
       ]],
       password: ['', [
         Validators.required,
-        Validators.minLength(12),
         Validators.maxLength(128),
-        Validators.pattern(strongPasswordPattern)
       ]]
     });
+
+    if (this.route.snapshot.queryParamMap.get('expired') === 'true') {
+      this.serverError = 'Tu sesión ha expirado';
+    }
   }
 
-onSubmit() {
+  onSubmit() {
     this.serverError = null;
 
     if (this.loginForm.invalid) {
@@ -52,24 +55,26 @@ onSubmit() {
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
         this.loading = false;
-        alert(`¡Bienvenido! Sesión iniciada como ${response.email} (${response.role})`);
         if (response.role === 'ADMIN') {
-          this.router.navigate(['/admin/usuarios']);
+          void this.router.navigate(['/admin/usuarios']);
+        } else if (response.role === 'SELLER') {
+          void this.router.navigate(['/products/new']);
         } else {
-          this.router.navigate(['/']);
+          void this.router.navigate(['/']);
         }
       },
-      error: (err) => {
+      error: (error: unknown) => {
         this.loading = false;
-        this.serverError =
-          err?.error?.message ||
-          'Error en el servidor al iniciar sesión. Revisa tus credenciales.';
+        this.serverError = error instanceof HttpErrorResponse
+          && typeof error.error?.message === 'string'
+          ? error.error.message
+          : 'Error en el servidor al iniciar sesión. Revisa tus credenciales.';
       }
     });
   }
 
   showForgotPasswordMessage() {
-    alert('La recuperación de contraseña estará disponible próximamente.');
+    this.forgotPasswordMessage = 'La recuperación de contraseña estará disponible próximamente.';
   }
 
 }

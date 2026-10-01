@@ -81,20 +81,6 @@
             La contraseña es obligatoria
           </span>
 
-          <span class="error" *ngIf="
-              loginForm.get('password')?.touched &&
-              loginForm.get('password')?.hasError('minlength')
-            ">
-            Debe tener al menos 12 caracteres
-          </span>
-
-          <span class="error" *ngIf="
-              loginForm.get('password')?.touched &&
-              loginForm.get('password')?.hasError('pattern')
-            ">
-            Debe tener mayúscula, minúscula, número y carácter especial
-          </span>
-
         </div>
 
       </section>
@@ -109,6 +95,9 @@
       <button type="button" class="forgot-password-link" (click)="showForgotPasswordMessage()">
         ¿Has olvidado tu contraseña?
       </button>
+      <p *ngIf="forgotPasswordMessage" class="forgot-password-message" role="status">
+        {{ forgotPasswordMessage }}
+      </p>
     </div>
 
     <div class="auth-links">
