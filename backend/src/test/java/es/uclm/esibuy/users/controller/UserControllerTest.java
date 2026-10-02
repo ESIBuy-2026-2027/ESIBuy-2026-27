@@ -1,7 +1,9 @@
 package es.uclm.esibuy.users.controller;
 
 import es.uclm.esibuy.common.exception.ApiExceptionHandler;
+import es.uclm.esibuy.common.exception.InvalidCredentialsException;
 import es.uclm.esibuy.security.config.SecurityConfig;
+import es.uclm.esibuy.security.service.LoginAttemptService;
 import es.uclm.esibuy.security.service.SessionAuthenticationService;
 import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.model.User;
@@ -23,7 +25,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -40,6 +45,9 @@ class UserControllerTest {
 
         @MockitoBean
         private UserService userService;
+
+        @MockitoBean
+        private LoginAttemptService loginAttemptService;
 
         @Test
         void shouldCreateSessionOnLoginAndKeepItAcrossRequestsWithConfiguredTimeout() throws Exception {
@@ -128,5 +136,41 @@ class UserControllerTest {
                 assertTrue(session.isInvalid());
                 mockMvc.perform(get("/api/users/me"))
                                 .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        void shouldRegisterFailedLoginAttempt() throws Exception {
+                doThrow(new InvalidCredentialsException())
+                                .when(userService).login(any(LoginRequest.class));
+
+                mockMvc.perform(post("/api/users/login")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"email":"seller@example.com","password":"wrong-password"}
+                                                """))
+                                .andExpect(status().isUnauthorized());
+
+                verify(loginAttemptService).loginFailed(eq("seller@example.com"), eq("127.0.0.1"));
+        }
+
+        @Test
+        void shouldResetLoginAttemptsAfterSuccessfulLogin() throws Exception {
+                User seller = mock(User.class);
+                when(seller.getId()).thenReturn("seller-id");
+                when(seller.getEmail()).thenReturn("seller@example.com");
+                when(seller.getRole()).thenReturn(UserRole.SELLER);
+                when(seller.isActive()).thenReturn(false);
+                when(userService.login(any(LoginRequest.class))).thenReturn(seller);
+
+                mockMvc.perform(post("/api/users/login")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"email":"seller@example.com","password":"Password123!"}
+                                                """))
+                                .andExpect(status().isOk());
+
+                verify(loginAttemptService).loginSucceeded("seller@example.com", "127.0.0.1");
         }
 }
