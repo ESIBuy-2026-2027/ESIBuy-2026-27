@@ -18,6 +18,9 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -26,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.eq;
@@ -33,6 +38,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -172,5 +178,83 @@ class UserControllerTest {
                                 .andExpect(status().isOk());
 
                 verify(loginAttemptService).loginSucceeded("seller@example.com", "127.0.0.1");
+        }
+
+        @Test
+        void shouldReturnTooManyRequestsWhenLoginIsBlocked() throws Exception {
+                when(loginAttemptService.isBlocked("seller@example.com", "127.0.0.1")).thenReturn(true);
+                when(loginAttemptService.getRemainingBlockSeconds("seller@example.com", "127.0.0.1"))
+                                .thenReturn(42L);
+
+                mockMvc.perform(post("/api/users/login")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"email":"seller@example.com","password":"Password123!"}
+                                                """))
+                                .andExpect(status().isTooManyRequests())
+                                .andExpect(header().string("Retry-After", "42"))
+                                .andExpect(jsonPath("$.message")
+                                                .value("Demasiados intentos fallidos. Inténtelo más tarde."));
+
+                verify(userService, never()).login(any(LoginRequest.class));
+        }
+
+        @Test
+        void shouldBlockTheSixthLoginAfterFiveInvalidCredentials() throws Exception {
+                when(loginAttemptService.isBlocked("seller@example.com", "127.0.0.1"))
+                                .thenReturn(false, false, false, false, false, true);
+                when(loginAttemptService.getRemainingBlockSeconds("seller@example.com", "127.0.0.1"))
+                                .thenReturn(30L);
+                doThrow(new InvalidCredentialsException())
+                                .when(userService).login(any(LoginRequest.class));
+
+                for (int attempt = 0; attempt < 5; attempt++) {
+                        loginRequest().andExpect(status().isUnauthorized());
+                }
+
+                loginRequest()
+                                .andExpect(status().isTooManyRequests())
+                                .andExpect(header().string("Retry-After", "30"));
+
+                verify(userService, times(5)).login(any(LoginRequest.class));
+        }
+
+        @Test
+        void shouldEvaluateTheSeventhLoginAfterTheBlockExpires() throws Exception {
+                when(loginAttemptService.isBlocked("seller@example.com", "127.0.0.1"))
+                                .thenReturn(true, false);
+                when(loginAttemptService.getRemainingBlockSeconds("seller@example.com", "127.0.0.1"))
+                                .thenReturn(30L);
+
+                User seller = mock(User.class);
+                when(seller.getId()).thenReturn("seller-id");
+                when(seller.getEmail()).thenReturn("seller@example.com");
+                when(seller.getRole()).thenReturn(UserRole.SELLER);
+                when(seller.isActive()).thenReturn(false);
+                AtomicInteger evaluatedAttempts = new AtomicInteger();
+                when(userService.login(any(LoginRequest.class))).thenAnswer(invocation -> {
+                        if (evaluatedAttempts.incrementAndGet() == 1) {
+                                throw new InvalidCredentialsException();
+                        }
+                        return seller;
+                });
+
+                loginRequest()
+                                .andExpect(status().isTooManyRequests())
+                                .andExpect(header().string("Retry-After", "30"));
+                loginRequest()
+                                .andExpect(status().isUnauthorized());
+
+                verify(userService).login(any(LoginRequest.class));
+        }
+
+        private ResultActions loginRequest() throws Exception {
+                return mockMvc.perform(post("/api/users/login")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"email":"seller@example.com","password":"Password123!"}
+                                                """));
         }
 }
