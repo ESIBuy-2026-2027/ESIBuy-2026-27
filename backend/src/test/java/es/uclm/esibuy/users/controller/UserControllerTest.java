@@ -2,6 +2,7 @@ package es.uclm.esibuy.users.controller;
 
 import es.uclm.esibuy.common.exception.ApiExceptionHandler;
 import es.uclm.esibuy.security.config.SecurityConfig;
+import es.uclm.esibuy.security.service.SessionAuthenticationService;
 import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
@@ -31,99 +32,101 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
-@Import({ApiExceptionHandler.class, SecurityConfig.class})
+@Import({ ApiExceptionHandler.class, SecurityConfig.class, SessionAuthenticationService.class })
 class UserControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockitoBean
-    private UserService userService;
+        @MockitoBean
+        private UserService userService;
 
-    @Test
-    void shouldCreateSessionOnLoginAndKeepItAcrossRequestsWithConfiguredTimeout() throws Exception {
-        User seller = mock(User.class);
-        when(seller.getId()).thenReturn("seller-id");
-        when(seller.getEmail()).thenReturn("seller@example.com");
-        when(seller.getRole()).thenReturn(UserRole.SELLER);
-        when(seller.isActive()).thenReturn(false);
-        when(userService.login(any(LoginRequest.class))).thenReturn(seller);
+        @Test
+        void shouldCreateSessionOnLoginAndKeepItAcrossRequestsWithConfiguredTimeout() throws Exception {
+                User seller = mock(User.class);
+                when(seller.getId()).thenReturn("seller-id");
+                when(seller.getEmail()).thenReturn("seller@example.com");
+                when(seller.getRole()).thenReturn(UserRole.SELLER);
+                when(seller.isActive()).thenReturn(false);
+                when(userService.login(any(LoginRequest.class))).thenReturn(seller);
 
-        MockHttpSession preLoginSession = new MockHttpSession();
-        String oldSessionId = preLoginSession.getId();
-        MvcResult loginResult = mockMvc.perform(post("/api/users/login")
-                        .session(preLoginSession)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"email":"seller@example.com","password":"Password123!"}
-                                """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("seller@example.com"))
-                .andExpect(jsonPath("$.role").value("SELLER"))
-                .andReturn();
+                MockHttpSession preLoginSession = new MockHttpSession();
+                String oldSessionId = preLoginSession.getId();
+                MvcResult loginResult = mockMvc.perform(post("/api/users/login")
+                                .with(csrf())
+                                .session(preLoginSession)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"email":"seller@example.com","password":"Password123!"}
+                                                """))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.email").value("seller@example.com"))
+                                .andExpect(jsonPath("$.role").value("SELLER"))
+                                .andReturn();
 
-        MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
-        assertNotNull(session);
-        assertNotEquals(oldSessionId, session.getId());
-        assertEquals(30 * 60, session.getMaxInactiveInterval());
+                MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
+                assertNotNull(session);
+                assertNotEquals(oldSessionId, session.getId());
+                assertEquals(30 * 60, session.getMaxInactiveInterval());
 
-        mockMvc.perform(get("/api/users/me").session(session))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("seller-id"))
-                .andExpect(jsonPath("$.email").value("seller@example.com"))
-                .andExpect(jsonPath("$.role").value("SELLER"));
-    }
+                mockMvc.perform(get("/api/users/me").session(session))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").value("seller-id"))
+                                .andExpect(jsonPath("$.email").value("seller@example.com"))
+                                .andExpect(jsonPath("$.role").value("SELLER"));
+        }
 
-    @Test
-    void shouldReturnUnauthorizedWithoutSession() throws Exception {
-        mockMvc.perform(get("/api/users/me"))
-                .andExpect(status().isUnauthorized())
-                .andReturn();
-    }
+        @Test
+        void shouldReturnUnauthorizedWithoutSession() throws Exception {
+                mockMvc.perform(get("/api/users/me"))
+                                .andExpect(status().isUnauthorized())
+                                .andReturn();
+        }
 
-    @Test
-    void shouldReturnForbiddenWhenAuthenticatedUserHasWrongRole() throws Exception {
-        mockMvc.perform(get("/api/products/summary")
-                        .with(user("client@example.com").roles("CLIENT")))
-                .andExpect(status().isForbidden());
-    }
+        @Test
+        void shouldReturnForbiddenWhenAuthenticatedUserHasWrongRole() throws Exception {
+                mockMvc.perform(get("/api/products/summary")
+                                .with(user("client@example.com").roles("CLIENT")))
+                                .andExpect(status().isForbidden());
+        }
 
-    @Test
-    void shouldRequireAdminRoleToCreateAnAdmin() throws Exception {
-        mockMvc.perform(post("/api/users/admin")
-                        .with(user("seller@example.com").roles("SELLER"))
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isForbidden());
-    }
+        @Test
+        void shouldRequireAdminRoleToCreateAnAdmin() throws Exception {
+                mockMvc.perform(post("/api/users/admin")
+                                .with(user("seller@example.com").roles("SELLER"))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}"))
+                                .andExpect(status().isForbidden());
+        }
 
-    @Test
-    void shouldInvalidateSessionOnLogout() throws Exception {
-        User seller = mock(User.class);
-        when(seller.getId()).thenReturn("seller-id");
-        when(seller.getEmail()).thenReturn("seller@example.com");
-        when(seller.getRole()).thenReturn(UserRole.SELLER);
-        when(seller.isActive()).thenReturn(false);
-        when(userService.login(any(LoginRequest.class))).thenReturn(seller);
+        @Test
+        void shouldInvalidateSessionOnLogout() throws Exception {
+                User seller = mock(User.class);
+                when(seller.getId()).thenReturn("seller-id");
+                when(seller.getEmail()).thenReturn("seller@example.com");
+                when(seller.getRole()).thenReturn(UserRole.SELLER);
+                when(seller.isActive()).thenReturn(false);
+                when(userService.login(any(LoginRequest.class))).thenReturn(seller);
 
-        MvcResult loginResult = mockMvc.perform(post("/api/users/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"email":"seller@example.com","password":"Password123!"}
-                                """))
-                .andExpect(status().isOk())
-                .andReturn();
-        MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
-        assertNotNull(session);
+                MvcResult loginResult = mockMvc.perform(post("/api/users/login")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"email":"seller@example.com","password":"Password123!"}
+                                                """))
+                                .andExpect(status().isOk())
+                                .andReturn();
+                MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
+                assertNotNull(session);
 
-        mockMvc.perform(post("/api/users/logout")
-                        .session(session)
-                        .with(csrf()))
-                .andExpect(status().isNoContent());
+                mockMvc.perform(post("/api/users/logout")
+                                .session(session)
+                                .with(csrf()))
+                                .andExpect(status().isNoContent());
 
-        assertTrue(session.isInvalid());
-        mockMvc.perform(get("/api/users/me"))
-                .andExpect(status().isUnauthorized());
-    }
+                assertTrue(session.isInvalid());
+                mockMvc.perform(get("/api/users/me"))
+                                .andExpect(status().isUnauthorized());
+        }
 }
