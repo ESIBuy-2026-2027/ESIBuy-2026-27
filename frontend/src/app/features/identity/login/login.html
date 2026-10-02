@@ -21,7 +21,7 @@
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
 
-      <section class="form-section">
+      <fieldset class="form-section" [disabled]="loading || retryAfterSeconds > 0">
 
         <div class="form-group">
           <label for="email">Email</label>
@@ -90,10 +90,10 @@
 
         </div>
 
-      </section>
+      </fieldset>
 
-      <button type="submit" class="btn-submit" [disabled]="loading">
-        {{ loading ? 'Iniciando sesión...' : 'Entrar' }}
+      <button type="submit" class="btn-submit" [disabled]="loading || retryAfterSeconds > 0">
+        {{ loading ? 'Iniciando sesión...' : retryAfterSeconds > 0 ? 'Espera para reintentar' : 'Entrar' }}
       </button>
 
     </form>
