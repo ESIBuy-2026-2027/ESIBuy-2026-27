@@ -96,6 +96,16 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(MESSAGE, exception.getMessage()));
     }
 
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<Map<String, String>> handleTooManyRequests(TooManyRequestsException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", Long.toString(exception.getRetryAfterSeconds()))
+                .body(Map.of(
+                        MESSAGE, exception.getMessage(),
+                        CORRELATION_ID, correlationId(request)));
+    }
+
     private void addError(Map<String, String> errors, String field, String message) {
         errors.merge(field, message, (existing, next) -> existing.equals(next) ? existing : existing + "; " + next);
     }

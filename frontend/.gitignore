@@ -5,6 +5,9 @@
 /tmp
 /out-tsc
 /bazel-out
+src/**/*.js
+src/**/*.js.map
+*.tsbuildinfo
 
 # Node
 /node_modules

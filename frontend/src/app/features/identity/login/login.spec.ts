@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { AuthService } from '../../../core/services/auth.service';
 import { Login } from './login';
@@ -88,5 +89,32 @@ describe('Login', () => {
     expect(component.forgotPasswordMessage).toBe(
       'La recuperación de contraseña estará disponible próximamente.'
     );
+  });
+
+  it('blocks login and counts down after a rate-limit response', () => {
+    vi.useFakeTimers();
+    login.mockReturnValue(throwError(() => new HttpErrorResponse({
+      status: 429,
+      statusText: 'Too Many Requests',
+      headers: new HttpHeaders({ 'Retry-After': '3' }),
+      error: { message: 'Demasiados intentos de inicio de sesión.' },
+    })));
+    component.loginForm.setValue({
+      email: 'seller@example.com',
+      password: 'short',
+    });
+
+    component.onSubmit();
+    fixture.detectChanges();
+
+    expect(component.retryAfterSeconds).toBe(3);
+    expect(component.serverError).toContain('3 segundos');
+    expect(fixture.nativeElement.querySelector('.btn-submit').disabled).toBe(true);
+
+    vi.advanceTimersByTime(3000);
+
+    expect(component.retryAfterSeconds).toBe(0);
+    expect(component.serverError).toBe('Demasiados intentos de inicio de sesión.');
+    vi.useRealTimers();
   });
 });

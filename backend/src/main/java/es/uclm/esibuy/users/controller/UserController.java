@@ -2,7 +2,10 @@ package es.uclm.esibuy.users.controller;
 
 import java.util.Map;
 
+import es.uclm.esibuy.common.exception.InvalidCredentialsException;
+import es.uclm.esibuy.common.exception.TooManyRequestsException;
 import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
+import es.uclm.esibuy.security.service.LoginAttemptService;
 import es.uclm.esibuy.security.service.SessionAuthenticationService;
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
@@ -29,10 +32,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final LoginAttemptService loginAttemptService;
     private final SessionAuthenticationService sessionAuthenticationService;
 
-    public UserController(UserService userService, SessionAuthenticationService sessionAuthenticationService) {
+    public UserController(
+            UserService userService,
+            LoginAttemptService loginAttemptService,
+            SessionAuthenticationService sessionAuthenticationService) {
         this.userService = userService;
+        this.loginAttemptService = loginAttemptService;
         this.sessionAuthenticationService = sessionAuthenticationService;
     }
 
@@ -59,7 +67,21 @@ public class UserController {
             @Valid @RequestBody LoginRequest request,
             HttpServletRequest servletRequest,
             HttpServletResponse servletResponse) {
-        User user = userService.login(request);
+        String ipAddress = servletRequest.getRemoteAddr();
+        if (loginAttemptService.isBlocked(request.getEmail(), ipAddress)) {
+            throw new TooManyRequestsException(
+                    loginAttemptService.getRemainingBlockSeconds(request.getEmail(), ipAddress));
+        }
+
+        User user;
+        try {
+            user = userService.login(request);
+        } catch (InvalidCredentialsException exception) {
+            loginAttemptService.loginFailed(request.getEmail(), ipAddress);
+            throw exception;
+        }
+
+        loginAttemptService.loginSucceeded(request.getEmail(), ipAddress);
         sessionAuthenticationService.authenticate(user, servletRequest, servletResponse);
         return ResponseEntity.ok(buildUserResponse(user));
     }
