@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,7 +34,15 @@ public class ApiExceptionHandler {
                 .forEach(error -> addError(errors, error.getField(), error.getDefaultMessage()));
         exception.getBindingResult().getGlobalErrors()
                 .forEach(error -> errors.put(error.getObjectName(), error.getDefaultMessage()));
-        return ResponseEntity.badRequest().body(Map.of(MESSAGE, "La solicitud contiene errores", "errors", errors));
+        return ResponseEntity.badRequest().body(Map.of(MESSAGE, "La solicitud contiene errores", "errors", errors,
+                CORRELATION_ID, correlationId(request)));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleMalformedJson(HttpMessageNotReadableException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.badRequest().body(Map.of(MESSAGE, "El formato de la solicitud no es válido",
+                CORRELATION_ID, correlationId(request)));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
