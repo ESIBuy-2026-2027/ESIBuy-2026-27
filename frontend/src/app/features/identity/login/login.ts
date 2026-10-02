@@ -1,8 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -26,7 +27,8 @@ export class Login implements OnDestroy {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     this.loginForm = this.fb.group({
       email: ['', [
@@ -54,9 +56,13 @@ export class Login implements OnDestroy {
     this.serverError = null;
     this.loading = true;
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: (response) => {
+    this.authService.login(this.loginForm.value).pipe(
+      finalize(() => {
         this.loading = false;
+        this.changeDetectorRef.markForCheck();
+      })
+    ).subscribe({
+      next: (response) => {
         if (response.role === 'ADMIN') {
           void this.router.navigate(['/admin/usuarios']);
         } else if (response.role === 'SELLER') {
@@ -66,7 +72,6 @@ export class Login implements OnDestroy {
         }
       },
       error: (error: unknown) => {
-        this.loading = false;
         const message = error instanceof HttpErrorResponse
           && typeof error.error?.message === 'string'
           ? error.error.message
@@ -81,6 +86,7 @@ export class Login implements OnDestroy {
         }
 
         this.serverError = message;
+        this.changeDetectorRef.markForCheck();
       }
     });
   }
@@ -114,15 +120,18 @@ export class Login implements OnDestroy {
     this.retryBaseMessage = message;
     this.retryAfterSeconds = seconds;
     this.updateRetryMessage();
+    this.changeDetectorRef.markForCheck();
     this.retryCountdownId = setInterval(() => {
       this.retryAfterSeconds -= 1;
       if (this.retryAfterSeconds <= 0) {
         this.retryAfterSeconds = 0;
         this.serverError = this.retryBaseMessage;
         this.clearRetryCountdown();
+        this.changeDetectorRef.markForCheck();
         return;
       }
       this.updateRetryMessage();
+      this.changeDetectorRef.markForCheck();
     }, 1000);
   }
 
