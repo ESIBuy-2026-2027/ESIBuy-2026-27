@@ -8,6 +8,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +39,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Bean
     SecurityContextRepository securityContextRepository() {
@@ -100,6 +104,7 @@ public class SecurityConfig {
             String message) throws IOException {
         Object correlationId = request.getAttribute(CorrelationIdFilter.ATTRIBUTE);
         String id = correlationId == null ? "" : correlationId.toString();
+        LOGGER.warn("Solicitud de seguridad rechazada. status={}, correlationId={}", status, id);
         response.setStatus(status);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setHeader(CorrelationIdFilter.HEADER, id);

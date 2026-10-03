@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
@@ -10,14 +11,18 @@ describe('AdminUserList', () => {
   let component: AdminUserList;
   let fixture: ComponentFixture<AdminUserList>;
   let obtenerTodosLosUsuarios: ReturnType<typeof vi.fn>;
+  let eliminarUsuarioAdmin: ReturnType<typeof vi.fn>;
+  let currentUser: ReturnType<typeof signal<{ id: string } | null>>;
 
   beforeEach(async () => {
     obtenerTodosLosUsuarios = vi.fn().mockReturnValue(of([]));
+    eliminarUsuarioAdmin = vi.fn().mockReturnValue(of({ success: true, message: '', data: null, correlationId: null }));
+    currentUser = signal<{ id: string } | null>(null);
     await TestBed.configureTestingModule({
       imports: [AdminUserList],
       providers: [
         provideRouter([]),
-        { provide: AuthService, useValue: { obtenerTodosLosUsuarios } },
+        { provide: AuthService, useValue: { obtenerTodosLosUsuarios, eliminarUsuarioAdmin, currentUser } },
       ],
     }).compileComponents();
 
@@ -94,5 +99,127 @@ describe('AdminUserList', () => {
     component.cargarUsuarios();
 
     expect(component.error()).toBe('No se pudo cargar la lista de usuarios. Inténtalo de nuevo.');
+  });
+
+  it('requires two confirmations and removes the account after a successful response', () => {
+    const user = {
+      id: '507f1f77bcf86cd799439011',
+      email: 'ana@example.com',
+      firstName: 'Ana',
+      lastName: 'López',
+      nationalId: null,
+      phone: null,
+      profileImage: null,
+      role: 'CLIENT' as const,
+      active: true,
+      createdAt: null,
+    };
+    component.usuarios.set([user]);
+    fixture.detectChanges();
+
+    const rendered = fixture.nativeElement as HTMLElement;
+    rendered.querySelector<HTMLButtonElement>('[aria-label="Eliminar usuario Ana López"]')?.click();
+    fixture.detectChanges();
+    expect(rendered.querySelector('[role="alertdialog"]')?.textContent).toContain('Retirar cuenta');
+
+    rendered.querySelector<HTMLButtonElement>('.dialog-actions .btn-danger')?.click();
+    fixture.detectChanges();
+    expect(rendered.querySelector('[role="alertdialog"]')?.textContent).toContain('Confirmación final');
+    rendered.querySelector<HTMLButtonElement>('.dialog-actions .btn-danger')?.click();
+
+    expect(eliminarUsuarioAdmin).toHaveBeenCalledWith(user.id);
+    expect(component.usuarios()).toEqual([]);
+    expect(component.mensajeExito()).toContain('ana@example.com');
+    expect(component.usuarioPendiente()).toBeNull();
+  });
+
+  it('prevents opening confirmation for the authenticated account', () => {
+    const user = {
+      id: 'admin-id',
+      email: 'admin@example.com',
+      firstName: 'Admin',
+      lastName: 'ESIBuy',
+      nationalId: null,
+      phone: null,
+      profileImage: null,
+      role: 'ADMIN' as const,
+      active: true,
+      createdAt: null,
+    };
+    currentUser.set({ id: user.id });
+
+    component.abrirConfirmacion(user);
+
+    expect(component.usuarioPendiente()).toBeNull();
+    expect(component.puedeEliminar(user)).toBe(false);
+  });
+
+  it('shows a safe permission message when deletion is rejected', () => {
+    const user = {
+      id: '507f1f77bcf86cd799439011',
+      email: 'ana@example.com',
+      firstName: 'Ana',
+      lastName: 'López',
+      nationalId: null,
+      phone: null,
+      profileImage: null,
+      role: 'CLIENT' as const,
+      active: true,
+      createdAt: null,
+    };
+    eliminarUsuarioAdmin.mockReturnValue(throwError(() =>
+      new HttpErrorResponse({ status: 403, statusText: 'Forbidden' })));
+    component.abrirConfirmacion(user);
+    component.confirmarPrimerPaso();
+
+    component.eliminarUsuario();
+
+    expect(component.errorEliminacion()).toBe('No tienes permisos para eliminar usuarios.');
+    expect(component.usuarios()).toEqual([]);
+  });
+
+  it('explains that sellers with associated products cannot be deleted', () => {
+    const user = {
+      id: '507f1f77bcf86cd799439011',
+      email: 'seller@example.com',
+      firstName: 'Vera',
+      lastName: 'Seller',
+      nationalId: null,
+      phone: null,
+      profileImage: null,
+      role: 'SELLER' as const,
+      active: true,
+      createdAt: null,
+    };
+    eliminarUsuarioAdmin.mockReturnValue(throwError(() =>
+      new HttpErrorResponse({ status: 409, statusText: 'Conflict' })));
+    component.abrirConfirmacion(user);
+    component.confirmarPrimerPaso();
+
+    component.eliminarUsuario();
+
+    expect(component.errorEliminacion()).toBe(
+      'No se puede eliminar este vendedor mientras tenga productos asociados.');
+  });
+
+  it('renders user-provided confirmation text as text rather than markup', () => {
+    const user = {
+      id: '507f1f77bcf86cd799439011',
+      email: 'ana@example.com',
+      firstName: '<img src=x onerror=alert(1)>',
+      lastName: 'López',
+      nationalId: null,
+      phone: null,
+      profileImage: null,
+      role: 'CLIENT' as const,
+      active: true,
+      createdAt: null,
+    };
+    component.abrirConfirmacion(user);
+    fixture.detectChanges();
+
+    const rendered = fixture.nativeElement as HTMLElement;
+    expect(rendered.querySelector('.delete-dialog img')).toBeNull();
+    expect(rendered.querySelector('.delete-dialog')?.textContent).toContain(user.firstName);
   });
 });
