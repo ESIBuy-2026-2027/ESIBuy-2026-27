@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "EsibuyApplication",
+            "request": "launch",
+            "mainClass": "es.uclm.esibuy.EsibuyApplication",
+            "projectName": "esibuy"
+        },
+        {
             "type": "editor-browser",
             "request": "launch",
             "name": "Iniciar el explorador integrado en localhost",
