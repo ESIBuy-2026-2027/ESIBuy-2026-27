@@ -6,6 +6,7 @@ import java.util.List;
 import es.uclm.esibuy.common.exception.ApiExceptionHandler;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
+import es.uclm.esibuy.products.dto.ProductResponse;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.dto.ProductSummaryResponse;
 import es.uclm.esibuy.products.service.ProductService;
@@ -106,9 +107,62 @@ class ProductControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "seller@example.com", roles = "SELLER")
+    void shouldReturnAuthenticatedSellerCatalog() throws Exception {
+        when(productService.getProductsForAuthenticatedUser(any()))
+                .thenReturn(List.of(new ProductResponse(
+                        "product-1", "Auriculares", List.of("category-id"), 3,
+                        null, new BigDecimal("19.99"), null, null, null, true, "seller-id", true)));
+
+        mockMvc.perform(get("/api/products/me"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("Auriculares"))
+                .andExpect(jsonPath("$[0].sellerId").value("seller-id"))
+                .andExpect(jsonPath("$[0].lowStock").value(true));
+
+        verify(productService).getProductsForAuthenticatedUser(any());
+    }
+
+    @Test
+    @WithMockUser(username = "admin@esibuy.com", roles = "ADMIN")
+    void shouldAllowAdminToReadCompleteCatalog() throws Exception {
+        when(productService.getProductsForAuthenticatedUser(any()))
+                .thenReturn(List.of());
+
+        mockMvc.perform(get("/api/products/me"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty());
+
+        verify(productService).getProductsForAuthenticatedUser(any());
+    }
+
+    @Test
     void shouldRejectClientFromProductEndpoints() throws Exception {
         mockMvc.perform(get("/api/products/summary")
                         .with(user("client@example.com").roles("CLIENT")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldRejectClientFromAuthenticatedCatalog() throws Exception {
+        mockMvc.perform(get("/api/products/me")
+                        .with(user("client@example.com").roles("CLIENT")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldRejectAnonymousAuthenticatedCatalog() throws Exception {
+        mockMvc.perform(get("/api/products/me"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldKeepAdminInReadOnlyMode() throws Exception {
+        mockMvc.perform(post("/api/products")
+                        .with(user("admin@esibuy.com").roles("ADMIN"))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validRequest()))
                 .andExpect(status().isForbidden());
     }
 

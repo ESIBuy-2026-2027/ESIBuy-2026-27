@@ -8,6 +8,7 @@ import es.uclm.esibuy.categories.model.Category;
 import es.uclm.esibuy.categories.repository.CategoryRepository;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
+import es.uclm.esibuy.products.dto.ProductResponse;
 import es.uclm.esibuy.products.dto.ProductSummaryResponse;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
@@ -15,6 +16,7 @@ import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -72,6 +74,27 @@ public class ProductService {
                 productRepository.countBySellerIdAndStockGreaterThanAndStockLessThanEqual(
                         sellerId, 0, LOW_STOCK_THRESHOLD),
                 LOW_STOCK_THRESHOLD);
+    }
+
+    public List<ProductResponse> getProductsForAuthenticatedUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("Se requiere una sesión autenticada");
+        }
+
+        List<Product> products;
+        String email = authentication.getName();
+        if (authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_SELLER"))) {
+            User seller = findSeller(email);
+            products = productRepository.findBySellerId(seller.getId());
+        } else if (authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))) {
+            products = productRepository.findAll();
+        } else {
+            throw new AccessDeniedException("No tiene permisos para consultar el catálogo");
+        }
+
+        return products.stream().map(ProductResponse::from).toList();
     }
 
     private User findSeller(String authenticatedEmail) {

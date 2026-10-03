@@ -87,7 +87,7 @@ public class SecurityConfig {
                             .permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/users/admin").hasRole("ADMIN")
                             .requestMatchers("/api/admin/**", "/api/v1/admin/**").hasRole("ADMIN")
-                            .requestMatchers("/api/products/**").hasRole("SELLER")
+                            .requestMatchers("/api/products/**").hasAnyRole("SELLER", "ADMIN")
                             .anyRequest().authenticated())
                     .addFilterBefore(new CorrelationIdFilter(), UsernamePasswordAuthenticationFilter.class)
                     .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)

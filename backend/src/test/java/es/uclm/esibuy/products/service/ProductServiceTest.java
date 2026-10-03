@@ -8,6 +8,7 @@ import es.uclm.esibuy.categories.model.Category;
 import es.uclm.esibuy.categories.repository.CategoryRepository;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
+import es.uclm.esibuy.products.dto.ProductResponse;
 import es.uclm.esibuy.products.dto.ProductSummaryResponse;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
@@ -19,6 +20,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -153,6 +156,68 @@ class ProductServiceTest {
         assertThrows(org.springframework.security.access.AccessDeniedException.class,
                 () -> productService.getSummary("client@example.com"));
         verify(productRepository, never()).countBySellerId(any());
+    }
+
+    @Test
+    void shouldReturnOnlyAuthenticatedSellerProductsAndMarkLowStock() {
+        User seller = org.mockito.Mockito.mock(User.class);
+        when(seller.getId()).thenReturn("seller-1");
+        when(seller.getRole()).thenReturn(UserRole.SELLER);
+        when(userRepository.findByEmailIgnoreCase("vendedor1@tech.com")).thenReturn(Optional.of(seller));
+        Product ownProduct = new Product(
+                "Producto propio", List.of(), 3, null,
+                new BigDecimal("10"), null, null, null, true, "seller-1");
+        when(productRepository.findBySellerId("seller-1")).thenReturn(List.of(ownProduct));
+
+        var authentication = UsernamePasswordAuthenticationToken.authenticated(
+                "vendedor1@tech.com", null,
+                List.of(new SimpleGrantedAuthority("ROLE_SELLER")));
+
+        List<ProductResponse> result = productService.getProductsForAuthenticatedUser(authentication);
+
+        assertEquals(1, result.size());
+        assertEquals("Producto propio", result.get(0).name());
+        assertEquals("seller-1", result.get(0).sellerId());
+        assertEquals(true, result.get(0).lowStock());
+        verify(productRepository).findBySellerId("seller-1");
+        verify(productRepository, never()).findAll();
+    }
+
+    @Test
+    void shouldReturnAllProductsForAuthenticatedAdmin() {
+        Product first = new Product(
+                "Producto vendedor 1", List.of(), 10, null,
+                new BigDecimal("10"), null, null, null, true, "seller-1");
+        Product second = new Product(
+                "Producto vendedor 2", List.of(), 0, null,
+                new BigDecimal("20"), null, null, null, true, "seller-2");
+        when(productRepository.findAll()).thenReturn(List.of(first, second));
+
+        var authentication = UsernamePasswordAuthenticationToken.authenticated(
+                "admin@esibuy.com", null,
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+
+        List<ProductResponse> result = productService.getProductsForAuthenticatedUser(authentication);
+
+        assertEquals(2, result.size());
+        assertEquals("Producto vendedor 1", result.get(0).name());
+        assertEquals("Producto vendedor 2", result.get(1).name());
+        assertEquals(false, result.get(0).lowStock());
+        assertEquals(false, result.get(1).lowStock());
+        verify(productRepository).findAll();
+        verify(productRepository, never()).findBySellerId(any());
+    }
+
+    @Test
+    void shouldRejectUnauthorisedProductCatalogAccess() {
+        var authentication = UsernamePasswordAuthenticationToken.authenticated(
+                "cliente@example.com", null,
+                List.of(new SimpleGrantedAuthority("ROLE_CLIENT")));
+
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                () -> productService.getProductsForAuthenticatedUser(authentication));
+        verify(productRepository, never()).findAll();
+        verify(productRepository, never()).findBySellerId(any());
     }
 
     private ProductCreateRequest validRequest() {

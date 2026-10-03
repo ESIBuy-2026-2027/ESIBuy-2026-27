@@ -16,7 +16,8 @@ public record ProductResponse(
         BigDecimal premiumDiscount,
         String imageUrl,
         boolean available,
-        String sellerId) {
+        String sellerId,
+        boolean lowStock) {
 
     public ProductResponse {
         categoryIds = List.copyOf(categoryIds);
@@ -34,6 +35,7 @@ public record ProductResponse(
                 product.getPremiumDiscount(),
                 product.getImageUrl(),
                 product.isAvailable(),
-                product.getSellerId());
+                product.getSellerId(),
+                product.getStock() > 0 && product.getStock() <= 5);
     }
 }
