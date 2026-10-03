@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
@@ -16,9 +16,15 @@ export class AdminUserList implements OnInit {
   usuarios = signal<UserAdmin[]>([]);
   cargando = signal(true);
   error = signal('');
+  mensajeExito = signal('');
+  usuarioPendiente = signal<UserAdmin | null>(null);
+  pasoConfirmacion = signal<1 | 2>(1);
+  eliminando = signal(false);
+  errorEliminacion = signal('');
 
   filtroRol: string = '';
   filtroEstado: string = '';
+  private lastFocusedElement: HTMLElement | null = null;
 
   constructor(
     private readonly authService: AuthService,
@@ -54,6 +60,113 @@ export class AdminUserList implements OnInit {
 
   aplicarFiltros(): void {
     this.cargarUsuarios();
+  }
+
+  @ViewChild('deleteDialog')
+  set deleteDialog(element: ElementRef<HTMLElement> | undefined) {
+    element?.nativeElement.focus();
+  }
+
+  puedeEliminar(usuario: UserAdmin): boolean {
+    return this.authService.currentUser()?.id !== usuario.id;
+  }
+
+  abrirConfirmacion(usuario: UserAdmin): void {
+    if (!this.puedeEliminar(usuario)) {
+      return;
+    }
+    this.lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    this.usuarioPendiente.set(usuario);
+    this.pasoConfirmacion.set(1);
+    this.errorEliminacion.set('');
+    this.mensajeExito.set('');
+  }
+
+  confirmarPrimerPaso(): void {
+    this.pasoConfirmacion.set(2);
+  }
+
+  cancelarConfirmacion(): void {
+    if (!this.eliminando()) {
+      this.usuarioPendiente.set(null);
+      this.pasoConfirmacion.set(1);
+      this.errorEliminacion.set('');
+      const focusTarget = this.lastFocusedElement;
+      this.lastFocusedElement = null;
+      queueMicrotask(() => {
+        if (focusTarget?.isConnected) {
+          focusTarget.focus();
+        }
+      });
+    }
+  }
+
+  eliminarUsuario(): void {
+    const usuario = this.usuarioPendiente();
+    if (!usuario || !this.puedeEliminar(usuario) || this.eliminando()) {
+      return;
+    }
+
+    this.eliminando.set(true);
+    this.errorEliminacion.set('');
+    this.authService.eliminarUsuarioAdmin(usuario.id).subscribe({
+      next: () => {
+        this.usuarios.update((usuarios) => usuarios.filter((actual) => actual.id !== usuario.id));
+        this.mensajeExito.set(`La cuenta de ${usuario.email} se eliminó correctamente.`);
+        this.usuarioPendiente.set(null);
+        this.eliminando.set(false);
+      },
+      error: (err: unknown) => {
+        this.errorEliminacion.set(this.mensajeErrorEliminacion(err));
+        this.eliminando.set(false);
+      }
+    });
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  gestionarTecladoDialogo(event: KeyboardEvent): void {
+    if (!this.usuarioPendiente()) {
+      return;
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.cancelarConfirmacion();
+      return;
+    }
+    if (event.key !== 'Tab') {
+      return;
+    }
+
+    const dialog = document.querySelector<HTMLElement>('.delete-dialog');
+    const focusable = dialog?.querySelectorAll<HTMLElement>('button:not(:disabled)');
+    if (!focusable?.length) {
+      event.preventDefault();
+      dialog?.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialog)) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  private mensajeErrorEliminacion(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      switch (error.status) {
+        case 400: return 'La solicitud no es válida. No puedes eliminar tu propia cuenta.';
+        case 401: return 'Tu sesión ha caducado. Inicia sesión de nuevo.';
+        case 403: return 'No tienes permisos para eliminar usuarios.';
+        case 404: return 'El usuario ya no existe. Actualiza el listado.';
+        case 409: return 'No se puede eliminar este vendedor mientras tenga productos asociados.';
+        default: break;
+      }
+    }
+    return 'No se pudo eliminar el usuario. Inténtalo de nuevo.';
   }
 
   getAvatarUrl(profileImage: string | null | undefined): string {

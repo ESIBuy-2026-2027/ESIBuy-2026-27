@@ -70,18 +70,33 @@ public class ApiExceptionHandler {
                 CORRELATION_ID, correlationId(request)));
     }
 
+    @ExceptionHandler(UserDeletionConflictException.class)
+    public ResponseEntity<Map<String, String>> handleUserDeletionConflict(UserDeletionConflictException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MESSAGE, exception.getMessage(),
+                CORRELATION_ID, correlationId(request)));
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleUserNotFound(UserNotFoundException exception,
             HttpServletRequest request) {
+        String id = correlationId(request);
+        if (LOGGER.isWarnEnabled()) {
+            LOGGER.warn("Usuario solicitado no encontrado. correlationId={}", id);
+        }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(MESSAGE, "Usuario no encontrado",
-                CORRELATION_ID, correlationId(request)));
+            CORRELATION_ID, id));
     }
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, String>> handleIllegalState(IllegalStateException exception,
             HttpServletRequest request) {
+        String id = correlationId(request);
+        if (LOGGER.isWarnEnabled()) {
+            LOGGER.warn("Solicitud rechazada por estado no válido. correlationId={}", id);
+        }
         return ResponseEntity.badRequest().body(Map.of(MESSAGE, exception.getMessage(),
-                CORRELATION_ID, correlationId(request)));
+            CORRELATION_ID, id));
     }
 
     @ExceptionHandler(Exception.class)

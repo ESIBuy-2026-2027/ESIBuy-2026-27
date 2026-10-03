@@ -14,6 +14,10 @@
         </div>
     </header>
 
+    @if (mensajeExito()) {
+    <output class="success-alert" aria-live="polite">{{ mensajeExito() }}</output>
+    }
+
     <!-- Barra de Filtros -->
     <div class="filters-bar"
         style="display: flex; gap: 1rem; margin-bottom: 1.5rem; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
@@ -114,7 +118,10 @@
                             <button class="btn-icon btn-edit" title="Modificar Usuario"
                                 [routerLink]="['/admin/usuarios', user.id, 'editar']"
                                 [attr.aria-label]="'Modificar usuario ' + user.firstName + ' ' + user.lastName">✏️</button>
-                            <button class="btn-icon btn-delete" title="Eliminar / Bloquear">🗑️</button>
+                            <button class="btn-icon btn-delete" type="button"
+                                [disabled]="!puedeEliminar(user)" (click)="abrirConfirmacion(user)"
+                                [title]="puedeEliminar(user) ? 'Eliminar usuario' : 'No puedes eliminar tu propia cuenta'"
+                                [attr.aria-label]="'Eliminar usuario ' + user.firstName + ' ' + user.lastName">🗑️</button>
                         </div>
                     </td>
                 </tr>
@@ -129,6 +136,37 @@
                 }
             </tbody>
         </table>
+    </div>
+    }
+
+    @if (usuarioPendiente(); as usuario) {
+    <div class="modal-backdrop">
+        <section #deleteDialog class="delete-dialog" role="alertdialog" aria-modal="true"
+            aria-labelledby="delete-dialog-title" aria-describedby="delete-dialog-description" tabindex="-1">
+            @if (pasoConfirmacion() === 1) {
+            <h2 id="delete-dialog-title">Retirar cuenta</h2>
+            <p id="delete-dialog-description">¿Quieres iniciar la eliminación de la cuenta de
+                <strong>{{ usuario.firstName }} {{ usuario.lastName }}</strong> ({{ usuario.email }})?</p>
+            <p class="delete-warning">Esta acción eliminará la cuenta de la plataforma y no se puede deshacer.</p>
+            <div class="dialog-actions">
+                <button class="btn-secondary" type="button" (click)="cancelarConfirmacion()">Cancelar</button>
+                <button class="btn-danger" type="button" (click)="confirmarPrimerPaso()">Continuar</button>
+            </div>
+            } @else {
+            <h2 id="delete-dialog-title">Confirmación final</h2>
+            <p id="delete-dialog-description">Confirma la eliminación definitiva de
+                <strong>{{ usuario.email }}</strong>.</p>
+            @if (errorEliminacion()) {
+            <p class="error-alert" role="alert">{{ errorEliminacion() }}</p>
+            }
+            <div class="dialog-actions">
+                <button class="btn-secondary" type="button" [disabled]="eliminando()"
+                    (click)="cancelarConfirmacion()">Volver</button>
+                <button class="btn-danger" type="button" [disabled]="eliminando()"
+                    (click)="eliminarUsuario()">{{ eliminando() ? 'Eliminando...' : 'Eliminar definitivamente' }}</button>
+            </div>
+            }
+        </section>
     </div>
     }
 </div>

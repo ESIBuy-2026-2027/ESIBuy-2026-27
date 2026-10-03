@@ -8,4 +8,6 @@ public interface AdminUserService {
     User obtenerPorId(String id);
 
     User actualizar(String id, UpdateUserRequestDTO request);
+
+    void eliminar(String id, String authenticatedUserId);
 }

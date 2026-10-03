@@ -138,6 +138,102 @@
     margin-bottom: 1.5rem;
 }
 
+.success-alert {
+    display: block;
+    margin-bottom: 1rem;
+    padding: 0.9rem 1rem;
+    color: #166534;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #16a34a;
+    border-radius: 6px;
+}
+
+.modal-backdrop {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgb(15 23 42 / 64%);
+}
+
+.delete-dialog {
+    width: min(100%, 30rem);
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    padding: 1.5rem;
+    color: #1e293b;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-top: 4px solid #dc2626;
+    border-radius: 8px;
+    box-shadow: 0 24px 60px rgb(15 23 42 / 28%);
+}
+
+.delete-dialog h2 {
+    margin: 0 0 0.75rem;
+    color: #0f172a;
+    font-size: 1.25rem;
+}
+
+.delete-dialog p {
+    line-height: 1.55;
+}
+
+.delete-warning {
+    padding: 0.75rem;
+    color: #7f1d1d;
+    background: #fef2f2;
+    border-left: 3px solid #dc2626;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+
+.dialog-actions button {
+    min-height: 42px;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.dialog-actions button:focus-visible,
+.btn-icon:focus-visible {
+    outline: 3px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.dialog-actions button:disabled,
+.btn-icon:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.btn-secondary {
+    color: #334155;
+    background: #fff;
+    border-color: #cbd5e1 !important;
+}
+
+.btn-danger {
+    color: #fff;
+    background: #b91c1c;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #991b1b;
+}
+
 /* Diseño de la Tabla */
 .table-container {
     background: white;
@@ -450,6 +546,18 @@
     }
 
     .btn-alta-admin {
+        width: 100%;
+    }
+
+    .delete-dialog {
+        padding: 1.1rem;
+    }
+
+    .dialog-actions {
+        flex-direction: column-reverse;
+    }
+
+    .dialog-actions button {
         width: 100%;
     }
 
