@@ -113,9 +113,19 @@
 }
 
 .topbar-link {
-  color: #476476;
+  color: #001a48;
+  min-height: 30px;
+  min-width: 45px;
+  border-radius: 8px;
+  display: inline-flex;
+  gap: 8px;
+  background-color: #b3ddfa;
   font-size: 12px;
+  align-items: center;
+  flex: 0 0 auto;
+  padding: 0 10px;
   text-decoration: none;
+  font-weight: 650;
 }
 
 .page-heading {

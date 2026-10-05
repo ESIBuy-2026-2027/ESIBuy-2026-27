@@ -1,14 +1,16 @@
 :host {
   display: block;
-  min-height: 100vh;
+  height: calc(100vh - var(--app-header-height));
+  height: calc(100dvh - var(--app-header-height));
   color: #192338;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 .home-layout {
   display: grid;
+  box-sizing: border-box;
+  height: 100%;
   grid-template-columns: 1fr 1fr;
-  min-height: 100vh;
   background: #fff;
 }
 
@@ -228,7 +230,13 @@
 }
 
 @media (max-width: 760px) {
+  :host {
+    height: auto;
+  }
+
   .home-layout {
+    height: auto;
+    min-height: calc(100vh - var(--app-header-height));
     grid-template-columns: 1fr;
   }
 
