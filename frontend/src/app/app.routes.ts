@@ -6,6 +6,7 @@ import { Login } from './features/identity/login/login';
 import { Register } from './features/identity/register/register';
 import { AdminUserCreate } from './features/admin/admin-user-create/admin-user-create';
 import { ProductCreate } from './features/products/product-create/product-create';
+import { SellerCatalog } from './features/products/seller-catalog/seller-catalog';
 import { AdminUserList } from './features/admin/admin-user-list/admin-user-list';
 import { AdminUserDetail } from './features/admin/admin-user-detail/admin-user-detail';
 
@@ -27,6 +28,7 @@ export const routes: Routes = [
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
   { path: 'admin.html', redirectTo: 'admin/usuarios', pathMatch: 'full' },
 
+  { path: 'seller/catalog', component: SellerCatalog, canActivate: [authGuard, roleGuard('SELLER')] },
   { path: 'products/new', component: ProductCreate, canActivate: [authGuard, roleGuard('SELLER')] },
   { path: '**', redirectTo: '' }
 ];

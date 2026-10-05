@@ -58,7 +58,7 @@
               <span class="metric-icon products-icon" aria-hidden="true">▦</span>
               <div>
                 <p class="metric-label">Total de productos</p>
-                <p class="metric-value">{{ metrics.totalProductos }}</p>
+                <p class="metric-value">{{ metrics.totalProducts }}</p>
                 <p class="metric-detail">Productos en tu catálogo</p>
               </div>
             </article>
@@ -66,10 +66,10 @@
               <span class="metric-icon stock-icon" aria-hidden="true">!</span>
               <div>
                 <p class="metric-label">Avisos de stock</p>
-                <p class="metric-value">{{ metrics.productosSinStock + metrics.productosStockBajo }} avisos</p>
+                <p class="metric-value">{{ metrics.outOfStockProducts + metrics.lowStockProducts }} avisos</p>
                 <p class="metric-detail">
-                  {{ metrics.productosSinStock }} sin stock · {{ metrics.productosStockBajo }}
-                  entre 1 y {{ metrics.umbralStockBajo }} unidades
+                  {{ metrics.outOfStockProducts }} sin stock · {{ metrics.lowStockProducts }}
+                  entre 1 y {{ metrics.lowStockThreshold }} unidades
                 </p>
               </div>
             </article>
@@ -78,10 +78,10 @@
               <div>
                 <p class="metric-label">Estado del catálogo</p>
                 <p class="metric-value">
-                  {{ metrics.totalProductos > 0 ? 'Catálogo activo' : 'Catálogo vacío' }}
+                  {{ metrics.totalProducts > 0 ? 'Catálogo activo' : 'Catálogo vacío' }}
                 </p>
                 <p class="metric-detail">
-                  {{ metrics.totalProductos > 0 ? 'Tu oferta está en marcha' : 'Añade tu primer producto' }}
+                  {{ metrics.totalProducts > 0 ? 'Tu oferta está en marcha' : 'Añade tu primer producto' }}
                 </p>
               </div>
             </article>
@@ -95,12 +95,72 @@
             <p class="eyebrow">INVENTARIO</p>
             <h2>Mis productos</h2>
           </div>
+          @if (!productsLoading() && !productsError()) {
+            <span class="product-count">{{ products().length }} productos</span>
+          }
         </div>
-        <div class="empty-state">
-          <h3>La gestión de tus productos</h3>
-          <p>El listado de productos aparecerá en esta sección.</p>
-          <a class="secondary-action" routerLink="/products/new">Crear mi primer producto</a>
-        </div>
+        @if (productsLoading()) {
+          <p class="catalog-message" role="status">Cargando tus productos…</p>
+        } @else if (productsError()) {
+          <div class="catalog-error" role="alert">
+            <span>No se pudieron cargar tus productos. Inténtalo de nuevo.</span>
+            <button type="button" (click)="loadProducts()">Reintentar</button>
+          </div>
+        } @else if (products().length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">▦</span>
+            <h3>Aún no tienes productos</h3>
+            <p>Añade tu primer producto para empezar a mostrar tu oferta en ESIBuy.</p>
+            <a class="secondary-action" routerLink="/products/new">Crear mi primer producto</a>
+          </div>
+        } @else {
+          <div class="table-scroll">
+            <table class="product-table">
+              <thead>
+                <tr>
+                  <th scope="col">Producto</th>
+                  <th scope="col">Precio</th>
+                  <th scope="col">Stock</th>
+                  <th scope="col">Visibilidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (product of products(); track product.id) {
+                  <tr>
+                    <td>
+                      <div class="product-cell">
+                        @if (product.imageUrl) {
+                          <img class="product-image" [src]="product.imageUrl" [alt]="product.name">
+                        } @else {
+                          <span class="product-image-placeholder" aria-hidden="true">▦</span>
+                        }
+                        <div class="product-copy">
+                          <span class="product-name">{{ product.name }}</span>
+                          <span class="product-description">{{ product.description || 'Sin descripción' }}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="product-price">{{ formatPrice(product.price) }}</td>
+                    <td>
+                      <span class="stock-badge"
+                        [class.stock-empty]="product.stock === 0"
+                        [class.stock-low]="product.stock > 0 && product.stock <= (summary()?.lowStockThreshold ?? 5)">
+                        {{ stockStatus(product.stock) }} · {{ product.stock }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="availability-badge"
+                        [class.is-published]="product.available"
+                        [class.is-paused]="!product.available">
+                        {{ product.available ? 'Publicado' : 'Pausado' }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </section>
     </main>
   </div>

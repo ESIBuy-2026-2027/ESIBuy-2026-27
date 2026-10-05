@@ -6,6 +6,7 @@ import java.util.List;
 import es.uclm.esibuy.common.exception.ApiExceptionHandler;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
+import es.uclm.esibuy.products.dto.ProductResponse;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.dto.ProductSummaryResponse;
 import es.uclm.esibuy.products.service.ProductService;
@@ -106,8 +107,27 @@ class ProductControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "seller@example.com", roles = "SELLER")
+    void shouldReturnProductsForAuthenticatedSeller() throws Exception {
+        when(productService.getSellerProducts("seller@example.com"))
+                .thenReturn(List.of(new ProductResponse(
+                        "product-1", "Auriculares", List.of("category-id"), 3,
+                        "Inalámbricos", new BigDecimal("19.99"), null, null,
+                        null, true, "seller-id")));
+
+        mockMvc.perform(get("/api/products/mine"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value("product-1"))
+                .andExpect(jsonPath("$[0].name").value("Auriculares"))
+                .andExpect(jsonPath("$[0].stock").value(3))
+                .andExpect(jsonPath("$[0].sellerId").value("seller-id"));
+
+        verify(productService).getSellerProducts("seller@example.com");
+    }
+
+    @Test
     void shouldRejectClientFromProductEndpoints() throws Exception {
-        mockMvc.perform(get("/api/products/summary")
+        mockMvc.perform(get("/api/products/mine")
                         .with(user("client@example.com").roles("CLIENT")))
                 .andExpect(status().isForbidden());
     }
