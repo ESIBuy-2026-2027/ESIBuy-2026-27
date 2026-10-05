@@ -18,11 +18,11 @@ export class App {
   logout(): void {
     this.logoutError.set(null);
     this.authService.logout().subscribe({
-      next: () => this.router.navigate(['/login']),
+      next: () => this.router.navigate(['/']),
       error: (error: unknown) => {
         if (error instanceof HttpErrorResponse && error.status === 401) {
           this.authService.clearCurrentUser();
-          void this.router.navigate(['/login'], { queryParams: { expired: 'true' } });
+          void this.router.navigate(['/'], { queryParams: { expired: 'true' } });
           return;
         }
         this.logoutError.set('No se pudo cerrar la sesión. Inténtalo de nuevo.');
