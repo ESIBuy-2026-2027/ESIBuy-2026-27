@@ -169,7 +169,7 @@ export class AuthService {
 
   eliminarUsuarioAdmin(id: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(
-      `/api/v1/admin/users/${encodeURIComponent(id)}`,
+      `/api/admin/usuarios/${encodeURIComponent(id)}`,
       { withCredentials: true },
     );
   }

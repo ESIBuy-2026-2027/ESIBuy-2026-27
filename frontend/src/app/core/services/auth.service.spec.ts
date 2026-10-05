@@ -74,4 +74,13 @@ describe('AuthService', () => {
     expect(request.request.withCredentials).toBe(true);
     request.flush(null);
   });
+
+  it('calls DELETE on /api/admin/usuarios/:id with credentials to delete an admin user', () => {
+    service.eliminarUsuarioAdmin('user-123').subscribe();
+
+    const request = httpTesting.expectOne('/api/admin/usuarios/user-123');
+    expect(request.request.method).toBe('DELETE');
+    expect(request.request.withCredentials).toBe(true);
+    request.flush({ success: true, message: 'Usuario eliminado correctamente', data: null, correlationId: null });
+  });
 });

@@ -222,4 +222,53 @@ describe('AdminUserList', () => {
     expect(rendered.querySelector('.delete-dialog img')).toBeNull();
     expect(rendered.querySelector('.delete-dialog')?.textContent).toContain(user.firstName);
   });
+
+  it('cancels confirmation and resets modal state when cancelarConfirmacion is called', () => {
+    const user = {
+      id: '507f1f77bcf86cd799439011',
+      email: 'ana@example.com',
+      firstName: 'Ana',
+      lastName: 'López',
+      nationalId: null,
+      phone: null,
+      profileImage: null,
+      role: 'CLIENT' as const,
+      active: true,
+      createdAt: null,
+    };
+    component.abrirConfirmacion(user);
+    expect(component.usuarioPendiente()).toEqual(user);
+    expect(component.pasoConfirmacion()).toBe(1);
+
+    component.confirmarPrimerPaso();
+    expect(component.pasoConfirmacion()).toBe(2);
+
+    component.cancelarConfirmacion();
+    expect(component.usuarioPendiente()).toBeNull();
+    expect(component.pasoConfirmacion()).toBe(1);
+    expect(component.errorEliminacion()).toBe('');
+  });
+
+  it('closes the modal when Escape key is pressed', () => {
+    const user = {
+      id: '507f1f77bcf86cd799439011',
+      email: 'ana@example.com',
+      firstName: 'Ana',
+      lastName: 'López',
+      nationalId: null,
+      phone: null,
+      profileImage: null,
+      role: 'CLIENT' as const,
+      active: true,
+      createdAt: null,
+    };
+    component.abrirConfirmacion(user);
+    expect(component.usuarioPendiente()).toEqual(user);
+
+    const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+    document.dispatchEvent(escapeEvent);
+
+    expect(component.usuarioPendiente()).toBeNull();
+    expect(component.pasoConfirmacion()).toBe(1);
+  });
 });
