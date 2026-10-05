@@ -1,8 +1,8 @@
-<div class="login-container">
+<div class="login-container" [class.login-container--embedded]="embedded">
 
-  <main class="login-card">
+  <main class="login-card" [class.login-card--embedded]="embedded">
 
-    <header class="login-header">
+    <header class="login-header" *ngIf= "!embedded">
       <div class="brand">
         <span class="brand-name">ESIBuy</span>
         <span class="brand-badge">Plataforma de Comercio Electrónico</span>
@@ -107,7 +107,7 @@
       </p>
     </div>
 
-    <div class="auth-links">
+    <div class="auth-links" *ngIf="!embedded">
       <span>¿No tienes cuenta?</span>
       <a routerLink="/register" class="auth-link">
         Regístrate aquí

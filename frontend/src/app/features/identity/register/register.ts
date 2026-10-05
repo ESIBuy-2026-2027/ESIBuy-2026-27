@@ -403,6 +403,16 @@ export class Register {
     }
   }
 
+  cancelRegistration(): void {
+    const confirmed = window.confirm(
+      '¿Seguro que quieres cancelar el registro? Se perderán los datos introducidos.'
+    );
+
+    if (confirmed) {
+      void this.router.navigate(['/']);
+    }
+  }
+
   private getRegistrationErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse && error.status === 409) {
       const serverMessage = this.getServerMessage(error.error);

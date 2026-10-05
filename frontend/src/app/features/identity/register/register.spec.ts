@@ -39,6 +39,25 @@ describe('Register', () => {
         expect(component).toBeTruthy();
     });
 
+    it('asks for confirmation before cancelling registration and returning home', () => {
+        const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+        component.cancelRegistration();
+
+        expect(confirm).toHaveBeenCalledWith(
+            '¿Seguro que quieres cancelar el registro? Se perderán los datos introducidos.'
+        );
+        expect(navigate).toHaveBeenCalledWith(['/']);
+    });
+
+    it('stays on the registration page when cancellation is declined', () => {
+        vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+        component.cancelRegistration();
+
+        expect(navigate).not.toHaveBeenCalled();
+    });
+
     it('shows the minimum-length errors that block a seller registration', () => {
         fixture.nativeElement.querySelectorAll('.role-selector button')[1].click();
         fixture.detectChanges();

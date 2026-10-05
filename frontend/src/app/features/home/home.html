@@ -1,41 +1,47 @@
-<div class="home-container">
+<div class="home-layout">
+  <section class="welcome-panel">
+    <a routerLink="/" class="brand" aria-label="ESIBuy, inicio">
+      <span class="brand-name">ESI<span>Buy</span></span>
+    </a>
 
-    <main class="home-card">
+    <div class="welcome-copy">
+      <p class="eyebrow">Tu tienda, más sencilla</p>
+      <h1>Compra con confianza.</h1>
+      <h1>Vive la experiencia.</h1>
+      <p class="welcome-text">
+        Accede a tu cuenta para descubrir productos, gestionar tus pedidos
+        y disfrutar de una compra segura.
+      </p>
+    </div>
 
-        <div class="brand">
-            <span class="brand-name">ESIBuy</span>
-            <span class="brand-badge">Plataforma de Comercio Electrónico</span>
-        </div>
+    <div class="shopping-illustration" aria-hidden="true">
+      <div class="order-card">
+        <span>Pedido #2048</span>
+        <div class="progress-bar"></div>
+        <p>● En camino</p>
+      </div>
 
-        <section class="welcome-section">
-            <h1>Bienvenido a ESIBuy</h1>
+      <div class="payment-card">
+        <span>Pago seguro</span>
+        <strong>•••• 4821</strong>
+        <small>ESIBUY MEMBER</small>
+      </div>
+    </div>
+  </section>
 
-            <p class="welcome-text">
-                Gestiona tus productos y disfruta de una plataforma de comercio
-                electrónico sencilla y accesible.
-            </p>
-        </section>
+  <section class="auth-panel" aria-labelledby="login-title">
+    <div class="auth-content">
+      <h2 id="login-title">Bienvenida de nuevo</h2>
+      <p class="auth-subtitle">Inicia sesión para continuar en ESIBuy</p>
 
-        <div class="actions">
+      <app-login [embedded]="true"></app-login>
 
-            <a routerLink="/login" class="btn btn-primary">
-                Iniciar Sesión
-            </a>
+      <p class="register-prompt">
+        ¿Todavía no tienes una cuenta?
+        <a routerLink="/register">Registrarse</a>
+      </p>
 
-            <a routerLink="/register" class="btn btn-secondary">
-                Registrarse
-            </a>
-
-            <a routerLink="/products/new" class="btn btn-tertiary">
-                Alta de Producto
-            </a>
-
-            <a routerLink="/admin" class="btn btn-tertiary">
-                Zona de Administración
-            </a>
-
-        </div>
-
-    </main>
-
+      <p class="security-note">Tus datos están protegidos con cifrado seguro</p>
+    </div>
+  </section>
 </div>
