@@ -11,10 +11,6 @@
         <span class="navigation-icon" aria-hidden="true">▦</span>
         <span>Mi catálogo</span>
       </a>
-      <a class="navigation-link" routerLink="/products/new">
-        <span class="navigation-icon" aria-hidden="true">＋</span>
-        <span>Añadir producto</span>
-      </a>
     </nav>
 
   </aside>
@@ -36,57 +32,6 @@
           <span aria-hidden="true">＋</span>
           Añadir producto
         </a>
-      </section>
-
-      <section class="summary-region" aria-label="Resumen del catálogo">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">VISTA GENERAL</p>
-            <h2>Tu catálogo, de un vistazo</h2>
-          </div>
-        </div>
-        @if (loading()) {
-          <p class="metrics-message" role="status">Cargando las métricas del catálogo…</p>
-        } @else if (loadError()) {
-          <div class="metrics-error" role="alert">
-            <span>No se pudieron cargar las métricas. Inténtalo de nuevo.</span>
-            <button type="button" aria-label="Reintentar carga de métricas" (click)="loadSummary()">Reintentar</button>
-          </div>
-        } @else if (summary(); as metrics) {
-          <div class="metric-grid" aria-live="polite">
-            <article class="metric-card">
-              <span class="metric-icon products-icon" aria-hidden="true">▦</span>
-              <div>
-                <p class="metric-label">Total de productos</p>
-                <p class="metric-value">{{ metrics.totalProducts }}</p>
-                <p class="metric-detail">Productos en tu catálogo</p>
-              </div>
-            </article>
-            <article class="metric-card">
-              <span class="metric-icon stock-icon" aria-hidden="true">!</span>
-              <div>
-                <p class="metric-label">Avisos de stock</p>
-                <p class="metric-value">{{ metrics.outOfStockProducts + metrics.lowStockProducts }} avisos</p>
-                <p class="metric-detail">
-                  {{ metrics.outOfStockProducts }} sin stock · {{ metrics.lowStockProducts }}
-                  entre 1 y {{ metrics.lowStockThreshold }} unidades
-                </p>
-              </div>
-            </article>
-            <article class="metric-card">
-              <span class="metric-icon status-icon" aria-hidden="true">✓</span>
-              <div>
-                <p class="metric-label">Estado del catálogo</p>
-                <p class="metric-value">
-                  {{ metrics.totalProducts > 0 ? 'Catálogo activo' : 'Catálogo vacío' }}
-                </p>
-                <p class="metric-detail">
-                  {{ metrics.totalProducts > 0 ? 'Tu oferta está en marcha' : 'Añade tu primer producto' }}
-                </p>
-              </div>
-            </article>
-          </div>
-        }
       </section>
 
       <section class="products-region" aria-label="Productos del catálogo">
@@ -114,11 +59,18 @@
             <a class="secondary-action" routerLink="/products/new">Crear mi primer producto</a>
           </div>
         } @else {
+          @if (categoriesError()) {
+            <div class="catalog-error category-error" role="alert">
+              <span>No se pudieron cargar los nombres de las categorías.</span>
+              <button type="button" (click)="loadCategories()">Reintentar</button>
+            </div>
+          }
           <div class="table-scroll">
             <table class="product-table">
               <thead>
                 <tr>
                   <th scope="col">Producto</th>
+                  <th scope="col">Categoría</th>
                   <th scope="col">Precio</th>
                   <th scope="col">Stock</th>
                   <th scope="col">Visibilidad</th>
@@ -140,11 +92,26 @@
                         </div>
                       </div>
                     </td>
+                    <td>
+                      @if (categoriesLoading()) {
+                        <span class="category-empty">Cargando categorías…</span>
+                      } @else if (categoriesError()) {
+                        <span class="category-badge category-unavailable">No disponible</span>
+                      } @else if (product.categoryIds.length === 0) {
+                        <span class="category-empty">Sin categoría</span>
+                      } @else {
+                        <div class="category-list">
+                          @for (categoryId of product.categoryIds; track categoryId) {
+                            <span class="category-badge">{{ categoryName(categoryId) }}</span>
+                          }
+                        </div>
+                      }
+                    </td>
                     <td class="product-price">{{ formatPrice(product.price) }}</td>
                     <td>
                       <span class="stock-badge"
                         [class.stock-empty]="product.stock === 0"
-                        [class.stock-low]="product.stock > 0 && product.stock <= (summary()?.lowStockThreshold ?? 5)">
+                        [class.stock-low]="stockStatus(product.stock) === 'Stock bajo'">
                         {{ stockStatus(product.stock) }} · {{ product.stock }}
                       </span>
                     </td>

@@ -1,24 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
+import { ProductsService } from '../products.service';
 import { SellerCatalogService, SellerProduct } from './seller-catalog.service';
 import { SellerCatalog } from './seller-catalog';
 
-interface CatalogSummary {
-  totalProducts: number;
-  outOfStockProducts: number;
-  lowStockProducts: number;
-  lowStockThreshold: number;
-}
-
 describe('SellerCatalog', () => {
   let fixture: ComponentFixture<SellerCatalog>;
-  const summary: CatalogSummary = {
-    totalProducts: 12,
-    outOfStockProducts: 2,
-    lowStockProducts: 3,
-    lowStockThreshold: 5,
-  };
   const products: SellerProduct[] = [{
     id: 'product-1',
     name: 'Auriculares',
@@ -32,18 +20,16 @@ describe('SellerCatalog', () => {
     available: true,
     sellerId: 'seller-1',
   }];
-  let summaryResponse: Observable<CatalogSummary>;
   let productsResponse: Observable<SellerProduct[]>;
+  let categoriesResponse: Observable<{ id: string; name: string }[]>;
   let catalogService: {
-    getSummary: () => Observable<CatalogSummary>;
     getProducts: () => Observable<SellerProduct[]>;
   };
 
   beforeEach(async () => {
-    summaryResponse = of(summary);
     productsResponse = of(products);
+    categoriesResponse = of([{ id: 'category-1', name: 'Audio' }]);
     catalogService = {
-      getSummary: () => summaryResponse,
       getProducts: () => productsResponse,
     };
     await TestBed.configureTestingModule({
@@ -51,6 +37,7 @@ describe('SellerCatalog', () => {
       providers: [
         provideRouter([]),
         { provide: SellerCatalogService, useValue: catalogService },
+        { provide: ProductsService, useValue: { getCategories: () => categoriesResponse } },
       ],
     }).compileComponents();
 
@@ -62,18 +49,16 @@ describe('SellerCatalog', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should render the catalog layout and all summary metrics', () => {
+  it('should render the seller product catalog and category names', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     expect(element.querySelector('h1')?.textContent).toContain('Catálogo');
-    expect(element.querySelector('[aria-label="Resumen del catálogo"]')).not.toBeNull();
     expect(element.querySelector('[aria-label="Productos del catálogo"]')).not.toBeNull();
-    expect(element.textContent).toContain('12');
-    expect(element.textContent).toContain('5 avisos');
-    expect(element.textContent).toContain('Catálogo activo');
     expect(element.textContent).toContain('Auriculares');
     expect(element.textContent).toContain('Stock bajo · 3');
     expect(element.textContent).toContain('Publicado');
+    expect(element.querySelector('thead')?.textContent).toContain('Categoría');
+    expect(element.textContent).toContain('Audio');
   });
 
   it('should link to the product creation route', () => {
@@ -81,19 +66,6 @@ describe('SellerCatalog', () => {
     const createLinks = element.querySelectorAll('a[href="/products/new"]');
 
     expect(createLinks.length).toBeGreaterThan(0);
-  });
-
-  it('should show an error and offer a retry when metrics cannot be loaded', async () => {
-    fixture.destroy();
-    summaryResponse = throwError(() => new Error('API unavailable'));
-
-    fixture = TestBed.createComponent(SellerCatalog);
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const element = fixture.nativeElement as HTMLElement;
-    expect(element.textContent).toContain('No se pudieron cargar las métricas');
-    expect(element.querySelector('button[aria-label="Reintentar carga de métricas"]')).not.toBeNull();
   });
 
   it('should show an empty state when the seller has no products', async () => {
@@ -118,5 +90,18 @@ describe('SellerCatalog', () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(element.textContent).toContain('No se pudieron cargar tus productos');
     expect(element.querySelector('.catalog-error button')).not.toBeNull();
+  });
+
+  it('should show a retry option when category names cannot be loaded', async () => {
+    fixture.destroy();
+    categoriesResponse = throwError(() => new Error('API unavailable'));
+
+    fixture = TestBed.createComponent(SellerCatalog);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.textContent).toContain('No se pudieron cargar los nombres de las categorías');
+    expect(element.textContent).toContain('No disponible');
   });
 });

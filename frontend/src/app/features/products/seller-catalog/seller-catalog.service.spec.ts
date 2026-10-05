@@ -17,21 +17,6 @@ describe('SellerCatalogService', () => {
 
   afterEach(() => httpTesting.verify());
 
-  it('should request the authenticated seller catalog summary', () => {
-    const summary = {
-      totalProducts: 12,
-      outOfStockProducts: 2,
-      lowStockProducts: 3,
-      lowStockThreshold: 5,
-    };
-
-    service.getSummary().subscribe((result) => expect(result).toEqual(summary));
-
-    const request = httpTesting.expectOne('/api/products/resumen');
-    expect(request.request.method).toBe('GET');
-    request.flush(summary);
-  });
-
   it('should request only the authenticated seller products', () => {
     const products: SellerProduct[] = [{
       id: 'product-1',
