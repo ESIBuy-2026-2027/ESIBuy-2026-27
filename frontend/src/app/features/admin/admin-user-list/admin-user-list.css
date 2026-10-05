@@ -82,6 +82,10 @@
     flex: 0 0 auto;
 }
 
+.back-home-button {
+    margin-bottom: 1rem;
+}
+
 .filters-bar {
     align-items: center;
     border: 1px solid #e2e8f0;
