@@ -153,6 +153,10 @@
             Formato de email no válido (ejemplo: usuario@dominio.com)
           </span>
 
+          <span class="error server-field-error" *ngIf="emailServerError">
+            {{ emailServerError }}
+          </span>
+
         </div>
 
 
@@ -331,6 +335,10 @@
 
           <span class="error" *ngIf="form.get('email')?.touched && form.get('email')?.hasError('email')">
             Formato de email no válido (ejemplo: usuario@dominio.com)
+          </span>
+
+          <span class="error server-field-error" *ngIf="emailServerError">
+            {{ emailServerError }}
           </span>
 
         </div>
