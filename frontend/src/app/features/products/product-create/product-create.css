@@ -19,7 +19,7 @@
 
 .back-link,
 .cancel-action {
-  color: #476476;
+  color: #133447;
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
@@ -275,7 +275,7 @@ h1 {
   padding: 0 19px;
   border: 0;
   border-radius: 8px;
-  background: #709ccc;
+  background: #0d3560;
   color: #fff;
   cursor: pointer;
   font: inherit;
@@ -295,7 +295,7 @@ h1 {
 .submit-action:focus-visible,
 .back-link:focus-visible,
 .cancel-action:focus-visible {
-  outline: 3px solid #00aaff;
+  outline: 3px solid #0c384e;
   outline-offset: 3px;
 }
 
