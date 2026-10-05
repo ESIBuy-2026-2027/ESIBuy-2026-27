@@ -145,6 +145,28 @@ class AdminUserControllerTest {
     }
 
     @Test
+    void adminCanDeleteUserViaApiAdminUsuariosEndpoint() throws Exception {
+        mockMvc.perform(delete("/api/admin/usuarios/{id}", USER_ID)
+                .with(authentication(adminAuthentication()))
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("X-Correlation-ID"))
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Usuario eliminado correctamente"));
+
+        verify(adminUserService).eliminar(USER_ID, ADMIN_ID);
+    }
+
+    @Test
+    void nonAdminCannotDeleteUserViaApiAdminUsuariosEndpoint() throws Exception {
+        mockMvc.perform(delete("/api/admin/usuarios/{id}", USER_ID)
+                .with(user("customer").roles("CLIENT"))
+                .with(csrf()))
+                .andExpect(status().isForbidden())
+                .andExpect(header().exists("X-Correlation-ID"));
+    }
+
+    @Test
     void nonAdminCannotDeleteUser() throws Exception {
         mockMvc.perform(delete("/api/v1/admin/users/{id}", USER_ID)
                 .with(user("customer").roles("CLIENT"))
