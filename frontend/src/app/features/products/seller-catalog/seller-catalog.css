@@ -416,6 +416,13 @@ h2 {
   padding-right: 14px !important;
 }
 
+.action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .icon-button {
   display: inline-grid;
   width: 34px;
