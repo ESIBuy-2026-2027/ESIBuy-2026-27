@@ -91,11 +91,3 @@ Accede a la aplicación desde tu navegador en `http://localhost:4200`.
 
 
 4. **Pull Requests:** Requerida revisión de código y paso satisfactorio del pipeline de integración antes del merge a `develop`.
-
-
-
----
-
-## 🤖 Uso Responsable de IA Generativa
-
-El uso de **GitHub Copilot** se encuentra guiado y acotado mediante especificaciones y *skills* previas documentadas en la carpeta `/docs`. Todo código o prueba generada por IA es revisado, probado y adaptado bajo la responsabilidad directa del equipo.
