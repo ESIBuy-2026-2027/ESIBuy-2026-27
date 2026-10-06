@@ -39,20 +39,29 @@
 
     <!-- Barra de Filtros -->
     <div class="filters-bar">
-        <select [(ngModel)]="filtroRol" (change)="aplicarFiltros()"
-            >
-            <option value="">Todos los Roles</option>
-            <option value="CLIENTE">Clientes</option>
-            <option value="VENDEDOR">Vendedores</option>
-            <option value="ADMIN">Administradores</option>
-        </select>
+        <label class="search-field">
+            <span class="visually-hidden">Buscar usuario por nombre</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="6.5"></circle>
+                <path d="m16 16 4.5 4.5"></path>
+            </svg>
+            <input type="search" [ngModel]="busquedaNombre()" (ngModelChange)="busquedaNombre.set($event)"
+                placeholder="Buscar por nombre..." aria-label="Buscar usuario por nombre">
+        </label>
+        <div class="filter-controls">
+            <select [(ngModel)]="filtroRol" (change)="aplicarFiltros()">
+                <option value="">Todos los roles</option>
+                <option value="CLIENTE">Clientes</option>
+                <option value="VENDEDOR">Vendedores</option>
+                <option value="ADMIN">Administradores</option>
+            </select>
 
-        <select [(ngModel)]="filtroEstado" (change)="aplicarFiltros()"
-            >
-            <option value="">Cualquier Estado</option>
-            <option value="activo">Activos</option>
-            <option value="inactivo">Inactivos / Bloqueados</option>
-        </select>
+            <select [(ngModel)]="filtroEstado" (change)="aplicarFiltros()">
+                <option value="">Cualquier estado</option>
+                <option value="activo">Activos</option>
+                <option value="inactivo">Inactivos / Bloqueados</option>
+            </select>
+        </div>
     </div>
 
     <!-- Mensaje de Carga -->
@@ -85,7 +94,7 @@
                 </tr>
             </thead>
             <tbody>
-                @for (user of usuarios(); track user.email) {
+                @for (user of usuariosFiltrados(); track user.email) {
                 <tr>
                     <!-- Columna 1: Avatar + Nombre Completo -->
                     <td class="col-user">
@@ -106,7 +115,12 @@
                     <!-- Columna 2: Email y Teléfono -->
                     <td class="col-contact">
                         <div class="contact-item email-text" [title]="user.email">{{ user.email }}</div>
-                        <div class="contact-item text-muted">📞 {{ user.phone || 'Sin teléfono' }}</div>
+                        <div class="contact-item text-muted phone-text">
+                            <svg class="phone-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M7.5 3.5h2l1.2 4.2-1.8 1.8a14.7 14.7 0 0 0 5.6 5.6l1.8-1.8 4.2 1.2v2c0 1.1-.9 2-2 2C11.6 18.5 5.5 12.4 5.5 5.5c0-1.1.9-2 2-2Z"></path>
+                            </svg>
+                            {{ user.phone || 'Sin teléfono' }}
+                        </div>
                     </td>
 
                     <!-- Columna 3: Rol (y Sede si es Admin) -->
@@ -181,7 +195,7 @@
                 <tr>
                     <td colspan="6">
                         <div class="empty-state">
-                            <p>No se encontraron usuarios con estos filtros.</p>
+                            <p>No se encontraron usuarios con los criterios indicados.</p>
                         </div>
                     </td>
                 </tr>

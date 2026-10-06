@@ -33,12 +33,21 @@
 
       <section class="products-region" aria-label="Productos del catálogo">
         <div class="section-heading">
-          <div>
+          <div class="section-info">
             <p class="eyebrow">INVENTARIO</p>
             <h2>Mis productos</h2>
+            <label class="catalog-search">
+              <span class="visually-hidden">Buscar producto por nombre</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="6.5"></circle>
+                <path d="m16 16 4.5 4.5"></path>
+              </svg>
+              <input type="search" [ngModel]="productSearch()" (ngModelChange)="productSearch.set($event)"
+                placeholder="Buscar producto..." aria-label="Buscar producto por nombre">
+            </label>
           </div>
           @if (!productsLoading() && !productsError()) {
-            <span class="product-count">{{ products().length }} productos</span>
+            <span class="product-count">{{ visibleProducts().length }} productos</span>
           }
         </div>
         @if (productsLoading()) {
@@ -54,6 +63,12 @@
             <h3>Aún no tienes productos</h3>
             <p>Añade tu primer producto para empezar a mostrar tu oferta en ESIBuy.</p>
             <a class="secondary-action" routerLink="/products/new">Crear mi primer producto</a>
+          </div>
+        } @else if (visibleProducts().length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">⌕</span>
+            <h3>No se encontraron productos</h3>
+            <p>Prueba a buscar con otro nombre.</p>
           </div>
         } @else {
           @if (categoriesError()) {
@@ -75,7 +90,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (product of products(); track product.id) {
+                @for (product of visibleProducts(); track product.id) {
                   <tr>
                     <td>
                       <div class="product-cell">

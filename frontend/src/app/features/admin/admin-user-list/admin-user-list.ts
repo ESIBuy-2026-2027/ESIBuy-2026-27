@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
@@ -25,6 +25,16 @@ export class AdminUserList implements OnInit {
 
   filtroRol: string = '';
   filtroEstado: string = '';
+  busquedaNombre = signal('');
+  usuariosFiltrados = computed(() => {
+    const query = this.busquedaNombre().trim().toLocaleLowerCase();
+    if (!query) {
+      return this.usuarios();
+    }
+
+    return this.usuarios().filter((usuario) =>
+      `${usuario.firstName} ${usuario.lastName}`.toLocaleLowerCase().includes(query));
+  });
   private lastFocusedElement: HTMLElement | null = null;
 
   constructor(

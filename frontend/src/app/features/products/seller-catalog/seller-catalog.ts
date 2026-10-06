@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Category, ProductsService } from '../products.service';
 import { SellerCatalogService, SellerProduct } from './seller-catalog.service';
@@ -8,7 +9,7 @@ const LOW_STOCK_THRESHOLD = 5;
 @Component({
   selector: 'app-seller-catalog',
   standalone: true,
-  imports: [RouterLink],
+  imports: [FormsModule, RouterLink],
   templateUrl: './seller-catalog.html',
   styleUrl: './seller-catalog.css',
 })
@@ -26,6 +27,15 @@ export class SellerCatalog implements OnInit {
   categories = signal<Category[]>([]);
   categoriesLoading = signal(true);
   categoriesError = signal(false);
+  productSearch = signal('');
+  visibleProducts = computed(() => {
+    const query = this.productSearch().trim().toLocaleLowerCase();
+    if (!query) {
+      return this.products();
+    }
+
+    return this.products().filter((product) => product.name.toLocaleLowerCase().includes(query));
+  });
 
   ngOnInit(): void {
     this.loadProducts();
