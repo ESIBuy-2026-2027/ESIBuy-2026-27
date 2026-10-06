@@ -21,6 +21,7 @@ export class AdminUserList implements OnInit {
   pasoConfirmacion = signal<1 | 2>(1);
   eliminando = signal(false);
   errorEliminacion = signal('');
+  actualizandoEstado = signal<string | null>(null);
 
   filtroRol: string = '';
   filtroEstado: string = '';
@@ -69,6 +70,33 @@ export class AdminUserList implements OnInit {
 
   puedeEliminar(usuario: UserAdmin): boolean {
     return this.authService.currentUser()?.id !== usuario.id;
+  }
+
+  puedeBloquear(usuario: UserAdmin): boolean {
+    return this.authService.currentUser()?.id !== usuario.id;
+  }
+
+  alternarEstadoUsuario(usuario: UserAdmin): void {
+    if (!this.puedeBloquear(usuario) || this.actualizandoEstado()) {
+      return;
+    }
+
+    this.actualizandoEstado.set(usuario.id);
+    this.error.set('');
+    this.authService.alternarEstadoUsuarioAdmin(usuario.id).subscribe({
+      next: () => {
+        this.usuarios.update((usuarios) => usuarios.map((actual) =>
+          actual.id === usuario.id ? { ...actual, active: !actual.active } : actual));
+        this.mensajeExito.set(
+          `La cuenta de ${usuario.email} se ha ${usuario.active ? 'bloqueado' : 'desbloqueado'} correctamente.`,
+        );
+        this.actualizandoEstado.set(null);
+      },
+      error: () => {
+        this.error.set('No se pudo cambiar el estado del usuario. Inténtalo de nuevo.');
+        this.actualizandoEstado.set(null);
+      },
+    });
   }
 
   abrirConfirmacion(usuario: UserAdmin): void {

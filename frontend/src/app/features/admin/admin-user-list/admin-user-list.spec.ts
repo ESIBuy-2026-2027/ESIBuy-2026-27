@@ -12,17 +12,22 @@ describe('AdminUserList', () => {
   let fixture: ComponentFixture<AdminUserList>;
   let obtenerTodosLosUsuarios: ReturnType<typeof vi.fn>;
   let eliminarUsuarioAdmin: ReturnType<typeof vi.fn>;
+  let alternarEstadoUsuarioAdmin: ReturnType<typeof vi.fn>;
   let currentUser: ReturnType<typeof signal<{ id: string } | null>>;
 
   beforeEach(async () => {
     obtenerTodosLosUsuarios = vi.fn().mockReturnValue(of([]));
     eliminarUsuarioAdmin = vi.fn().mockReturnValue(of({ success: true, message: '', data: null, correlationId: null }));
+    alternarEstadoUsuarioAdmin = vi.fn().mockReturnValue(of({ success: true, message: '', data: null, correlationId: null }));
     currentUser = signal<{ id: string } | null>(null);
     await TestBed.configureTestingModule({
       imports: [AdminUserList],
       providers: [
         provideRouter([]),
-        { provide: AuthService, useValue: { obtenerTodosLosUsuarios, eliminarUsuarioAdmin, currentUser } },
+        {
+          provide: AuthService,
+          useValue: { obtenerTodosLosUsuarios, eliminarUsuarioAdmin, alternarEstadoUsuarioAdmin, currentUser },
+        },
       ],
     }).compileComponents();
 
@@ -85,6 +90,28 @@ describe('AdminUserList', () => {
     expect(component.usuarios()).toEqual(users);
     expect(component.cargando()).toBe(false);
     expect(obtenerTodosLosUsuarios).toHaveBeenCalled();
+  });
+
+  it('toggles a user active state through the admin endpoint', () => {
+    const user = {
+      id: 'user-1',
+      email: 'client@example.com',
+      firstName: 'Ana',
+      lastName: 'López',
+      nationalId: null,
+      phone: null,
+      profileImage: null,
+      role: 'CLIENT' as const,
+      active: true,
+      createdAt: null,
+    };
+    component.usuarios.set([user]);
+
+    component.alternarEstadoUsuario(user);
+
+    expect(alternarEstadoUsuarioAdmin).toHaveBeenCalledWith(user.id);
+    expect(component.usuarios()[0].active).toBe(false);
+    expect(component.mensajeExito()).toContain('bloqueado');
   });
 
   it('shows a permissions error only when the endpoint returns 403', () => {
