@@ -29,4 +29,15 @@ export class App {
       },
     });
   }
+  
+  goProfile(): void {
+    //si es un vendedor que lleve al catalogo, si es un cliente a su perfil(no implementado) y si es administrador que lleve al administrador de usuarios
+    if (this.authService.currentUser()?.role === 'ADMIN') {
+      this.router.navigate(['/admin/usuarios'])
+    } else if (this.authService.currentUser()?.role === 'CLIENT') {
+      this.router.navigate(['/'])
+    } else if (this.authService.currentUser()?.role === 'SELLER') {
+    this.router.navigate(['/seller/catalog'])
+    }
+  }
 }

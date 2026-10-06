@@ -24,8 +24,8 @@ export const routes: Routes = [
   { path: 'admin', redirectTo: 'admin/usuarios', pathMatch: 'full' },
 
   // Redirecciones compatibles
-  { path: 'admin/users', redirectTo: 'admin/usuarios', pathMatch: 'full' },
-  { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
+  { path: 'admin/usuarios', redirectTo: 'admin/usuarios', pathMatch: 'full' },
+  { path: 'admin/altas', redirectTo: 'admin/usuarios/new', pathMatch: 'full' },
   { path: 'admin.html', redirectTo: 'admin/usuarios', pathMatch: 'full' },
 
   { path: 'seller/catalog', component: SellerCatalog, canActivate: [authGuard, roleGuard('SELLER')] },

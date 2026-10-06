@@ -160,6 +160,19 @@
           <input id="imagen" type="url" formControlName="imagen" maxlength="2000"
             placeholder="https://ejemplo.com/imagen.jpg" autocomplete="url" />
           <span class="field-hint">Introduce una URL http o https; si no se indica, el producto se guardará sin imagen.</span>
+                  <div class="image-preview" [class.has-error]="previewUrl && imageError()">
+            @if (previewUrl) {
+              <img [src]="previewUrl" alt="Vista previa de la imagen del producto"
+                [hidden]="imageError()"
+                (load)="imageError.set(false)"
+                (error)="imageError.set(true)" />
+              @if (imageError()) {
+                <span class="image-preview-text">No se pudo cargar la imagen</span>
+              }
+            } @else {
+              <span class="image-preview-text">Vista previa</span>
+            }
+          </div>
           @if (form.controls.imagen.touched && form.controls.imagen.hasError('pattern')) {
             <span class="field-error">Introduce una URL válida que empiece por http:// o https://.</span>
           } @else if (form.controls.imagen.touched && form.controls.imagen.hasError('maxlength')) {

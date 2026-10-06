@@ -322,6 +322,8 @@ h2 {
   color: #a84f41;
 }
 
+
+
 .catalog-message,
 .catalog-error {
   padding: 18px;
@@ -406,6 +408,57 @@ h2 {
 .seller-layout button:focus-visible {
   outline: 3px solid #56d9b8;
   outline-offset: 3px;
+}
+
+.action-column {
+  width: 1%;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+}
+
+.icon-button {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.edit-button {
+  background: #edf4ff;
+  color: #4774a0;
+}
+
+.edit-button:hover {
+  background: #dbe9fb;
+  border-color: #b3ddfa;
+}
+
+.delete-button {
+  background: #fff0ed;
+  color: #a84f41;
+}
+
+.delete-button:hover {
+  background: #fde1db;
+  border-color: #e3b8b1;
+}
+
+.icon-button:focus-visible {
+  outline: 3px solid #56d9b8;
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 @media (max-width: 760px) {

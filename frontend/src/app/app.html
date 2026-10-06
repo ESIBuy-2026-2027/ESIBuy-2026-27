@@ -1,10 +1,17 @@
 <header class="app-header">
-  <a class="app-brand" routerLink="/">ESIBuy</a>
+  <a class="app-brand" routerLink="/">
+    <span class="brand-text">ESI<span class="brand-accent">Buy</span></span>
+  </a>
   @if (authService.currentUser(); as user) {
+    
     <div class="app-session">
       <span>{{ user.email }}</span>
+      <div class="go-profile">
+      <button type="button" (click)="goProfile()">👤</button>
+    </div>
       <button type="button" (click)="logout()">Cerrar sesión</button>
     </div>
+    
   }
 </header>
 

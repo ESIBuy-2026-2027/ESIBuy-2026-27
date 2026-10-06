@@ -90,6 +90,14 @@ export class ProductCreate implements OnInit {
   submitError = signal<string | null>(null);
   serverFieldErrors: Partial<Record<ProductFormField, string>> = {};
 
+  imageError = signal(false);
+
+  get previewUrl(): string {
+    const control = this.form.controls.imagen;
+    const value = (control.value ?? '').trim();
+    return value && !control.hasError('pattern') ? value : '';
+  }
+
   ngOnInit(): void {
     this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.submitSuccess.set(false);
