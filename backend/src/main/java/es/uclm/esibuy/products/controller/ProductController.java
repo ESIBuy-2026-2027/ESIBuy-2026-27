@@ -1,5 +1,7 @@
 package es.uclm.esibuy.products.controller;
 
+import java.util.List;
+
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
 import es.uclm.esibuy.products.dto.ProductResponse;
 import es.uclm.esibuy.products.dto.ProductSummaryResponse;
@@ -32,6 +34,12 @@ public class ProductController {
         ProductResponse response = ProductResponse.from(
                 productService.createProduct(request, email));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/mine")
+    public List<ProductResponse> getSellerProducts(Authentication authentication) {
+        String email = authentication != null ? authentication.getName() : null;
+        return productService.getSellerProducts(email);
     }
 
     @GetMapping({"/summary", "/resumen"})

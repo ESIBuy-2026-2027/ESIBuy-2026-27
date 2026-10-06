@@ -38,7 +38,7 @@ describe('Login', () => {
     expect(component).toBeTruthy();
   });
 
-  it('accepts an existing short password and routes sellers to product creation', () => {
+  it('accepts an existing short password and routes sellers to their catalog', () => {
     login.mockReturnValue(of({
       id: 'seller-1',
       email: 'seller@example.com',
@@ -56,7 +56,7 @@ describe('Login', () => {
       email: 'seller@example.com',
       password: 'short',
     });
-    expect(navigate).toHaveBeenCalledWith(['/products/new']);
+    expect(navigate).toHaveBeenCalledWith(['/seller/catalog']);
   });
 
   it('routes administrators to the administration page', () => {

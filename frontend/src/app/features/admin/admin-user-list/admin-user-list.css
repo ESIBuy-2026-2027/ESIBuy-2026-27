@@ -12,17 +12,18 @@
         Helvetica,
         Arial,
         sans-serif;
-    color: #1e293b;
+    color: #173247;
+    background: #edf5f7;
     box-sizing: border-box;
 }
 
 .admin-header {
     margin-bottom: 1rem;
     padding: 1.25rem 1.5rem;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    background: #0a2c3a;
+    border: 1px solid rgba(92, 207, 192, 0.24);
+    border-radius: 12px;
+    box-shadow: 0 10px 22px rgba(10, 44, 58, 0.12);
 }
 
 .header-content {
@@ -39,15 +40,15 @@
 .admin-header h2 {
     margin: 0 0 0.4rem;
     padding-left: 0.85rem;
-    color: #0f172a;
-    border-left: 4px solid #2563eb;
+    color: #f3fbff;
+    border-left: 4px solid #5ccfc0;
     font-size: 1.5rem;
     font-weight: 700;
 }
 
 .admin-header p {
     margin: 0 0 0 1rem;
-    color: #64748b;
+    color: #c9dfe6;
     font-size: 0.95rem;
     line-height: 1.5;
 }
@@ -60,21 +61,20 @@
     gap: 0.5rem;
     min-height: 44px;
     padding: 0.7rem 1rem;
-    color: #fff;
-    background: #2563eb;
-    border: 1px solid #2563eb;
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+    color: #0a2c3a;
+    background: linear-gradient(135deg, #6ad8c7 0%, #5ccfc0 100%);
+    border: 1px solid #5ccfc0;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(92, 207, 192, 0.28);
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .btn-alta-admin:hover {
-    background: #1d4ed8;
-    border-color: #1d4ed8;
-    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+    background: linear-gradient(135deg, #7fe0d2 0%, #63d8c6 100%);
+    box-shadow: 0 10px 20px rgba(92, 207, 192, 0.32);
     transform: translateY(-1px);
 }
 
@@ -88,16 +88,19 @@
 
 .filters-bar {
     align-items: center;
-    border: 1px solid #e2e8f0;
+    border: 1px solid rgba(10, 44, 58, 0.08);
+    background: #f7fbfc;
+    border-radius: 12px;
+    box-shadow: 0 8px 18px rgba(10, 44, 58, 0.04);
 }
 
 .filters-bar select {
     min-height: 44px;
     padding: 0.7rem 1rem !important;
-    color: #1e293b;
+    color: #173247;
     background-color: #fff;
-    border: 1.5px solid #cbd5e1 !important;
-    border-radius: 6px !important;
+    border: 1.5px solid #bfd3db !important;
+    border-radius: 8px !important;
     font: inherit;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
@@ -105,23 +108,23 @@
 
 .filters-bar select:focus {
     outline: none;
-    border-color: #2563eb !important;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    border-color: #5ccfc0 !important;
+    box-shadow: 0 0 0 3px rgba(92, 207, 192, 0.2);
 }
 
 /* Spinner y Alertas */
 .loading-spinner {
     text-align: center;
     padding: 3rem;
-    color: #64748b;
+    color: #3a5871;
 }
 
 .spinner {
     display: inline-block;
     width: 24px;
     height: 24px;
-    border: 3px solid #dbeafe;
-    border-top-color: #2563eb;
+    border: 3px solid rgba(92, 207, 192, 0.25);
+    border-top-color: #0a2c3a;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
@@ -133,11 +136,11 @@
 }
 
 .error-alert {
-    background-color: #fef2f2;
-    color: #b91c1c;
+    background-color: #fff1f2;
+    color: #b42318;
     padding: 1rem;
-    border: 1px solid #fecaca;
-    border-left: 4px solid #dc2626;
+    border: 1px solid #fecdd3;
+    border-left: 4px solid #e11d48;
     border-radius: 8px;
     margin-bottom: 1.5rem;
 }
@@ -146,10 +149,10 @@
     display: block;
     margin-bottom: 1rem;
     padding: 0.9rem 1rem;
-    color: #166534;
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    border-left: 4px solid #16a34a;
+    color: #0c5d4d;
+    background: #eafcf8;
+    border: 1px solid #b8efe3;
+    border-left: 4px solid #1bb89b;
     border-radius: 6px;
 }
 
@@ -168,17 +171,17 @@
     max-height: calc(100vh - 2rem);
     overflow-y: auto;
     padding: 1.5rem;
-    color: #1e293b;
+    color: #173247;
     background: #fff;
-    border: 1px solid #cbd5e1;
-    border-top: 4px solid #dc2626;
+    border: 1px solid #bfd3db;
+    border-top: 4px solid #e11d48;
     border-radius: 8px;
     box-shadow: 0 24px 60px rgb(15 23 42 / 28%);
 }
 
 .delete-dialog h2 {
     margin: 0 0 0.75rem;
-    color: #0f172a;
+    color: #0a2c3a;
     font-size: 1.25rem;
 }
 
@@ -189,8 +192,8 @@
 .delete-warning {
     padding: 0.75rem;
     color: #7f1d1d;
-    background: #fef2f2;
-    border-left: 3px solid #dc2626;
+    background: #fff1f2;
+    border-left: 3px solid #e11d48;
 }
 
 .dialog-actions {
@@ -213,7 +216,7 @@
 
 .dialog-actions button:focus-visible,
 .btn-icon:focus-visible {
-    outline: 3px solid #2563eb;
+    outline: 3px solid rgba(92, 207, 192, 0.45);
     outline-offset: 2px;
 }
 
@@ -224,26 +227,26 @@
 }
 
 .btn-secondary {
-    color: #334155;
+    color: #173247;
     background: #fff;
-    border-color: #cbd5e1 !important;
+    border-color: #bfd3db !important;
 }
 
 .btn-danger {
     color: #fff;
-    background: #b91c1c;
+    background: #dc2626;
 }
 
 .btn-danger:hover:not(:disabled) {
-    background: #991b1b;
+    background: #b91c1c;
 }
 
 /* Diseño de la Tabla */
 .table-container {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    background: #ffffff;
+    border: 1px solid rgba(10, 44, 58, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(10, 44, 58, 0.06);
     overflow: hidden;
     width: 100%;
 }
@@ -281,14 +284,14 @@
 }
 
 .user-table th {
-    background-color: #f8fafc;
+    background-color: #edf5f7;
     padding: 0.85rem 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.8rem;
-    color: #64748b;
+    color: #3a5871;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid rgba(10, 44, 58, 0.08);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -297,14 +300,15 @@
 
 .user-table td {
     padding: 0.85rem 0.75rem;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid #edf5f7;
     vertical-align: middle;
     overflow: hidden;
     box-sizing: border-box;
+    color: #173247;
 }
 
 .user-table tbody tr:hover {
-    background-color: #f8fafc;
+    background-color: #f7fbfc;
     transition: background-color 0.2s ease;
 }
 
@@ -343,10 +347,10 @@
     white-space: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
-    font-weight: 600;
-    color: #111827;
+    font-weight: 700;
+    color: #0a2c3a;
     scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
+    scrollbar-color: #bfd3db transparent;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -370,7 +374,7 @@
 .text-muted,
 .user-id {
     font-size: 0.8rem;
-    color: #64748b;
+    color: #5d7d8e;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -384,10 +388,10 @@
     white-space: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
-    color: #334155;
+    color: #2e4d62;
     font-weight: 500;
     scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
+    scrollbar-color: #bfd3db transparent;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -439,23 +443,23 @@
 }
 
 .badge-admin {
-    background-color: #eff6ff;
-    color: #1d4ed8;
+    background-color: rgba(92, 207, 192, 0.15);
+    color: #0a2c3a;
 }
 
 .badge-seller {
-    background-color: #dbeafe;
-    color: #1e40af;
+    background-color: rgba(106, 216, 199, 0.18);
+    color: #0b3f4f;
 }
 
 .badge-client {
-    background-color: #f0fdf4;
-    color: #15803d;
+    background-color: rgba(17, 158, 144, 0.12);
+    color: #0f766e;
 }
 
 .badge-default {
-    background-color: #f1f5f9;
-    color: #475569;
+    background-color: #edf5f7;
+    color: #3a5871;
 }
 
 .mt-1 {
@@ -481,12 +485,12 @@
 }
 
 .status-dot.active {
-    background-color: #16a34a;
-    box-shadow: 0 0 0 2px #dcfce7;
+    background-color: #1bb89b;
+    box-shadow: 0 0 0 2px rgba(27, 184, 155, 0.18);
 }
 
 .status-dot.inactive {
-    background-color: #94a3b8;
+    background-color: #93a9b5;
 }
 
 /* Botones de Acción */
@@ -504,23 +508,24 @@
     width: 32px;
     height: 32px;
     flex-shrink: 0;
-    background: #f8fafc;
-    color: #475569;
-    border: 1px solid #e2e8f0;
+    background: #f5fafb;
+    color: #3a5871;
+    border: 1px solid #dceaf0;
     cursor: pointer;
     padding: 0.25rem;
     border-radius: 6px;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
     font-size: 1rem;
 }
 
 .btn-edit:hover {
-    background-color: #eff6ff;
-    color: #2563eb;
+    background-color: rgba(92, 207, 192, 0.12);
+    color: #0a2c3a;
+    border-color: rgba(92, 207, 192, 0.45);
 }
 
 .btn-delete:hover {
-    background-color: #fef2f2;
+    background-color: #fff1f2;
     color: #dc2626;
 }
 
@@ -528,7 +533,7 @@
 .empty-state {
     text-align: center;
     padding: 3rem;
-    color: #64748b;
+    color: #3a5871;
 }
 
 @media (max-width: 640px) {

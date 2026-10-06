@@ -1,14 +1,16 @@
 :host {
   display: block;
-  min-height: 100vh;
+  height: calc(100vh - var(--app-header-height));
+  height: calc(100dvh - var(--app-header-height));
   color: #192338;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 .home-layout {
   display: grid;
+  box-sizing: border-box;
+  height: 100%;
   grid-template-columns: 1fr 1fr;
-  min-height: 100vh;
   background: #fff;
 }
 
@@ -63,7 +65,7 @@
 }
 
 .brand span span {
-  color: #2864ef;
+  color: #0A2C3A;
 }
 
 .welcome-copy {
@@ -73,7 +75,7 @@
 
 .eyebrow {
   margin: 0 0 1rem;
-  color: #2864ef;
+  color: #0A2C3A;
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -135,12 +137,12 @@
   width: 75%;
   height: 0.6rem;
   border-radius: 999px;
-  background: #4e83f7;
+  background: #0A2C3A;
 }
 
 .order-card p {
   margin: 0;
-  color: #21a66b;
+  color: #4acdbb;
   font-size: 0.75rem;
   font-weight: 700;
 }
@@ -203,7 +205,7 @@
 
 .login-link,
 .register-prompt a {
-  color: #2864ef;
+  color: #0A2C3A;
   font-weight: 700;
   text-decoration: none;
 }
@@ -228,7 +230,13 @@
 }
 
 @media (max-width: 760px) {
+  :host {
+    height: auto;
+  }
+
   .home-layout {
+    height: auto;
+    min-height: calc(100vh - var(--app-header-height));
     grid-template-columns: 1fr;
   }
 

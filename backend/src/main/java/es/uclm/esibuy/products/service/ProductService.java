@@ -8,6 +8,7 @@ import es.uclm.esibuy.categories.model.Category;
 import es.uclm.esibuy.categories.repository.CategoryRepository;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
+import es.uclm.esibuy.products.dto.ProductResponse;
 import es.uclm.esibuy.products.dto.ProductSummaryResponse;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
@@ -72,6 +73,13 @@ public class ProductService {
                 productRepository.countBySellerIdAndStockGreaterThanAndStockLessThanEqual(
                         sellerId, 0, LOW_STOCK_THRESHOLD),
                 LOW_STOCK_THRESHOLD);
+    }
+
+    public List<ProductResponse> getSellerProducts(String authenticatedEmail) {
+        String sellerId = findSeller(authenticatedEmail).getId();
+        return productRepository.findAllBySellerId(sellerId).stream()
+                .map(ProductResponse::from)
+                .toList();
     }
 
     private User findSeller(String authenticatedEmail) {
