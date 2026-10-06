@@ -31,6 +31,7 @@ El desarrollo se rige por metodologías ágiles (**SCRUM**), desarrollo guiado p
 
 El proyecto utiliza un enfoque de **Monorepo** organizado por dominios lógicos:
 
+```text
 esibuy/
 ├── esibuy-frontend/              # Proyecto Frontend en Angular CLI
 ├── esibuy-backend/               # Proyecto Backend en Spring Boot (Maven)
@@ -43,6 +44,8 @@ esibuy/
 ├── docs/                         # Análisis de Riesgos (MARISMA), Skills de IA, Manuales
 ├── scripts/                      # Colecciones de pruebas API (Bruno/Postman) y despliegue
 └── .gitignore                    # Exclusiones de artefactos, node_modules y secretos
+
+```
 
 ---
 
