@@ -1,2 +1,234 @@
 <div class="admin-create-container">
+  <header class="admin-navbar">
+    <div class="brand-wrapper">
+      <a routerLink="/admin/usuarios" class="brand-logo" aria-label="ESIBuy">
+        <span>ESI<span style="color: #1e293b;">Buy</span></span>
+      </a>
+      <span class="brand-badge">ADMIN</span>
+    </div>
+    <span class="navbar-description">Panel de administración / Creación de administradores</span>
+  </header>
+
+  <main class="main-container">
+    <div *ngIf="errorMessage" class="alert-box alert-danger" role="alert">
+      <div class="alert-title">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>Error</span>
+      </div>
+      <p class="error-message" style="margin: 0; font-size: 0.9rem;">{{ errorMessage }}</p>
+      <ul *ngIf="fieldErrors && (fieldErrors | keyvalue).length > 0" class="alert-list">
+        <li *ngFor="let err of fieldErrors | keyvalue">{{ err.value }}</li>
+      </ul>
+    </div>
+
+    <div *ngIf="successMessage" class="alert-box alert-success" role="status">
+      <div class="alert-title">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>Éxito</span>
+      </div>
+      <p class="success-message">{{ successMessage }}</p>
+    </div>
+
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          </svg>
+          Crear nuevo administrador
+        </h2>
+        <p class="card-subtitle">
+          Completa los datos del nuevo administrador para registrarlo en el sistema. Los campos con asterisco (*) son obligatorios.
+        </p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="dni" class="form-label">DNI <span class="required">*</span></label>
+            <input
+              id="dni"
+              type="text"
+              class="form-control"
+              formControlName="dni"
+              placeholder="12345678Z"
+              maxlength="9"
+            />
+            <div *ngIf="form.get('dni')?.touched && form.get('dni')?.hasError('required')" class="field-error">
+              El DNI es obligatorio.
+            </div>
+            <div *ngIf="form.get('dni')?.touched && form.get('dni')?.hasError('pattern')" class="field-error">
+              El DNI debe tener 8 dígitos y una letra (ej: 12345678Z).
+            </div>
+            <div *ngIf="fieldErrors['dni']" class="field-error">{{ fieldErrors['dni'] }}</div>
+          </div>
+
+          <div class="form-group">
+            <label for="nombre" class="form-label">Nombre <span class="required">*</span></label>
+            <input
+              id="nombre"
+              type="text"
+              class="form-control"
+              formControlName="nombre"
+              placeholder="Nombre"
+              maxlength="25"
+            />
+            <div *ngIf="form.get('nombre')?.touched && form.get('nombre')?.hasError('required')" class="field-error">
+              El nombre es obligatorio.
+            </div>
+            <div *ngIf="form.get('nombre')?.touched && (form.get('nombre')?.hasError('minlength') || form.get('nombre')?.hasError('maxlength'))" class="field-error">
+              El nombre debe tener entre 2 y 25 caracteres.
+            </div>
+            <div *ngIf="fieldErrors['nombre']" class="field-error">{{ fieldErrors['nombre'] }}</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="apellidos" class="form-label">Apellidos <span class="required">*</span></label>
+            <input
+              id="apellidos"
+              type="text"
+              class="form-control"
+              formControlName="apellidos"
+              placeholder="Apellidos"
+              maxlength="50"
+            />
+            <div *ngIf="form.get('apellidos')?.touched && form.get('apellidos')?.hasError('required')" class="field-error">
+              Los apellidos son obligatorios.
+            </div>
+            <div *ngIf="form.get('apellidos')?.touched && (form.get('apellidos')?.hasError('minlength') || form.get('apellidos')?.hasError('maxlength'))" class="field-error">
+              Los apellidos deben tener entre 2 y 50 caracteres.
+            </div>
+            <div *ngIf="fieldErrors['apellidos']" class="field-error">{{ fieldErrors['apellidos'] }}</div>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email corporativo <span class="required">*</span></label>
+            <input
+              id="email"
+              type="email"
+              class="form-control"
+              formControlName="email"
+              placeholder="admin@esibuy.com"
+              maxlength="120"
+            />
+            <div *ngIf="form.get('email')?.touched && form.get('email')?.hasError('required')" class="field-error">
+              El email es obligatorio.
+            </div>
+            <div *ngIf="form.get('email')?.touched && form.get('email')?.hasError('email')" class="field-error">
+              El formato de email no es válido.
+            </div>
+            <div *ngIf="fieldErrors['email']" class="field-error">{{ fieldErrors['email'] }}</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="contrasena" class="form-label">Contraseña <span class="required">*</span></label>
+            <input
+              id="contrasena"
+              type="password"
+              class="form-control"
+              formControlName="contrasena"
+              placeholder="Mínimo 12 caracteres"
+            />
+            <div *ngIf="form.get('contrasena')?.touched && form.get('contrasena')?.hasError('required')" class="field-error">
+              La contraseña es obligatoria.
+            </div>
+            <div *ngIf="form.get('contrasena')?.touched && (form.get('contrasena')?.hasError('minlength') || form.get('contrasena')?.hasError('pattern'))" class="field-error">
+              Debe tener al menos 12 caracteres, mayúscula, minúscula, número y símbolo.
+            </div>
+            <div *ngIf="fieldErrors['contrasena']" class="field-error">{{ fieldErrors['contrasena'] }}</div>
+          </div>
+
+          <div class="form-group">
+            <label for="repetirContrasena" class="form-label">Repetir contraseña <span class="required">*</span></label>
+            <input
+              id="repetirContrasena"
+              type="password"
+              class="form-control"
+              formControlName="repetirContrasena"
+              placeholder="Repite la contraseña"
+            />
+            <div *ngIf="form.get('repetirContrasena')?.touched && form.get('repetirContrasena')?.hasError('required')" class="field-error">
+              Debe repetir la contraseña.
+            </div>
+            <div *ngIf="form.hasError('passwordsMismatch') && (form.get('repetirContrasena')?.touched || form.get('contrasena')?.touched)" class="field-error">
+              Las contraseñas no coinciden.
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="sede" class="form-label">Sede <span class="badge-auto">Opcional</span></label>
+            <input
+              id="sede"
+              type="text"
+              class="form-control"
+              formControlName="sede"
+              placeholder="Ej: Ciudad Real, Albacete, Toledo..."
+              maxlength="100"
+            />
+            <div *ngIf="fieldErrors['sede']" class="field-error">{{ fieldErrors['sede'] }}</div>
+          </div>
+
+          <div class="form-group">
+            <label for="imagenPerfil" class="form-label">URL de imagen personalizada <span class="badge-auto">Opcional</span></label>
+            <input
+              id="imagenPerfil"
+              type="url"
+              class="form-control"
+              formControlName="imagenPerfil"
+              placeholder="https://avatar.ejemplo.com/avatar.png"
+              maxlength="500"
+            />
+            <div *ngIf="fieldErrors['imagenPerfil']" class="field-error">{{ fieldErrors['imagenPerfil'] }}</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">O selecciona un avatar predeterminado <span class="badge-auto">Opcional</span></label>
+          <div class="avatar-grid">
+            <button
+              *ngFor="let av of avatars"
+              type="button"
+              class="avatar-item"
+              [class.selected]="form.get('imagenPerfil')?.value === av"
+              (click)="selectAvatar(av)"
+              [attr.aria-label]="'Seleccionar avatar ' + av"
+            >
+              <img [src]="av" alt="Avatar" />
+              <span *ngIf="form.get('imagenPerfil')?.value === av" class="avatar-check">✓</span>
+            </button>
+          </div>
+          <p class="avatar-hint">Si no seleccionas ninguno, se asignará un avatar por defecto automáticamente.</p>
+        </div>
+
+        <div class="btn-wrapper">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="cancelar()"
+            [disabled]="submitting"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="submitting"
+          >
+            <span *ngIf="submitting" class="spinner" aria-hidden="true"></span>
+            <span>Crear administrador</span>
+          </button>
+        </div>
+      </form>
+    </section>
+  </main>
 </div>

@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AuthService } from '../../../core/services/auth.service';
 import { AdminUserCreate } from './admin-user-create';
@@ -8,19 +9,21 @@ describe('AdminUserCreate', () => {
   let component: AdminUserCreate;
   let fixture: ComponentFixture<AdminUserCreate>;
   let crearAdministrador: ReturnType<typeof vi.fn>;
-  let navigate: ReturnType<typeof vi.fn>;
+  let navigate: ReturnType<typeof vi.spyOn>;
 
   beforeEach(async () => {
     crearAdministrador = vi.fn();
-    navigate = vi.fn().mockResolvedValue(true);
 
     await TestBed.configureTestingModule({
       imports: [AdminUserCreate],
       providers: [
-        { provide: Router, useValue: { navigate } },
+        provideRouter([]),
         { provide: AuthService, useValue: { crearAdministrador } }
       ]
     }).compileComponents();
+
+    const router = TestBed.inject(Router);
+    navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
     fixture = TestBed.createComponent(AdminUserCreate);
     component = fixture.componentInstance;
@@ -73,5 +76,48 @@ describe('AdminUserCreate', () => {
     });
 
     expect(component.form.valid).toBe(true);
+  });
+
+  it('renders all form inputs and the primary submit button with exact text "Crear administrador"', () => {
+    const rendered = fixture.nativeElement as HTMLElement;
+    expect(rendered.querySelector('input[formControlName="dni"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="nombre"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="apellidos"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="email"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="contrasena"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="repetirContrasena"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="sede"]')).toBeTruthy();
+
+    const submitBtn = rendered.querySelector('button[type="submit"]');
+    expect(submitBtn).toBeTruthy();
+    expect(submitBtn?.textContent?.trim()).toContain('Crear administrador');
+  });
+
+  it('calls crearAdministrador on submit when form is valid', () => {
+    crearAdministrador.mockReturnValue(of({ id: 'admin-1', email: 'carlos.admin@esibuy.com' }));
+
+    component.form.patchValue({
+      dni: '12345678Z',
+      nombre: 'Carlos',
+      apellidos: 'Gómez Pérez',
+      email: 'carlos.admin@esibuy.com',
+      contrasena: 'Admin123456!#',
+      repetirContrasena: 'Admin123456!#',
+      sede: 'Ciudad Real',
+      imagenPerfil: 'https://avatar.ejemplo.com/carlos.png'
+    });
+
+    fixture.detectChanges();
+    const submitBtn = fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+    submitBtn?.click();
+
+    expect(crearAdministrador).toHaveBeenCalled();
+  });
+
+  it('navigates to /admin/usuarios when cancel button is clicked', () => {
+    const cancelBtn = fixture.nativeElement.querySelector('button.btn-secondary') as HTMLButtonElement;
+    cancelBtn?.click();
+
+    expect(navigate).toHaveBeenCalledWith(['/admin/usuarios']);
   });
 });
