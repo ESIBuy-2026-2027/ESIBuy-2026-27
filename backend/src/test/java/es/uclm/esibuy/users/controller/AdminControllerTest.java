@@ -123,6 +123,29 @@ class AdminControllerTest {
         }
 
         @Test
+        public void ComprobarErrorPorFormatoContrasenaInvalido() throws Exception {
+                String json = """
+                                {
+                                    "dni": "12345678Z",
+                                    "nombre": "Carlos",
+                                    "apellidos": "Gómez Pérez",
+                                    "email": "carlos.admin@esibuy.com",
+                                    "contrasena": "passwordinvalida",
+                                    "repetirContrasena": "passwordinvalida",
+                                    "sede": "Ciudad Real",
+                                    "imagenPerfil": "https://avatar.ejemplo.com/carlos.png"
+                                }
+                                """;
+
+                mockMvc.perform(post("/api/admin/alta")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.message").value("La solicitud contiene errores"))
+                                .andExpect(jsonPath("$.errors.contrasena").exists());
+        }
+
+        @Test
         void shouldReturnTodosLosUsuarios() throws Exception {
                 when(adminService.obtenerUsuariosFiltrados(null, null)).thenReturn(List.of());
                 mockMvc.perform(get("/api/admin/usuarios")
