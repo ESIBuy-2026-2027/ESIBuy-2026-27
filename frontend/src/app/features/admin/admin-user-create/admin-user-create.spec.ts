@@ -120,4 +120,39 @@ describe('AdminUserCreate', () => {
 
     expect(navigate).toHaveBeenCalledWith(['/admin/usuarios']);
   });
+
+  it('renders non-modifiable creation date input with current date', () => {
+    const rendered = fixture.nativeElement as HTMLElement;
+    const fechaInput = rendered.querySelector('input#fechaCreacion') as HTMLInputElement;
+    expect(fechaInput).toBeTruthy();
+    expect(fechaInput.readOnly).toBe(true);
+    expect(fechaInput.value).toBe(component.fechaCreacion);
+  });
+
+  it('renders 10 registration avatar buttons and toggles avatar selection', () => {
+    const rendered = fixture.nativeElement as HTMLElement;
+    const avatarButtons = rendered.querySelectorAll('.avatar-selector-grid .avatar-item');
+    expect(avatarButtons.length).toBe(10);
+
+    const firstAvatarBtn = avatarButtons[0] as HTMLButtonElement;
+    firstAvatarBtn.click();
+    fixture.detectChanges();
+    expect(component.form.get('imagenPerfil')?.value).toBe(component.avatars[0]);
+
+    // Clicking again deselects
+    firstAvatarBtn.click();
+    fixture.detectChanges();
+    expect(component.form.get('imagenPerfil')?.value).toBe('');
+  });
+
+  it('does not display any "Opcional" text or badges in the template', () => {
+    const text = fixture.nativeElement.textContent || '';
+    expect(text.toLowerCase()).not.toContain('opcional');
+  });
+
+  it('has back link pointing to /admin/usuarios', () => {
+    const backLink = fixture.nativeElement.querySelector('a.back-link') as HTMLAnchorElement;
+    expect(backLink).toBeTruthy();
+    expect(backLink.getAttribute('routerLink')).toBe('/admin/usuarios');
+  });
 });

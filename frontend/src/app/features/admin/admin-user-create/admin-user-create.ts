@@ -37,11 +37,23 @@ export class AdminUserCreate {
   successMessage = '';
   fieldErrors: Record<string, string> = {};
 
+  readonly fechaCreacion = new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date());
+
   readonly avatars = [
-    'https://api.dicebear.com/7.x/bottts/svg?seed=Admin1',
-    'https://api.dicebear.com/7.x/bottts/svg?seed=Admin2',
-    'https://api.dicebear.com/7.x/bottts/svg?seed=Admin3',
-    'https://api.dicebear.com/7.x/bottts/svg?seed=Admin4',
+    'assets/images/avatars/av_client_1.jpeg',
+    'assets/images/avatars/av_client_2.jpeg',
+    'assets/images/avatars/av_client_3.jpeg',
+    'assets/images/avatars/av_client_4.jpeg',
+    'assets/images/avatars/av_client_5.jpeg',
+    'assets/images/avatars/av_seller_1.jpeg',
+    'assets/images/avatars/av_seller_2.jpeg',
+    'assets/images/avatars/av_seller_3.jpeg',
+    'assets/images/avatars/av_seller_4.jpeg',
+    'assets/images/avatars/av_seller_5.jpeg',
   ];
 
   readonly form: FormGroup = this.fb.group(
