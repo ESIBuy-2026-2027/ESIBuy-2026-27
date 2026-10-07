@@ -24,7 +24,7 @@ export interface UserAdmin {
   active: boolean;
   createdAt: string | null;
   clientProfile?: { birthDate?: string; customerType?: string } | null;
-  sellerProfile?: { businessName?: string; defaultCategory?: string } | null;
+  sellerProfile?: { businessName?: string; defaultCategory?: string; sede?: string } | null;
   adminProfile?: { headquarters?: string; hireDate?: string } | null;
 }
 
@@ -174,7 +174,15 @@ export class AuthService {
 
   eliminarUsuarioAdmin(id: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(
-      `/api/v1/admin/users/${encodeURIComponent(id)}`,
+      `/api/admin/usuarios/${encodeURIComponent(id)}`,
+      { withCredentials: true },
+    );
+  }
+
+  alternarEstadoUsuarioAdmin(id: string): Observable<ApiResponse<UserResponse>> {
+    return this.http.put<ApiResponse<UserResponse>>(
+      `/api/admin/usuarios/${encodeURIComponent(id)}/estado`,
+      {},
       { withCredentials: true },
     );
   }

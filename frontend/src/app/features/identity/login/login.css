@@ -11,7 +11,6 @@
   padding: 3rem 1.5rem;
   box-sizing: border-box;
   background: #f8fafc;
-
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -33,6 +32,22 @@
   box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
 }
 
+.login-container--embedded {
+  min-height: 0;
+  justify-content: stretch;
+  align-items: stretch;
+  padding: 0;
+  background: transparent;
+}
+
+.login-card--embedded {
+  max-width: none;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 /* =========================
    CABECERA
    ========================= */
@@ -51,7 +66,7 @@
 }
 
 .brand-name {
-  color: #2563eb;
+  color: #0A2C3A;
   font-size: 1.8rem;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -62,7 +77,7 @@
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
   background: #eff6ff;
-  color: #2563eb;
+  color: #0A2C3A;
   font-size: 0.8rem;
   font-weight: 600;
 }
@@ -141,7 +156,7 @@
 }
 
 .form-group label span {
-  color: #2563eb;
+  color: #0A2C3A;
 }
 
 .form-group input {
@@ -168,7 +183,7 @@
 }
 
 .form-group input:focus {
-  border-color: #2563eb;
+  border-color: #0A2C3A;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
@@ -207,7 +222,7 @@
 }
 
 .password-toggle:hover {
-  color: #2563eb;
+  color: #0A2C3A;
 }
 
 .password-toggle svg {
@@ -235,8 +250,8 @@
   width: 100%;
   padding: 0.8rem 1rem;
 
-  background: #2563eb;
-  color: #ffffff;
+  background: #5ccfc0;
+  color: #0A2C3A;
 
   border: none;
   border-radius: 8px;
@@ -254,7 +269,8 @@
 }
 
 .btn-submit:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: #0A2C3A;
+  color: white;
   transform: translateY(-1px);
   box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
 }
@@ -286,13 +302,13 @@
 }
 
 .auth-link {
-  color: #2563eb;
+  color: #0A2C3A;
   font-weight: 600;
   text-decoration: none;
 }
 
 .auth-link:hover {
-  color: #1d4ed8;
+  color: #0A2C3A;
   text-decoration: underline;
 }
 
@@ -334,7 +350,7 @@
   border: none;
   background: transparent;
 
-  color: #2563eb;
+  color: #0A2C3A;
   font-family: inherit;
   font-size: 0.85rem;
   font-weight: 600;
@@ -343,7 +359,7 @@
 }
 
 .forgot-password-link:hover {
-  color: #1d4ed8;
+  color: #0A2C3A;
   text-decoration: underline;
 }
 

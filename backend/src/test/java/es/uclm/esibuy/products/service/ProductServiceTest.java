@@ -8,6 +8,7 @@ import es.uclm.esibuy.categories.model.Category;
 import es.uclm.esibuy.categories.repository.CategoryRepository;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
+import es.uclm.esibuy.products.dto.ProductResponse;
 import es.uclm.esibuy.products.dto.ProductSummaryResponse;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
@@ -142,6 +143,36 @@ class ProductServiceTest {
         assertEquals(2L, result.outOfStockProducts());
         assertEquals(3L, result.lowStockProducts());
         assertEquals(5, result.lowStockThreshold());
+    }
+
+    @Test
+    void shouldReturnOnlyProductsBelongingToAuthenticatedSeller() {
+        User seller = org.mockito.Mockito.mock(User.class);
+        when(seller.getId()).thenReturn("seller-id");
+        when(seller.getRole()).thenReturn(UserRole.SELLER);
+        when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(Optional.of(seller));
+        when(productRepository.findAllBySellerId("seller-id")).thenReturn(List.of(
+                new Product(
+                        "Auriculares", List.of("category-id"), 3, "Inalámbricos",
+                        new BigDecimal("19.99"), null, null, null, true, "seller-id")));
+
+        List<ProductResponse> result = productService.getSellerProducts("seller@example.com");
+
+        assertEquals(1, result.size());
+        assertEquals("Auriculares", result.get(0).name());
+        assertEquals(3, result.get(0).stock());
+        verify(productRepository).findAllBySellerId("seller-id");
+    }
+
+    @Test
+    void shouldRejectNonSellerProductListRequest() {
+        User client = org.mockito.Mockito.mock(User.class);
+        when(client.getRole()).thenReturn(UserRole.CLIENT);
+        when(userRepository.findByEmailIgnoreCase("client@example.com")).thenReturn(Optional.of(client));
+
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                () -> productService.getSellerProducts("client@example.com"));
+        verify(productRepository, never()).findAllBySellerId(any());
     }
 
     @Test

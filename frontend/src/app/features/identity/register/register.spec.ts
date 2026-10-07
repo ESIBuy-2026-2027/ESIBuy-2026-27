@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProductsService } from '../../products/products.service';
@@ -36,6 +37,25 @@ describe('Register', () => {
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+
+    it('asks for confirmation before cancelling registration and returning home', () => {
+        const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+        component.cancelRegistration();
+
+        expect(confirm).toHaveBeenCalledWith(
+            '¿Seguro que quieres cancelar el registro? Se perderán los datos introducidos.'
+        );
+        expect(navigate).toHaveBeenCalledWith(['/']);
+    });
+
+    it('stays on the registration page when cancellation is declined', () => {
+        vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+        component.cancelRegistration();
+
+        expect(navigate).not.toHaveBeenCalled();
     });
 
     it('shows the minimum-length errors that block a seller registration', () => {
@@ -87,5 +107,33 @@ describe('Register', () => {
             defaultCategory: 'Tecnología',
             businessName: 'Comercial AC',
         }));
+    });
+
+    it('informs the user when the email is already registered', () => {
+        registerSeller.mockReturnValue(throwError(() => new HttpErrorResponse({
+            status: 409,
+            error: { message: 'Ya existe un usuario con ese email' },
+        })));
+        fixture.nativeElement.querySelectorAll('.role-selector button')[1].click();
+        fixture.detectChanges();
+        component.form.setValue({
+            firstName: 'Celia',
+            lastName: 'López',
+            defaultCategory: 'Tecnología',
+            businessName: 'Comercial AC',
+            nationalId: '128391023h',
+            email: 'celia@example.com',
+            phone: '232313412',
+            password: 'Password123!',
+            repeatedPassword: 'Password123!',
+        });
+
+        component.onSubmit();
+        fixture.detectChanges();
+
+        expect(component.serverError).toBe('Ya existe un usuario con ese email');
+        expect(component.emailServerError).toBe('Ya existe un usuario con ese email');
+        expect(fixture.nativeElement.querySelector('[role="alert"]').textContent)
+            .toContain('Ya existe un usuario con ese email');
     });
 });

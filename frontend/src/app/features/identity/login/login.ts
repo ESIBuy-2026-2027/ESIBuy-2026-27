@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, Input,OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -14,6 +14,8 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrl: './login.css'
 })
 export class Login implements OnDestroy {
+  @Input() embedded = false;
+  
   loginForm: FormGroup;
   serverError: string | null = null;
   forgotPasswordMessage: string | null = null;
@@ -66,7 +68,7 @@ export class Login implements OnDestroy {
         if (response.role === 'ADMIN') {
           void this.router.navigate(['/admin/usuarios']);
         } else if (response.role === 'SELLER') {
-          void this.router.navigate(['/products/new']);
+          void this.router.navigate(['/seller/catalog']);
         } else {
           void this.router.navigate(['/']);
         }

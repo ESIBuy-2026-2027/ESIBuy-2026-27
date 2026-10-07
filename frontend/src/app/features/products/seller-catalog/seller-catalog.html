@@ -1,6 +1,7 @@
 <div class="seller-layout">
   <aside class="sidebar" aria-label="Panel del vendedor">
-    <a class="brand" routerLink="/" aria-label="ESIBuy, inicio">
+    <a class="brand" routerLink="/" aria-label="ESIBuy">
+      <span class="go-back" aria-hidden="true">←</span>
       <span class="brand-mark" aria-hidden="true">E</span>
       <span>ESI<span class="brand-accent">Buy</span></span>
     </a>
@@ -11,19 +12,11 @@
         <span class="navigation-icon" aria-hidden="true">▦</span>
         <span>Mi catálogo</span>
       </a>
-      <a class="navigation-link" routerLink="/products/new">
-        <span class="navigation-icon" aria-hidden="true">＋</span>
-        <span>Añadir producto</span>
-      </a>
     </nav>
 
   </aside>
 
   <div class="workspace">
-    <header class="topbar">
-      <span class="breadcrumb">Panel del vendedor <span aria-hidden="true">/</span> Catálogo</span>
-      <a class="topbar-link" routerLink="/">Volver a ESIBuy</a>
-    </header>
 
     <main class="catalog-content">
       <section class="page-heading" aria-labelledby="catalog-title">
@@ -38,69 +31,138 @@
         </a>
       </section>
 
-      <section class="summary-region" aria-label="Resumen del catálogo">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">VISTA GENERAL</p>
-            <h2>Tu catálogo, de un vistazo</h2>
-          </div>
-        </div>
-        @if (loading()) {
-          <p class="metrics-message" role="status">Cargando las métricas del catálogo…</p>
-        } @else if (loadError()) {
-          <div class="metrics-error" role="alert">
-            <span>No se pudieron cargar las métricas. Inténtalo de nuevo.</span>
-            <button type="button" aria-label="Reintentar carga de métricas" (click)="loadSummary()">Reintentar</button>
-          </div>
-        } @else if (summary(); as metrics) {
-          <div class="metric-grid" aria-live="polite">
-            <article class="metric-card">
-              <span class="metric-icon products-icon" aria-hidden="true">▦</span>
-              <div>
-                <p class="metric-label">Total de productos</p>
-                <p class="metric-value">{{ metrics.totalProductos }}</p>
-                <p class="metric-detail">Productos en tu catálogo</p>
-              </div>
-            </article>
-            <article class="metric-card">
-              <span class="metric-icon stock-icon" aria-hidden="true">!</span>
-              <div>
-                <p class="metric-label">Avisos de stock</p>
-                <p class="metric-value">{{ metrics.productosSinStock + metrics.productosStockBajo }} avisos</p>
-                <p class="metric-detail">
-                  {{ metrics.productosSinStock }} sin stock · {{ metrics.productosStockBajo }}
-                  entre 1 y {{ metrics.umbralStockBajo }} unidades
-                </p>
-              </div>
-            </article>
-            <article class="metric-card">
-              <span class="metric-icon status-icon" aria-hidden="true">✓</span>
-              <div>
-                <p class="metric-label">Estado del catálogo</p>
-                <p class="metric-value">
-                  {{ metrics.totalProductos > 0 ? 'Catálogo activo' : 'Catálogo vacío' }}
-                </p>
-                <p class="metric-detail">
-                  {{ metrics.totalProductos > 0 ? 'Tu oferta está en marcha' : 'Añade tu primer producto' }}
-                </p>
-              </div>
-            </article>
-          </div>
-        }
-      </section>
-
       <section class="products-region" aria-label="Productos del catálogo">
         <div class="section-heading">
-          <div>
+          <div class="section-info">
             <p class="eyebrow">INVENTARIO</p>
             <h2>Mis productos</h2>
+            <label class="catalog-search">
+              <span class="visually-hidden">Buscar producto por nombre</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="6.5"></circle>
+                <path d="m16 16 4.5 4.5"></path>
+              </svg>
+              <input type="search" [ngModel]="productSearch()" (ngModelChange)="productSearch.set($event)"
+                placeholder="Buscar producto..." aria-label="Buscar producto por nombre">
+            </label>
           </div>
+          @if (!productsLoading() && !productsError()) {
+            <span class="product-count">{{ visibleProducts().length }} productos</span>
+          }
         </div>
-        <div class="empty-state">
-          <h3>La gestión de tus productos</h3>
-          <p>El listado de productos aparecerá en esta sección.</p>
-          <a class="secondary-action" routerLink="/products/new">Crear mi primer producto</a>
-        </div>
+        @if (productsLoading()) {
+          <p class="catalog-message" role="status">Cargando tus productos…</p>
+        } @else if (productsError()) {
+          <div class="catalog-error" role="alert">
+            <span>No se pudieron cargar tus productos. Inténtalo de nuevo.</span>
+            <button type="button" (click)="loadProducts()">Reintentar</button>
+          </div>
+        } @else if (products().length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">▦</span>
+            <h3>Aún no tienes productos</h3>
+            <p>Añade tu primer producto para empezar a mostrar tu oferta en ESIBuy.</p>
+            <a class="secondary-action" routerLink="/products/new">Crear mi primer producto</a>
+          </div>
+        } @else if (visibleProducts().length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">⌕</span>
+            <h3>No se encontraron productos</h3>
+            <p>Prueba a buscar con otro nombre.</p>
+          </div>
+        } @else {
+          @if (categoriesError()) {
+            <div class="catalog-error category-error" role="alert">
+              <span>No se pudieron cargar los nombres de las categorías.</span>
+              <button type="button" (click)="loadCategories()">Reintentar</button>
+            </div>
+          }
+          <div class="table-scroll">
+            <table class="product-table">
+              <thead>
+                <tr>
+                  <th scope="col">Producto</th>
+                  <th scope="col">Categoría</th>
+                  <th scope="col">Precio</th>
+                  <th scope="col">Stock</th>
+                  <th scope="col">Visibilidad</th>
+                  <th scope="col" class="action-column"><span class="visually-hidden">Acciones</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (product of visibleProducts(); track product.id) {
+                  <tr>
+                    <td>
+                      <div class="product-cell">
+                        @if (product.imageUrl) {
+                          <img class="product-image" [src]="product.imageUrl" [alt]="product.name">
+                        } @else {
+                          <span class="product-image-placeholder" aria-hidden="true">▦</span>
+                        }
+                        <div class="product-copy">
+                          <span class="product-name">{{ product.name }}</span>
+                          <span class="product-description">{{ product.description || 'Sin descripción' }}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      @if (categoriesLoading()) {
+                        <span class="category-empty">Cargando categorías…</span>
+                      } @else if (categoriesError()) {
+                        <span class="category-badge category-unavailable">No disponible</span>
+                      } @else if (product.categoryIds.length === 0) {
+                        <span class="category-empty">Sin categoría</span>
+                      } @else {
+                        <div class="category-list">
+                          @for (categoryId of product.categoryIds; track categoryId) {
+                            <span class="category-badge">{{ categoryName(categoryId) }}</span>
+                          }
+                        </div>
+                      }
+                    </td>
+                    <td class="product-price">{{ formatPrice(product.price) }}</td>
+                    <td>
+                      <span class="stock-badge"
+                        [class.stock-empty]="product.stock === 0"
+                        [class.stock-low]="stockStatus(product.stock) === 'Stock bajo'">
+                        {{ stockStatus(product.stock) }} · {{ product.stock }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="availability-badge"
+                        [class.is-published]="product.available"
+                        [class.is-paused]="!product.available">
+                        {{ product.available ? 'Publicado' : 'Pausado' }}
+                      </span>
+                    </td>
+                    <td class="action-column">
+                      <div class="action-buttons">
+                        <button type="button" class="icon-button edit-button"
+                          [attr.aria-label]="'Editar ' + product.name" title="Editar producto">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 20h9"/>
+                            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>
+                          </svg>
+                        </button>
+                        <button type="button" class="icon-button delete-button"
+                        [attr.aria-label]="'Eliminar ' + product.name" title="Eliminar producto">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 6h18"/>
+                            <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                            <path d="M10 11v6M14 11v6"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </section>
     </main>
   </div>

@@ -1,249 +1,272 @@
 :host {
-    display: block;
-    min-height: 100%;
+  display: block;
+  height: calc(100vh - var(--app-header-height));
+  height: calc(100dvh - var(--app-header-height));
+  color: #192338;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-
-/* ==========================================================================
-   CONTENEDOR PRINCIPAL
-   ========================================================================== */
-
-.home-container {
-    min-height: 100vh;
-    padding: 2rem 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Helvetica,
-        Arial,
-        sans-serif;
-
-    color: #1e293b;
-    background-color: #f8fafc;
-    box-sizing: border-box;
+.home-layout {
+  display: grid;
+  box-sizing: border-box;
+  height: 100%;
+  grid-template-columns: 1fr 1fr;
+  background: #fff;
 }
 
-
-/* ==========================================================================
-   TARJETA PRINCIPAL
-   ========================================================================== */
-
-.home-card {
-    width: 100%;
-    max-width: 700px;
-
-    padding: 3rem 2.5rem;
-
-    background-color: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-
-    text-align: center;
-    box-sizing: border-box;
+.welcome-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 3.5rem 10%;
+  background: linear-gradient(140deg, #edf4ff 0%, #f5f9ff 55%, #edf8f5 100%);
 }
 
+.welcome-panel::before,
+.welcome-panel::after {
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 55%);
+  content: "";
+  pointer-events: none;
+}
 
-/* ==========================================================================
-   MARCA
-   ========================================================================== */
+.welcome-panel::before {
+  top: -17rem;
+  right: -9rem;
+  width: 31rem;
+  height: 31rem;
+}
+
+.welcome-panel::after {
+  bottom: -15rem;
+  left: -10rem;
+  width: 26rem;
+  height: 26rem;
+}
+
+.brand,
+.welcome-copy,
+.shopping-illustration {
+  position: relative;
+  z-index: 1;
+}
 
 .brand {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.6rem;
-
-    margin-bottom: 2.5rem;
+  width: fit-content;
+  color: #192338;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  text-decoration: none;
 }
 
-.brand-name {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #2563eb;
-    letter-spacing: -0.5px;
+.brand span span {
+  color: #0A2C3A;
 }
 
-.brand-badge {
-    display: inline-block;
-
-    padding: 0.3rem 0.75rem;
-
-    background-color: #eff6ff;
-    color: #2563eb;
-
-    border-radius: 9999px;
-
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
+.welcome-copy {
+  max-width: 34rem;
+  margin: 3rem 0;
 }
 
-
-/* ==========================================================================
-   BIENVENIDA
-   ========================================================================== */
-
-.welcome-section {
-    margin-bottom: 2.5rem;
+.eyebrow {
+  margin: 0 0 1rem;
+  color: #0A2C3A;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-.welcome-section h1 {
-    margin: 0;
-
-    font-size: 2rem;
-    font-weight: 700;
-
-    color: #0f172a;
+.welcome-copy h1 {
+  max-width: 11ch;
+  margin: 0;
+  font-size: clamp(2.5rem, 4.2vw, 3.5rem);
+  font-weight: 750;
+  letter-spacing: -0.055em;
+  line-height: 1.08;
 }
 
 .welcome-text {
-    max-width: 520px;
-
-    margin: 0.8rem auto 0;
-
-    color: #64748b;
-    font-size: 1rem;
-    line-height: 1.6;
+  max-width: 31rem;
+  margin: 1.25rem 0 0;
+  color: #64728a;
+  font-size: 1rem;
+  line-height: 1.65;
 }
 
-
-/* ==========================================================================
-   BOTONES
-   ========================================================================== */
-
-.actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-
-    width: 100%;
-    max-width: 420px;
-
-    margin: 0 auto;
+.shopping-illustration {
+  position: relative;
+  min-height: 12rem;
 }
 
-.btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 100%;
-    min-height: 46px;
-
-    padding: 0.75rem 1.25rem;
-
-    border-radius: 6px;
-
-    font-size: 0.95rem;
-    font-weight: 600;
-
-    text-decoration: none;
-
-    box-sizing: border-box;
-
-    transition:
-        background-color 0.2s ease,
-        border-color 0.2s ease,
-        color 0.2s ease,
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
+.order-card,
+.payment-card {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  box-sizing: border-box;
+  border: 1px solid #edf1f7;
+  border-radius: 1.2rem;
+  background: #fff;
+  box-shadow: 0 1rem 2.5rem rgb(33 58 99 / 10%);
 }
 
-
-/* BOTÓN PRINCIPAL */
-
-.btn-primary {
-    background-color: #2563eb;
-    color: white;
-
-    border: 1px solid #2563eb;
-
-    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+.order-card {
+  bottom: 3rem;
+  left: 12%;
+  width: 13rem;
+  padding: 1.2rem;
+  transform: rotate(-7deg);
 }
 
-.btn-primary:hover {
-    background-color: #1d4ed8;
-    border-color: #1d4ed8;
-
-    transform: translateY(-1px);
-
-    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.25);
+.order-card > span,
+.payment-card > span {
+  color: #8290a8;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
-
-/* BOTÓN SECUNDARIO */
-
-.btn-secondary {
-    background-color: white;
-    color: #2563eb;
-
-    border: 1px solid #2563eb;
+.progress-bar {
+  width: 75%;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: #0A2C3A;
 }
 
-.btn-secondary:hover {
-    background-color: #eff6ff;
-
-    transform: translateY(-1px);
+.order-card p {
+  margin: 0;
+  color: #4acdbb;
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
-
-/* BOTÓN TERCIARIO */
-
-.btn-tertiary {
-    background-color: #f8fafc;
-    color: #475569;
-
-    border: 1px solid #cbd5e1;
+.payment-card {
+  right: 15%;
+  bottom: 0;
+  width: 16rem;
+  min-height: 10rem;
+  padding: 1.25rem;
 }
 
-.btn-tertiary:hover {
-    background-color: #f1f5f9;
-    color: #1e293b;
-
-    transform: translateY(-1px);
+.payment-card strong {
+  margin-top: 0.3rem;
+  font-size: 1.1rem;
+  letter-spacing: 0.12em;
 }
 
+.payment-card small {
+  margin-top: auto;
+  color: #8290a8;
+  font-size: 0.65rem;
+}
 
-/* ==========================================================================
-   RESPONSIVE
-   ========================================================================== */
+.auth-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  background: #fff;
+}
 
-@media (max-width: 640px) {
+.auth-content {
+  width: 100%;
+  max-width: 28rem;
+}
 
-    .home-container {
-        padding: 1rem 0.75rem;
-    }
+.auth-content h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
 
-    .home-card {
-        padding: 2rem 1.25rem;
-        border-radius: 12px;
-    }
+.auth-subtitle {
+  margin: 0.55rem 0 2rem;
+  color: #7b879b;
+  font-size: 0.9rem;
+}
 
-    .brand {
-        margin-bottom: 2rem;
-    }
+.auth-placeholder {
+  min-height: 10rem;
+  padding: 1.25rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.75rem;
+  color: #64728a;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
 
-    .brand-name {
-        font-size: 1.7rem;
-    }
+.login-link,
+.register-prompt a {
+  color: #0A2C3A;
+  font-weight: 700;
+  text-decoration: none;
+}
 
-    .welcome-section h1 {
-        font-size: 1.6rem;
-    }
+.login-link:hover,
+.register-prompt a:hover {
+  text-decoration: underline;
+}
 
-    .welcome-text {
-        font-size: 0.9rem;
-    }
+.register-prompt {
+  margin: 1.5rem 0 0;
+  color: #7b879b;
+  font-size: 0.85rem;
+  text-align: center;
+}
 
-    .actions {
-        max-width: none;
-    }
+.security-note {
+  margin: 3rem 0 0;
+  color: #94a0b2;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  :host {
+    height: auto;
+  }
+
+  .home-layout {
+    height: auto;
+    min-height: calc(100vh - var(--app-header-height));
+    grid-template-columns: 1fr;
+  }
+
+  .welcome-panel {
+    min-height: 24rem;
+    padding: 2rem 8%;
+  }
+
+  .welcome-copy {
+    margin: 2.5rem 0 1rem;
+  }
+
+  .welcome-copy h1 {
+    max-width: 15ch;
+    font-size: clamp(2rem, 8vw, 3rem);
+  }
+
+  .shopping-illustration {
+    display: none;
+  }
+
+  .auth-panel {
+    padding: 3rem 1.5rem;
+  }
+
+  .auth-content h2 {
+    font-size: 1.6rem;
+  }
+
+  .security-note {
+    margin-top: 2rem;
+  }
 }

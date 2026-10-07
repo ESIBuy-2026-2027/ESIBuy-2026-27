@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
@@ -63,6 +64,8 @@ export class Register {
 
   serverError: string | null = null;
 
+  emailServerError: string | null = null;
+
   loading = false;
 
   showPassword = false;
@@ -95,7 +98,8 @@ export class Register {
     private fb: FormBuilder,
     private router: Router,
     private authService: AuthService,
-    private productsService: ProductsService
+    private productsService: ProductsService,
+    private changeDetector: ChangeDetectorRef
   ) {
     this.form = this.createForm();
     this.loadCategories();
@@ -121,6 +125,7 @@ export class Register {
     this.userRole = role;
 
     this.serverError = null;
+    this.emailServerError = null;
 
     this.selectedAvatar =
       role === 'cliente'
@@ -313,6 +318,7 @@ export class Register {
 
   onSubmit(): void {
     this.serverError = null;
+    this.emailServerError = null;
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -339,8 +345,6 @@ export class Register {
       this.authService.registerClient(payload).subscribe({
 
         next: () => {
-          this.loading = false;
-
           alert(
             'Registro completado exitosamente. Tu cuenta requiere activación por un administrador.'
           );
@@ -349,13 +353,15 @@ export class Register {
         },
 
         error: (err) => {
-          this.loading = false;
-
-          this.serverError =
-            err?.error?.message ||
-            'Error en el servidor durante el registro.';
+          this.serverError = this.getRegistrationErrorMessage(err);
+          this.emailServerError = this.getEmailRegistrationError(err);
+          this.changeDetector.markForCheck();
+          this.scrollToEmailError();
         }
 
+      }).add(() => {
+        this.loading = false;
+        this.changeDetector.markForCheck();
       });
 
     } else {
@@ -376,8 +382,6 @@ export class Register {
       this.authService.registerSeller(payload).subscribe({
 
         next: () => {
-          this.loading = false;
-
           alert(
             'Registro completado exitosamente. Tu cuenta requiere activación por un administrador.'
           );
@@ -386,14 +390,68 @@ export class Register {
         },
 
         error: (err) => {
-          this.loading = false;
-
-          this.serverError =
-            err?.error?.message ||
-            'Error en el servidor durante el registro.';
+          this.serverError = this.getRegistrationErrorMessage(err);
+          this.emailServerError = this.getEmailRegistrationError(err);
+          this.changeDetector.markForCheck();
+          this.scrollToEmailError();
         }
 
+      }).add(() => {
+        this.loading = false;
+        this.changeDetector.markForCheck();
       });
     }
+  }
+
+  cancelRegistration(): void {
+    const confirmed = window.confirm(
+      '¿Seguro que quieres cancelar el registro? Se perderán los datos introducidos.'
+    );
+
+    if (confirmed) {
+      void this.router.navigate(['/']);
+    }
+  }
+
+  private getRegistrationErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse && error.status === 409) {
+      const serverMessage = this.getServerMessage(error.error);
+      return serverMessage ?? 'El correo electrónico ya está registrado. Utiliza otro correo.';
+    }
+
+    if (error instanceof HttpErrorResponse) {
+      return this.getServerMessage(error.error) ?? 'Error en el servidor durante el registro.';
+    }
+
+    return 'Error en el servidor durante el registro.';
+  }
+
+  private getServerMessage(errorBody: unknown): string | null {
+    if (typeof errorBody === 'object' && errorBody !== null && 'message' in errorBody) {
+      const message = errorBody.message;
+      return typeof message === 'string' && message.trim() ? message : null;
+    }
+
+    return typeof errorBody === 'string' && errorBody.trim() ? errorBody : null;
+  }
+
+  private getEmailRegistrationError(error: unknown): string | null {
+    if (!(error instanceof HttpErrorResponse) || error.status !== 409) {
+      return null;
+    }
+
+    const message = this.getServerMessage(error.error);
+    return message?.toLowerCase().includes('email')
+      ? message
+      : 'Este correo electrónico ya está registrado.';
+  }
+
+  private scrollToEmailError(): void {
+    setTimeout(() => {
+      document.querySelector('.server-field-error')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    });
   }
 }

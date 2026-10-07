@@ -26,7 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1/admin/users")
+@RequestMapping({"/api/v1/admin/users", "/api/admin/usuarios"})
 public class AdminUserController {
 
     private final AdminUserService adminUserService;

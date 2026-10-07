@@ -2,6 +2,11 @@
 
   <div class="register-card">
 
+    <button type="button" class="register-back-button" (click)="cancelRegistration()">
+      <span aria-hidden="true">←</span>
+      Volver a inicio
+    </button>
+
     <!-- CABECERA -->
 
     <div class="register-header">
@@ -153,6 +158,10 @@
             Formato de email no válido (ejemplo: usuario@dominio.com)
           </span>
 
+          <span class="error server-field-error" *ngIf="emailServerError">
+            {{ emailServerError }}
+          </span>
+
         </div>
 
 
@@ -255,23 +264,22 @@
             </option>
           </select>
 
-          <span class="error" *ngIf="categoriesLoading" role="status">
-            Cargando categorías…
-          </span>
+          @if (categoriesLoading) {
+          <output class="error" aria-live="polite">Cargando categorías…</output>
+          }
 
-          <span class="error" *ngIf="categoriesError" role="alert">
-            No se pudieron cargar las categorías. Vuelve a intentarlo más tarde.
-          </span>
+          @if (categoriesError) {
+          <output class="error" role="alert">No se pudieron cargar las categorías. Vuelve a intentarlo más
+            tarde.</output>
+          }
 
-          <span class="error"
-            *ngIf="!categoriesLoading && !categoriesError && categories.length === 0" role="status">
-            No hay categorías disponibles en este momento.
-          </span>
+          @if (!categoriesLoading && !categoriesError && categories.length === 0) {
+          <output class="error" aria-live="polite">No hay categorías disponibles en este momento.</output>
+          }
 
-          <span class="error"
-            *ngIf="form.get('defaultCategory')?.touched && form.get('defaultCategory')?.hasError('required')">
-            Selecciona una categoría
-          </span>
+          @if (form.get('defaultCategory')?.touched && form.get('defaultCategory')?.hasError('required')) {
+          <output class="error">Selecciona una categoría</output>
+          }
 
         </div>
 
@@ -331,6 +339,10 @@
 
           <span class="error" *ngIf="form.get('email')?.touched && form.get('email')?.hasError('email')">
             Formato de email no válido (ejemplo: usuario@dominio.com)
+          </span>
+
+          <span class="error server-field-error" *ngIf="emailServerError">
+            {{ emailServerError }}
           </span>
 
         </div>
@@ -405,7 +417,7 @@
           <div class="password-wrapper">
 
             <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
-              autocomplete="new-password" />
+              [attr.autocomplete]="showPassword ? 'off' : 'new-password'" />
 
             <button type="button" class="password-toggle" (click)="showPassword = !showPassword"
               [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
@@ -455,7 +467,7 @@
           <div class="password-wrapper">
 
             <input id="repeatedPassword" [type]="showPassword ? 'text' : 'password'" formControlName="repeatedPassword"
-              autocomplete="new-password" />
+              [attr.autocomplete]="showPassword ? 'off' : 'new-password'" />
 
           </div>
 

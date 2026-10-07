@@ -12,17 +12,22 @@ describe('AdminUserList', () => {
   let fixture: ComponentFixture<AdminUserList>;
   let obtenerTodosLosUsuarios: ReturnType<typeof vi.fn>;
   let eliminarUsuarioAdmin: ReturnType<typeof vi.fn>;
+  let alternarEstadoUsuarioAdmin: ReturnType<typeof vi.fn>;
   let currentUser: ReturnType<typeof signal<{ id: string } | null>>;
 
   beforeEach(async () => {
     obtenerTodosLosUsuarios = vi.fn().mockReturnValue(of([]));
     eliminarUsuarioAdmin = vi.fn().mockReturnValue(of({ success: true, message: '', data: null, correlationId: null }));
+    alternarEstadoUsuarioAdmin = vi.fn().mockReturnValue(of({ success: true, message: '', data: null, correlationId: null }));
     currentUser = signal<{ id: string } | null>(null);
     await TestBed.configureTestingModule({
       imports: [AdminUserList],
       providers: [
         provideRouter([]),
-        { provide: AuthService, useValue: { obtenerTodosLosUsuarios, eliminarUsuarioAdmin, currentUser } },
+        {
+          provide: AuthService,
+          useValue: { obtenerTodosLosUsuarios, eliminarUsuarioAdmin, alternarEstadoUsuarioAdmin, currentUser },
+        },
       ],
     }).compileComponents();
 
@@ -45,6 +50,11 @@ describe('AdminUserList', () => {
     
     expect(btnAltaUsuario).toBeTruthy();
     expect(btnAltaUsuario?.getAttribute('href')).toContain('/admin/usuarios/alta');
+  });
+
+  it('renders a link to the home page', () => {
+    const rendered = fixture.nativeElement as HTMLElement;
+    expect(rendered.querySelector('.back-home-button')?.getAttribute('href')).toBe('/');
   });
 
   it('renders users returned by the admin endpoint and links to admin creation', () => {
@@ -91,6 +101,28 @@ describe('AdminUserList', () => {
     expect(component.usuarios()).toEqual(users);
     expect(component.cargando()).toBe(false);
     expect(obtenerTodosLosUsuarios).toHaveBeenCalled();
+  });
+
+  it('toggles a user active state through the admin endpoint', () => {
+    const user = {
+      id: 'user-1',
+      email: 'client@example.com',
+      firstName: 'Ana',
+      lastName: 'López',
+      nationalId: null,
+      phone: null,
+      profileImage: null,
+      role: 'CLIENT' as const,
+      active: true,
+      createdAt: null,
+    };
+    component.usuarios.set([user]);
+
+    component.alternarEstadoUsuario(user);
+
+    expect(alternarEstadoUsuarioAdmin).toHaveBeenCalledWith(user.id);
+    expect(component.usuarios()[0].active).toBe(false);
+    expect(component.mensajeExito()).toContain('bloqueado');
   });
 
   it('shows a permissions error only when the endpoint returns 403', () => {
@@ -232,5 +264,54 @@ describe('AdminUserList', () => {
     const rendered = fixture.nativeElement as HTMLElement;
     expect(rendered.querySelector('.delete-dialog img')).toBeNull();
     expect(rendered.querySelector('.delete-dialog')?.textContent).toContain(user.firstName);
+  });
+
+  it('cancels confirmation and resets modal state when cancelarConfirmacion is called', () => {
+    const user = {
+      id: '507f1f77bcf86cd799439011',
+      email: 'ana@example.com',
+      firstName: 'Ana',
+      lastName: 'López',
+      nationalId: null,
+      phone: null,
+      profileImage: null,
+      role: 'CLIENT' as const,
+      active: true,
+      createdAt: null,
+    };
+    component.abrirConfirmacion(user);
+    expect(component.usuarioPendiente()).toEqual(user);
+    expect(component.pasoConfirmacion()).toBe(1);
+
+    component.confirmarPrimerPaso();
+    expect(component.pasoConfirmacion()).toBe(2);
+
+    component.cancelarConfirmacion();
+    expect(component.usuarioPendiente()).toBeNull();
+    expect(component.pasoConfirmacion()).toBe(1);
+    expect(component.errorEliminacion()).toBe('');
+  });
+
+  it('closes the modal when Escape key is pressed', () => {
+    const user = {
+      id: '507f1f77bcf86cd799439011',
+      email: 'ana@example.com',
+      firstName: 'Ana',
+      lastName: 'López',
+      nationalId: null,
+      phone: null,
+      profileImage: null,
+      role: 'CLIENT' as const,
+      active: true,
+      createdAt: null,
+    };
+    component.abrirConfirmacion(user);
+    expect(component.usuarioPendiente()).toEqual(user);
+
+    const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+    document.dispatchEvent(escapeEvent);
+
+    expect(component.usuarioPendiente()).toBeNull();
+    expect(component.pasoConfirmacion()).toBe(1);
   });
 });
