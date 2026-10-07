@@ -43,18 +43,6 @@ export interface UserResponse {
   role: string;
 }
 
-export interface AdminCandidate {
-  id: string;
-  nombre: string;
-  apellidos: string;
-  email: string;
-  rol: UserRole | null;
-  activo: boolean;
-  imagenPerfil: string | null;
-  sede: string | null;
-  fechaRegistro: string | null;
-  fechaIncorporacion: string | null;
-}
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -63,12 +51,6 @@ export interface ApiResponse<T> {
   correlationId: string | null;
 }
 
-export interface PromotionRequest {
-  nombre: string;
-  apellidos: string;
-  sede: string | null;
-  imagenPerfil: string;
-}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -122,17 +104,6 @@ export class AuthService {
     this.currentUserSignal.set(null);
   }
 
-  getCandidatos(): Observable<AdminCandidate[]> {
-    return this.http.get<AdminCandidate[]>('/api/admin/candidatos', { withCredentials: true });
-  }
-
-  promoverAAdmin(idUsuario: string, data: PromotionRequest): Observable<unknown> {
-    return this.http.put<unknown>(
-      `/api/admin/promover/${encodeURIComponent(idUsuario)}`,
-      data,
-      { withCredentials: true },
-    );
-  }
 
   
     

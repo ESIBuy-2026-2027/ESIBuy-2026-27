@@ -1,10 +1,9 @@
 package es.uclm.esibuy.users.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import es.uclm.esibuy.common.exception.ApiExceptionHandler;
-import es.uclm.esibuy.common.exception.UserNotFoundException;
-import es.uclm.esibuy.users.dto.CandidatoDTO;
-import es.uclm.esibuy.users.dto.PromoverAdminDTO;
+import es.uclm.esibuy.users.dto.AltaAdminDTO;
 import es.uclm.esibuy.users.model.AdminProfile;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
@@ -19,10 +18,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -43,89 +41,36 @@ class AdminControllerTest {
         }
 
         @Test
-        void shouldReturnCandidatosList() throws Exception {
-                CandidatoDTO c1 = new CandidatoDTO("1", "Ana", "García", "ana@esibuy.com", "CLIENT", true, "avatar1",
-                                null);
-                CandidatoDTO c2 = new CandidatoDTO("2", "Carlos", "López", "carlos@esibuy.com", "SELLER", false,
-                                "avatar2",
-                                null);
-
-                when(adminService.obtenerCandidatos()).thenReturn(List.of(c1, c2));
-
-                mockMvc.perform(get("/api/admin/candidatos")
-                                .contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.length()").value(2))
-                                .andExpect(jsonPath("$[0].nombre").value("Ana"))
-                                .andExpect(jsonPath("$[0].email").value("ana@esibuy.com"))
-                                .andExpect(jsonPath("$[1].nombre").value("Carlos"));
-        }
-
-        @Test
-        void shouldPromoteUserToAdminSuccessfully() throws Exception {
+        public void ComprobarAltaAdministradorValido() throws Exception {
                 String json = """
                                 {
-                                    "nombre": "Laura",
-                                    "apellidos": "Sánchez",
+                                    "dni": "12345678Z",
+                                    "nombre": "Carlos",
+                                    "apellidos": "Gómez Pérez",
+                                    "email": "carlos.admin@esibuy.com",
+                                    "contrasena": "Admin123456!#",
+                                    "repetirContrasena": "Admin123456!#",
                                     "sede": "Ciudad Real",
-                                    "imagenPerfil": "avatar-laura"
+                                    "imagenPerfil": "https://avatar.ejemplo.com/carlos.png"
                                 }
                                 """;
 
-                User promotedUser = new User("laura@esibuy.com", "Laura", "Sánchez", UserRole.ADMIN);
-                promotedUser.setAdminProfile(new AdminProfile("Ciudad Real"));
-                promotedUser.setProfileImage("avatar-laura");
+                User admin = new User("carlos.admin@esibuy.com", "Carlos", "Gómez Pérez", UserRole.ADMIN);
+                admin.setNationalId("12345678Z");
+                admin.setActive(true);
+                admin.setProfileImage("https://avatar.ejemplo.com/carlos.png");
+                admin.setAdminProfile(new AdminProfile("Ciudad Real", LocalDateTime.now()));
 
-                when(adminService.promoverAAdmin(eq("usr-1"), any(PromoverAdminDTO.class))).thenReturn(promotedUser);
+                when(adminService.crearAdministrador(any(AltaAdminDTO.class))).thenReturn(admin);
 
-                mockMvc.perform(put("/api/admin/promover/usr-1")
+                mockMvc.perform(post("/api/admin/alta")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json))
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.nombre").value("Laura"))
-                                .andExpect(jsonPath("$.apellidos").value("Sánchez"))
-                                .andExpect(jsonPath("$.email").value("laura@esibuy.com"))
-                                .andExpect(jsonPath("$.role").value("ADMIN"))
-                                .andExpect(jsonPath("$.sede").value("Ciudad Real"));
-        }
-
-        @Test
-        void shouldReturnBadRequestWhenValidationFailsOnPromote() throws Exception {
-                String invalidJson = """
-                                {
-                                    "nombre": "",
-                                    "apellidos": "",
-                                    "sede": "Sede"
-                                }
-                                """;
-
-                mockMvc.perform(put("/api/admin/promover/usr-1")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(invalidJson))
-                                .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.message").value("La solicitud contiene errores"))
-                                .andExpect(jsonPath("$.errors.nombre").exists())
-                                .andExpect(jsonPath("$.errors.apellidos").exists());
-        }
-
-        @Test
-        void shouldReturnNotFoundWhenUserDoesNotExist() throws Exception {
-                String json = """
-                                {
-                                    "nombre": "Laura",
-                                    "apellidos": "Sánchez",
-                                    "sede": "Ciudad Real"
-                                }
-                                """;
-
-                when(adminService.promoverAAdmin(eq("inexistente"), any(PromoverAdminDTO.class)))
-                                .thenThrow(new UserNotFoundException("Usuario no encontrado con ID: inexistente"));
-
-                mockMvc.perform(put("/api/admin/promover/inexistente")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(json))
-                                .andExpect(status().isNotFound())
-                                .andExpect(jsonPath("$.message").value("Usuario no encontrado"));
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.email").value("carlos.admin@esibuy.com"))
+                                .andExpect(jsonPath("$.rol").value("ADMIN"))
+                                .andExpect(jsonPath("$.activo").value(true))
+                                .andExpect(jsonPath("$.fechaIncorporacion").isNotEmpty());
         }
 
         @Test
