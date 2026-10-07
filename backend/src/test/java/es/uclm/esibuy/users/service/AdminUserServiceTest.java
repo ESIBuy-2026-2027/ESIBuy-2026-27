@@ -24,7 +24,7 @@ import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
-class AdminUserServiceImplTest {
+class AdminUserServiceTest {
 
     @Mock
     private UserRepository userRepository;
