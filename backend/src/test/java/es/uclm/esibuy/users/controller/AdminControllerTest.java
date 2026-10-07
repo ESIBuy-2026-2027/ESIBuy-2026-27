@@ -185,6 +185,36 @@ class AdminControllerTest {
         }
 
         @Test
+        public void ComprobarAltaAdministradorSinCamposOpcionales() throws Exception {
+                String json = """
+                                {
+                                    "dni": "12345678Z",
+                                    "nombre": "Carlos",
+                                    "apellidos": "Gómez Pérez",
+                                    "email": "carlos.sinopcionales@esibuy.com",
+                                    "contrasena": "Admin123456!#",
+                                    "repetirContrasena": "Admin123456!#"
+                                }
+                                """;
+
+                User admin = new User("carlos.sinopcionales@esibuy.com", "Carlos", "Gómez Pérez", UserRole.ADMIN);
+                admin.setNationalId("12345678Z");
+                admin.setActive(true);
+                admin.setProfileImage("avatar-admin-default");
+                admin.setAdminProfile(new AdminProfile(null, LocalDateTime.now()));
+
+                when(adminService.crearAdministrador(any(AltaAdminDTO.class))).thenReturn(admin);
+
+                mockMvc.perform(post("/api/admin/alta")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.email").value("carlos.sinopcionales@esibuy.com"))
+                                .andExpect(jsonPath("$.rol").value("ADMIN"))
+                                .andExpect(jsonPath("$.activo").value(true));
+        }
+
+        @Test
         void shouldReturnTodosLosUsuarios() throws Exception {
                 when(adminService.obtenerUsuariosFiltrados(null, null)).thenReturn(List.of());
                 mockMvc.perform(get("/api/admin/usuarios")
