@@ -100,6 +100,29 @@ class AdminControllerTest {
         }
 
         @Test
+        public void ComprobarErrorPorFormatoEmailInvalido() throws Exception {
+                String json = """
+                                {
+                                    "dni": "12345678Z",
+                                    "nombre": "Carlos",
+                                    "apellidos": "Gómez Pérez",
+                                    "email": "carlos.invalido.sin.arroba",
+                                    "contrasena": "Admin123456!#",
+                                    "repetirContrasena": "Admin123456!#",
+                                    "sede": "Ciudad Real",
+                                    "imagenPerfil": "https://avatar.ejemplo.com/carlos.png"
+                                }
+                                """;
+
+                mockMvc.perform(post("/api/admin/alta")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.message").value("La solicitud contiene errores"))
+                                .andExpect(jsonPath("$.errors.email").exists());
+        }
+
+        @Test
         void shouldReturnTodosLosUsuarios() throws Exception {
                 when(adminService.obtenerUsuariosFiltrados(null, null)).thenReturn(List.of());
                 mockMvc.perform(get("/api/admin/usuarios")
