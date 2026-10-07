@@ -8,16 +8,19 @@ import { AdminUserCreate } from './features/admin/admin-user-create/admin-user-c
 import { ProductCreate } from './features/products/product-create/product-create';
 import { AdminUserList } from './features/admin/admin-user-list/admin-user-list';
 import { AdminUserDetail } from './features/admin/admin-user-detail/admin-user-detail';
+import { AdminUserRegister } from './features/admin/admin-user-register/admin-user-register';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
+  { path: 'admin/usuarios/alta', component: AdminUserRegister, canActivate: [ authGuard, roleGuard('ADMIN') ] },
+  { path: 'admin/usuarios/registrar', redirectTo: 'admin/usuarios/alta', pathMatch: 'full' },
 
-  { path: 'admin/users/new', component: AdminUserCreate, canActivate: [authGuard, roleGuard('ADMIN')] },
+  { path: 'admin/users/new', component: AdminUserCreate, canActivate: [ authGuard, roleGuard('ADMIN') ] },
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
-  { path: 'admin/usuarios', component: AdminUserList, canActivate: [authGuard, roleGuard('ADMIN')] },
-  { path: 'admin/usuarios/:id/editar', component: AdminUserDetail, canActivate: [authGuard, roleGuard('ADMIN')] },
+  { path: 'admin/usuarios', component: AdminUserList, canActivate: [ authGuard, roleGuard('ADMIN') ] },
+  { path: 'admin/usuarios/:id/editar', component: AdminUserDetail, canActivate: [ authGuard, roleGuard('ADMIN') ] },
 
   // Redirecciones
   { path: 'admin', redirectTo: 'admin/usuarios', pathMatch: 'full' },
@@ -27,6 +30,6 @@ export const routes: Routes = [
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
   { path: 'admin.html', redirectTo: 'admin/usuarios', pathMatch: 'full' },
 
-  { path: 'products/new', component: ProductCreate, canActivate: [authGuard, roleGuard('SELLER')] },
+  { path: 'products/new', component: ProductCreate, canActivate: [] },
   { path: '**', redirectTo: '' }
 ];

@@ -35,6 +35,17 @@ describe('AdminUserList', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+  
+  it('renders the link to normal user creation', () => {
+    component.cargarUsuarios();
+    fixture.detectChanges();
+
+    const rendered = fixture.nativeElement as HTMLElement;
+    const btnAltaUsuario = rendered.querySelector('#btnDarAltaUsuario');
+    
+    expect(btnAltaUsuario).toBeTruthy();
+    expect(btnAltaUsuario?.getAttribute('href')).toContain('/admin/usuarios/alta');
+  });
 
   it('renders users returned by the admin endpoint and links to admin creation', () => {
     const users = [{

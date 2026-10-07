@@ -1,7 +1,10 @@
 package es.uclm.esibuy.users.service;
 
-import java.util.Locale;
 import java.util.List;
+import java.util.Locale;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.common.exception.InvalidCredentialsException;
@@ -15,8 +18,6 @@ import es.uclm.esibuy.users.model.SellerProfile;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
@@ -32,6 +33,10 @@ public class UserService {
     }
 
     public User registerClient(ClientRegistrationRequest request) {
+        return registerClient(request, false); // Llama al método de abajo como 'false'
+    }
+
+    public User registerClient(ClientRegistrationRequest request, boolean isAutoActive) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new DuplicateUserException(MSG_DUPLICATE_EMAIL);
@@ -45,6 +50,8 @@ public class UserService {
                 ? "avatar-client-default"
                 : request.getProfileImage().trim());
 
+        user.setActive(isAutoActive);
+
         ClientProfile clientProfile = new ClientProfile(request.getBirthDate(), request.getCustomerType());
         user.setClientProfile(clientProfile);
 
@@ -52,6 +59,10 @@ public class UserService {
     }
 
     public User registerSeller(SellerRegistrationRequest request) {
+        return registerSeller(request, false);
+    }
+
+    public User registerSeller(SellerRegistrationRequest request, boolean isAutoActive) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new DuplicateUserException(MSG_DUPLICATE_EMAIL);
@@ -68,6 +79,8 @@ public class UserService {
         user.setProfileImage(request.getProfileImage() == null || request.getProfileImage().isBlank()
                 ? "avatar-seller-default"
                 : request.getProfileImage().trim());
+
+        user.setActive(isAutoActive);
 
         SellerProfile sellerProfile = new SellerProfile(businessName, request.getDefaultCategory().trim());
         user.setSellerProfile(sellerProfile);
