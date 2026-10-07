@@ -3,6 +3,7 @@ package es.uclm.esibuy.users.controller;
 import java.time.LocalDateTime;
 import java.util.List;
 import es.uclm.esibuy.common.exception.ApiExceptionHandler;
+import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.users.dto.AltaAdminDTO;
 import es.uclm.esibuy.users.model.AdminProfile;
 import es.uclm.esibuy.users.model.User;
@@ -71,6 +72,31 @@ class AdminControllerTest {
                                 .andExpect(jsonPath("$.rol").value("ADMIN"))
                                 .andExpect(jsonPath("$.activo").value(true))
                                 .andExpect(jsonPath("$.fechaIncorporacion").isNotEmpty());
+        }
+
+        @Test
+        public void ComprobarErrorPorEmailDuplicado() throws Exception {
+                String json = """
+                                {
+                                    "dni": "12345678Z",
+                                    "nombre": "Carlos",
+                                    "apellidos": "Gómez Pérez",
+                                    "email": "carlos.duplicado@esibuy.com",
+                                    "contrasena": "Admin123456!#",
+                                    "repetirContrasena": "Admin123456!#",
+                                    "sede": "Ciudad Real",
+                                    "imagenPerfil": "https://avatar.ejemplo.com/carlos.png"
+                                }
+                                """;
+
+                when(adminService.crearAdministrador(any(AltaAdminDTO.class)))
+                                .thenThrow(new DuplicateUserException("Ya existe un usuario con ese email"));
+
+                mockMvc.perform(post("/api/admin/alta")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json))
+                                .andExpect(status().isConflict())
+                                .andExpect(jsonPath("$.message").value("Ya existe un usuario con ese email"));
         }
 
         @Test
