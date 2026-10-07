@@ -32,7 +32,7 @@ class AdminUserServiceTest {
     @Mock
     private ProductRepository productRepository;
 
-    @Mock 
+    @Mock
     private UserService userService;
 
     private AdminUserService service;
