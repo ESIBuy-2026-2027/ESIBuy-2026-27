@@ -110,8 +110,9 @@ public class UserService {
     public User login(LoginRequest request) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         return userRepository.findByEmailIgnoreCase(email)
-                .filter(user -> user.getPasswordHash() != null
-                        && passwordEncoder.matches(request.getPassword(), user.getPasswordHash()))
+                .filter(user -> user.isActive()
+                && user.getPasswordHash() != null
+                && passwordEncoder.matches(request.getPassword(), user.getPasswordHash()))
                 .orElseThrow(InvalidCredentialsException::new);
     }
 

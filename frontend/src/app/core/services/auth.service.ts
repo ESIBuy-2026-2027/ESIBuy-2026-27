@@ -172,6 +172,14 @@ export class AuthService {
     );
   }
 
+  bloquearUsuarioAdmin(id: string): Observable<ApiResponse<void>> {
+  return this.http.post<ApiResponse<void>>(
+    `/api/admin/usuarios/${encodeURIComponent(id)}/bloquear`,
+    {},
+    { withCredentials: true },
+  );
+}
+
   crearAdministrador(data: AltaAdminRequest): Observable<any> {
     return this.http.post<any>('/api/admin/alta', data, { withCredentials: true });
   }

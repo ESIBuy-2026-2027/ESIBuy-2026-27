@@ -93,7 +93,7 @@ export class AdminUserList implements OnInit {
 
     this.actualizandoEstado.set(usuario.id);
     this.error.set('');
-    this.authService.alternarEstadoUsuarioAdmin(usuario.id).subscribe({
+    this.authService.bloquearUsuarioAdmin(usuario.id).subscribe({
       next: () => {
         this.usuarios.update((usuarios) => usuarios.map((actual) =>
           actual.id === usuario.id ? { ...actual, active: !actual.active } : actual));

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Locale;
 
 import es.uclm.esibuy.common.exception.DuplicateUserException;
+import es.uclm.esibuy.common.exception.UserNotFoundException;
 import es.uclm.esibuy.users.dto.AltaAdminDTO;
 import es.uclm.esibuy.users.dto.UserAdminDTO;
 import es.uclm.esibuy.users.model.AdminProfile;
@@ -90,5 +91,13 @@ public class AdminService {
                 })
                 .map(UserAdminDTO::fromUser)
                 .toList();
+    }
+
+    public void bloquearUsuario(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+
+        user.setActive(false);
+        userRepository.save(user);
     }
 }

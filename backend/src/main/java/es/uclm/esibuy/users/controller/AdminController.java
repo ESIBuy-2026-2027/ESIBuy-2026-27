@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -59,5 +60,13 @@ public class AdminController {
             @RequestParam(required = false) String estado) {
 
         return ResponseEntity.ok(adminService.obtenerUsuariosFiltrados(rol, estado));
+    }
+
+
+    @PostMapping("/usuarios/{id}/bloquear")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> bloquearUsuario(@PathVariable String id) {
+        adminService.bloquearUsuario(id);
+        return ResponseEntity.ok().build();
     }
 }
