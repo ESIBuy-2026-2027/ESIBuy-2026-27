@@ -24,7 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class AdminUserServiceImplTest {
+class AdminUserServiceTest {
 
     @Mock
     private UserRepository userRepository;
@@ -32,11 +32,11 @@ class AdminUserServiceImplTest {
     @Mock
     private ProductRepository productRepository;
 
-    private AdminUserServiceImpl service;
+    private AdminUserService service;
 
     @BeforeEach
     void setUp() {
-        service = new AdminUserServiceImpl(userRepository, productRepository);
+        service = new AdminUserService(userRepository, productRepository);
     }
 
     @Test
