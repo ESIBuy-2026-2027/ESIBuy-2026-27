@@ -169,6 +169,22 @@ class AdminControllerTest {
         }
 
         @Test
+        public void ComprobarErrorPorDatosObligatoriosIncompletos() throws Exception {
+                String json = "{}";
+
+                mockMvc.perform(post("/api/admin/alta")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.message").value("La solicitud contiene errores"))
+                                .andExpect(jsonPath("$.errors.dni").exists())
+                                .andExpect(jsonPath("$.errors.nombre").exists())
+                                .andExpect(jsonPath("$.errors.apellidos").exists())
+                                .andExpect(jsonPath("$.errors.email").exists())
+                                .andExpect(jsonPath("$.errors.contrasena").exists());
+        }
+
+        @Test
         void shouldReturnTodosLosUsuarios() throws Exception {
                 when(adminService.obtenerUsuariosFiltrados(null, null)).thenReturn(List.of());
                 mockMvc.perform(get("/api/admin/usuarios")
