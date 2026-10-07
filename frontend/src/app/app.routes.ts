@@ -32,7 +32,7 @@ export const routes: Routes = [
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
   { path: 'admin.html', redirectTo: 'admin/usuarios', pathMatch: 'full' },
 
-  { path: 'seller/catalog', component: SellerCatalog, canActivate: [ authGuard, roleGuard('SELLER') ] },
+  { path: 'seller/catalog', component: SellerCatalog, canActivate: [authGuard, roleGuard('SELLER')] },
   { path: 'products/new', component: ProductCreate, canActivate: [authGuard, roleGuard('SELLER')] },
   { path: '**', redirectTo: '' }
 ];

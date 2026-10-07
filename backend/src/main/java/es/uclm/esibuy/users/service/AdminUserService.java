@@ -14,7 +14,7 @@ import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
 
 @Service
-public class AdminUserService{
+public class AdminUserService {
 
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
@@ -23,7 +23,7 @@ public class AdminUserService{
     public AdminUserService(UserRepository userRepository, ProductRepository productRepository, UserService userService) {
         this.userRepository = userRepository;
         this.productRepository = productRepository;
-        this.userService =  userService;
+        this.userService = userService;
     }
 
     public User obtenerPorId(String id) {
