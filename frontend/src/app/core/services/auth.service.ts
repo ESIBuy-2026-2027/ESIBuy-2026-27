@@ -73,11 +73,19 @@ export class AuthService {
   constructor(private readonly http: HttpClient) {}
 
   registerClient(data: unknown): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/register/client`, data);
+    return this.http.post(`${this.apiUrl}/register/client`, data, { withCredentials: true});
   }
 
   registerSeller(data: unknown): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/register/seller`, data);
+    return this.http.post(`${this.apiUrl}/register/seller`, data, { withCredentials: true});
+  }
+
+  adminRegisterClient(data: unknown): Observable<unknown> {
+    return this.http.post('/api/v1/admin/users/register/client', data, { withCredentials: true });
+  }
+
+  adminRegisterSeller(data: unknown): Observable<unknown> {
+    return this.http.post('/api/v1/admin/users/register/seller', data, { withCredentials: true });
   }
 
   createAdmin(data: unknown): Observable<unknown> {

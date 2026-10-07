@@ -702,12 +702,12 @@
 
 .admin-navigation {
     display: grid;
-    gap: 6px;
+    gap: 7px;
 }
 
 .navigation-link {
     display: flex;
-    min-height: 44px;
+    min-height: 42px;
     align-items: center;
     gap: 12px;
     padding: 0 12px;
@@ -716,6 +716,7 @@
     font-size: 13px;
     font-weight: 550;
     text-decoration: none;
+    transition: background-color .2s ease, color .2s ease, box-shadow .2s ease;
 }
 
 .navigation-link:hover,
@@ -729,11 +730,17 @@
 }
 
 .navigation-icon {
-    display: inline-grid;
-    width: 20px;
+    display: block;
+    width: 22px;
+    height: 22px;
     place-items: center;
+    flex: 0 0 22px;
     color: #42d6b2;
-    font-size: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .admin-workspace {
@@ -750,9 +757,14 @@
 .page-heading {
     display: flex;
     align-items: flex-end;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 24px;
     margin-bottom: 37px;
+}
+
+.page-heading > div {
+    min-width: 0;
+    margin-right: auto;
 }
 
 .page-heading h1 {
@@ -770,22 +782,56 @@
 
 .primary-action {
     display: inline-flex;
-    min-height: 43px;
+    box-sizing: border-box;
+    width: 270px;
+    min-height: 42px;
     flex: 0 0 auto;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 0 17px;
+    padding: 0 15px;
     border-radius: 8px;
     background: #42d6b2;
     color: #102c40;
     font-size: 13px;
     font-weight: 650;
     text-decoration: none;
+    transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
 }
 
-.primary-action:hover {
-    background: #5ccfc0;
+.primary-action:hover,
+.btn-alta-admin:hover {
+    background: #2bb79a;
+    border-color: #2bb79a;
+    transform: translateY(-1px);
+}
+
+.btn-alta-admin {
+    display: inline-flex;
+    box-sizing: border-box;
+    width: 270px;
+    min-height: 42px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 15px;
+    border: 1px solid #42d6b2;
+    border-radius: 8px;
+    background: #42d6b2;
+    box-shadow: none;
+    color: #102c40;
+    font-size: 13px;
+    font-weight: 650;
+    text-decoration: none;
+    transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.btn-alta-admin svg,
+.primary-action svg {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 auto;
 }
 
 .filters-bar {
@@ -1000,8 +1046,10 @@
     .page-heading {
         align-items: stretch;
         flex-direction: column;
+        gap: 10px;
     }
 
+    .btn-alta-admin,
     .primary-action {
         width: 100%;
     }

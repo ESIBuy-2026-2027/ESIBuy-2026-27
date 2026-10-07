@@ -1,23 +1,29 @@
 package es.uclm.esibuy.users.service;
 
-import es.uclm.esibuy.common.exception.UserNotFoundException;
+import org.springframework.stereotype.Service;
+
 import es.uclm.esibuy.common.exception.UserDeletionConflictException;
+import es.uclm.esibuy.common.exception.UserNotFoundException;
 import es.uclm.esibuy.products.repository.ProductRepository;
+import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
+import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.dto.UpdateUserRequestDTO;
+import es.uclm.esibuy.users.dto.UserResponseDTO;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
-import org.springframework.stereotype.Service;
 
 @Service
 public class AdminUserService {
 
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final UserService userService;
 
-    public AdminUserService(UserRepository userRepository, ProductRepository productRepository) {
+    public AdminUserService(UserRepository userRepository, ProductRepository productRepository, UserService userService) {
         this.userRepository = userRepository;
         this.productRepository = productRepository;
+        this.userService = userService;
     }
 
     public User obtenerPorId(String id) {
@@ -50,5 +56,26 @@ public class AdminUserService {
 
     private String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value;
+    }
+
+    public UserResponseDTO createClientAdmin(ClientRegistrationRequest request) {
+        User createdUser = userService.registerClient(request, true);
+        return mapToDTO(createdUser);
+    }
+
+    public UserResponseDTO createSellerAdmin(SellerRegistrationRequest request) {
+        User createdUser = userService.registerSeller(request, true);
+        return mapToDTO(createdUser);
+    }
+
+    private UserResponseDTO mapToDTO(User user) {
+        return new UserResponseDTO(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getPhone(),
+                user.getRole().name()
+        );
     }
 }
