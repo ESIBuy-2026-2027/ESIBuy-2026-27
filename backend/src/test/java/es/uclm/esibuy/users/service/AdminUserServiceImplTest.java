@@ -35,11 +35,11 @@ class AdminUserServiceImplTest {
     @Mock 
     private UserService userService;
 
-    private AdminUserServiceImpl service;
+    private AdminUserService service;
 
     @BeforeEach
     void setUp() {
-        service = new AdminUserServiceImpl(userRepository, productRepository, userService);
+        service = new AdminUserService(userRepository, productRepository, userService);
     }
 
     @Test
