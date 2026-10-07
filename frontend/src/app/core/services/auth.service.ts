@@ -44,6 +44,17 @@ export interface UserResponse {
 }
 
 
+export interface AltaAdminRequest {
+  dni: string;
+  nombre: string;
+  apellidos: string;
+  email: string;
+  contrasena: string;
+  repetirContrasena: string;
+  sede?: string | null;
+  imagenPerfil?: string | null;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -151,5 +162,9 @@ export class AuthService {
       {},
       { withCredentials: true },
     );
+  }
+
+  crearAdministrador(data: AltaAdminRequest): Observable<any> {
+    return this.http.post<any>('/api/admin/alta', data, { withCredentials: true });
   }
 }
