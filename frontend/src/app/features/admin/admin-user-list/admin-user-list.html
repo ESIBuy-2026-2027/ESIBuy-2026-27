@@ -157,7 +157,11 @@
                                 </span>
                                 @if (user.role === 'ADMIN' && user.adminProfile?.headquarters) {
                                 <div class="text-muted mt-1 sede-text" [title]="user.adminProfile.headquarters">
-                                    📍 {{ user.adminProfile.headquarters }}
+                                    <svg class="location-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"></path>
+                                        <circle cx="12" cy="9" r="2.5"></circle>
+                                    </svg>
+                                    {{ user.adminProfile.headquarters }}
                                 </div>
                                 }
                             </td>
