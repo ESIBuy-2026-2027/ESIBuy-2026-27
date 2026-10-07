@@ -83,4 +83,37 @@ describe('AuthService', () => {
     expect(request.request.withCredentials).toBe(true);
     request.flush({ success: true, message: 'Usuario eliminado correctamente', data: null, correlationId: null });
   });
+
+  it('calls POST on /api/admin/alta with credentials to create an admin user', () => {
+    const adminData = {
+      dni: '12345678Z',
+      nombre: 'Carlos',
+      apellidos: 'Gómez Pérez',
+      email: 'carlos.admin@esibuy.com',
+      contrasena: 'Admin123456!#',
+      repetirContrasena: 'Admin123456!#',
+      sede: 'Ciudad Real',
+      imagenPerfil: 'https://avatar.ejemplo.com/carlos.png'
+    };
+
+    service.crearAdministrador(adminData).subscribe((response: any) => {
+      expect(response.email).toBe('carlos.admin@esibuy.com');
+      expect(response.rol).toBe('ADMIN');
+    });
+
+    const request = httpTesting.expectOne('/api/admin/alta');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.withCredentials).toBe(true);
+    expect(request.request.body).toEqual(adminData);
+    request.flush({
+      id: 'admin-1',
+      email: 'carlos.admin@esibuy.com',
+      nombre: 'Carlos',
+      apellidos: 'Gómez Pérez',
+      dni: '12345678Z',
+      rol: 'ADMIN',
+      activo: true,
+      fechaIncorporacion: '2026-10-07T12:00:00'
+    });
+  });
 });

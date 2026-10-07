@@ -1,330 +1,261 @@
-<div class="admin-create-container">
+<div class="admin-layout edit-layout">
+  <aside class="admin-sidebar" aria-label="Panel de administración">
+    <a routerLink="/" class="admin-brand" aria-label="ESIBuy">
+      <span class="brand-mark" aria-hidden="true">E</span>
+      <span>ESI<span class="brand-accent">Buy</span></span>
+    </a>
+    <p class="sidebar-caption">GESTIÓN DE ADMINISTRACIÓN</p>
+    <nav class="admin-navigation" aria-label="Navegación de administración">
+      <a class="navigation-link" routerLink="/admin/usuarios">
+        <span class="navigation-icon" aria-hidden="true">♙</span>
+        <span>Usuarios</span>
+      </a>
+      <a class="navigation-link is-active" routerLink="/admin/altas" aria-current="page">
+        <span class="navigation-icon" aria-hidden="true">＋</span>
+        <span>Crear administrador</span>
+      </a>
+    </nav>
+  </aside>
 
-    <!-- Barra de navegación -->
-    <header class="admin-navbar">
-        <div class="brand-wrapper">
-            <span class="brand-logo">ESIBuy</span>
-            <span class="brand-badge">Zona de Administración</span>
+  <div class="admin-workspace">
+    <main class="admin-create-container edit-page">
+      <div class="main-container">
+        <a class="back-link" routerLink="/admin/usuarios" aria-label="Volver al listado de usuarios">
+          ← Volver a usuarios
+        </a>
+
+        <div *ngIf="errorMessage" class="alert-box alert-danger" role="alert">
+          <div class="alert-title">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Error</span>
+          </div>
+          <p class="error-message" style="margin: 0; font-size: 0.9rem;">{{ errorMessage }}</p>
+          <ul *ngIf="fieldErrors && (fieldErrors | keyvalue).length > 0" class="alert-list">
+            <li *ngFor="let err of fieldErrors | keyvalue">{{ err.value }}</li>
+          </ul>
         </div>
 
-        <div class="navbar-description">
-            Gestión de Permisos y Roles
-        </div>
-    </header>
-
-
-    <main class="main-container">
-
-        <!-- Mensaje de éxito -->
-        <div *ngIf="successMessage" class="alert-box alert-success" role="alert">
-            <div class="alert-title">
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-
-                <span>Operación Completada</span>
-            </div>
-
-            <p class="success-message">
-                {{ successMessage }}
-            </p>
+        <div *ngIf="successMessage" class="alert-box alert-success" role="status">
+          <div class="alert-title">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Éxito</span>
+          </div>
+          <p class="success-message">{{ successMessage }}</p>
         </div>
 
-
-        <!-- PASO 1 -->
         <section class="card">
+          <div class="card-header">
+            <h1 class="card-title">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              Crear nuevo administrador
+            </h1>
+            <p class="card-subtitle">
+              Completa los datos del nuevo administrador para registrarlo en el sistema. Los campos con asterisco (*) son obligatorios.
+            </p>
+          </div>
 
-            <div class="card-header">
+          <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+            <!-- 1º Nombre y 2º Apellidos -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="nombre" class="form-label">Nombre <span class="required">*</span></label>
+                <input
+                  id="nombre"
+                  type="text"
+                  class="form-control"
+                  formControlName="nombre"
+                  placeholder="Nombre"
+                  maxlength="25"
+                  autocomplete="given-name"
+                />
+                <div *ngIf="form.get('nombre')?.touched && form.get('nombre')?.hasError('required')" class="field-error">
+                  El nombre es obligatorio.
+                </div>
+                <div *ngIf="form.get('nombre')?.touched && (form.get('nombre')?.hasError('minlength') || form.get('nombre')?.hasError('maxlength'))" class="field-error">
+                  El nombre debe tener entre 2 y 25 caracteres.
+                </div>
+                <div *ngIf="fieldErrors['nombre']" class="field-error">{{ fieldErrors['nombre'] }}</div>
+              </div>
 
-                <h1 class="card-title">
-                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-
-                    Paso 1: Seleccionar Usuario Elegible
-                </h1>
-
-                <p class="card-subtitle">
-                    De acuerdo a las reglas de negocio, los administradores deben
-                    promoverse a partir de usuarios registrados (rol CLIENTE o VENDEDOR).
-                </p>
-
+              <div class="form-group">
+                <label for="apellidos" class="form-label">Apellidos <span class="required">*</span></label>
+                <input
+                  id="apellidos"
+                  type="text"
+                  class="form-control"
+                  formControlName="apellidos"
+                  placeholder="Apellidos"
+                  maxlength="50"
+                  autocomplete="family-name"
+                />
+                <div *ngIf="form.get('apellidos')?.touched && form.get('apellidos')?.hasError('required')" class="field-error">
+                  Los apellidos son obligatorios.
+                </div>
+                <div *ngIf="form.get('apellidos')?.touched && (form.get('apellidos')?.hasError('minlength') || form.get('apellidos')?.hasError('maxlength'))" class="field-error">
+                  Los apellidos deben tener entre 2 y 50 caracteres.
+                </div>
+                <div *ngIf="fieldErrors['apellidos']" class="field-error">{{ fieldErrors['apellidos'] }}</div>
+              </div>
             </div>
 
-
-            <div class="form-group">
-
-                <label for="selectorCandidatos" class="form-label">
-                    Usuarios Candidatos
-                    <span class="required">*</span>
-                </label>
-
-
-                <select id="selectorCandidatos" class="form-select" (change)="onCandidatoChange($event)">
-                    <option value="">-- Seleccionar usuario candidato --</option>
-
-                    <option *ngFor="let c of candidatos" [value]="c.id">
-                        {{ c.nombre }} {{ c.apellidos }} ({{ c.email }}) - Rol: {{ c.rol }}
-                    </option>
-                </select>
-
-
-                <!-- Cargando candidatos -->
-                <div *ngIf="loadingCandidatos" class="alert-box alert-info">
-                    Cargando usuarios candidatos elegibles...
+            <!-- 3º DNI y 4º Email -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dni" class="form-label">DNI <span class="required">*</span></label>
+                <input
+                  id="dni"
+                  type="text"
+                  class="form-control"
+                  formControlName="dni"
+                  placeholder="12345678Z"
+                  maxlength="9"
+                />
+                <div *ngIf="form.get('dni')?.touched && form.get('dni')?.hasError('required')" class="field-error">
+                  El DNI es obligatorio.
                 </div>
-
-                <!-- Sin candidatos -->
-                <div *ngIf="candidatos.length === 0 && !loadingCandidatos" class="alert-box alert-info">
-                    No hay usuarios (Clientes o Vendedores) disponibles para ser
-                    promovidos.
+                <div *ngIf="form.get('dni')?.touched && form.get('dni')?.hasError('pattern')" class="field-error">
+                  El DNI debe tener 8 dígitos y una letra (ej: 12345678Z).
                 </div>
+                <div *ngIf="fieldErrors['dni']" class="field-error">{{ fieldErrors['dni'] }}</div>
+              </div>
 
+              <div class="form-group">
+                <label for="email" class="form-label">Email corporativo <span class="required">*</span></label>
+                <input
+                  id="email"
+                  type="email"
+                  class="form-control"
+                  formControlName="email"
+                  placeholder="admin@esibuy.com"
+                  maxlength="120"
+                  autocomplete="email"
+                />
+                <div *ngIf="form.get('email')?.touched && form.get('email')?.hasError('required')" class="field-error">
+                  El email es obligatorio.
+                </div>
+                <div *ngIf="form.get('email')?.touched && form.get('email')?.hasError('email')" class="field-error">
+                  El formato de email no es válido.
+                </div>
+                <div *ngIf="fieldErrors['email']" class="field-error">{{ fieldErrors['email'] }}</div>
+              </div>
             </div>
 
+            <!-- Contraseñas -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="contrasena" class="form-label">Contraseña <span class="required">*</span></label>
+                <input
+                  id="contrasena"
+                  type="password"
+                  class="form-control"
+                  formControlName="contrasena"
+                  placeholder="Mínimo 12 caracteres"
+                  autocomplete="new-password"
+                />
+                <div *ngIf="form.get('contrasena')?.touched && form.get('contrasena')?.hasError('required')" class="field-error">
+                  La contraseña es obligatoria.
+                </div>
+                <div *ngIf="form.get('contrasena')?.touched && (form.get('contrasena')?.hasError('minlength') || form.get('contrasena')?.hasError('pattern'))" class="field-error">
+                  Debe tener al menos 12 caracteres, mayúscula, minúscula, número y símbolo.
+                </div>
+                <div *ngIf="fieldErrors['contrasena']" class="field-error">{{ fieldErrors['contrasena'] }}</div>
+              </div>
+
+              <div class="form-group">
+                <label for="repetirContrasena" class="form-label">Repetir contraseña <span class="required">*</span></label>
+                <input
+                  id="repetirContrasena"
+                  type="password"
+                  class="form-control"
+                  formControlName="repetirContrasena"
+                  placeholder="Repite la contraseña"
+                  autocomplete="new-password"
+                />
+                <div *ngIf="form.get('repetirContrasena')?.touched && form.get('repetirContrasena')?.hasError('required')" class="field-error">
+                  Debe repetir la contraseña.
+                </div>
+                <div *ngIf="form.hasError('passwordsMismatch') && (form.get('repetirContrasena')?.touched || form.get('contrasena')?.touched)" class="field-error">
+                  Las contraseñas no coinciden.
+                </div>
+              </div>
+            </div>
+
+            <!-- Sede y Fecha de creación (no modificable) -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="sede" class="form-label">Sede</label>
+                <input
+                  id="sede"
+                  type="text"
+                  class="form-control"
+                  formControlName="sede"
+                  placeholder="Ej: Ciudad Real, Albacete, Toledo..."
+                  maxlength="100"
+                />
+                <div *ngIf="fieldErrors['sede']" class="field-error">{{ fieldErrors['sede'] }}</div>
+              </div>
+
+              <div class="form-group">
+                <label for="fechaCreacion" class="form-label">Fecha de creación</label>
+                <input
+                  id="fechaCreacion"
+                  type="text"
+                  class="form-control readonly-control"
+                  [value]="fechaCreacion"
+                  readonly
+                  aria-readonly="true"
+                  tabindex="-1"
+                />
+              </div>
+            </div>
+
+            <!-- Avatares del registro -->
+            <div class="form-group avatar-section">
+              <label class="form-label">Avatar de perfil</label>
+              <div class="avatar-selector-grid">
+                <button
+                  *ngFor="let av of avatars"
+                  type="button"
+                  class="avatar-item"
+                  [class.selected]="form.get('imagenPerfil')?.value === av"
+                  (click)="selectAvatar(av)"
+                  [attr.aria-label]="'Seleccionar avatar'"
+                >
+                  <img [src]="av" alt="Avatar disponible" />
+                  <span *ngIf="form.get('imagenPerfil')?.value === av" class="avatar-check">✓</span>
+                </button>
+              </div>
+              <p class="avatar-hint">Selecciona una imagen de perfil de las opciones disponibles.</p>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="btn-wrapper">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                (click)="cancelar()"
+                [disabled]="submitting"
+              >
+                Volver
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="submitting"
+              >
+                <span *ngIf="submitting" class="spinner" aria-hidden="true"></span>
+                <span>Crear administrador</span>
+              </button>
+            </div>
+          </form>
         </section>
-
-
-        <!-- PASO 2 -->
-        <section *ngIf="candidatoSeleccionado" class="card">
-
-            <div class="card-header">
-
-                <h2 class="card-title">
-                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-
-                    Paso 2: Formulario de Alta de Administrador
-                </h2>
-
-                <p class="card-subtitle">
-                    Modifique los datos permitidos del candidato y asigne la sede.
-                    El email se conservará intacto.
-                </p>
-
-            </div>
-
-
-            <!-- Errores -->
-            <div *ngIf="serverErrors.length > 0" class="alert-box alert-danger" role="alert">
-
-                <div class="alert-title">
-
-                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-
-                    <span>
-                        Se encontraron los siguientes errores:
-                    </span>
-
-                </div>
-
-
-                <ul class="alert-list">
-
-                    <li *ngFor="let err of serverErrors">
-                        {{ err }}
-                    </li>
-
-                </ul>
-
-            </div>
-
-
-            <!-- Formulario -->
-            <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-
-                <!-- Nombre + Apellidos -->
-                <div class="form-row">
-
-                    <div class="form-group">
-
-                        <label for="nombre" class="form-label">
-                            Nombre
-                            <span class="required">*</span>
-                        </label>
-
-                        <input id="nombre" type="text" formControlName="nombre" class="form-control"
-                            placeholder="Nombre del usuario" />
-
-                        <span *ngIf="
-                form.get('nombre')?.touched &&
-                form.get('nombre')?.hasError('required')
-              " class="field-error">
-                            Nombre obligatorio
-                        </span>
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="apellidos" class="form-label">
-                            Apellidos
-                            <span class="required">*</span>
-                        </label>
-
-                        <input id="apellidos" type="text" formControlName="apellidos" class="form-control"
-                            placeholder="Apellidos del usuario" />
-
-                        <span *ngIf="
-                form.get('apellidos')?.touched &&
-                form.get('apellidos')?.hasError('required')
-              " class="field-error">
-                            Apellidos obligatorios
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Email -->
-                <div class="form-group">
-
-                    <label for="email" class="form-label">
-                        Email de Cuenta
-                        <span class="required">*</span>
-                    </label>
-
-                    <input id="email" type="email" formControlName="email" class="form-control" readonly />
-
-                    <div class="locked-indicator">
-
-                        <svg fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd"
-                                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                                clip-rule="evenodd" />
-                        </svg>
-
-                        <span>
-                            Campo bloqueado (No editable). El email de la base de datos
-                            se conserva protegido.
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Sede + Fecha -->
-                <div class="form-row">
-
-                    <div class="form-group">
-
-                        <label for="sede" class="form-label">
-                            Sede
-                            <span class="admin-badge">
-                                Exclusivo Administrador
-                            </span>
-                        </label>
-
-                        <input id="sede" type="text" formControlName="sede" class="form-control"
-                            placeholder="Ej: Ciudad Real, Toledo, Madrid..." />
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="fechaIncorporacion" class="form-label">
-                            Fecha de Incorporación
-
-                            <span class="badge-auto">
-                                Desde BD
-                            </span>
-                        </label>
-
-                        <input id="fechaIncorporacion" type="text" formControlName="fechaIncorporacion"
-                            class="form-control" readonly />
-
-                        <div class="locked-indicator">
-
-                            <svg fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                    clip-rule="evenodd" />
-                            </svg>
-
-                            <span>
-                                Fecha original de registro del usuario:
-                                {{ form.get('fechaIncorporacion')?.value || 'No disponible' }}
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Avatares -->
-                <div class="form-group">
-
-                    <label class="form-label">
-                        Avatar de Administrador
-                        <span class="required">*</span>
-                    </label>
-
-
-                    <div class="avatar-grid">
-
-                        <button type="button" *ngFor="let av of avatars" class="avatar-item"
-                            [class.selected]="selectedAvatarUrl === av.url" [title]="av.label"
-                            (click)="selectAvatar(av.url)">
-
-                            <img [src]="av.url" [alt]="av.label" />
-
-                            <span *ngIf="selectedAvatarUrl === av.url" class="avatar-check">
-                                ✓
-                            </span>
-
-                        </button>
-
-                    </div>
-
-
-                    <p class="avatar-hint">
-                        Haz clic en un avatar para asignarlo al perfil del nuevo
-                        administrador.
-                    </p>
-
-                </div>
-
-
-                <!-- Botones -->
-                <div class="btn-wrapper">
-
-                    <button type="button" class="btn btn-secondary" [disabled]="submitting" (click)="cancelar()">
-                        Cancelar
-                    </button>
-
-
-                    <button type="submit" class="btn btn-primary" [disabled]="submitting">
-
-                        <span *ngIf="submitting" class="spinner"></span>
-
-                        <span>
-                            {{
-                            submitting
-                            ? 'Guardando Administrador...'
-                            : 'Promover a Administrador'
-                            }}
-                        </span>
-
-                    </button>
-
-                </div>
-
-            </form>
-
-        </section>
-
+      </div>
     </main>
-
+  </div>
 </div>

@@ -43,17 +43,16 @@ export interface UserResponse {
   role: string;
 }
 
-export interface AdminCandidate {
-  id: string;
+
+export interface AltaAdminRequest {
+  dni: string;
   nombre: string;
   apellidos: string;
   email: string;
-  rol: UserRole | null;
-  activo: boolean;
-  imagenPerfil: string | null;
-  sede: string | null;
-  fechaRegistro: string | null;
-  fechaIncorporacion: string | null;
+  contrasena: string;
+  repetirContrasena: string;
+  sede?: string | null;
+  imagenPerfil?: string | null;
 }
 
 export interface ApiResponse<T> {
@@ -63,12 +62,6 @@ export interface ApiResponse<T> {
   correlationId: string | null;
 }
 
-export interface PromotionRequest {
-  nombre: string;
-  apellidos: string;
-  sede: string | null;
-  imagenPerfil: string;
-}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -130,17 +123,9 @@ export class AuthService {
     this.currentUserSignal.set(null);
   }
 
-  getCandidatos(): Observable<AdminCandidate[]> {
-    return this.http.get<AdminCandidate[]>('/api/admin/candidatos', { withCredentials: true });
-  }
 
-  promoverAAdmin(idUsuario: string, data: PromotionRequest): Observable<unknown> {
-    return this.http.put<unknown>(
-      `/api/admin/promover/${encodeURIComponent(idUsuario)}`,
-      data,
-      { withCredentials: true },
-    );
-  }    
+  
+    
     obtenerTodosLosUsuarios(rol?: string, estado?: string): Observable<UserAdmin[]> {
     let params = new HttpParams();
 
@@ -185,5 +170,9 @@ export class AuthService {
       {},
       { withCredentials: true },
     );
+  }
+
+  crearAdministrador(data: AltaAdminRequest): Observable<any> {
+    return this.http.post<any>('/api/admin/alta', data, { withCredentials: true });
   }
 }
