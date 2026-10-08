@@ -5,7 +5,10 @@ import es.uclm.esibuy.common.exception.InvalidCredentialsException;
 import es.uclm.esibuy.security.config.SecurityConfig;
 import es.uclm.esibuy.security.service.LoginAttemptService;
 import es.uclm.esibuy.security.service.SessionAuthenticationService;
+import es.uclm.esibuy.users.dto.AdminCreateRequest;
+import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
 import es.uclm.esibuy.users.dto.LoginRequest;
+import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.service.UserService;
@@ -53,8 +56,8 @@ class UserControllerTest {
         private static final String LOCALHOST = "127.0.0.1";
         private static final String RETRY_AFTER_HEADER = "Retry-After";
         private static final String LOGIN_PAYLOAD = """
-                                                {"email":"seller@example.com","password":"Password123!"}
-                                                """;
+                        {"email":"seller@example.com","password":"Password123!"}
+                        """;
 
         @Autowired
         private MockMvc mockMvc;
@@ -152,6 +155,67 @@ class UserControllerTest {
                 assertTrue(session.isInvalid());
                 mockMvc.perform(get("/api/users/me"))
                                 .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        void shouldRegisterClient() throws Exception {
+                User client = mock(User.class);
+                when(client.getId()).thenReturn("client-id");
+                when(client.getEmail()).thenReturn("ana@example.com");
+                when(client.getRole()).thenReturn(UserRole.CLIENT);
+                when(client.isActive()).thenReturn(true);
+                when(userService.registerClient(any(ClientRegistrationRequest.class))).thenReturn(client);
+
+                mockMvc.perform(post("/api/users/register/client")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"firstName":"Ana","lastName":"García","email":"ana@example.com","nationalId":"12345678Z","birthDate":"2002-01-01","password":"Password123!","repeatedPassword":"Password123!","customerType":"PREMIUM"}
+                                                """))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.email").value("ana@example.com"))
+                                .andExpect(jsonPath("$.role").value("CLIENT"));
+        }
+
+        @Test
+        void shouldRegisterSeller() throws Exception {
+                User seller = mock(User.class);
+                when(seller.getId()).thenReturn("seller-id");
+                when(seller.getEmail()).thenReturn("carlos@example.com");
+                when(seller.getRole()).thenReturn(UserRole.SELLER);
+                when(seller.isActive()).thenReturn(true);
+                when(userService.registerSeller(any(SellerRegistrationRequest.class))).thenReturn(seller);
+
+                mockMvc.perform(post("/api/users/register/seller")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"firstName":"Carlos","lastName":"López","email":"carlos@example.com","nationalId":"87654321A","businessName":"Carlos Tech","defaultCategory":"Informatica","password":"Password123!","repeatedPassword":"Password123!"}
+                                                """))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.email").value("carlos@example.com"))
+                                .andExpect(jsonPath("$.role").value("SELLER"));
+        }
+
+        @Test
+        void shouldCreateAdmin() throws Exception {
+                User admin = mock(User.class);
+                when(admin.getId()).thenReturn("admin-id");
+                when(admin.getEmail()).thenReturn("admin@esibuy.com");
+                when(admin.getRole()).thenReturn(UserRole.ADMIN);
+                when(admin.isActive()).thenReturn(true);
+                when(userService.createAdmin(any(AdminCreateRequest.class))).thenReturn(admin);
+
+                mockMvc.perform(post("/api/users/admin")
+                                .with(user("admin@esibuy.com").roles("ADMIN"))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"firstName":"Admin","lastName":"Root","email":"admin@esibuy.com","password":"Admin123!Safe","repeatedPassword":"Admin123!Safe","headquarters":"Ciudad Real"}
+                                                """))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.email").value("admin@esibuy.com"))
+                                .andExpect(jsonPath("$.role").value("ADMIN"));
         }
 
         @Test
@@ -260,7 +324,7 @@ class UserControllerTest {
         }
 
         private ResultActions loginRequest() throws Exception {
-                return                 mockMvc.perform(post(LOGIN_API)
+                return mockMvc.perform(post(LOGIN_API)
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
