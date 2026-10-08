@@ -13,6 +13,11 @@ class EsibuyApplicationTests {
 
 	@Test
 	void contextLoads() {
+		// Intentionally empty: this test only verifies that the Spring application
+		// context
+		// starts successfully with all required beans and configuration.
+		// If the context fails to load, the test fails automatically without needing
+		// assertions.
 	}
 
 }

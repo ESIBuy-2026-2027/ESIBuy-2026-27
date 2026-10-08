@@ -20,6 +20,7 @@ public class AdminService {
 
     private static final String DEFAULT_ADMIN_AVATAR = "avatar-admin-default";
     private static final String MSG_DUPLICATE_EMAIL = "Ya existe un usuario con ese email";
+    private static final String MSG_USER_NOT_FOUND = "Usuario no encontrado";
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -64,43 +65,47 @@ public class AdminService {
 
     public List<UserAdminDTO> obtenerUsuariosFiltrados(String rol, String estado) {
         return userRepository.findAll().stream()
-                .filter(u -> {
-                    // Filtro de Rol
-                    if (rol == null || rol.isBlank())
-                        return true;
-                    if (u.getRole() == null)
-                        return false;
-
-                    String roleName = u.getRole().name();
-                    if (rol.equalsIgnoreCase("CLIENTE") && roleName.equals("CLIENT"))
-                        return true;
-                    if (rol.equalsIgnoreCase("VENDEDOR") && roleName.equals("SELLER"))
-                        return true;
-                    if (rol.equalsIgnoreCase("ADMIN") && roleName.equals("ADMIN"))
-                        return true;
-
-                    return roleName.equalsIgnoreCase(rol);
-                })
-                .filter(u -> {
-                    // Filtro de Estado
-                    if (estado == null || estado.isBlank())
-                        return true;
-
-                    if (estado.equalsIgnoreCase("ACTIVO"))
-                        return u.isActive() && !u.isBlocked();
-                    if (estado.equalsIgnoreCase("INACTIVO"))
-                        return !u.isActive() && !u.isBlocked();
-                    if (estado.equalsIgnoreCase("BLOQUEADO"))
-                        return u.isBlocked();
-                    return false;
-                })
+                .filter(u -> cumpleFiltroRol(u, rol))
+                .filter(u -> cumpleFiltroEstado(u, estado))
                 .map(UserAdminDTO::fromUser)
                 .toList();
     }
 
+    private boolean cumpleFiltroRol(User user, String rol) {
+        if (rol == null || rol.isBlank()) {
+            return true;
+        }
+        if (user.getRole() == null) {
+            return false;
+        }
+
+        String roleName = user.getRole().name();
+        String rolNormalizado = rol.trim();
+
+        return switch (rolNormalizado.toUpperCase(Locale.ROOT)) {
+            case "CLIENTE" -> "CLIENT".equals(roleName);
+            case "VENDEDOR" -> "SELLER".equals(roleName);
+            case "ADMIN" -> "ADMIN".equals(roleName);
+            default -> roleName.equalsIgnoreCase(rolNormalizado);
+        };
+    }
+
+    private boolean cumpleFiltroEstado(User user, String estado) {
+        if (estado == null || estado.isBlank()) {
+            return true;
+        }
+
+        return switch (estado.trim().toUpperCase(Locale.ROOT)) {
+            case "ACTIVO" -> user.isActive() && !user.isBlocked();
+            case "INACTIVO" -> !user.isActive() && !user.isBlocked();
+            case "BLOQUEADO" -> user.isBlocked();
+            default -> false;
+        };
+    }
+
     public void activarUsuario(String id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException(MSG_USER_NOT_FOUND));
 
         // Una cuenta bloqueada no puede quedar activa
         if (!user.isBlocked()) {
@@ -111,7 +116,7 @@ public class AdminService {
 
     public void desactivarUsuario(String id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException(MSG_USER_NOT_FOUND));
 
         user.setActive(false);
         userRepository.save(user);
@@ -119,7 +124,7 @@ public class AdminService {
 
     public void bloquearUsuario(String id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException(MSG_USER_NOT_FOUND));
 
         // Bloquear implica también desactivar la cuenta
         user.setActive(false);
@@ -129,7 +134,7 @@ public class AdminService {
 
     public void desbloquearUsuario(String id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException(MSG_USER_NOT_FOUND));
 
         user.setBlocked(false);
         user.setActive(true);
