@@ -198,6 +198,29 @@ class UserControllerTest {
         }
 
         @Test
+        void shouldPreserveEmailValidationMessagesOnAdminAndRegistrationRequests() throws Exception {
+                mockMvc.perform(post("/api/users/admin")
+                                .with(user("admin@esibuy.com").roles("ADMIN"))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"firstName":"Admin","lastName":"Root","email":"invalid","password":"Admin123!Safe","repeatedPassword":"Admin123!Safe","headquarters":"Ciudad Real"}
+                                                """))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.errors.email")
+                                                .value("El formato de email no es válido (ejemplo: user@example.com)"));
+
+                mockMvc.perform(post("/api/users/register/client")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"firstName":"Ana","lastName":"García","email":"invalid","nationalId":"documento-1","birthDate":"2002-01-01","password":"Password123!","repeatedPassword":"Password123!","customerType":"PREMIUM"}
+                                                """))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.errors.email").value("El formato de email no es válido"));
+        }
+
+        @Test
         void shouldCreateAdmin() throws Exception {
                 User admin = mock(User.class);
                 when(admin.getId()).thenReturn("admin-id");
