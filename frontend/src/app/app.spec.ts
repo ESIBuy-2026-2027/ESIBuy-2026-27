@@ -1,16 +1,23 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { signal } from '@angular/core';
-import { AuthService } from './core/services/auth.service';
+import { signal, WritableSignal } from '@angular/core';
+import { of } from 'rxjs';
+import { AuthService, AuthenticatedUser } from './core/services/auth.service';
 import { App } from './app';
 
 describe('App', () => {
+  let currentUser: WritableSignal<AuthenticatedUser | null>;
+  let logout: ReturnType<typeof vi.fn>;
+
   beforeEach(async () => {
+    currentUser = signal<AuthenticatedUser | null>(null);
+    logout = vi.fn().mockReturnValue(of(undefined));
+
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [
         provideRouter([]),
-        { provide: AuthService, useValue: { currentUser: signal(null), logout: () => ({ subscribe: () => undefined }) } },
+        { provide: AuthService, useValue: { currentUser, logout } },
       ],
     })
       .compileComponents();
@@ -27,5 +34,31 @@ describe('App', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('router-outlet')).not.toBeNull();
+  });
+
+  it('should show a non-navigating profile option and a working logout option', async () => {
+    currentUser.set({
+      id: 'user-1',
+      email: 'user@example.com',
+      role: 'CLIENT',
+      active: true,
+    });
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const profileButton = (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('.profile-button');
+    profileButton?.click();
+    fixture.detectChanges();
+
+    const menu = (fixture.nativeElement as HTMLElement).querySelector('#profile-menu');
+    const menuButtons = Array.from(menu?.querySelectorAll<HTMLButtonElement>('button') ?? []);
+    const profileOption = menuButtons.find((button) => button.textContent?.trim() === 'Mi perfil');
+    const logoutOption = menuButtons.find((button) => button.textContent?.trim() === 'Cerrar sesión');
+
+    expect(profileOption?.disabled).toBe(true);
+    expect(logoutOption).toBeDefined();
+    logoutOption?.click();
+    expect(logout).toHaveBeenCalledOnce();
   });
 });
