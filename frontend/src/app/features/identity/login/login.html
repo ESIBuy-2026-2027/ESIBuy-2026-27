@@ -2,7 +2,7 @@
 
   <main class="login-card" [class.login-card--embedded]="embedded">
 
-    <header class="login-header" *ngIf= "!embedded">
+    <header class="login-header" *ngIf="!embedded">
       <div class="brand">
         <span class="brand-name">ESIBuy</span>
         <span class="brand-badge">Plataforma de Comercio Electrónico</span>
@@ -51,8 +51,8 @@
 
           <div class="password-wrapper">
 
-            <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
-              placeholder="Tu contraseña" autocomplete="current-password" />
+            <input id="password" [attr.type]="showPassword ? 'text' : 'password'" formControlName="password"
+              placeholder="Tu contraseña" [attr.autocomplete]="showPassword ? 'off' : 'current-password'" />
 
             <button type="button" class="password-toggle" (click)="showPassword = !showPassword"
               [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
@@ -102,9 +102,9 @@
       <button type="button" class="forgot-password-link" (click)="showForgotPasswordMessage()">
         ¿Has olvidado tu contraseña?
       </button>
-      <p *ngIf="forgotPasswordMessage" class="forgot-password-message" role="status">
+      <output *ngIf="forgotPasswordMessage" class="forgot-password-message">
         {{ forgotPasswordMessage }}
-      </p>
+      </output>
     </div>
 
     <div class="auth-links" *ngIf="!embedded">

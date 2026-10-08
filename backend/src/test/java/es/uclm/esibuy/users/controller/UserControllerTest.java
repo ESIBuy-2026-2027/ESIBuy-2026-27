@@ -33,7 +33,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -157,7 +156,7 @@ class UserControllerTest {
                                                 """))
                                 .andExpect(status().isUnauthorized());
 
-                verify(loginAttemptService).loginFailed(eq("seller@example.com"), eq("127.0.0.1"));
+                verify(loginAttemptService).loginFailed("seller@example.com", "127.0.0.1");
         }
 
         @Test

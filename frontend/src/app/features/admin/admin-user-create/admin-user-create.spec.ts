@@ -1,108 +1,158 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AdminUserCreate } from './admin-user-create';
+import { Router, provideRouter } from '@angular/router';
+import { of } from 'rxjs';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AuthService } from '../../../core/services/auth.service';
-import { of, throwError } from 'rxjs';
-import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { AdminUserCreate } from './admin-user-create';
 
 describe('AdminUserCreate', () => {
   let component: AdminUserCreate;
   let fixture: ComponentFixture<AdminUserCreate>;
-  let authServiceSpy: any;
-
-  const mockCandidatos = [
-    {
-      id: 'cand-1',
-      nombre: 'Celia',
-      apellidos: 'Nuñez',
-      email: 'c@c.es',
-      rol: 'SELLER',
-      fechaRegistro: '2026-09-30T08:27:30.026Z',
-      imagenPerfil: 'https://example.com/avatar1.svg'
-    },
-    {
-      id: 'cand-2',
-      nombre: 'Eustaquio',
-      apellidos: 'Diat',
-      email: 'eustaquio@example.com',
-      rol: 'CLIENT',
-      fechaRegistro: '2026-09-30T09:51:21.100Z',
-      imagenPerfil: 'https://example.com/avatar2.svg'
-    }
-  ];
+  let crearAdministrador: ReturnType<typeof vi.fn>;
+  let navigate: ReturnType<typeof vi.spyOn>;
 
   beforeEach(async () => {
-    authServiceSpy = {
-      getCandidatos: vi.fn().mockReturnValue(of(mockCandidatos)),
-      promoverAAdmin: vi.fn()
-    };
+    crearAdministrador = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [AdminUserCreate],
       providers: [
-        { provide: AuthService, useValue: authServiceSpy }
+        provideRouter([]),
+        { provide: AuthService, useValue: { crearAdministrador } }
       ]
     }).compileComponents();
 
+    const router = TestBed.inject(Router);
+    navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
     fixture = TestBed.createComponent(AdminUserCreate);
     component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
-  it('should create the component', () => {
+  it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load candidates and render them in the dropdown', async () => {
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    expect(authServiceSpy.getCandidatos).toHaveBeenCalled();
-    expect(component.candidatos.length).toBe(2);
-
-    const selectEl = fixture.nativeElement.querySelector('#candidatoSelect') || fixture.nativeElement.querySelector('#selectorCandidatos');
-    expect(selectEl).not.toBeNull();
-    const options = selectEl.querySelectorAll('option');
-    // 1 placeholder option + 2 candidates = 3 options
-    expect(options.length).toBe(3);
-    expect(options[1].textContent).toContain('Celia Nuñez');
-    expect(options[2].textContent).toContain('Eustaquio Diat');
+  it('initializes the reactive form with invalid state', () => {
+    expect(component.form).toBeDefined();
+    expect(component.form.valid).toBe(false);
   });
 
-  it('should render candidates when response arrives asynchronously without manual click', async () => {
-    const { Subject } = await import('rxjs');
-    const asyncSubject = new Subject<any[]>();
-    authServiceSpy.getCandidatos.mockReturnValue(asyncSubject.asObservable());
-
-    const asyncFixture = TestBed.createComponent(AdminUserCreate);
-    asyncFixture.detectChanges(); // initial render (loading)
-
-    // Emit asynchronously (component calls cdr.detectChanges() in next callback)
-    asyncSubject.next(mockCandidatos);
-    asyncSubject.complete();
-
-    const selectEl = asyncFixture.nativeElement.querySelector('#selectorCandidatos') || asyncFixture.nativeElement.querySelector('#candidatoSelect');
-    const options = selectEl.querySelectorAll('option');
-    expect(options.length).toBe(3);
-    expect(options[1].textContent).toContain('Celia Nuñez');
-    expect(options[2].textContent).toContain('Eustaquio Diat');
+  it('validates mandatory fields', () => {
+    const form = component.form;
+    expect(form.get('dni')?.hasError('required')).toBe(true);
+    expect(form.get('nombre')?.hasError('required')).toBe(true);
+    expect(form.get('apellidos')?.hasError('required')).toBe(true);
+    expect(form.get('email')?.hasError('required')).toBe(true);
+    expect(form.get('contrasena')?.hasError('required')).toBe(true);
+    expect(form.get('repetirContrasena')?.hasError('required')).toBe(true);
   });
 
-  it('should select candidate and populate form fields and original registration date', async () => {
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+  it('validates password mismatch cross-validation', () => {
+    component.form.patchValue({
+      dni: '12345678Z',
+      nombre: 'Carlos',
+      apellidos: 'Gómez Pérez',
+      email: 'carlos.admin@esibuy.com',
+      contrasena: 'Admin123456!#',
+      repetirContrasena: 'Distinta123456!#'
+    });
 
-    const selectEl = fixture.nativeElement.querySelector('#selectorCandidatos') || fixture.nativeElement.querySelector('#candidatoSelect');
-    selectEl.value = 'cand-1';
-    selectEl.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
+    expect(component.form.hasError('passwordsMismatch')).toBe(true);
+    expect(component.form.valid).toBe(false);
+  });
 
-    expect(component.candidatoSeleccionado).not.toBeNull();
-    expect(component.candidatoSeleccionado?.id).toBe('cand-1');
-    expect(component.form.get('nombre')?.value).toBe('Celia');
-    expect(component.form.get('apellidos')?.value).toBe('Nuñez');
-    expect(component.form.get('email')?.value).toBe('c@c.es');
-    expect(component.form.get('fechaIncorporacion')?.value).toBe('2026-09-30');
+  it('is valid when all required fields and formats are correct', () => {
+    component.form.patchValue({
+      dni: '12345678Z',
+      nombre: 'Carlos',
+      apellidos: 'Gómez Pérez',
+      email: 'carlos.admin@esibuy.com',
+      contrasena: 'Admin123456!#',
+      repetirContrasena: 'Admin123456!#',
+      sede: 'Ciudad Real',
+      imagenPerfil: 'https://avatar.ejemplo.com/carlos.png'
+    });
+
+    expect(component.form.valid).toBe(true);
+  });
+
+  it('renders all form inputs and the primary submit button with exact text "Crear administrador"', () => {
+    const rendered = fixture.nativeElement as HTMLElement;
+    expect(rendered.querySelector('input[formControlName="dni"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="nombre"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="apellidos"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="email"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="contrasena"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="repetirContrasena"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="sede"]')).toBeTruthy();
+
+    const submitBtn = rendered.querySelector('button[type="submit"]');
+    expect(submitBtn).toBeTruthy();
+    expect(submitBtn?.textContent?.trim()).toContain('Crear administrador');
+  });
+
+  it('calls crearAdministrador on submit when form is valid', () => {
+    crearAdministrador.mockReturnValue(of({ id: 'admin-1', email: 'carlos.admin@esibuy.com' }));
+
+    component.form.patchValue({
+      dni: '12345678Z',
+      nombre: 'Carlos',
+      apellidos: 'Gómez Pérez',
+      email: 'carlos.admin@esibuy.com',
+      contrasena: 'Admin123456!#',
+      repetirContrasena: 'Admin123456!#',
+      sede: 'Ciudad Real',
+      imagenPerfil: 'https://avatar.ejemplo.com/carlos.png'
+    });
+
+    fixture.detectChanges();
+    const submitBtn = fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+    submitBtn?.click();
+
+    expect(crearAdministrador).toHaveBeenCalled();
+  });
+
+  it('navigates to /admin/usuarios when cancel button is clicked', () => {
+    const cancelBtn = fixture.nativeElement.querySelector('button.btn-secondary') as HTMLButtonElement;
+    cancelBtn?.click();
+
+    expect(navigate).toHaveBeenCalledWith(['/admin/usuarios']);
+  });
+
+  it('renders non-modifiable creation date input with current date', () => {
+    const rendered = fixture.nativeElement as HTMLElement;
+    const fechaInput = rendered.querySelector('input#fechaCreacion') as HTMLInputElement;
+    expect(fechaInput).toBeTruthy();
+    expect(fechaInput.readOnly).toBe(true);
+    expect(fechaInput.value).toBe(component.fechaCreacion);
+  });
+
+  it('renders 10 registration avatar buttons and toggles avatar selection', () => {
+    const rendered = fixture.nativeElement as HTMLElement;
+    const avatarButtons = rendered.querySelectorAll('.avatar-selector-grid .avatar-item');
+    expect(avatarButtons.length).toBe(10);
+
+    const firstAvatarBtn = avatarButtons[0] as HTMLButtonElement;
+    firstAvatarBtn.click();
+    fixture.detectChanges();
+    expect(component.form.get('imagenPerfil')?.value).toBe(component.avatars[0]);
+
+    // Clicking again deselects
+    firstAvatarBtn.click();
+    fixture.detectChanges();
+    expect(component.form.get('imagenPerfil')?.value).toBe('');
+  });
+
+  it('does not display any "Opcional" text or badges in the template', () => {
+    const text = fixture.nativeElement.textContent || '';
+    expect(text.toLowerCase()).not.toContain('opcional');
+  });
+
+  it('has back link pointing to /admin/usuarios', () => {
+    const backLink = fixture.nativeElement.querySelector('a.back-link') as HTMLAnchorElement;
+    expect(backLink).toBeTruthy();
+    expect(backLink.getAttribute('routerLink')).toBe('/admin/usuarios');
   });
 });

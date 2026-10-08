@@ -4,17 +4,17 @@ package es.uclm.esibuy.users.controller;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import es.uclm.esibuy.users.dto.AltaAdminDTO;
 import es.uclm.esibuy.users.dto.UserAdminDTO;
-import es.uclm.esibuy.users.dto.CandidatoDTO;
-import es.uclm.esibuy.users.dto.PromoverAdminDTO;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.service.AdminService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,17 +30,11 @@ public class AdminController {
         this.adminService = adminService;
     }
 
-    @GetMapping("/candidatos")
-    public ResponseEntity<List<CandidatoDTO>> obtenerCandidatos() {
-        return ResponseEntity.ok(adminService.obtenerCandidatos());
-    }
-
-    @PutMapping("/promover/{idUsuario}")
-    public ResponseEntity<Map<String, Object>> promoverAAdmin(
-            @PathVariable String idUsuario,
-            @Valid @RequestBody PromoverAdminDTO request) {
-        User user = adminService.promoverAAdmin(idUsuario, request);
-        return ResponseEntity.ok(buildAdminResponse(user));
+    @PostMapping("/alta")
+    public ResponseEntity<Map<String, Object>> darAltaAdministrador(
+            @Valid @RequestBody AltaAdminDTO request) {
+        User user = adminService.crearAdministrador(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(buildAdminResponse(user));
     }
 
     private Map<String, Object> buildAdminResponse(User user) {
@@ -49,10 +43,12 @@ public class AdminController {
         response.put("email", user.getEmail());
         response.put("nombre", user.getFirstName());
         response.put("apellidos", user.getLastName());
-        response.put("role", user.getRole() != null ? user.getRole().name() : null);
-        response.put("active", user.isActive());
+        response.put("dni", user.getNationalId());
+        response.put("rol", user.getRole() != null ? user.getRole().name() : null);
+        response.put("activo", user.isActive());
+        response.put("fechaIncorporacion", user.getAdminProfile() != null ? user.getAdminProfile().getHireDate() : null);
         response.put("sede", user.getAdminProfile() != null ? user.getAdminProfile().getHeadquarters() : null);
-        response.put("profileImage", user.getProfileImage());
+        response.put("imagenPerfil", user.getProfileImage());
         return response;
     }
 
