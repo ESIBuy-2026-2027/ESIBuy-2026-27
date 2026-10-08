@@ -478,18 +478,18 @@
 }
 
 .badge-admin {
-    background-color: rgba(92, 207, 192, 0.15);
-    color: #0a2c3a;
+    background-color: #e4edff;
+    color: #2451a6;
 }
 
 .badge-seller {
-    background-color: rgba(106, 216, 199, 0.18);
-    color: #0b3f4f;
+    background-color: #fff0d6;
+    color: #9a5b00;
 }
 
 .badge-client {
-    background-color: rgba(17, 158, 144, 0.12);
-    color: #0f766e;
+    background-color: #def7ed;
+    color: #08735d;
 }
 
 .badge-default {
