@@ -45,6 +45,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({ ApiExceptionHandler.class, SecurityConfig.class, SessionAuthenticationService.class })
 class UserControllerTest {
 
+        private static final String SELLER_EMAIL = "seller@example.com";
+        private static final String SELLER_ID = "seller-id";
+        private static final String CLIENT_EMAIL = "client@example.com";
+        private static final String LOGIN_API = "/api/users/login";
+        private static final String CURRENT_USER_API = "/api/users/me";
+        private static final String LOCALHOST = "127.0.0.1";
+        private static final String RETRY_AFTER_HEADER = "Retry-After";
+        private static final String LOGIN_PAYLOAD = """
+                                                {"email":"seller@example.com","password":"Password123!"}
+                                                """;
+
         @Autowired
         private MockMvc mockMvc;
 
@@ -57,15 +68,15 @@ class UserControllerTest {
         @Test
         void shouldCreateSessionOnLoginAndKeepItAcrossRequestsWithConfiguredTimeout() throws Exception {
                 User seller = mock(User.class);
-                when(seller.getId()).thenReturn("seller-id");
-                when(seller.getEmail()).thenReturn("seller@example.com");
+                when(seller.getId()).thenReturn(SELLER_ID);
+                when(seller.getEmail()).thenReturn(SELLER_EMAIL);
                 when(seller.getRole()).thenReturn(UserRole.SELLER);
                 when(seller.isActive()).thenReturn(false);
                 when(userService.login(any(LoginRequest.class))).thenReturn(seller);
 
                 MockHttpSession preLoginSession = new MockHttpSession();
                 String oldSessionId = preLoginSession.getId();
-                MvcResult loginResult = mockMvc.perform(post("/api/users/login")
+                MvcResult loginResult = mockMvc.perform(post(LOGIN_API)
                                 .with(csrf())
                                 .session(preLoginSession)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -82,7 +93,7 @@ class UserControllerTest {
                 assertNotEquals(oldSessionId, session.getId());
                 assertEquals(30 * 60, session.getMaxInactiveInterval());
 
-                mockMvc.perform(get("/api/users/me").session(session))
+                mockMvc.perform(get(CURRENT_USER_API).session(session))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id").value("seller-id"))
                                 .andExpect(jsonPath("$.email").value("seller@example.com"))
@@ -91,7 +102,7 @@ class UserControllerTest {
 
         @Test
         void shouldReturnUnauthorizedWithoutSession() throws Exception {
-                mockMvc.perform(get("/api/users/me"))
+                mockMvc.perform(get(CURRENT_USER_API))
                                 .andExpect(status().isUnauthorized())
                                 .andReturn();
         }
@@ -116,8 +127,8 @@ class UserControllerTest {
         @Test
         void shouldInvalidateSessionOnLogout() throws Exception {
                 User seller = mock(User.class);
-                when(seller.getId()).thenReturn("seller-id");
-                when(seller.getEmail()).thenReturn("seller@example.com");
+                when(seller.getId()).thenReturn(SELLER_ID);
+                when(seller.getEmail()).thenReturn(SELLER_EMAIL);
                 when(seller.getRole()).thenReturn(UserRole.SELLER);
                 when(seller.isActive()).thenReturn(false);
                 when(userService.login(any(LoginRequest.class))).thenReturn(seller);
@@ -148,7 +159,7 @@ class UserControllerTest {
                 doThrow(new InvalidCredentialsException())
                                 .when(userService).login(any(LoginRequest.class));
 
-                mockMvc.perform(post("/api/users/login")
+                mockMvc.perform(post(LOGIN_API)
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -168,7 +179,7 @@ class UserControllerTest {
                 when(seller.isActive()).thenReturn(false);
                 when(userService.login(any(LoginRequest.class))).thenReturn(seller);
 
-                mockMvc.perform(post("/api/users/login")
+                mockMvc.perform(post(LOGIN_API)
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -185,7 +196,7 @@ class UserControllerTest {
                 when(loginAttemptService.getRemainingBlockSeconds("seller@example.com", "127.0.0.1"))
                                 .thenReturn(42L);
 
-                mockMvc.perform(post("/api/users/login")
+                mockMvc.perform(post(LOGIN_API)
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -249,7 +260,7 @@ class UserControllerTest {
         }
 
         private ResultActions loginRequest() throws Exception {
-                return mockMvc.perform(post("/api/users/login")
+                return                 mockMvc.perform(post(LOGIN_API)
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
