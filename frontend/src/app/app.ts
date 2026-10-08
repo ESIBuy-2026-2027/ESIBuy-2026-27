@@ -34,6 +34,16 @@ export class App {
     this.closeProfileMenu();
   }
 
+  goCatalog(): void {
+    this.closeProfileMenu();
+    void this.router.navigate(['/seller/catalog']);
+  }
+
+  goUsersManagement(): void{
+    this.closeProfileMenu();
+    void this.router.navigate(['/admin/usuarios']);
+  }
+
   logout(): void {
     this.closeProfileMenu();
     this.logoutError.set(null);
