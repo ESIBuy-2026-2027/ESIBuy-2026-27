@@ -27,6 +27,7 @@
 
 .image-preview {
   display: grid;
+  align-self: center;
   width: 160px;
   height: 160px;
   place-items: center;
