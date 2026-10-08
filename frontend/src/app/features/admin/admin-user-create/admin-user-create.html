@@ -113,14 +113,10 @@
                   type="text"
                   class="form-control"
                   formControlName="dni"
-                  placeholder="12345678Z"
-                  maxlength="9"
+                  placeholder="DNI"
                 />
                 <div *ngIf="form.get('dni')?.touched && form.get('dni')?.hasError('required')" class="field-error">
                   El DNI es obligatorio.
-                </div>
-                <div *ngIf="form.get('dni')?.touched && form.get('dni')?.hasError('pattern')" class="field-error">
-                  El DNI debe tener 8 dígitos y una letra (ej: 12345678Z).
                 </div>
                 <div *ngIf="fieldErrors['dni']" class="field-error">{{ fieldErrors['dni'] }}</div>
               </div>
@@ -132,7 +128,7 @@
                   type="email"
                   class="form-control"
                   formControlName="email"
-                  placeholder="admin@esibuy.com"
+                  placeholder="usuario@dominio.com"
                   maxlength="120"
                   autocomplete="email"
                 />
@@ -140,7 +136,7 @@
                   El email es obligatorio.
                 </div>
                 <div *ngIf="form.get('email')?.touched && form.get('email')?.hasError('email')" class="field-error">
-                  El formato de email no es válido.
+                  Formato de email no válido (ejemplo: usuario@dominio.com)
                 </div>
                 <div *ngIf="fieldErrors['email']" class="field-error">{{ fieldErrors['email'] }}</div>
               </div>
@@ -161,8 +157,11 @@
                 <div *ngIf="form.get('contrasena')?.touched && form.get('contrasena')?.hasError('required')" class="field-error">
                   La contraseña es obligatoria.
                 </div>
-                <div *ngIf="form.get('contrasena')?.touched && (form.get('contrasena')?.hasError('minlength') || form.get('contrasena')?.hasError('pattern'))" class="field-error">
-                  Debe tener al menos 12 caracteres, mayúscula, minúscula, número y símbolo.
+                <div *ngIf="form.get('contrasena')?.touched && form.get('contrasena')?.hasError('minlength')" class="field-error">
+                  Debe tener al menos 12 caracteres.
+                </div>
+                <div *ngIf="form.get('contrasena')?.touched && form.get('contrasena')?.hasError('pattern')" class="field-error">
+                  La contraseña debe tener mayúscula, minúscula, número y un carácter especial.
                 </div>
                 <div *ngIf="fieldErrors['contrasena']" class="field-error">{{ fieldErrors['contrasena'] }}</div>
               </div>

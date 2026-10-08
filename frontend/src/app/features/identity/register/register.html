@@ -148,7 +148,8 @@
             Email <span class="required">*</span>
           </label>
 
-          <input id="email" type="email" formControlName="email" autocomplete="email" />
+          <input id="email" type="email" formControlName="email" autocomplete="email"  placeholder="usuario@dominio.com"
+/>
 
           <span class="error" *ngIf="form.get('email')?.touched && form.get('email')?.hasError('required')">
             El email es obligatorio
@@ -331,7 +332,8 @@
             Email <span class="required">*</span>
           </label>
 
-          <input id="sellerEmail" type="email" formControlName="email" autocomplete="email" />
+          <input id="sellerEmail" type="email" formControlName="email" autocomplete="email"  placeholder="usuario@dominio.com"
+ />
 
           <span class="error" *ngIf="form.get('email')?.touched && form.get('email')?.hasError('required')">
             El email es obligatorio

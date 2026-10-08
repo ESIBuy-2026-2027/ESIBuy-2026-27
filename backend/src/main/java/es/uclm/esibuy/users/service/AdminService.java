@@ -100,4 +100,12 @@ public class AdminService {
         user.setActive(false);
         userRepository.save(user);
     }
+
+    public void desbloquearUsuario(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+
+        user.setActive(true);
+        userRepository.save(user);
+    }
 }

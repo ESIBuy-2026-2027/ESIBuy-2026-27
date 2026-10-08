@@ -60,10 +60,7 @@ export class AdminUserCreate {
     {
       dni: [
         '',
-        [
-          Validators.required,
-          Validators.pattern(/^[0-9]{8}[A-Za-z]$/),
-        ],
+        [Validators.required],
       ],
       nombre: [
         '',

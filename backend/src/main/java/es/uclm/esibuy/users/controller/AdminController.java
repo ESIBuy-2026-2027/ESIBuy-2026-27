@@ -69,4 +69,11 @@ public class AdminController {
         adminService.bloquearUsuario(id);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/usuarios/{id}/desbloquear")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> desbloquearUsuario(@PathVariable String id) {
+        adminService.desbloquearUsuario(id);
+        return ResponseEntity.ok().build();
+    }
 }
