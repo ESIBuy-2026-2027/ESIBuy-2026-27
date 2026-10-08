@@ -123,10 +123,11 @@ describe('AdminUserCreate', () => {
 
   it('renders non-modifiable creation date input with current date', () => {
     const rendered = fixture.nativeElement as HTMLElement;
-    const fechaInput = rendered.querySelector('input#fechaCreacion') as HTMLInputElement;
+    const fechaInput = rendered.querySelector<HTMLInputElement>('input#fechaCreacion');
+
     expect(fechaInput).toBeTruthy();
-    expect(fechaInput.readOnly).toBe(true);
-    expect(fechaInput.value).toBe(component.fechaCreacion);
+    expect(fechaInput?.readOnly).toBe(true);
+    expect(fechaInput?.value).toBe(component.fechaCreacion);
   });
 
   it('renders 10 registration avatar buttons and toggles avatar selection', () => {
