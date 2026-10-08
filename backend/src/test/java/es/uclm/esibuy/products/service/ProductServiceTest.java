@@ -31,6 +31,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
 
+    private static final String SELLER_ID = "seller-id";
+    private static final String SELLER_EMAIL = "seller@example.com";
+    private static final String CLIENT_EMAIL = "client@example.com";
+    private static final String CATEGORY_ID = "category-id";
+    private static final String PRODUCT_NAME = "Auriculares";
+    private static final String PRODUCT_PRICE = "19.99";
+
     @Mock
     private ProductRepository productRepository;
 
@@ -51,19 +58,19 @@ class ProductServiceTest {
     void shouldCreateProductForAuthenticatedSellerAndDefaultStockToZero() {
         ProductCreateRequest request = validRequest();
         User seller = org.mockito.Mockito.mock(User.class);
-        when(seller.getId()).thenReturn("seller-id");
+        when(seller.getId()).thenReturn(SELLER_ID);
         when(seller.getRole()).thenReturn(UserRole.SELLER);
-        when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(Optional.of(seller));
-        when(categoryRepository.findAllById(List.of("category-id")))
-                .thenReturn(List.of(new Category("category-id", "Electrónica")));
+        when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(seller));
+        when(categoryRepository.findAllById(List.of(CATEGORY_ID)))
+                .thenReturn(List.of(new Category(CATEGORY_ID, "Electrónica")));
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Product result = productService.createProduct(request, "seller@example.com");
+        Product result = productService.createProduct(request, SELLER_EMAIL);
 
-        assertEquals("seller-id", result.getSellerId());
-        assertEquals(List.of("category-id"), result.getCategoryIds());
+        assertEquals(SELLER_ID, result.getSellerId());
+        assertEquals(List.of(CATEGORY_ID), result.getCategoryIds());
         assertEquals(0, result.getStock());
-        assertEquals(new BigDecimal("19.99"), result.getPrice());
+        assertEquals(new BigDecimal(PRODUCT_PRICE), result.getPrice());
         verify(productRepository).save(any(Product.class));
     }
 
@@ -74,14 +81,14 @@ class ProductServiceTest {
         request.setDiscount(new BigDecimal("10"));
         request.setPremiumDiscount(new BigDecimal("20"));
         User seller = org.mockito.Mockito.mock(User.class);
-        when(seller.getId()).thenReturn("seller-id");
+        when(seller.getId()).thenReturn(SELLER_ID);
         when(seller.getRole()).thenReturn(UserRole.SELLER);
-        when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(Optional.of(seller));
-        when(categoryRepository.findAllById(List.of("category-id")))
-                .thenReturn(List.of(new Category("category-id", "Electrónica")));
+        when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(seller));
+        when(categoryRepository.findAllById(List.of(CATEGORY_ID)))
+                .thenReturn(List.of(new Category(CATEGORY_ID, "Electrónica")));
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Product result = productService.createProduct(request, "seller@example.com");
+        Product result = productService.createProduct(request, SELLER_EMAIL);
 
         assertEquals(7, result.getStock());
         assertEquals(new BigDecimal("10"), result.getDiscount());
@@ -93,11 +100,11 @@ class ProductServiceTest {
         ProductCreateRequest request = validRequest();
         User seller = org.mockito.Mockito.mock(User.class);
         when(seller.getRole()).thenReturn(UserRole.SELLER);
-        when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(Optional.of(seller));
-        when(categoryRepository.findAllById(List.of("category-id"))).thenReturn(List.of());
+        when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(seller));
+        when(categoryRepository.findAllById(List.of(CATEGORY_ID))).thenReturn(List.of());
 
         assertThrows(CategoryNotFoundException.class,
-                () -> productService.createProduct(request, "seller@example.com"));
+                () -> productService.createProduct(request, SELLER_EMAIL));
         verify(productRepository, never()).save(any(Product.class));
     }
 
@@ -106,10 +113,10 @@ class ProductServiceTest {
         ProductCreateRequest request = validRequest();
         User client = org.mockito.Mockito.mock(User.class);
         when(client.getRole()).thenReturn(UserRole.CLIENT);
-        when(userRepository.findByEmailIgnoreCase("client@example.com")).thenReturn(Optional.of(client));
+        when(userRepository.findByEmailIgnoreCase(CLIENT_EMAIL)).thenReturn(Optional.of(client));
 
         assertThrows(org.springframework.security.access.AccessDeniedException.class,
-                () -> productService.createProduct(request, "client@example.com"));
+                () -> productService.createProduct(request, CLIENT_EMAIL));
         verify(categoryRepository, never()).findAllById(any());
         verify(productRepository, never()).save(any(Product.class));
     }
@@ -129,15 +136,15 @@ class ProductServiceTest {
     @Test
     void shouldReturnSummaryForAuthenticatedSeller() {
         User seller = org.mockito.Mockito.mock(User.class);
-        when(seller.getId()).thenReturn("seller-id");
+        when(seller.getId()).thenReturn(SELLER_ID);
         when(seller.getRole()).thenReturn(UserRole.SELLER);
-        when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(Optional.of(seller));
-        when(productRepository.countBySellerId("seller-id")).thenReturn(12L);
-        when(productRepository.countBySellerIdAndStock("seller-id", 0)).thenReturn(2L);
+        when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(seller));
+        when(productRepository.countBySellerId(SELLER_ID)).thenReturn(12L);
+        when(productRepository.countBySellerIdAndStock(SELLER_ID, 0)).thenReturn(2L);
         when(productRepository.countBySellerIdAndStockGreaterThanAndStockLessThanEqual(
-                "seller-id", 0, 5)).thenReturn(3L);
+                SELLER_ID, 0, 5)).thenReturn(3L);
 
-        ProductSummaryResponse result = productService.getSummary("seller@example.com");
+        ProductSummaryResponse result = productService.getSummary(SELLER_EMAIL);
 
         assertEquals(12L, result.totalProducts());
         assertEquals(2L, result.outOfStockProducts());
@@ -148,30 +155,30 @@ class ProductServiceTest {
     @Test
     void shouldReturnOnlyProductsBelongingToAuthenticatedSeller() {
         User seller = org.mockito.Mockito.mock(User.class);
-        when(seller.getId()).thenReturn("seller-id");
+        when(seller.getId()).thenReturn(SELLER_ID);
         when(seller.getRole()).thenReturn(UserRole.SELLER);
-        when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(Optional.of(seller));
-        when(productRepository.findAllBySellerId("seller-id")).thenReturn(List.of(
+        when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(seller));
+        when(productRepository.findAllBySellerId(SELLER_ID)).thenReturn(List.of(
                 new Product(
-                        "Auriculares", List.of("category-id"), 3, "Inalámbricos",
-                        new BigDecimal("19.99"), null, null, null, true, "seller-id")));
+                        PRODUCT_NAME, List.of(CATEGORY_ID), 3, "Inalámbricos",
+                        new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID)));
 
-        List<ProductResponse> result = productService.getSellerProducts("seller@example.com");
+        List<ProductResponse> result = productService.getSellerProducts(SELLER_EMAIL);
 
         assertEquals(1, result.size());
-        assertEquals("Auriculares", result.get(0).name());
+        assertEquals(PRODUCT_NAME, result.get(0).name());
         assertEquals(3, result.get(0).stock());
-        verify(productRepository).findAllBySellerId("seller-id");
+        verify(productRepository).findAllBySellerId(SELLER_ID);
     }
 
     @Test
     void shouldRejectNonSellerProductListRequest() {
         User client = org.mockito.Mockito.mock(User.class);
         when(client.getRole()).thenReturn(UserRole.CLIENT);
-        when(userRepository.findByEmailIgnoreCase("client@example.com")).thenReturn(Optional.of(client));
+        when(userRepository.findByEmailIgnoreCase(CLIENT_EMAIL)).thenReturn(Optional.of(client));
 
         assertThrows(org.springframework.security.access.AccessDeniedException.class,
-                () -> productService.getSellerProducts("client@example.com"));
+                () -> productService.getSellerProducts(CLIENT_EMAIL));
         verify(productRepository, never()).findAllBySellerId(any());
     }
 
@@ -179,18 +186,18 @@ class ProductServiceTest {
     void shouldRejectNonSellerSummaryRequest() {
         User client = org.mockito.Mockito.mock(User.class);
         when(client.getRole()).thenReturn(UserRole.CLIENT);
-        when(userRepository.findByEmailIgnoreCase("client@example.com")).thenReturn(Optional.of(client));
+        when(userRepository.findByEmailIgnoreCase(CLIENT_EMAIL)).thenReturn(Optional.of(client));
 
         assertThrows(org.springframework.security.access.AccessDeniedException.class,
-                () -> productService.getSummary("client@example.com"));
+                () -> productService.getSummary(CLIENT_EMAIL));
         verify(productRepository, never()).countBySellerId(any());
     }
 
     private ProductCreateRequest validRequest() {
         ProductCreateRequest request = new ProductCreateRequest();
-        request.setName("Auriculares");
-        request.setCategoryIds(List.of("category-id"));
-        request.setPrice(new BigDecimal("19.99"));
+        request.setName(PRODUCT_NAME);
+        request.setCategoryIds(List.of(CATEGORY_ID));
+        request.setPrice(new BigDecimal(PRODUCT_PRICE));
         request.setAvailable(true);
         return request;
     }

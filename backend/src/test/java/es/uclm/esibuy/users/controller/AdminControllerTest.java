@@ -28,6 +28,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class AdminControllerTest {
 
+        private static final String ADMIN_CREATE_API = "/api/admin/alta";
+        private static final String MESSAGE_JSON_PATH = "$.message";
+        private static final String VALIDATION_ERROR_MESSAGE = "La solicitud contiene errores";
+
         @Mock
         private AdminService adminService;
 
@@ -64,7 +68,7 @@ class AdminControllerTest {
 
                 when(adminService.crearAdministrador(any(AltaAdminDTO.class))).thenReturn(admin);
 
-                mockMvc.perform(post("/api/admin/alta")
+                mockMvc.perform(post(ADMIN_CREATE_API)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json))
                                 .andExpect(status().isCreated())
@@ -92,7 +96,7 @@ class AdminControllerTest {
                 when(adminService.crearAdministrador(any(AltaAdminDTO.class)))
                                 .thenThrow(new DuplicateUserException("Ya existe un usuario con ese email"));
 
-                mockMvc.perform(post("/api/admin/alta")
+                mockMvc.perform(post(ADMIN_CREATE_API)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json))
                                 .andExpect(status().isConflict())
@@ -114,11 +118,11 @@ class AdminControllerTest {
                                 }
                                 """;
 
-                mockMvc.perform(post("/api/admin/alta")
+                mockMvc.perform(post(ADMIN_CREATE_API)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json))
                                 .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.message").value("La solicitud contiene errores"))
+                                .andExpect(jsonPath(MESSAGE_JSON_PATH).value(VALIDATION_ERROR_MESSAGE))
                                 .andExpect(jsonPath("$.errors.email").exists());
         }
 
@@ -137,11 +141,11 @@ class AdminControllerTest {
                                 }
                                 """;
 
-                mockMvc.perform(post("/api/admin/alta")
+                mockMvc.perform(post(ADMIN_CREATE_API)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json))
                                 .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.message").value("La solicitud contiene errores"))
+                                .andExpect(jsonPath(MESSAGE_JSON_PATH).value(VALIDATION_ERROR_MESSAGE))
                                 .andExpect(jsonPath("$.errors.contrasena").exists());
         }
 
@@ -160,11 +164,11 @@ class AdminControllerTest {
                                 }
                                 """;
 
-                mockMvc.perform(post("/api/admin/alta")
+                mockMvc.perform(post(ADMIN_CREATE_API)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json))
                                 .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.message").value("La solicitud contiene errores"))
+                                .andExpect(jsonPath(MESSAGE_JSON_PATH).value(VALIDATION_ERROR_MESSAGE))
                                 .andExpect(jsonPath("$.errors.contrasenasCoincidentes").exists());
         }
 
@@ -172,11 +176,11 @@ class AdminControllerTest {
         public void ComprobarErrorPorDatosObligatoriosIncompletos() throws Exception {
                 String json = "{}";
 
-                mockMvc.perform(post("/api/admin/alta")
+                mockMvc.perform(post(ADMIN_CREATE_API)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json))
                                 .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.message").value("La solicitud contiene errores"))
+                                .andExpect(jsonPath(MESSAGE_JSON_PATH).value(VALIDATION_ERROR_MESSAGE))
                                 .andExpect(jsonPath("$.errors.dni").exists())
                                 .andExpect(jsonPath("$.errors.nombre").exists())
                                 .andExpect(jsonPath("$.errors.apellidos").exists())
@@ -205,7 +209,7 @@ class AdminControllerTest {
 
                 when(adminService.crearAdministrador(any(AltaAdminDTO.class))).thenReturn(admin);
 
-                mockMvc.perform(post("/api/admin/alta")
+                mockMvc.perform(post(ADMIN_CREATE_API)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json))
                                 .andExpect(status().isCreated())
