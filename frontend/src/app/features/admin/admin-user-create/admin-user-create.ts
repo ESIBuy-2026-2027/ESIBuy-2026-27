@@ -1,395 +1,160 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  ReactiveFormsModule,
+  AbstractControl,
   FormBuilder,
   FormGroup,
-  Validators
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
 } from '@angular/forms';
-import { AdminCandidate, AuthService } from '../../../core/services/auth.service';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+
+export function passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
+  const contrasena = control.get('contrasena')?.value;
+  const repetirContrasena = control.get('repetirContrasena')?.value;
+  if (!contrasena || !repetirContrasena) {
+    return null;
+  }
+  return contrasena === repetirContrasena ? null : { passwordsMismatch: true };
+}
 
 @Component({
   selector: 'app-admin-user-create',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './admin-user-create.html',
-  styleUrls: ['./admin-user-create.css']
+  styleUrls: ['./admin-user-create.css'],
 })
-export class AdminUserCreate implements OnInit {
+export class AdminUserCreate {
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
-  form: FormGroup;
-
-  candidatos: AdminCandidate[] = [];
-  candidatoSeleccionado: AdminCandidate | null = null;
-
-  loadingCandidatos = false;
   submitting = false;
+  errorMessage = '';
+  successMessage = '';
+  fieldErrors: Record<string, string> = {};
 
-  serverErrors: string[] = [];
-  successMessage: string | null = null;
+  readonly fechaCreacion = new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date());
 
-  avatars = [
-    {
-      id: 'admin1',
-      label: 'Admin Clásico',
-      url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_default'
-    },
-    {
-      id: 'admin2',
-      label: 'Admin Guardián',
-      url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_shield'
-    },
-    {
-      id: 'admin3',
-      label: 'Admin Operaciones',
-      url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_gear'
-    },
-    {
-      id: 'admin4',
-      label: 'Admin Seguridad',
-      url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_security'
-    },
-    {
-      id: 'admin5',
-      label: 'Admin Estrella',
-      url: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_star'
-    }
+  readonly avatars = [
+    'assets/images/avatars/av_client_1.jpeg',
+    'assets/images/avatars/av_client_2.jpeg',
+    'assets/images/avatars/av_client_3.jpeg',
+    'assets/images/avatars/av_client_4.jpeg',
+    'assets/images/avatars/av_client_5.jpeg',
+    'assets/images/avatars/av_seller_1.jpeg',
+    'assets/images/avatars/av_seller_2.jpeg',
+    'assets/images/avatars/av_seller_3.jpeg',
+    'assets/images/avatars/av_seller_4.jpeg',
+    'assets/images/avatars/av_seller_5.jpeg',
   ];
 
-  selectedAvatarUrl =
-    'https://api.dicebear.com/7.x/bottts/svg?seed=admin_default';
-
-
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private cdr: ChangeDetectorRef
-  ) {
-
-    this.form = this.fb.group({
-
+  readonly form: FormGroup = this.fb.group(
+    {
+      dni: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^[0-9]{8}[A-Za-z]$/),
+        ],
+      ],
       nombre: [
         '',
-        [Validators.required]
+        [
+          Validators.required,
+          Validators.minLength(2),
+          Validators.maxLength(25),
+        ],
       ],
-
       apellidos: [
         '',
-        [Validators.required]
+        [
+          Validators.required,
+          Validators.minLength(2),
+          Validators.maxLength(50),
+        ],
       ],
-
       email: [
         '',
-        [Validators.required]
+        [
+          Validators.required,
+          Validators.email,
+          Validators.maxLength(120),
+        ],
       ],
-
-      sede: [
-        ''
+      contrasena: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(12),
+          Validators.maxLength(128),
+          Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S+$/),
+        ],
       ],
-
-      fechaIncorporacion: [
-        ''
-      ]
-
-    });
-
-  }
-
-
-  ngOnInit(): void {
-    this.cargarCandidatos();
-  }
-
-
-  cargarCandidatos(): void {
-
-    this.loadingCandidatos = true;
-    this.serverErrors = [];
-    this.cdr.markForCheck();
-
-    this.authService.getCandidatos().subscribe({
-
-      next: (data) => {
-
-        this.candidatos = data || [];
-        this.loadingCandidatos = false;
-        this.cdr.detectChanges();
-
-      },
-
-      error: (err) => {
-
-        console.error(
-          'Error cargando candidatos:',
-          err
-        );
-
-        this.candidatos = [];
-        this.loadingCandidatos = false;
-
-        this.serverErrors = [
-          'No se pudieron cargar los usuarios candidatos. Verifique que el servidor esté disponible.'
-        ];
-        this.cdr.detectChanges();
-
-      }
-
-    });
-
-  }
-
-
-  onCandidatoChange(event: Event): void {
-
-    const select =
-      event.target as HTMLSelectElement;
-
-    const id =
-      select.value;
-
-    this.serverErrors = [];
-    this.successMessage = null;
-
-
-    if (!id) {
-
-      this.candidatoSeleccionado = null;
-
-      this.form.reset();
-
-      this.selectedAvatarUrl =
-        this.avatars[0].url;
-
-      this.cdr.detectChanges();
-      return;
-    }
-
-
-    /*
-     * Se convierte el ID a String para evitar problemas
-     * si el backend devuelve el ID como número y el
-     * <select> devuelve siempre un string.
-     */
-    this.candidatoSeleccionado =
-      this.candidatos.find(
-        c => String(c.id) === String(id)
-      ) ?? null;
-
-
-    if (!this.candidatoSeleccionado) {
-      this.cdr.detectChanges();
-      return;
-    }
-
-
-    const fechaBD =
-      this.candidatoSeleccionado.fechaIncorporacion ||
-      this.candidatoSeleccionado.fechaRegistro;
-
-
-    let fechaFormateada = '';
-
-
-    if (fechaBD) {
-
-      try {
-
-        fechaFormateada =
-          typeof fechaBD === 'string' &&
-            fechaBD.includes('T')
-            ? fechaBD.split('T')[0]
-            : new Date(fechaBD)
-              .toISOString()
-              .split('T')[0];
-
-      } catch {
-
-        fechaFormateada =
-          String(fechaBD);
-
-      }
-
-    }
-
-
-    this.form.patchValue({
-
-      nombre:
-        this.candidatoSeleccionado.nombre || '',
-
-      apellidos:
-        this.candidatoSeleccionado.apellidos || '',
-
-      email:
-        this.candidatoSeleccionado.email || '',
-
-      sede:
-        this.candidatoSeleccionado.sede || '',
-
-      fechaIncorporacion:
-        fechaFormateada
-
-    });
-
-
-    this.selectedAvatarUrl =
-      this.candidatoSeleccionado.imagenPerfil ||
-      this.avatars[0].url;
-
-    this.cdr.detectChanges();
-
-  }
-
+      repetirContrasena: ['', [Validators.required]],
+      sede: ['', [Validators.maxLength(100)]],
+      imagenPerfil: ['', [Validators.maxLength(500)]],
+    },
+    { validators: passwordsMatchValidator },
+  );
 
   selectAvatar(url: string): void {
-
-    this.selectedAvatarUrl = url;
-    this.cdr.markForCheck();
-
+    if (this.form.get('imagenPerfil')?.value === url) {
+      this.form.patchValue({ imagenPerfil: '' });
+    } else {
+      this.form.patchValue({ imagenPerfil: url });
+    }
   }
-
 
   cancelar(): void {
-
-    this.candidatoSeleccionado = null;
-
-    this.form.reset();
-
-    this.selectedAvatarUrl =
-      this.avatars[0].url;
-
-    this.serverErrors = [];
-
-    this.successMessage = null;
-    this.cdr.detectChanges();
-
+    this.router.navigate(['/admin/usuarios']);
   }
-
 
   onSubmit(): void {
-
-    this.serverErrors = [];
-    this.successMessage = null;
-
-
-    if (!this.candidatoSeleccionado) {
-
-      this.serverErrors = [
-        'Debe seleccionar un usuario candidato elegible.'
-      ];
-
-      return;
-    }
-
-
     if (this.form.invalid) {
-
       this.form.markAllAsTouched();
-
       return;
     }
-
 
     this.submitting = true;
-
+    this.errorMessage = '';
+    this.fieldErrors = {};
+    this.successMessage = '';
 
     const payload = {
-
-      nombre:
-        this.form.value.nombre?.trim(),
-
-      apellidos:
-        this.form.value.apellidos?.trim(),
-
-      email:
-        this.form.value.email?.trim(),
-
-      sede:
-        this.form.value.sede?.trim() || null,
-
-      imagenPerfil:
-        this.selectedAvatarUrl
-
+      dni: this.form.value.dni?.trim(),
+      nombre: this.form.value.nombre?.trim(),
+      apellidos: this.form.value.apellidos?.trim(),
+      email: this.form.value.email?.trim(),
+      contrasena: this.form.value.contrasena,
+      repetirContrasena: this.form.value.repetirContrasena,
+      sede: this.form.value.sede?.trim() || null,
+      imagenPerfil: this.form.value.imagenPerfil?.trim() || null,
     };
 
-
-    this.authService
-      .promoverAAdmin(
-        this.candidatoSeleccionado.id,
-        payload
-      )
-      .subscribe({
-
-        next: (res) => {
-
-          this.submitting = false;
-
-
-          this.successMessage =
-            `¡El usuario "${payload.nombre} ${payload.apellidos}" ` +
-            `ha sido promovido a Administrador con éxito! ` +
-            `Su cuenta ha quedado activada automáticamente.`;
-
-
-          this.candidatoSeleccionado = null;
-
-          this.form.reset();
-
-          this.selectedAvatarUrl =
-            this.avatars[0].url;
-
-
-          this.cargarCandidatos();
-          this.cdr.detectChanges();
-
-        },
-
-
-        error: (err) => {
-
-          this.submitting = false;
-
-
-          if (
-            err?.error?.errors &&
-            typeof err.error.errors === 'object'
-          ) {
-
-            this.serverErrors =
-              Object.entries(
-                err.error.errors
-              ).map(
-                ([field, msg]) =>
-                  `${field.toUpperCase()}: ${msg}`
-              );
-
-          }
-
-          else if (err?.error?.message) {
-
-            this.serverErrors = [
-              err.error.message
-            ];
-
-          }
-
-          else {
-
-            this.serverErrors = [
-              'Error al procesar la solicitud en el servidor.'
-            ];
-
-          }
-
-          this.cdr.detectChanges();
-
+    this.authService.crearAdministrador(payload).subscribe({
+      next: () => {
+        this.submitting = false;
+        this.successMessage = 'Administrador creado con éxito';
+        setTimeout(() => {
+          this.router.navigate(['/admin/usuarios']);
+        }, 1200);
+      },
+      error: (error: any) => {
+        this.submitting = false;
+        if (error?.error?.errors) {
+          this.fieldErrors = error.error.errors;
         }
-
-      });
-
+        this.errorMessage =
+          error?.error?.message || 'Ha ocurrido un error al crear el administrador';
+      },
+    });
   }
-
 }

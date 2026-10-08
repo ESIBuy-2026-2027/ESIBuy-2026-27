@@ -24,7 +24,7 @@ export interface UserAdmin {
   active: boolean;
   createdAt: string | null;
   clientProfile?: { birthDate?: string; customerType?: string } | null;
-  sellerProfile?: { businessName?: string; defaultCategory?: string } | null;
+  sellerProfile?: { businessName?: string; defaultCategory?: string; sede?: string } | null;
   adminProfile?: { headquarters?: string; hireDate?: string } | null;
 }
 
@@ -43,17 +43,16 @@ export interface UserResponse {
   role: string;
 }
 
-export interface AdminCandidate {
-  id: string;
+
+export interface AltaAdminRequest {
+  dni: string;
   nombre: string;
   apellidos: string;
   email: string;
-  rol: UserRole | null;
-  activo: boolean;
-  imagenPerfil: string | null;
-  sede: string | null;
-  fechaRegistro: string | null;
-  fechaIncorporacion: string | null;
+  contrasena: string;
+  repetirContrasena: string;
+  sede?: string | null;
+  imagenPerfil?: string | null;
 }
 
 export interface ApiResponse<T> {
@@ -63,12 +62,6 @@ export interface ApiResponse<T> {
   correlationId: string | null;
 }
 
-export interface PromotionRequest {
-  nombre: string;
-  apellidos: string;
-  sede: string | null;
-  imagenPerfil: string;
-}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -80,11 +73,19 @@ export class AuthService {
   constructor(private readonly http: HttpClient) {}
 
   registerClient(data: unknown): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/register/client`, data);
+    return this.http.post(`${this.apiUrl}/register/client`, data, { withCredentials: true});
   }
 
   registerSeller(data: unknown): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/register/seller`, data);
+    return this.http.post(`${this.apiUrl}/register/seller`, data, { withCredentials: true});
+  }
+
+  adminRegisterClient(data: unknown): Observable<unknown> {
+    return this.http.post('/api/v1/admin/users/register/client', data, { withCredentials: true });
+  }
+
+  adminRegisterSeller(data: unknown): Observable<unknown> {
+    return this.http.post('/api/v1/admin/users/register/seller', data, { withCredentials: true });
   }
 
   createAdmin(data: unknown): Observable<unknown> {
@@ -122,17 +123,6 @@ export class AuthService {
     this.currentUserSignal.set(null);
   }
 
-  getCandidatos(): Observable<AdminCandidate[]> {
-    return this.http.get<AdminCandidate[]>('/api/admin/candidatos', { withCredentials: true });
-  }
-
-  promoverAAdmin(idUsuario: string, data: PromotionRequest): Observable<unknown> {
-    return this.http.put<unknown>(
-      `/api/admin/promover/${encodeURIComponent(idUsuario)}`,
-      data,
-      { withCredentials: true },
-    );
-  }
 
   
     
@@ -172,5 +162,17 @@ export class AuthService {
       `/api/admin/usuarios/${encodeURIComponent(id)}`,
       { withCredentials: true },
     );
+  }
+
+  alternarEstadoUsuarioAdmin(id: string): Observable<ApiResponse<UserResponse>> {
+    return this.http.put<ApiResponse<UserResponse>>(
+      `/api/admin/usuarios/${encodeURIComponent(id)}/estado`,
+      {},
+      { withCredentials: true },
+    );
+  }
+
+  crearAdministrador(data: AltaAdminRequest): Observable<any> {
+    return this.http.post<any>('/api/admin/alta', data, { withCredentials: true });
   }
 }

@@ -301,3 +301,282 @@
     box-sizing: border-box;
   }
 }
+
+:host {
+  display: block;
+  min-height: 100vh;
+  color: #172b3a;
+  font-family: Inter, "Segoe UI", sans-serif;
+}
+
+.admin-layout {
+  min-height: 100vh;
+  background: #e9eff8;
+}
+
+.admin-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 1;
+  display: flex;
+  width: 248px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  flex-direction: column;
+  padding: 30px 18px 20px;
+  background: #102c40;
+  color: #edf5f8;
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: fit-content;
+  margin: 0 0 54px 8px;
+  color: #fff;
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -0.7px;
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 11px;
+  background: #42d6b2;
+  color: #102c40;
+  font-size: 18px;
+}
+
+.brand-accent {
+  color: #42d6b2;
+}
+
+.sidebar-caption,
+.eyebrow {
+  margin: 0;
+  color: #8396a4;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 1.15px;
+}
+
+.sidebar-caption {
+  padding: 0 10px 13px;
+}
+
+.admin-navigation {
+  display: grid;
+  gap: 6px;
+}
+
+.navigation-link {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: #c1d0d8;
+  font-size: 13px;
+  font-weight: 550;
+  text-decoration: none;
+}
+
+.navigation-link:hover,
+.navigation-link.is-active {
+  background: #1d4357;
+  color: #fff;
+}
+
+.navigation-link.is-active {
+  box-shadow: inset 3px 0 #42d6b2;
+}
+
+.navigation-icon {
+  display: inline-grid;
+  width: 20px;
+  place-items: center;
+  color: #42d6b2;
+  font-size: 18px;
+}
+
+.admin-workspace {
+  margin-left: 248px;
+}
+
+.edit-page {
+  width: min(1120px, 100%);
+  min-height: 100vh;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 42px 44px 64px;
+  background: transparent;
+}
+
+.main-container {
+  width: 100%;
+  margin: 0;
+}
+
+.admin-navbar {
+  display: none;
+}
+
+.back-link {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #dce9f1;
+  color: #315568;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.card {
+  margin: 0;
+  border: 1px solid #e7edf0;
+  border-radius: 12px;
+  background: #fff;
+  padding: 28px;
+  box-shadow: 0 12px 28px rgb(10 44 58 / 6%);
+}
+
+.card-header {
+  margin-bottom: 24px;
+  border-bottom: 1px solid #edf1f3;
+  padding-bottom: 18px;
+}
+
+.card-title {
+  color: #203b4e;
+  font-size: 24px;
+  letter-spacing: -0.7px;
+}
+
+.card-subtitle,
+.locked-indicator {
+  color: #72828e;
+}
+
+.section-title {
+  color: #203b4e;
+}
+
+.account-section {
+  border-color: #edf1f3;
+}
+
+.form-label {
+  color: #435967;
+}
+
+.form-control {
+  min-height: 43px;
+  border: 1px solid #dce6ea;
+  border-radius: 8px;
+  background: #fff;
+  color: #203b4e;
+}
+
+.form-control:focus {
+  border-color: #42d6b2;
+  box-shadow: 0 0 0 3px rgb(66 214 178 / 16%);
+}
+
+.form-control.readonly-control,
+.form-control[readonly] {
+  border-color: #dce6ea;
+  background: #f4f8f9;
+  color: #72828e;
+}
+
+.btn-wrapper {
+  border-color: #edf1f3;
+  gap: 10px;
+  padding-top: 18px;
+}
+
+.btn {
+  min-width: 118px;
+  min-height: 38px;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.btn-primary {
+  background: #42d6b2;
+  color: #102c40;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #5ccfc0;
+}
+
+.btn-secondary {
+  border-color: #dce6ea;
+  background: #f9fbfc;
+  color: #435967;
+}
+
+.alert-success {
+  border-color: #b8efe3;
+  background: #eafcf8;
+  color: #0c5d4d;
+}
+
+.alert-danger {
+  border-color: #f0d3ce;
+  background: #fffafa;
+  color: #944c42;
+}
+
+.status {
+  border-color: #c9e9e2;
+  background: #f0fbf8;
+  color: #168c75;
+}
+
+@media (max-width: 760px) {
+  .admin-sidebar {
+    position: static;
+    width: 100%;
+    min-height: auto;
+    padding: 14px 18px 12px;
+  }
+
+  .admin-brand {
+    margin: 0 0 14px 2px;
+  }
+
+  .sidebar-caption {
+    display: none;
+  }
+
+  .admin-navigation {
+    display: flex;
+    gap: 8px;
+  }
+
+  .navigation-link {
+    min-height: 38px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .admin-workspace {
+    margin-left: 0;
+  }
+
+  .edit-page {
+    padding: 30px 20px 44px;
+  }
+}

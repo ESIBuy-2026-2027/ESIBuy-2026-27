@@ -1,30 +1,30 @@
 package es.uclm.esibuy.users.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.util.Locale;
 import java.util.Optional;
 
-import es.uclm.esibuy.common.exception.UserDeletionConflictException;
-import es.uclm.esibuy.common.exception.UserNotFoundException;
-import es.uclm.esibuy.users.dto.UpdateUserRequestDTO;
-import es.uclm.esibuy.users.model.User;
-import es.uclm.esibuy.users.model.UserRole;
-import es.uclm.esibuy.products.repository.ProductRepository;
-import es.uclm.esibuy.users.repository.UserRepository;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import es.uclm.esibuy.common.exception.UserDeletionConflictException;
+import es.uclm.esibuy.common.exception.UserNotFoundException;
+import es.uclm.esibuy.products.repository.ProductRepository;
+import es.uclm.esibuy.users.dto.UpdateUserRequestDTO;
+import es.uclm.esibuy.users.model.User;
+import es.uclm.esibuy.users.model.UserRole;
+import es.uclm.esibuy.users.repository.UserRepository;
+
 @ExtendWith(MockitoExtension.class)
-class AdminUserServiceImplTest {
+class AdminUserServiceTest {
 
     @Mock
     private UserRepository userRepository;
@@ -32,11 +32,14 @@ class AdminUserServiceImplTest {
     @Mock
     private ProductRepository productRepository;
 
-    private AdminUserServiceImpl service;
+    @Mock
+    private UserService userService;
+
+    private AdminUserService service;
 
     @BeforeEach
     void setUp() {
-        service = new AdminUserServiceImpl(userRepository, productRepository);
+        service = new AdminUserService(userRepository, productRepository, userService);
     }
 
     @Test

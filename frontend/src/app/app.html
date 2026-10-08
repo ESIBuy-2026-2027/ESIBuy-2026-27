@@ -7,8 +7,14 @@
     <div class="app-session">
       <span>{{ user.email }}</span>
       <div class="go-profile">
-      <button type="button" (click)="goProfile()">👤</button>
-    </div>
+        <button type="button" class="profile-button" (click)="goProfile()" aria-label="Ir al perfil" title="Ir al perfil">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="8" r="3.5"/>
+            <path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>
+          </svg>
+        </button>
+      </div>
       <button type="button" (click)="logout()">Cerrar sesión</button>
     </div>
     
