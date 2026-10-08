@@ -36,6 +36,7 @@ export class AdminUserRegister implements OnInit {
   serverError = '';
   serverErrors: string[] = [];
   submitting = false;
+  showPassword: boolean = false;
 
   // Variables para la lógica de roles
   selectedRole: 'cliente' | 'vendedor' = 'cliente';

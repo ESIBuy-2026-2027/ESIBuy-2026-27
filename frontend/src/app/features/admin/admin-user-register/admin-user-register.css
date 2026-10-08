@@ -313,6 +313,62 @@
   line-height: 1.4;
 }
 
+/* ==========================================================================
+   PASSWORD WRAPPER Y TOGGLE (IGUAL QUE EN REGISTRO / LOGIN)
+   ========================================================================== */
+.password-wrapper,
+.custom-password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-wrapper .form-control,
+.password-wrapper input,
+.custom-password-container .form-control,
+.custom-password-container input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.password-toggle,
+.password-toggle-btn {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: #72828e;
+  cursor: pointer;
+  z-index: 2;
+  transition: color .2s ease;
+}
+
+.password-toggle:hover,
+.password-toggle-btn:hover {
+  color: #146b69;
+}
+
+.password-toggle:focus-visible,
+.password-toggle-btn:focus-visible {
+  outline: none;
+}
+
+.password-toggle svg,
+.password-toggle-btn svg {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
 .avatar-selection-group {
   margin: 26px 0 27px;
 }
