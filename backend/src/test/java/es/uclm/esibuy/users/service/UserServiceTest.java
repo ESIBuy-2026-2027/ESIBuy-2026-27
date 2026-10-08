@@ -157,6 +157,7 @@ class UserServiceTest {
         request.setEmail(" SELLER@example.com ");
         request.setPassword("Password123!");
         User seller = new User("seller@example.com", "Carlos", "Lopez", UserRole.SELLER);
+        seller.setActive(true);
         seller.setPasswordHash("hashed-pwd");
 
         when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(java.util.Optional.of(seller));
@@ -171,6 +172,7 @@ class UserServiceTest {
         request.setEmail("seller@example.com");
         request.setPassword("wrong-password");
         User seller = new User("seller@example.com", "Carlos", "Lopez", UserRole.SELLER);
+        seller.setActive(true);
         seller.setPasswordHash("hashed-pwd");
 
         when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(java.util.Optional.of(seller));
