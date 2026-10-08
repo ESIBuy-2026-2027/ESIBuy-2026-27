@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -78,6 +79,29 @@ class UserServiceTest {
     }
 
     @Test
+    void shouldRegisterClientWithAutoActiveTrueAndDefaultAvatar() {
+        ClientRegistrationRequest request = new ClientRegistrationRequest();
+        request.setFirstName("Ana");
+        request.setLastName("García");
+        request.setEmail("ana.auto@example.com");
+        request.setNationalId("12345678Z");
+        request.setBirthDate(LocalDate.now().minusYears(20));
+        request.setPassword("Password123!");
+        request.setRepeatedPassword("Password123!");
+        request.setCustomerType(CustomerType.PREMIUM);
+        request.setProfileImage("   ");
+
+        when(userRepository.existsByEmailIgnoreCase("ana.auto@example.com")).thenReturn(false);
+        when(passwordEncoder.encode("Password123!")).thenReturn("hashed-pwd");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userService.registerClient(request, true);
+
+        assertTrue(result.isActive());
+        assertEquals("avatar-client-default", result.getProfileImage());
+    }
+
+    @Test
     void shouldThrowDuplicateUserWhenEmailExistsOnClientRegister() {
         ClientRegistrationRequest request = new ClientRegistrationRequest();
         request.setEmail("ana@example.com");
@@ -113,6 +137,30 @@ class UserServiceTest {
         assertNotNull(result.getSellerProfile());
         assertEquals("Carlos Tech", result.getSellerProfile().getBusinessName());
         assertEquals("Informatica", result.getSellerProfile().getDefaultCategory());
+    }
+
+    @Test
+    void shouldRegisterSellerWithAutoActiveTrueAndDefaultAvatar() {
+        SellerRegistrationRequest request = new SellerRegistrationRequest();
+        request.setFirstName("Carlos");
+        request.setLastName("López");
+        request.setEmail("carlos.auto@example.com");
+        request.setNationalId("87654321A");
+        request.setBusinessName("Carlos Tech Autos");
+        request.setDefaultCategory("Informatica");
+        request.setPassword("Password123!");
+        request.setRepeatedPassword("Password123!");
+        request.setProfileImage("   ");
+
+        when(userRepository.existsByEmailIgnoreCase("carlos.auto@example.com")).thenReturn(false);
+        when(userRepository.existsBySellerProfileBusinessNameIgnoreCase("Carlos Tech Autos")).thenReturn(false);
+        when(passwordEncoder.encode("Password123!")).thenReturn("hashed-pwd");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userService.registerSeller(request, true);
+
+        assertTrue(result.isActive());
+        assertEquals("avatar-seller-default", result.getProfileImage());
     }
 
     @Test
@@ -152,6 +200,27 @@ class UserServiceTest {
     }
 
     @Test
+    void shouldCreateAdminWithBlankHeadquartersAndDefaultAvatar() {
+        AdminCreateRequest request = new AdminCreateRequest();
+        request.setFirstName("Admin");
+        request.setLastName("Root");
+        request.setEmail("admin.blank@esibuy.com");
+        request.setPassword("Admin123!Safe");
+        request.setRepeatedPassword("Admin123!Safe");
+        request.setProfileImage("   ");
+        request.setHeadquarters("   ");
+
+        when(userRepository.existsByEmailIgnoreCase("admin.blank@esibuy.com")).thenReturn(false);
+        when(passwordEncoder.encode("Admin123!Safe")).thenReturn("hashed-admin-pwd");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userService.createAdmin(request);
+
+        assertEquals("avatar-admin-default", result.getProfileImage());
+        assertNull(result.getAdminProfile().getHeadquarters());
+    }
+
+    @Test
     void shouldAuthenticateUserWithEmailAndPassword() {
         LoginRequest request = new LoginRequest();
         request.setEmail(" SELLER@example.com ");
@@ -164,6 +233,52 @@ class UserServiceTest {
         when(passwordEncoder.matches("Password123!", "hashed-pwd")).thenReturn(true);
 
         assertEquals(seller, userService.login(request));
+    }
+
+    @Test
+    void shouldRejectLoginWhenAccountIsInactive() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("seller@example.com");
+        request.setPassword("Password123!");
+
+        User seller = new User("seller@example.com", "Carlos", "Lopez", UserRole.SELLER);
+        seller.setActive(false);
+        seller.setPasswordHash("hashed-pwd");
+
+        when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(java.util.Optional.of(seller));
+
+        assertThrows(InvalidCredentialsException.class, () -> userService.login(request));
+    }
+
+    @Test
+    void shouldRejectLoginWhenAccountIsBlocked() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("seller@example.com");
+        request.setPassword("Password123!");
+
+        User seller = new User("seller@example.com", "Carlos", "Lopez", UserRole.SELLER);
+        seller.setActive(true);
+        seller.setBlocked(true);
+        seller.setPasswordHash("hashed-pwd");
+
+        when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(java.util.Optional.of(seller));
+
+        assertThrows(InvalidCredentialsException.class, () -> userService.login(request));
+    }
+
+    @Test
+    void shouldRejectLoginWhenPasswordHashIsMissing() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("seller@example.com");
+        request.setPassword("Password123!");
+
+        User seller = new User("seller@example.com", "Carlos", "Lopez", UserRole.SELLER);
+        seller.setActive(true);
+        seller.setPasswordHash(null);
+
+        when(userRepository.findByEmailIgnoreCase("seller@example.com")).thenReturn(java.util.Optional.of(seller));
+
+        assertThrows(InvalidCredentialsException.class, () -> userService.login(request));
     }
 
     @Test

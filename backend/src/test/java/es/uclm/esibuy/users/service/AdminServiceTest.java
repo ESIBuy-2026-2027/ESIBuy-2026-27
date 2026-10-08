@@ -169,6 +169,31 @@ class AdminServiceTest {
     }
 
     @Test
+    void shouldFilterUsersByStatusAndHandleNullOrUnsupportedRole() {
+        User activeClient = new User("client@example.com", "Ana", "López", UserRole.CLIENT);
+        activeClient.setActive(true);
+
+        User inactiveSeller = new User("seller@example.com", "Luis", "Martín", UserRole.SELLER);
+        inactiveSeller.setActive(false);
+
+        User blockedAdmin = new User("admin@example.com", "Patricia", "García", UserRole.ADMIN);
+        blockedAdmin.setBlocked(true);
+        blockedAdmin.setActive(false);
+
+        User noRoleUser = new User("norole@example.com", "Sin", "Rol", UserRole.CLIENT);
+        noRoleUser.setRole(null);
+
+        when(userRepository.findAll()).thenReturn(List.of(activeClient, inactiveSeller, blockedAdmin, noRoleUser));
+
+        assertEquals(1, adminService.obtenerUsuariosFiltrados(null, "ACTIVO").size());
+        assertEquals(2, adminService.obtenerUsuariosFiltrados("  ", "INACTIVO").size());
+        assertEquals(0, adminService.obtenerUsuariosFiltrados("VENDEDOR", "BLOQUEADO").size());
+        assertEquals(0, adminService.obtenerUsuariosFiltrados("ROL_DESCONOCIDO", "ACTIVO").size());
+        assertEquals(0, adminService.obtenerUsuariosFiltrados("CLIENTE", "UNKNOWN").size());
+        assertEquals(1, adminService.obtenerUsuariosFiltrados("CLIENTE", null).size());
+    }
+
+    @Test
     void shouldThrowWhenUserDoesNotExist() {
         when(userRepository.findById("missing")).thenReturn(Optional.empty());
 
