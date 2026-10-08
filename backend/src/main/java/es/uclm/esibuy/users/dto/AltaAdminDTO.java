@@ -8,8 +8,8 @@ import jakarta.validation.constraints.Size;
 
 public class AltaAdminDTO {
 
-    @NotBlank(message = "El DNI es obligatorio")
-    @Pattern(regexp = "^\\d{8}[A-Za-z]$", message = "El DNI debe tener 8 dígitos y una letra")
+    @NotBlank(message = "El documento de identidad es obligatorio")
+    @Size(max = 20, message = "El documento de identidad no puede superar los 20 caracteres")
     private String dni;
 
     @NotBlank(message = "El nombre es obligatorio")
@@ -27,10 +27,7 @@ public class AltaAdminDTO {
 
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 12, max = 128, message = "La contraseña debe tener entre 12 y 128 caracteres")
-    @Pattern(
-        regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9])\\S+$",
-        message = "La contraseña debe tener mayúscula, minúscula, número y caracter especial"
-    )
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9])\\S+$", message = "La contraseña debe tener mayúscula, minúscula, número y caracter especial")
     private String contrasena;
 
     @NotBlank(message = "Debe repetir la contraseña")
@@ -46,7 +43,7 @@ public class AltaAdminDTO {
     }
 
     public AltaAdminDTO(String dni, String nombre, String apellidos, String email,
-                        String contrasena, String repetirContrasena, String sede, String imagenPerfil) {
+            String contrasena, String repetirContrasena, String sede, String imagenPerfil) {
         this.dni = dni;
         this.nombre = nombre;
         this.apellidos = apellidos;
