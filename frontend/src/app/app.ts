@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 
@@ -14,8 +14,28 @@ export class App {
   readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   readonly logoutError = signal<string | null>(null);
+  readonly profileMenuOpen = signal(false);
+
+  toggleProfileMenu(): void {
+    this.profileMenuOpen.update((isOpen) => !isOpen);
+  }
+
+  closeProfileMenu(): void {
+    this.profileMenuOpen.set(false);
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.closeProfileMenu();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeProfileMenu();
+  }
 
   logout(): void {
+    this.closeProfileMenu();
     this.logoutError.set(null);
     this.authService.logout().subscribe({
       next: () => {
@@ -30,16 +50,5 @@ export class App {
         this.logoutError.set('No se pudo cerrar la sesión. Inténtalo de nuevo.');
       },
     });
-  }
-
-  goProfile(): void {
-    //si es un vendedor que lleve al catalogo, si es un cliente a su perfil(no implementado) y si es administrador que lleve al administrador de usuarios
-    if (this.authService.currentUser()?.role === 'ADMIN') {
-      this.router.navigate(['/admin/usuarios'])
-    } else if (this.authService.currentUser()?.role === 'CLIENT') {
-      this.router.navigate(['/'])
-    } else if (this.authService.currentUser()?.role === 'SELLER') {
-      this.router.navigate(['/seller/catalog'])
-    }
   }
 }

@@ -57,21 +57,7 @@
   color: #dfeff5;
 }
 
-.app-session button {
-  padding: 0.5rem 0.75rem;
-  border: 0;
-  border-radius: 0.5rem;
-  background: #0D3F4F;
-  color: #dffaf5;
-  font: inherit;
-  cursor: pointer;
-}
-
-.app-session button:hover {
-  background: rgba(92, 207, 192, 0.18);
-}
-
-.go-profile button {
+.go-profile > .profile-button {
   display: inline-grid;
   box-sizing: border-box;
   width: 2.25rem;
@@ -86,6 +72,15 @@
   cursor: pointer;
 }
 
+.go-profile {
+  position: relative;
+}
+
+.go-profile .profile-button:hover,
+.go-profile .profile-button[aria-expanded="true"] {
+  background: rgba(193, 251, 243, 0.884);
+}
+
 .go-profile svg {
   display: block;
   width: 1.3rem;
@@ -93,8 +88,74 @@
   transform: translateY(-1px);
 }
 
-.go-profile button:hover {
-  background: rgba(193, 251, 243, 0.884);
+.profile-menu {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  top: calc(100% + 0.65rem);
+  right: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  width: min(18rem, calc(100vw - 2rem));
+  padding: 0.5rem;
+  border: 1px solid #dce5eb;
+  border-radius: 1rem;
+  background: #fff;
+  color: #173247;
+  box-shadow: 0 12px 32px rgba(10, 35, 50, 0.2);
+}
+
+.profile-menu-email {
+  overflow: hidden;
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid #e8eef1;
+  color: #58778e;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-menu-item {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  flex: 0 0 auto;
+  margin-top: 0.35rem;
+  padding: 0.75rem 0.85rem;
+  border: 0;
+  border-radius: 0.65rem;
+  background: transparent;
+  color: #173247;
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.profile-menu-item:hover:not(:disabled),
+.profile-menu-item:focus-visible:not(:disabled) {
+  outline: none;
+  background: #edf5f7;
+}
+
+.profile-menu-item:disabled {
+  color: #72828e;
+  cursor: default;
+}
+
+.profile-menu-item:last-child {
+  color: #c62828;
+}
+
+.profile-menu-item:last-child:hover,
+.profile-menu-item:last-child:focus-visible {
+  background: #fff1f0;
 }
 
 .logout-error {
