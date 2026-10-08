@@ -503,12 +503,77 @@
 
 /* Indicador de Estado Visual */
 .status-indicator {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    width: 120px;
+    margin-inline: auto;
     gap: 0.4rem;
     font-weight: 500;
     font-size: 0.85rem;
     white-space: nowrap;
+}
+
+.status-clickable {
+    box-sizing: border-box;
+    min-height: 32px;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    justify-content: center;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.status-clickable.status-active {
+    color: #08735d;
+    background: #e5f8f1;
+    border-color: #b8e8d9;
+}
+
+.status-clickable.status-inactive {
+    color: #8a5a08;
+    background: #fff5dc;
+    border-color: #f0d99e;
+}
+
+.status-clickable:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.status-clickable.status-active:hover:not(:disabled) {
+    background: #d5f1e9;
+    border-color: #8dd8c2;
+}
+
+.status-clickable.status-inactive:hover:not(:disabled) {
+    background: #ffedbd;
+    border-color: #e6c875;
+}
+
+.status-clickable:focus-visible {
+    outline: 3px solid rgba(66, 214, 178, 0.35);
+    outline-offset: 2px;
+}
+
+.status-clickable:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.blocked-status {
+    box-sizing: border-box;
+    min-height: 32px;
+    padding: 0.35rem 0.7rem;
+    color: #a84f41;
+    background: #fff0ed;
+    border: 1px solid #f1c8c0;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    justify-content: center;
 }
 
 .status-dot {
@@ -526,6 +591,11 @@
 
 .status-dot.inactive {
     background-color: #93a9b5;
+}
+
+.status-dot.blocked {
+    background-color: #d86a5b;
+    box-shadow: 0 0 0 2px rgba(216, 106, 91, 0.18);
 }
 
 /* Botones de Acción */
@@ -775,7 +845,7 @@
     margin-bottom: 37px;
 }
 
-.page-heading > div {
+.page-heading>div {
     min-width: 0;
     margin-right: auto;
 }
@@ -955,6 +1025,10 @@
     font-size: 12px;
 }
 
+.user-table td.col-status {
+    text-align: center;
+}
+
 .user-table tbody tr:hover {
     background: #fbfdfd;
 }
@@ -1083,4 +1157,5 @@
     .filters-bar select {
         flex: 1 1 100%;
     }
+
 }

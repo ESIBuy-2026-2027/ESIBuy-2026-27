@@ -16,6 +16,7 @@ public class UserAdminDTO {
     private String profileImage;
     private String role;
     private boolean active;
+    private boolean blocked;
     private Instant createdAt;
 
     private ClientProfile clientProfile;
@@ -33,6 +34,7 @@ public class UserAdminDTO {
         dto.profileImage = user.getProfileImage();
         dto.role = user.getRole() != null ? user.getRole().name() : null;
         dto.active = user.isActive();
+        dto.blocked = user.isBlocked();
         dto.createdAt = user.getCreatedAt();
         dto.clientProfile = user.getClientProfile();
         dto.sellerProfile = user.getSellerProfile();
@@ -74,6 +76,10 @@ public class UserAdminDTO {
 
     public boolean isActive() {
         return active;
+    }
+
+    public boolean isBlocked() {
+        return blocked;
     }
 
     public Instant getCreatedAt() {

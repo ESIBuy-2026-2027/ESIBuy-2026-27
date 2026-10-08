@@ -86,14 +86,30 @@ public class AdminService {
                     if (estado == null || estado.isBlank())
                         return true;
 
-                    boolean isActivo = estado.equalsIgnoreCase("activo");
-                    return u.isActive() == isActivo;
+                    if (estado.equalsIgnoreCase("ACTIVO"))
+                        return u.isActive() && !u.isBlocked();
+                    if (estado.equalsIgnoreCase("INACTIVO"))
+                        return !u.isActive() && !u.isBlocked();
+                    if (estado.equalsIgnoreCase("BLOQUEADO"))
+                        return u.isBlocked();
+                    return false;
                 })
                 .map(UserAdminDTO::fromUser)
                 .toList();
     }
 
-    public void bloquearUsuario(String id) {
+    public void activarUsuario(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+
+        // Una cuenta bloqueada no puede quedar activa
+        if (!user.isBlocked()) {
+            user.setActive(true);
+            userRepository.save(user);
+        }
+    }
+
+    public void desactivarUsuario(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
 
@@ -101,10 +117,21 @@ public class AdminService {
         userRepository.save(user);
     }
 
+    public void bloquearUsuario(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+
+        // Bloquear implica también desactivar la cuenta
+        user.setActive(false);
+        user.setBlocked(true);
+        userRepository.save(user);
+    }
+
     public void desbloquearUsuario(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
 
+        user.setBlocked(false);
         user.setActive(true);
         userRepository.save(user);
     }

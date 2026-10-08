@@ -111,8 +111,9 @@ public class UserService {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         return userRepository.findByEmailIgnoreCase(email)
                 .filter(user -> user.isActive()
-                && user.getPasswordHash() != null
-                && passwordEncoder.matches(request.getPassword(), user.getPasswordHash()))
+                        && !user.isBlocked()
+                        && user.getPasswordHash() != null
+                        && passwordEncoder.matches(request.getPassword(), user.getPasswordHash()))
                 .orElseThrow(InvalidCredentialsException::new);
     }
 
