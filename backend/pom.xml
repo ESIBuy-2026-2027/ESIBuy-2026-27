@@ -41,7 +41,7 @@
     <java.version>21</java.version>
 
     <sonar.projectKey>2026-g06-backend</sonar.projectKey>
-    <sonar.projectName>esibuy</sonar.projectName>
+    <sonar.projectName>2026-g06-backend</sonar.projectName>
 
     <sonar.sources>src/main/java</sonar.sources>
     <sonar.tests></sonar.tests>
