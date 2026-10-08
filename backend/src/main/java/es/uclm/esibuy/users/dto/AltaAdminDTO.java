@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 public class AltaAdminDTO {
 
     @NotBlank(message = "El DNI es obligatorio")
-    @Pattern(regexp = "^[0-9]{8}[A-Za-z]$", message = "El DNI debe tener 8 dígitos y una letra")
+    @Pattern(regexp = "^\\d{8}[A-Za-z]$", message = "El DNI debe tener 8 dígitos y una letra")
     private String dni;
 
     @NotBlank(message = "El nombre es obligatorio")
