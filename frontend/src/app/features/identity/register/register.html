@@ -148,8 +148,8 @@
             Email <span class="required">*</span>
           </label>
 
-          <input id="email" type="email" formControlName="email" autocomplete="email"  placeholder="usuario@dominio.com"
-/>
+          <input id="email" type="email" formControlName="email" autocomplete="email"
+            placeholder="usuario@dominio.com" />
 
           <span class="error" *ngIf="form.get('email')?.touched && form.get('email')?.hasError('required')">
             El email es obligatorio
@@ -249,7 +249,7 @@
           </span>
 
           <span class="error" *ngIf="form.get('lastName')?.touched && form.get('lastName')?.hasError('maxlength')">
-            Los apellidos no pueden superar los 100 caracteres
+            Los apellidos no pueden superar los 50 caracteres
           </span>
 
         </div>
@@ -332,8 +332,8 @@
             Email <span class="required">*</span>
           </label>
 
-          <input id="sellerEmail" type="email" formControlName="email" autocomplete="email"  placeholder="usuario@dominio.com"
- />
+          <input id="sellerEmail" type="email" formControlName="email" autocomplete="email"
+            placeholder="usuario@dominio.com" />
 
           <span class="error" *ngIf="form.get('email')?.touched && form.get('email')?.hasError('required')">
             El email es obligatorio
