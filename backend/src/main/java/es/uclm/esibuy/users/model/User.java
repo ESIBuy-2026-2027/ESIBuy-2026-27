@@ -23,6 +23,7 @@ public class User {
     private String profileImage;
     private UserRole role;
     private boolean active;
+    private boolean blocked;
     private Instant createdAt;
 
     private ClientProfile clientProfile;
@@ -38,6 +39,7 @@ public class User {
         this.lastName = lastName;
         this.role = role;
         this.active = role == UserRole.ADMIN;
+        this.blocked = false;
         this.createdAt = Instant.now();
     }
 
@@ -79,6 +81,14 @@ public class User {
 
     public boolean isActive() {
         return active;
+    }
+
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
     }
 
     public Instant getCreatedAt() {
