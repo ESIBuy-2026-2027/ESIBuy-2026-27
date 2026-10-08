@@ -42,6 +42,15 @@ class AdminUserControllerTest {
 
     private static final String USER_ID = "507f1f77bcf86cd799439011";
     private static final String ADMIN_ID = "507f1f77bcf86cd799439012";
+    private static final String UPDATE_USER_ID = "user-1";
+    private static final String UPDATE_USER_API = "/api/v1/admin/users/" + UPDATE_USER_ID;
+    private static final String CORRELATION_ID_HEADER = "X-Correlation-ID";
+    private static final String SUCCESS_JSON_PATH = "$.success";
+    private static final String CORRELATION_ID_JSON_PATH = "$.correlationId";
+    private static final String MESSAGE_JSON_PATH = "$.message";
+    private static final String CUSTOMER_USERNAME = "customer";
+    private static final String CLIENT_ROLE = "CLIENT";
+    private static final String USER_DELETED_MESSAGE = "Usuario eliminado correctamente";
 
     @Autowired
     private MockMvc mockMvc;
@@ -54,9 +63,9 @@ class AdminUserControllerTest {
     void adminCanUpdateUserWithoutChangingSensitiveProperties() throws Exception {
         User updated = new User("cliente@example.com", "Ana", "García", UserRole.CLIENT);
         updated.setPhone("600111222");
-        when(adminUserService.actualizar(eq("user-1"), any(UpdateUserRequestDTO.class))).thenReturn(updated);
+        when(adminUserService.actualizar(eq(UPDATE_USER_ID), any(UpdateUserRequestDTO.class))).thenReturn(updated);
 
-        mockMvc.perform(put("/api/v1/admin/users/user-1")
+        mockMvc.perform(put(UPDATE_USER_API)
             .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -64,66 +73,66 @@ class AdminUserControllerTest {
                          "role":"ADMIN","password":"ChangedPassword123!"}
                         """))
                 .andExpect(status().isOk())
-                .andExpect(header().exists("X-Correlation-ID"))
-                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(header().exists(CORRELATION_ID_HEADER))
+                .andExpect(jsonPath(SUCCESS_JSON_PATH).value(true))
                 .andExpect(jsonPath("$.data.email").value("cliente@example.com"))
                 .andExpect(jsonPath("$.data.role").value("CLIENT"))
                 .andExpect(jsonPath("$.data.password").doesNotExist());
 
-        verify(adminUserService).actualizar(eq("user-1"), any(UpdateUserRequestDTO.class));
+        verify(adminUserService).actualizar(eq(UPDATE_USER_ID), any(UpdateUserRequestDTO.class));
     }
 
     @Test
     void nonAdminCannotUpdateUser() throws Exception {
-        mockMvc.perform(put("/api/v1/admin/users/user-1")
-                .with(user("customer").roles("CLIENT"))
+        mockMvc.perform(put(UPDATE_USER_API)
+                .with(user(CUSTOMER_USERNAME).roles(CLIENT_ROLE))
             .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"firstName\":\"Ana\",\"lastName\":\"García\"}"))
                 .andExpect(status().isForbidden())
-                .andExpect(header().exists("X-Correlation-ID"))
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(header().exists(CORRELATION_ID_HEADER))
+                .andExpect(jsonPath(SUCCESS_JSON_PATH).value(false));
     }
 
     @Test
     void anonymousCannotUpdateUser() throws Exception {
-        mockMvc.perform(put("/api/v1/admin/users/user-1")
+        mockMvc.perform(put(UPDATE_USER_API)
                 .with(anonymous())
             .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"firstName\":\"Ana\",\"lastName\":\"García\"}"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(header().exists("X-Correlation-ID"))
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(header().exists(CORRELATION_ID_HEADER))
+                .andExpect(jsonPath(SUCCESS_JSON_PATH).value(false));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void rejectsInvalidAndScriptLikeValues() throws Exception {
-        mockMvc.perform(put("/api/v1/admin/users/user-1")
+        mockMvc.perform(put(UPDATE_USER_API)
             .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"firstName\":\"<script>alert(1)</script>\",\"lastName\":\"García\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors.firstName").exists())
-                .andExpect(jsonPath("$.correlationId").isNotEmpty());
+                .andExpect(jsonPath(CORRELATION_ID_JSON_PATH).isNotEmpty());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void rejectsMalformedJsonAsBadRequest() throws Exception {
-        mockMvc.perform(put("/api/v1/admin/users/user-1")
+        mockMvc.perform(put(UPDATE_USER_API)
             .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{invalid-json"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("El formato de la solicitud no es válido"));
+                .andExpect(jsonPath(MESSAGE_JSON_PATH).value("El formato de la solicitud no es válido"));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void rejectsPhoneWithOtherThanNineDigits() throws Exception {
-        mockMvc.perform(put("/api/v1/admin/users/user-1")
+        mockMvc.perform(put(UPDATE_USER_API)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"firstName\":\"Ana\",\"lastName\":\"García\",\"phone\":\"555555555555555\"}"))
@@ -137,9 +146,9 @@ class AdminUserControllerTest {
                 .with(authentication(adminAuthentication()))
                 .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(header().exists("X-Correlation-ID"))
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Usuario eliminado correctamente"));
+                .andExpect(header().exists(CORRELATION_ID_HEADER))
+                .andExpect(jsonPath(SUCCESS_JSON_PATH).value(true))
+                .andExpect(jsonPath(MESSAGE_JSON_PATH).value(USER_DELETED_MESSAGE));
 
         verify(adminUserService).eliminar(USER_ID, ADMIN_ID);
     }
@@ -150,9 +159,9 @@ class AdminUserControllerTest {
                 .with(authentication(adminAuthentication()))
                 .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(header().exists("X-Correlation-ID"))
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Usuario eliminado correctamente"));
+                .andExpect(header().exists(CORRELATION_ID_HEADER))
+                .andExpect(jsonPath(SUCCESS_JSON_PATH).value(true))
+                .andExpect(jsonPath(MESSAGE_JSON_PATH).value(USER_DELETED_MESSAGE));
 
         verify(adminUserService).eliminar(USER_ID, ADMIN_ID);
     }
@@ -160,19 +169,19 @@ class AdminUserControllerTest {
     @Test
     void nonAdminCannotDeleteUserViaApiAdminUsuariosEndpoint() throws Exception {
         mockMvc.perform(delete("/api/admin/usuarios/{id}", USER_ID)
-                .with(user("customer").roles("CLIENT"))
+                .with(user(CUSTOMER_USERNAME).roles(CLIENT_ROLE))
                 .with(csrf()))
                 .andExpect(status().isForbidden())
-                .andExpect(header().exists("X-Correlation-ID"));
+                .andExpect(header().exists(CORRELATION_ID_HEADER));
     }
 
     @Test
     void nonAdminCannotDeleteUser() throws Exception {
         mockMvc.perform(delete("/api/v1/admin/users/{id}", USER_ID)
-                .with(user("customer").roles("CLIENT"))
+                .with(user(CUSTOMER_USERNAME).roles(CLIENT_ROLE))
                 .with(csrf()))
                 .andExpect(status().isForbidden())
-                .andExpect(header().exists("X-Correlation-ID"));
+                .andExpect(header().exists(CORRELATION_ID_HEADER));
     }
 
     @Test
