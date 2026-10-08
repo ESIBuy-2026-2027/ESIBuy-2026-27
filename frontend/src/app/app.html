@@ -3,36 +3,35 @@
     <span class="brand-text">ESI<span class="brand-accent">Buy</span></span>
   </a>
   @if (authService.currentUser(); as user) {
-    <div class="app-session">
-      <div class="go-profile">
-        <button type="button" class="profile-button" (click)="toggleProfileMenu(); $event.stopPropagation()"
-          aria-label="Abrir menú de cuenta" title="Menú de cuenta" aria-haspopup="menu"
-          [attr.aria-expanded]="profileMenuOpen()" aria-controls="profile-menu">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="8" r="3.5"/>
-            <path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>
-          </svg>
+  <div class="app-session">
+    <div class="go-profile">
+      <button type="button" class="profile-button" (click)="toggleProfileMenu(); $event.stopPropagation()"
+        aria-label="Abrir menú de cuenta" title="Menú de cuenta" aria-haspopup="menu"
+        [attr.aria-expanded]="profileMenuOpen()" aria-controls="profile-menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="8" r="3.5" />
+          <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+        </svg>
+      </button>
+      @if (profileMenuOpen()) {
+      <div id="profile-menu" class="profile-menu" aria-label="Opciones de cuenta">
+        <p class="profile-menu-email">{{ user.email }}</p>
+        <button type="button" class="profile-menu-item" disabled>
+          Mi perfil
         </button>
-        @if (profileMenuOpen()) {
-          <div id="profile-menu" class="profile-menu" aria-label="Opciones de cuenta"
-            (click)="$event.stopPropagation()">
-            <p class="profile-menu-email">{{ user.email }}</p>
-            <button type="button" class="profile-menu-item" disabled>
-              Mi perfil
-            </button>
-            <button type="button" class="profile-menu-item" (click)="logout()">
-              Cerrar sesión
-            </button>
-          </div>
-        }
+        <button type="button" class="profile-menu-item" (click)="logout()">
+          Cerrar sesión
+        </button>
       </div>
+      }
     </div>
+  </div>
   }
 </header>
 
 @if (logoutError(); as error) {
-  <p class="logout-error" role="alert">{{ error }}</p>
+<p class="logout-error" role="alert">{{ error }}</p>
 }
 
 <router-outlet />

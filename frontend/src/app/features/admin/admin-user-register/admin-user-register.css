@@ -42,6 +42,7 @@
 
 .back-link:focus-visible,
 .role-card-btn:focus-visible,
+.role-card-radio:focus-visible + .role-icon-wrapper,
 .btn:focus-visible {
   outline: 3px solid rgb(66 214 178 / 28%);
   outline-offset: 2px;
@@ -177,6 +178,20 @@
   font: inherit;
   text-align: left;
   transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
+}
+
+.role-card-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.role-card-btn:has(.role-card-radio:focus-visible) {
+  outline: 3px solid rgb(66 214 178 / 28%);
+  outline-offset: 2px;
 }
 
 .role-card-btn:hover {
