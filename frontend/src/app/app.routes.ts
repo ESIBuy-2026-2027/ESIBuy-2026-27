@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { Home } from './features/home/home';
-import { Login } from './features/identity/login/login';
 import { Register } from './features/identity/register/register';
 import { AdminUserCreate } from './features/admin/admin-user-create/admin-user-create';
 import { ProductCreate } from './features/products/product-create/product-create';
@@ -13,7 +12,6 @@ import { SellerCatalog } from './features/products/seller-catalog/seller-catalog
 
 export const routes: Routes = [
   { path: '', component: Home },
-  { path: 'login', component: Login },
   { path: 'register', component: Register },
 
   { path: 'admin/usuarios/alta', component: AdminUserRegister, canActivate: [ authGuard, roleGuard('ADMIN') ] },

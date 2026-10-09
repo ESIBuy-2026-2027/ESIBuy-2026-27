@@ -18,13 +18,13 @@ describe('authentication route guards', () => {
     });
   });
 
-  it('redirects unauthenticated navigation to login with its return URL', () => {
+  it('redirects unauthenticated navigation home with its return URL', () => {
     const result = TestBed.runInInjectionContext(() =>
       authGuard({} as ActivatedRouteSnapshot, { url: '/admin/usuarios' } as RouterStateSnapshot));
 
     expect(result).toBeInstanceOf(UrlTree);
     expect(TestBed.inject(Router).serializeUrl(result as UrlTree))
-      .toBe('/login?returnUrl=%2Fadmin%2Fusuarios');
+      .toBe('/?returnUrl=%2Fadmin%2Fusuarios');
   });
 
   it('allows an authenticated user through the authentication guard', () => {
@@ -59,12 +59,12 @@ describe('authentication route guards', () => {
     expect(TestBed.inject(Router).serializeUrl(denied as UrlTree)).toBe('/');
   });
 
-  it('redirects unauthenticated role checks to login', () => {
+  it('redirects unauthenticated role checks home', () => {
     const result = TestBed.runInInjectionContext(() =>
       roleGuard('ADMIN')({} as ActivatedRouteSnapshot, { url: '/admin/usuarios' } as RouterStateSnapshot));
 
     expect(result).toBeInstanceOf(UrlTree);
     expect(TestBed.inject(Router).serializeUrl(result as UrlTree))
-      .toBe('/login?returnUrl=%2Fadmin%2Fusuarios');
+      .toBe('/?returnUrl=%2Fadmin%2Fusuarios');
   });
 });

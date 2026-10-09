@@ -22,7 +22,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
         && requestPath.startsWith('/api/')
         && !SESSION_ENDPOINTS.has(requestPath)) {
         authService.clearCurrentUser();
-        void router.navigate(['/login'], { queryParams: { expired: 'true' } });
+        void router.navigate(['/'], { queryParams: { expired: 'true' } });
       }
 
       return throwError(() => error);
