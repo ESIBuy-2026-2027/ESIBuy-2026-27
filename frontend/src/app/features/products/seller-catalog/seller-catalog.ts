@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Category, ProductsService } from '../products.service';
 import { SellerCatalogService, SellerProduct } from './seller-catalog.service';
 
@@ -9,7 +9,7 @@ const LOW_STOCK_THRESHOLD = 5;
 @Component({
   selector: 'app-seller-catalog',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, RouterLinkActive],
   templateUrl: './seller-catalog.html',
   styleUrl: './seller-catalog.css',
 })

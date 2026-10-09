@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { signal, WritableSignal } from '@angular/core';
 import { of } from 'rxjs';
 import { AuthService, AuthenticatedUser } from './core/services/auth.service';
@@ -48,17 +48,44 @@ describe('App', () => {
 
     const profileButton = (fixture.nativeElement as HTMLElement)
       .querySelector<HTMLButtonElement>('.profile-button');
+    expect(profileButton?.querySelector('.visually-hidden')?.textContent?.trim()).toBe('Perfil');
+    expect(profileButton?.querySelector('.profile-chevron')?.getAttribute('aria-hidden')).toBe('true');
     profileButton?.click();
     fixture.detectChanges();
 
     const menu = (fixture.nativeElement as HTMLElement).querySelector('#profile-menu');
     const menuButtons = Array.from(menu?.querySelectorAll<HTMLButtonElement>('button') ?? []);
-    const profileOption = menuButtons.find((button) => button.textContent?.trim() === 'Mi perfil');
+    const profileOption = menuButtons.find((button) => button.textContent?.trim() === 'Perfil');
     const logoutOption = menuButtons.find((button) => button.textContent?.trim() === 'Cerrar sesión');
 
     expect(profileOption?.disabled).toBe(true);
     expect(logoutOption).toBeDefined();
     logoutOption?.click();
+    fixture.detectChanges();
     expect(logout).toHaveBeenCalledOnce();
+    expect((fixture.nativeElement as HTMLElement).querySelector('#profile-menu')).toBeNull();
+  });
+
+  it('should close the account menu before navigating to the seller catalog', () => {
+    currentUser.set({
+      id: 'seller-1',
+      email: 'seller@example.com',
+      role: 'SELLER',
+      active: true,
+    });
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const profileButton = (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('.profile-button');
+    profileButton?.click();
+    fixture.detectChanges();
+
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    fixture.componentInstance.goCatalog();
+    fixture.detectChanges();
+
+    expect(navigate).toHaveBeenCalledWith(['/seller/catalog']);
+    expect((fixture.nativeElement as HTMLElement).querySelector('#profile-menu')).toBeNull();
   });
 });
