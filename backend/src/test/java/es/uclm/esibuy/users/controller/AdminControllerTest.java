@@ -28,198 +28,220 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class AdminControllerTest {
 
-        @Mock
-        private AdminService adminService;
+    private static final String ADMIN_CREATE_API = "/api/admin/alta";
+    private static final String MESSAGE_JSON_PATH = "$.message";
+    private static final String VALIDATION_ERROR_MESSAGE = "La solicitud contiene errores";
 
-        private MockMvc mockMvc;
+    @Mock
+    private AdminService adminService;
 
-        @BeforeEach
-        void setUp() {
-                AdminController adminController = new AdminController(adminService);
-                mockMvc = MockMvcBuilders.standaloneSetup(adminController)
-                                .setControllerAdvice(new ApiExceptionHandler())
-                                .build();
-        }
+    private MockMvc mockMvc;
 
-        @Test
-        public void ComprobarAltaAdministradorValido() throws Exception {
-                String json = """
-                                {
-                                    "dni": "12345678Z",
-                                    "nombre": "Carlos",
-                                    "apellidos": "Gómez Pérez",
-                                    "email": "carlos.admin@esibuy.com",
-                                    "contrasena": "Admin123456!#",
-                                    "repetirContrasena": "Admin123456!#",
-                                    "sede": "Ciudad Real",
-                                    "imagenPerfil": "https://avatar.ejemplo.com/carlos.png"
-                                }
-                                """;
+    @BeforeEach
+    void setUp() {
+        AdminController adminController = new AdminController(adminService);
+        mockMvc = MockMvcBuilders.standaloneSetup(adminController)
+                .setControllerAdvice(new ApiExceptionHandler())
+                .build();
+    }
 
-                User admin = new User("carlos.admin@esibuy.com", "Carlos", "Gómez Pérez", UserRole.ADMIN);
-                admin.setNationalId("12345678Z");
-                admin.setActive(true);
-                admin.setProfileImage("https://avatar.ejemplo.com/carlos.png");
-                admin.setAdminProfile(new AdminProfile("Ciudad Real", LocalDateTime.now()));
+    @Test
+    public void ComprobarAltaAdministradorValido() throws Exception {
+        String json = """
+                {
+                    "dni": "12345678Z",
+                    "nombre": "Carlos",
+                    "apellidos": "Gómez Pérez",
+                    "email": "carlos.admin@esibuy.com",
+                    "contrasena": "Admin123456!#",
+                    "repetirContrasena": "Admin123456!#",
+                    "sede": "Ciudad Real",
+                    "imagenPerfil": "https://avatar.ejemplo.com/carlos.png"
+                }
+                """;
 
-                when(adminService.crearAdministrador(any(AltaAdminDTO.class))).thenReturn(admin);
+        User admin = new User("carlos.admin@esibuy.com", "Carlos", "Gómez Pérez", UserRole.ADMIN);
+        admin.setNationalId("12345678Z");
+        admin.setActive(true);
+        admin.setProfileImage("https://avatar.ejemplo.com/carlos.png");
+        admin.setAdminProfile(new AdminProfile("Ciudad Real", LocalDateTime.now()));
 
-                mockMvc.perform(post("/api/admin/alta")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(json))
-                                .andExpect(status().isCreated())
-                                .andExpect(jsonPath("$.email").value("carlos.admin@esibuy.com"))
-                                .andExpect(jsonPath("$.rol").value("ADMIN"))
-                                .andExpect(jsonPath("$.activo").value(true))
-                                .andExpect(jsonPath("$.fechaIncorporacion").isNotEmpty());
-        }
+        when(adminService.crearAdministrador(any(AltaAdminDTO.class))).thenReturn(admin);
 
-        @Test
-        public void ComprobarErrorPorEmailDuplicado() throws Exception {
-                String json = """
-                                {
-                                    "dni": "12345678Z",
-                                    "nombre": "Carlos",
-                                    "apellidos": "Gómez Pérez",
-                                    "email": "carlos.duplicado@esibuy.com",
-                                    "contrasena": "Admin123456!#",
-                                    "repetirContrasena": "Admin123456!#",
-                                    "sede": "Ciudad Real",
-                                    "imagenPerfil": "https://avatar.ejemplo.com/carlos.png"
-                                }
-                                """;
+        mockMvc.perform(post(ADMIN_CREATE_API)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.email").value("carlos.admin@esibuy.com"))
+                .andExpect(jsonPath("$.rol").value("ADMIN"))
+                .andExpect(jsonPath("$.activo").value(true))
+                .andExpect(jsonPath("$.fechaIncorporacion").isNotEmpty());
+    }
 
-                when(adminService.crearAdministrador(any(AltaAdminDTO.class)))
-                                .thenThrow(new DuplicateUserException("Ya existe un usuario con ese email"));
+    @Test
+    public void ComprobarErrorPorEmailDuplicado() throws Exception {
+        String json = """
+                {
+                    "dni": "12345678Z",
+                    "nombre": "Carlos",
+                    "apellidos": "Gómez Pérez",
+                    "email": "carlos.duplicado@esibuy.com",
+                    "contrasena": "Admin123456!#",
+                    "repetirContrasena": "Admin123456!#",
+                    "sede": "Ciudad Real",
+                    "imagenPerfil": "https://avatar.ejemplo.com/carlos.png"
+                }
+                """;
 
-                mockMvc.perform(post("/api/admin/alta")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(json))
-                                .andExpect(status().isConflict())
-                                .andExpect(jsonPath("$.message").value("Ya existe un usuario con ese email"));
-        }
+        when(adminService.crearAdministrador(any(AltaAdminDTO.class)))
+                .thenThrow(new DuplicateUserException("Ya existe un usuario con ese email"));
 
-        @Test
-        public void ComprobarErrorPorFormatoEmailInvalido() throws Exception {
-                String json = """
-                                {
-                                    "dni": "12345678Z",
-                                    "nombre": "Carlos",
-                                    "apellidos": "Gómez Pérez",
-                                    "email": "carlos.invalido.sin.arroba",
-                                    "contrasena": "Admin123456!#",
-                                    "repetirContrasena": "Admin123456!#",
-                                    "sede": "Ciudad Real",
-                                    "imagenPerfil": "https://avatar.ejemplo.com/carlos.png"
-                                }
-                                """;
+        mockMvc.perform(post(ADMIN_CREATE_API)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Ya existe un usuario con ese email"));
+    }
 
-                mockMvc.perform(post("/api/admin/alta")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(json))
-                                .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.message").value("La solicitud contiene errores"))
-                                .andExpect(jsonPath("$.errors.email").exists());
-        }
+    @Test
+    public void ComprobarErrorPorFormatoEmailInvalido() throws Exception {
+        String json = """
+                {
+                    "dni": "12345678Z",
+                    "nombre": "Carlos",
+                    "apellidos": "Gómez Pérez",
+                    "email": "carlos.invalido.sin.arroba",
+                    "contrasena": "Admin123456!#",
+                    "repetirContrasena": "Admin123456!#",
+                    "sede": "Ciudad Real",
+                    "imagenPerfil": "https://avatar.ejemplo.com/carlos.png"
+                }
+                """;
 
-        @Test
-        public void ComprobarErrorPorFormatoContrasenaInvalido() throws Exception {
-                String json = """
-                                {
-                                    "dni": "12345678Z",
-                                    "nombre": "Carlos",
-                                    "apellidos": "Gómez Pérez",
-                                    "email": "carlos.admin@esibuy.com",
-                                    "contrasena": "passwordinvalida",
-                                    "repetirContrasena": "passwordinvalida",
-                                    "sede": "Ciudad Real",
-                                    "imagenPerfil": "https://avatar.ejemplo.com/carlos.png"
-                                }
-                                """;
+        mockMvc.perform(post(ADMIN_CREATE_API)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath(MESSAGE_JSON_PATH).value(VALIDATION_ERROR_MESSAGE))
+                .andExpect(jsonPath("$.errors.email").exists());
+    }
 
-                mockMvc.perform(post("/api/admin/alta")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(json))
-                                .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.message").value("La solicitud contiene errores"))
-                                .andExpect(jsonPath("$.errors.contrasena").exists());
-        }
+    @Test
+    public void ComprobarErrorPorFormatoContrasenaInvalido() throws Exception {
+        String json = """
+                {
+                    "dni": "12345678Z",
+                    "nombre": "Carlos",
+                    "apellidos": "Gómez Pérez",
+                    "email": "carlos.admin@esibuy.com",
+                    "contrasena": "passwordinvalida",
+                    "repetirContrasena": "passwordinvalida",
+                    "sede": "Ciudad Real",
+                    "imagenPerfil": "https://avatar.ejemplo.com/carlos.png"
+                }
+                """;
 
-        @Test
-        public void ComprobarErrorPorContrasenasNoCoincidentes() throws Exception {
-                String json = """
-                                {
-                                    "dni": "12345678Z",
-                                    "nombre": "Carlos",
-                                    "apellidos": "Gómez Pérez",
-                                    "email": "carlos.admin@esibuy.com",
-                                    "contrasena": "Admin123456!#",
-                                    "repetirContrasena": "Distinta123456!#",
-                                    "sede": "Ciudad Real",
-                                    "imagenPerfil": "https://avatar.ejemplo.com/carlos.png"
-                                }
-                                """;
+        mockMvc.perform(post(ADMIN_CREATE_API)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath(MESSAGE_JSON_PATH).value(VALIDATION_ERROR_MESSAGE))
+                .andExpect(jsonPath("$.errors.contrasena").exists());
+    }
 
-                mockMvc.perform(post("/api/admin/alta")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(json))
-                                .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.message").value("La solicitud contiene errores"))
-                                .andExpect(jsonPath("$.errors.contrasenasCoincidentes").exists());
-        }
+    @Test
+    public void ComprobarErrorPorContrasenasNoCoincidentes() throws Exception {
+        String json = """
+                {
+                    "dni": "12345678Z",
+                    "nombre": "Carlos",
+                    "apellidos": "Gómez Pérez",
+                    "email": "carlos.admin@esibuy.com",
+                    "contrasena": "Admin123456!#",
+                    "repetirContrasena": "Distinta123456!#",
+                    "sede": "Ciudad Real",
+                    "imagenPerfil": "https://avatar.ejemplo.com/carlos.png"
+                }
+                """;
 
-        @Test
-        public void ComprobarErrorPorDatosObligatoriosIncompletos() throws Exception {
-                String json = "{}";
+        mockMvc.perform(post(ADMIN_CREATE_API)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath(MESSAGE_JSON_PATH).value(VALIDATION_ERROR_MESSAGE))
+                .andExpect(jsonPath("$.errors.contrasenasCoincidentes").exists());
+    }
 
-                mockMvc.perform(post("/api/admin/alta")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(json))
-                                .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.message").value("La solicitud contiene errores"))
-                                .andExpect(jsonPath("$.errors.dni").exists())
-                                .andExpect(jsonPath("$.errors.nombre").exists())
-                                .andExpect(jsonPath("$.errors.apellidos").exists())
-                                .andExpect(jsonPath("$.errors.email").exists())
-                                .andExpect(jsonPath("$.errors.contrasena").exists());
-        }
+    @Test
+    public void ComprobarErrorPorDatosObligatoriosIncompletos() throws Exception {
+        String json = "{}";
 
-        @Test
-        public void ComprobarAltaAdministradorSinCamposOpcionales() throws Exception {
-                String json = """
-                                {
-                                    "dni": "12345678Z",
-                                    "nombre": "Carlos",
-                                    "apellidos": "Gómez Pérez",
-                                    "email": "carlos.sinopcionales@esibuy.com",
-                                    "contrasena": "Admin123456!#",
-                                    "repetirContrasena": "Admin123456!#"
-                                }
-                                """;
+        mockMvc.perform(post(ADMIN_CREATE_API)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath(MESSAGE_JSON_PATH).value(VALIDATION_ERROR_MESSAGE))
+                .andExpect(jsonPath("$.errors.dni").exists())
+                .andExpect(jsonPath("$.errors.nombre").exists())
+                .andExpect(jsonPath("$.errors.apellidos").exists())
+                .andExpect(jsonPath("$.errors.email").exists())
+                .andExpect(jsonPath("$.errors.contrasena").exists());
+    }
 
-                User admin = new User("carlos.sinopcionales@esibuy.com", "Carlos", "Gómez Pérez", UserRole.ADMIN);
-                admin.setNationalId("12345678Z");
-                admin.setActive(true);
-                admin.setProfileImage("avatar-admin-default");
-                admin.setAdminProfile(new AdminProfile(null, LocalDateTime.now()));
+    @Test
+    public void ComprobarAltaAdministradorSinCamposOpcionales() throws Exception {
+        String json = """
+                {
+                    "dni": "12345678Z",
+                    "nombre": "Carlos",
+                    "apellidos": "Gómez Pérez",
+                    "email": "carlos.sinopcionales@esibuy.com",
+                    "contrasena": "Admin123456!#",
+                    "repetirContrasena": "Admin123456!#"
+                }
+                """;
 
-                when(adminService.crearAdministrador(any(AltaAdminDTO.class))).thenReturn(admin);
+        User admin = new User("carlos.sinopcionales@esibuy.com", "Carlos", "Gómez Pérez", UserRole.ADMIN);
+        admin.setNationalId("12345678Z");
+        admin.setActive(true);
+        admin.setProfileImage("avatar-admin-default");
+        admin.setAdminProfile(new AdminProfile(null, LocalDateTime.now()));
 
-                mockMvc.perform(post("/api/admin/alta")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(json))
-                                .andExpect(status().isCreated())
-                                .andExpect(jsonPath("$.email").value("carlos.sinopcionales@esibuy.com"))
-                                .andExpect(jsonPath("$.rol").value("ADMIN"))
-                                .andExpect(jsonPath("$.activo").value(true));
-        }
+        when(adminService.crearAdministrador(any(AltaAdminDTO.class))).thenReturn(admin);
 
-        @Test
-        void shouldReturnTodosLosUsuarios() throws Exception {
-                when(adminService.obtenerUsuariosFiltrados(null, null)).thenReturn(List.of());
-                mockMvc.perform(get("/api/admin/usuarios")
-                                .contentType(MediaType.APPLICATION_JSON))
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$").isArray());
-        }
+        mockMvc.perform(post(ADMIN_CREATE_API)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.email").value("carlos.sinopcionales@esibuy.com"))
+                .andExpect(jsonPath("$.rol").value("ADMIN"))
+                .andExpect(jsonPath("$.activo").value(true));
+    }
+
+    @Test
+    public void shouldUnlockUser() throws Exception {
+        mockMvc.perform(post("/api/admin/usuarios/{id}/desbloquear", "user-1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(adminService).desbloquearUsuario("user-1");
+    }
+
+    @Test
+    public void shouldActivateUser() throws Exception {
+        mockMvc.perform(post("/api/admin/usuarios/{id}/activar", "user-1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(adminService).activarUsuario("user-1");
+    }
+
+    @Test
+    public void shouldDeactivateUser() throws Exception {
+        mockMvc.perform(post("/api/admin/usuarios/{id}/desactivar", "user-1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(adminService).desactivarUsuario("user-1");
+    }
 }

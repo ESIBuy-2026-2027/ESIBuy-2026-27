@@ -32,12 +32,14 @@
           </div>
         }
       </div>
+      }
     </div>
+  </div>
   }
 </header>
 
 @if (logoutError(); as error) {
-  <p class="logout-error" role="alert">{{ error }}</p>
+<p class="logout-error" role="alert">{{ error }}</p>
 }
 
 <router-outlet />

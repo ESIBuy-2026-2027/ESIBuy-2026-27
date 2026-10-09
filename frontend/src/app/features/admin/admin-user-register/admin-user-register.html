@@ -62,7 +62,8 @@
           Alta de Cuenta de Usuario
         </h1>
         <p class="card-subtitle">
-          Como administrador, introduce los datos de la nueva cuenta. Selecciona si se registrará un Cliente o un Vendedor.
+          Como administrador, introduce los datos de la nueva cuenta. Selecciona si se registrará un Cliente o un
+          Vendedor.
         </p>
       </div>
 
@@ -76,14 +77,10 @@
 
         <div class="role-selector-cards" role="radiogroup" aria-label="Selector de rol">
           <!-- Opción Cliente -->
-          <button
-            type="button"
-            id="btnRoleCliente"
-            class="role-card-btn"
-            [class.active]="selectedRole === 'cliente'"
-            (click)="setRole('cliente')"
-            role="radio"
-            [attr.aria-checked]="selectedRole === 'cliente'">
+          <label id="btnRoleCliente" class="role-card-btn" [class.active]="selectedRole === 'cliente'"
+            for="roleCliente">
+            <input id="roleCliente" class="role-card-radio" type="radio" name="userRole" value="cliente"
+              [checked]="selectedRole === 'cliente'" (change)="setRole('cliente')" />
             <div class="role-icon-wrapper cliente-icon">
               <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -94,17 +91,13 @@
               <span class="role-card-title">Cliente</span>
               <span class="role-card-desc">Usuario que realiza compras de productos y gestiona sus pedidos.</span>
             </div>
-          </button>
+          </label>
 
           <!-- Opción Vendedor -->
-          <button
-            type="button"
-            id="btnRoleVendedor"
-            class="role-card-btn"
-            [class.active]="selectedRole === 'vendedor'"
-            (click)="setRole('vendedor')"
-            role="radio"
-            [attr.aria-checked]="selectedRole === 'vendedor'">
+          <label id="btnRoleVendedor" class="role-card-btn" [class.active]="selectedRole === 'vendedor'"
+            for="roleVendedor">
+            <input id="roleVendedor" class="role-card-radio" type="radio" name="userRole" value="vendedor"
+              [checked]="selectedRole === 'vendedor'" (change)="setRole('vendedor')" />
             <div class="role-icon-wrapper vendedor-icon">
               <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -115,18 +108,18 @@
               <span class="role-card-title">Vendedor</span>
               <span class="role-card-desc">Usuario que gestiona productos y atiende a los clientes.</span>
             </div>
-          </button>
+          </label>
         </div>
       </div>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="user-alta-form" novalidate>
         <div class="form-section-title" *ngIf="selectedRole === 'vendedor'">
-            <h3>Información del Vendedor</h3>
-            <p>Datos obligatorios para la identificación de la cuenta.</p>
+          <h3>Información del Vendedor</h3>
+          <p>Datos obligatorios para la identificación de la cuenta.</p>
         </div>
         <div class="form-section-title" *ngIf="selectedRole === 'cliente'">
-            <h3>Información del Cliente</h3>
-            <p>Datos obligatorios para la identificación de la cuenta.</p>
+          <h3>Información del Cliente</h3>
+          <p>Datos obligatorios para la identificación de la cuenta.</p>
         </div>
 
         <!-- Fila 1: Nombre y Apellidos -->
@@ -135,17 +128,15 @@
             <label for="firstName" class="form-label">
               Nombre <span class="required">*</span>
             </label>
-            <input
-              id="firstName"
-              type="text"
-              formControlName="firstName"
-              class="form-control"
-              placeholder="Ej: Marcos"
+            <input id="firstName" type="text" formControlName="firstName" class="form-control" placeholder="Ej: Marcos"
               [class.is-invalid]="form.get('firstName')?.touched && form.get('firstName')?.invalid" />
-            <span *ngIf="form.get('firstName')?.touched && form.get('firstName')?.hasError('required')" class="field-error">
+            <span *ngIf="form.get('firstName')?.touched && form.get('firstName')?.hasError('required')"
+              class="field-error">
               El nombre es obligatorio.
             </span>
-            <span *ngIf="form.get('firstName')?.touched && (form.get('firstName')?.hasError('minlength') || form.get('firstName')?.hasError('maxlength'))" class="field-error">
+            <span
+              *ngIf="form.get('firstName')?.touched && (form.get('firstName')?.hasError('minlength') || form.get('firstName')?.hasError('maxlength'))"
+              class="field-error">
               El nombre debe tener entre 2 y 25 caracteres.
             </span>
           </div>
@@ -154,17 +145,16 @@
             <label for="lastName" class="form-label">
               Apellidos <span class="required">*</span>
             </label>
-            <input
-              id="lastName"
-              type="text"
-              formControlName="lastName"
-              class="form-control"
+            <input id="lastName" type="text" formControlName="lastName" class="form-control"
               placeholder="Ej: Ruiz Gómez"
               [class.is-invalid]="form.get('lastName')?.touched && form.get('lastName')?.invalid" />
-            <span *ngIf="form.get('lastName')?.touched && form.get('lastName')?.hasError('required')" class="field-error">
+            <span *ngIf="form.get('lastName')?.touched && form.get('lastName')?.hasError('required')"
+              class="field-error">
               Los apellidos son obligatorios.
             </span>
-            <span *ngIf="form.get('lastName')?.touched && (form.get('lastName')?.hasError('minlength') || form.get('lastName')?.hasError('maxlength'))" class="field-error">
+            <span
+              *ngIf="form.get('lastName')?.touched && (form.get('lastName')?.hasError('minlength') || form.get('lastName')?.hasError('maxlength'))"
+              class="field-error">
               Los apellidos deben tener entre 2 y 50 caracteres.
             </span>
           </div>
@@ -176,11 +166,7 @@
             <label for="email" class="form-label">
               Correo Electrónico <span class="required">*</span>
             </label>
-            <input
-              id="email"
-              type="email"
-              formControlName="email"
-              class="form-control"
+            <input id="email" type="email" formControlName="email" class="form-control"
               placeholder="usuario@ejemplo.com"
               [class.is-invalid]="form.get('email')?.touched && form.get('email')?.invalid" />
             <span *ngIf="form.get('email')?.touched && form.get('email')?.hasError('required')" class="field-error">
@@ -195,17 +181,15 @@
             <label for="nationalId" class="form-label">
               DNI / NIF <span class="required">*</span>
             </label>
-            <input
-              id="nationalId"
-              type="text"
-              formControlName="nationalId"
-              class="form-control"
+            <input id="nationalId" type="text" formControlName="nationalId" class="form-control"
               placeholder="Ej: 12345678Z"
               [class.is-invalid]="form.get('nationalId')?.touched && form.get('nationalId')?.invalid" />
-            <span *ngIf="form.get('nationalId')?.touched && form.get('nationalId')?.hasError('required')" class="field-error">
+            <span *ngIf="form.get('nationalId')?.touched && form.get('nationalId')?.hasError('required')"
+              class="field-error">
               El documento de identidad es obligatorio.
             </span>
-            <span *ngIf="form.get('nationalId')?.touched && form.get('nationalId')?.hasError('maxlength')" class="field-error">
+            <span *ngIf="form.get('nationalId')?.touched && form.get('nationalId')?.hasError('maxlength')"
+              class="field-error">
               No puede superar los 20 caracteres.
             </span>
           </div>
@@ -214,12 +198,7 @@
             <label for="phone" class="form-label">
               Teléfono
             </label>
-            <input
-              id="phone"
-              type="tel"
-              formControlName="phone"
-              class="form-control"
-              placeholder="Ej: 600123456"
+            <input id="phone" type="tel" formControlName="phone" class="form-control" placeholder="Ej: 600123456"
               [class.is-invalid]="form.get('phone')?.touched && form.get('phone')?.invalid" />
             <span *ngIf="form.get('phone')?.touched && form.get('phone')?.hasError('pattern')" class="field-error">
               El teléfono debe contener exactamente 9 dígitos.
@@ -234,16 +213,14 @@
               <label for="birthDate" class="form-label">
                 Fecha de Nacimiento <span class="required">*</span>
               </label>
-              <input
-                id="birthDate"
-                type="date"
-                formControlName="birthDate"
-                class="form-control"
+              <input id="birthDate" type="date" formControlName="birthDate" class="form-control"
                 [class.is-invalid]="form.get('birthDate')?.touched && form.get('birthDate')?.invalid" />
-              <span *ngIf="form.get('birthDate')?.touched && form.get('birthDate')?.hasError('required')" class="field-error">
+              <span *ngIf="form.get('birthDate')?.touched && form.get('birthDate')?.hasError('required')"
+                class="field-error">
                 La fecha de nacimiento es obligatoria.
               </span>
-              <span *ngIf="form.get('birthDate')?.touched && form.get('birthDate')?.hasError('underAge')" class="field-error">
+              <span *ngIf="form.get('birthDate')?.touched && form.get('birthDate')?.hasError('underAge')"
+                class="field-error">
                 El cliente debe ser mayor de edad.
               </span>
             </div>
@@ -267,17 +244,16 @@
               <label for="businessName" class="form-label">
                 Nombre Comercial / Tienda <span class="required">*</span>
               </label>
-              <input
-                id="businessName"
-                type="text"
-                formControlName="businessName"
-                class="form-control"
+              <input id="businessName" type="text" formControlName="businessName" class="form-control"
                 placeholder="Ej: ElectroTech S.L."
                 [class.is-invalid]="form.get('businessName')?.touched && form.get('businessName')?.invalid" />
-              <span *ngIf="form.get('businessName')?.touched && form.get('businessName')?.hasError('required')" class="field-error">
+              <span *ngIf="form.get('businessName')?.touched && form.get('businessName')?.hasError('required')"
+                class="field-error">
                 El nombre comercial es obligatorio.
               </span>
-              <span *ngIf="form.get('businessName')?.touched && (form.get('businessName')?.hasError('minlength') || form.get('businessName')?.hasError('maxlength'))" class="field-error">
+              <span
+                *ngIf="form.get('businessName')?.touched && (form.get('businessName')?.hasError('minlength') || form.get('businessName')?.hasError('maxlength'))"
+                class="field-error">
                 El nombre comercial debe tener entre 2 y 100 caracteres.
               </span>
             </div>
@@ -292,7 +268,8 @@
                   {{ cat.name }}
                 </option>
               </select>
-              <span *ngIf="form.get('defaultCategory')?.touched && form.get('defaultCategory')?.hasError('required')" class="field-error">
+              <span *ngIf="form.get('defaultCategory')?.touched && form.get('defaultCategory')?.hasError('required')"
+                class="field-error">
                 Debes seleccionar una categoría principal.
               </span>
             </div>
@@ -308,40 +285,70 @@
         </div>
 
         <div class="form-row">
+          <!-- Contraseña Inicial -->
           <div class="form-group">
             <label for="password" class="form-label">
-              Contraseña Inicial <span class="required">*</span>
+              Contraseña <span class="required">*</span>
             </label>
-            <input
-              id="password"
-              type="password"
-              formControlName="password"
-              class="form-control"
-              placeholder="Mínimo 12 caracteres"
-              [class.is-invalid]="form.get('password')?.touched && form.get('password')?.invalid" />
-            <span *ngIf="form.get('password')?.touched && form.get('password')?.hasError('required')" class="field-error">
+
+            <div class="password-wrapper">
+              <input id="password" [type]="showPassword ? 'text' : 'password'"
+                [attr.autocomplete]="showPassword ? 'off' : 'new-password'" formControlName="password"
+                class="form-control" placeholder="Mínimo 12 caracteres"
+                [class.is-invalid]="form.get('password')?.touched && form.get('password')?.invalid" />
+
+              <button type="button" class="password-toggle" (click)="showPassword = !showPassword"
+                [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+
+                <!-- Ojo cerrado (ocultar) -->
+                <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                  aria-hidden="true">
+                  <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  <circle cx="12" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="2" />
+                </svg>
+
+                <!-- Ojo abierto (mostrar) -->
+                <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                  aria-hidden="true">
+                  <path d="M3 3l18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path
+                    d="M10.6 6.2A10.5 10.5 0 0 1 12 6c6 0 9.5 6 9.5 6a17.5 17.5 0 0 1-3.2 3.8M6.2 6.2C3.9 7.8 2.5 12 2.5 12s3.5 6 9.5 6c1.4 0 2.7-.3 3.8-.8"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Hemos devuelto tu clase original 'field-error' para recuperar tu color rojo -->
+            <span *ngIf="form.get('password')?.touched && form.get('password')?.hasError('required')"
+              class="field-error">
               La contraseña es obligatoria.
             </span>
-            <span *ngIf="form.get('password')?.touched && form.get('password')?.hasError('minlength')" class="field-error">
+            <span *ngIf="form.get('password')?.touched && form.get('password')?.hasError('minlength')"
+              class="field-error">
               La contraseña debe tener al menos 12 caracteres.
             </span>
-            <span *ngIf="form.get('password')?.touched && form.get('password')?.hasError('pattern')" class="field-error">
+            <span *ngIf="form.get('password')?.touched && form.get('password')?.hasError('pattern')"
+              class="field-error">
               Debe contener mayúscula, minúscula, número y carácter especial.
             </span>
           </div>
 
+          <!-- Confirmar Contraseña -->
           <div class="form-group">
             <label for="repeatedPassword" class="form-label">
               Confirmar Contraseña <span class="required">*</span>
             </label>
-            <input
-              id="repeatedPassword"
-              type="password"
-              formControlName="repeatedPassword"
-              class="form-control"
-              placeholder="Repite la contraseña"
-              [class.is-invalid]="form.get('repeatedPassword')?.touched && (form.get('repeatedPassword')?.invalid || form.hasError('passwordMismatch'))" />
-            <span *ngIf="form.get('repeatedPassword')?.touched && form.get('repeatedPassword')?.hasError('required')" class="field-error">
+
+            <div class="password-wrapper">
+              <input id="repeatedPassword" [type]="showPassword ? 'text' : 'password'"
+                [attr.autocomplete]="showPassword ? 'off' : 'new-password'" formControlName="repeatedPassword"
+                class="form-control" placeholder="Repite la contraseña"
+                [class.is-invalid]="form.get('repeatedPassword')?.touched && (form.get('repeatedPassword')?.invalid || form.hasError('passwordMismatch'))" />
+            </div>
+
+            <span *ngIf="form.get('repeatedPassword')?.touched && form.get('repeatedPassword')?.hasError('required')"
+              class="field-error">
               Debe repetir la contraseña.
             </span>
             <span *ngIf="form.touched && form.hasError('passwordMismatch')" class="field-error">
@@ -352,23 +359,16 @@
 
         <!-- botones de acción -->
         <div class="btn-wrapper">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            [disabled]="submitting"
-            (click)="cancelar()"
+          <button type="button" class="btn btn-secondary" [disabled]="submitting" (click)="cancelar()"
             id="btnCancelarAlta">
             Cancelar
           </button>
 
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="submitting"
-            id="btnSubmitAlta">
+          <button type="submit" class="btn btn-primary" [disabled]="submitting" id="btnSubmitAlta">
             <span *ngIf="submitting" class="spinner" aria-hidden="true"></span>
             <span>
-              {{ submitting ? 'Guardando Usuario...' : ('Dar de Alta ' + (selectedRole === 'cliente' ? 'Cliente' : 'Vendedor')) }}
+              {{ submitting ? 'Guardando Usuario...' : ('Dar de Alta ' + (selectedRole === 'cliente' ? 'Cliente' :
+              'Vendedor')) }}
             </span>
           </button>
         </div>

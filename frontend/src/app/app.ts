@@ -24,8 +24,15 @@ export class App {
     this.profileMenuOpen.set(false);
   }
 
-  @HostListener('document:click')
-  onDocumentClick(): void {
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target;
+    if (target instanceof Node && (event.composedPath().some((node) => (
+      node instanceof HTMLElement
+      && (node.id === 'profile-menu' || node.classList.contains('profile-button'))
+    )))) {
+      return;
+    }
     this.closeProfileMenu();
   }
 

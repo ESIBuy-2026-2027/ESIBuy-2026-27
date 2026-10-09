@@ -55,8 +55,14 @@
 
 .back-link {
   display: inline-block;
+  min-height: 36px;
+  align-items: center;
   margin-bottom: 1rem;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #dce9f1;
   color: #2563eb;
+  font-size: 12px;
   font-weight: 600;
   text-decoration: none;
 }
@@ -67,6 +73,7 @@
   border-radius: 16px;
   background: #fff;
   padding: 2rem;
+  box-shadow: 0 12px 28px rgb(10 44 58 / 6%);
 }
 
 .card-header {
@@ -84,6 +91,7 @@
   font-size: 1.35rem;
   font-family: inherit;
   font-weight: 700;
+  letter-spacing: -0.7px;
 }
 
 .card-subtitle {
@@ -416,133 +424,6 @@
   margin: 0 auto;
   padding: 42px 44px 64px;
   background: transparent;
-}
-
-.main-container {
-  width: 100%;
-  margin: 0;
-}
-
-.admin-navbar {
-  display: none;
-}
-
-.back-link {
-  display: inline-flex;
-  min-height: 36px;
-  align-items: center;
-  margin-bottom: 20px;
-  padding: 0 12px;
-  border-radius: 8px;
-  background: #dce9f1;
-  color: #315568;
-  font-size: 12px;
-  font-weight: 650;
-}
-
-.card {
-  margin: 0;
-  border: 1px solid #e7edf0;
-  border-radius: 12px;
-  background: #fff;
-  padding: 28px;
-  box-shadow: 0 12px 28px rgb(10 44 58 / 6%);
-}
-
-.card-header {
-  margin-bottom: 24px;
-  border-bottom: 1px solid #edf1f3;
-  padding-bottom: 18px;
-}
-
-.card-title {
-  color: #203b4e;
-  font-size: 24px;
-  letter-spacing: -0.7px;
-}
-
-.card-subtitle,
-.locked-indicator {
-  color: #72828e;
-}
-
-.section-title {
-  color: #203b4e;
-}
-
-.account-section {
-  border-color: #edf1f3;
-}
-
-.form-label {
-  color: #435967;
-}
-
-.form-control {
-  min-height: 43px;
-  border: 1px solid #dce6ea;
-  border-radius: 8px;
-  background: #fff;
-  color: #203b4e;
-}
-
-.form-control:focus {
-  border-color: #42d6b2;
-  box-shadow: 0 0 0 3px rgb(66 214 178 / 16%);
-}
-
-.form-control.readonly-control,
-.form-control[readonly] {
-  border-color: #dce6ea;
-  background: #f4f8f9;
-  color: #72828e;
-}
-
-.btn-wrapper {
-  border-color: #edf1f3;
-  gap: 10px;
-  padding-top: 18px;
-}
-
-.btn {
-  min-width: 118px;
-  min-height: 38px;
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
-  font-size: 12px;
-}
-
-.btn-primary {
-  background: #42d6b2;
-  color: #102c40;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #5ccfc0;
-}
-
-.btn-secondary {
-  border-color: #dce6ea;
-  background: #f9fbfc;
-  color: #435967;
-}
-
-.alert-success {
-  border-color: #b8efe3;
-  background: #eafcf8;
-  color: #0c5d4d;
-}
-
-.alert-danger {
-  border-color: #f0d3ce;
-  background: #fffafa;
-  color: #944c42;
-}
-
-.status {
-  border-color: #c9e9e2;
-  background: #f0fbf8;
-  color: #168c75;
 }
 
 @media (max-width: 760px) {

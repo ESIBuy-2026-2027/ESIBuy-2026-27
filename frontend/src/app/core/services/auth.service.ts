@@ -22,6 +22,7 @@ export interface UserAdmin {
   profileImage: string | null;
   role: UserRole;
   active: boolean;
+  blocked: boolean;
   createdAt: string | null;
   clientProfile?: { birthDate?: string; customerType?: string } | null;
   sellerProfile?: { businessName?: string; defaultCategory?: string; sede?: string } | null;
@@ -70,14 +71,14 @@ export class AuthService {
   readonly currentUser = this.currentUserSignal.asReadonly();
   readonly isAuthenticated = computed(() => this.currentUserSignal() !== null);
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient) { }
 
   registerClient(data: unknown): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/register/client`, data, { withCredentials: true});
+    return this.http.post(`${this.apiUrl}/register/client`, data, { withCredentials: true });
   }
 
   registerSeller(data: unknown): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/register/seller`, data, { withCredentials: true});
+    return this.http.post(`${this.apiUrl}/register/seller`, data, { withCredentials: true });
   }
 
   adminRegisterClient(data: unknown): Observable<unknown> {
@@ -124,9 +125,9 @@ export class AuthService {
   }
 
 
-  
-    
-    obtenerTodosLosUsuarios(rol?: string, estado?: string): Observable<UserAdmin[]> {
+
+
+  obtenerTodosLosUsuarios(rol?: string, estado?: string): Observable<UserAdmin[]> {
     let params = new HttpParams();
 
     if (rol) {
@@ -172,7 +173,40 @@ export class AuthService {
     );
   }
 
+  bloquearUsuarioAdmin(id: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `/api/admin/usuarios/${encodeURIComponent(id)}/bloquear`,
+      {},
+      { withCredentials: true },
+    );
+  }
+
+  desbloquearUsuarioAdmin(id: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `/api/admin/usuarios/${encodeURIComponent(id)}/desbloquear`,
+      {},
+      { withCredentials: true },
+    );
+  }
+
   crearAdministrador(data: AltaAdminRequest): Observable<any> {
     return this.http.post<any>('/api/admin/alta', data, { withCredentials: true });
   }
+
+  activarUsuarioAdmin(id: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `/api/admin/usuarios/${encodeURIComponent(id)}/activar`,
+      {},
+      { withCredentials: true },
+    );
+  }
+
+  desactivarUsuarioAdmin(id: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `/api/admin/usuarios/${encodeURIComponent(id)}/desactivar`,
+      {},
+      { withCredentials: true },
+    );
+  }
+
 }

@@ -153,32 +153,61 @@ export class ProductCreate implements OnInit {
 
     const response = error.error;
     const message = typeof response['message'] === 'string' ? response['message'] : null;
-    const errors = this.isRecord(response['errors']) ? response['errors'] : {};
-    const unrecognizedErrors: string[] = [];
+    const unrecognizedErrors = this.parseFieldErrors(response['errors']);
 
-    for (const [field, fieldError] of Object.entries(errors)) {
-      if (typeof fieldError !== 'string') {
-        continue;
-      }
-
-      const matchingField = PRODUCT_FORM_FIELDS.find((formField) => formField === field);
-      if (matchingField) {
-        this.serverFieldErrors[matchingField] = fieldError;
-      } else {
-        unrecognizedErrors.push(`${field}: ${fieldError}`);
-      }
-    }
-
-    if (message && /categor[ií]as?/i.test(message) && /no existen|no existe|no válid/i.test(message)) {
+    if (this.isCategoryErrorMessage(message)) {
       this.serverFieldErrors.categoriaIds = message;
       this.submitError.set(message);
-    } else if (unrecognizedErrors.length > 0) {
-      this.submitError.set([message, ...unrecognizedErrors].filter(Boolean).join('. '));
-    } else if (Object.keys(this.serverFieldErrors).length > 0) {
-      this.submitError.set('Revisa los campos marcados y vuelve a intentarlo.');
-    } else {
-      this.submitError.set(message || this.getFallbackError(error.status));
+      return;
     }
+
+    this.submitError.set(this.resolveSubmitErrorMessage(message, unrecognizedErrors, error.status));
+  }
+
+  private parseFieldErrors(errorsPayload: unknown): string[] {
+    if (!this.isRecord(errorsPayload)) {
+      return [];
+    }
+
+    const unrecognizedErrors: string[] = [];
+    for (const [field, fieldError] of Object.entries(errorsPayload)) {
+      if (typeof fieldError === 'string') {
+        this.assignFieldError(field, fieldError, unrecognizedErrors);
+      }
+    }
+
+    return unrecognizedErrors;
+  }
+
+  private assignFieldError(field: string, error: string, unrecognizedErrors: string[]): void {
+    const matchingField = PRODUCT_FORM_FIELDS.find((formField) => formField === field);
+    if (matchingField) {
+      this.serverFieldErrors[matchingField] = error;
+    } else {
+      unrecognizedErrors.push(`${field}: ${error}`);
+    }
+  }
+
+  private isCategoryErrorMessage(message: string | null): message is string {
+    return Boolean(
+      message &&
+      /categor[ií]as?/i.test(message) &&
+      /no existen|no existe|no válid/i.test(message),
+    );
+  }
+
+  private resolveSubmitErrorMessage(
+    message: string | null,
+    unrecognizedErrors: string[],
+    status: number,
+  ): string {
+    if (unrecognizedErrors.length > 0) {
+      return [message, ...unrecognizedErrors].filter(Boolean).join('. ');
+    }
+    if (Object.keys(this.serverFieldErrors).length > 0) {
+      return 'Revisa los campos marcados y vuelve a intentarlo.';
+    }
+    return message || this.getFallbackError(status);
   }
 
   private getFallbackError(status: number): string {

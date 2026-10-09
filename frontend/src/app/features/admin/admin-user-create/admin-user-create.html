@@ -27,7 +27,8 @@
         <div *ngIf="errorMessage" class="alert-box alert-danger" role="alert">
           <div class="alert-title">
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span>Error</span>
           </div>
@@ -37,7 +38,8 @@
           </ul>
         </div>
 
-        <div *ngIf="successMessage" class="alert-box alert-success" role="status">
+        @if (successMessage) {
+        <output class="alert-box alert-success" aria-live="polite">
           <div class="alert-title">
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -45,18 +47,21 @@
             <span>Éxito</span>
           </div>
           <p class="success-message">{{ successMessage }}</p>
-        </div>
+        </output>
+        }
 
         <section class="card">
           <div class="card-header">
             <h1 class="card-title">
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
               </svg>
               Crear nuevo administrador
             </h1>
             <p class="card-subtitle">
-              Completa los datos del nuevo administrador para registrarlo en el sistema. Los campos con asterisco (*) son obligatorios.
+              Completa los datos del nuevo administrador para registrarlo en el sistema. Los campos con asterisco (*)
+              son obligatorios.
             </p>
           </div>
 
@@ -65,19 +70,15 @@
             <div class="form-row">
               <div class="form-group">
                 <label for="nombre" class="form-label">Nombre <span class="required">*</span></label>
-                <input
-                  id="nombre"
-                  type="text"
-                  class="form-control"
-                  formControlName="nombre"
-                  placeholder="Nombre"
-                  maxlength="25"
-                  autocomplete="given-name"
-                />
-                <div *ngIf="form.get('nombre')?.touched && form.get('nombre')?.hasError('required')" class="field-error">
+                <input id="nombre" type="text" class="form-control" formControlName="nombre" placeholder="Nombre"
+                  maxlength="25" autocomplete="given-name" />
+                <div *ngIf="form.get('nombre')?.touched && form.get('nombre')?.hasError('required')"
+                  class="field-error">
                   El nombre es obligatorio.
                 </div>
-                <div *ngIf="form.get('nombre')?.touched && (form.get('nombre')?.hasError('minlength') || form.get('nombre')?.hasError('maxlength'))" class="field-error">
+                <div
+                  *ngIf="form.get('nombre')?.touched && (form.get('nombre')?.hasError('minlength') || form.get('nombre')?.hasError('maxlength'))"
+                  class="field-error">
                   El nombre debe tener entre 2 y 25 caracteres.
                 </div>
                 <div *ngIf="fieldErrors['nombre']" class="field-error">{{ fieldErrors['nombre'] }}</div>
@@ -85,19 +86,15 @@
 
               <div class="form-group">
                 <label for="apellidos" class="form-label">Apellidos <span class="required">*</span></label>
-                <input
-                  id="apellidos"
-                  type="text"
-                  class="form-control"
-                  formControlName="apellidos"
-                  placeholder="Apellidos"
-                  maxlength="50"
-                  autocomplete="family-name"
-                />
-                <div *ngIf="form.get('apellidos')?.touched && form.get('apellidos')?.hasError('required')" class="field-error">
+                <input id="apellidos" type="text" class="form-control" formControlName="apellidos"
+                  placeholder="Apellidos" maxlength="50" autocomplete="family-name" />
+                <div *ngIf="form.get('apellidos')?.touched && form.get('apellidos')?.hasError('required')"
+                  class="field-error">
                   Los apellidos son obligatorios.
                 </div>
-                <div *ngIf="form.get('apellidos')?.touched && (form.get('apellidos')?.hasError('minlength') || form.get('apellidos')?.hasError('maxlength'))" class="field-error">
+                <div
+                  *ngIf="form.get('apellidos')?.touched && (form.get('apellidos')?.hasError('minlength') || form.get('apellidos')?.hasError('maxlength'))"
+                  class="field-error">
                   Los apellidos deben tener entre 2 y 50 caracteres.
                 </div>
                 <div *ngIf="fieldErrors['apellidos']" class="field-error">{{ fieldErrors['apellidos'] }}</div>
@@ -108,39 +105,22 @@
             <div class="form-row">
               <div class="form-group">
                 <label for="dni" class="form-label">DNI <span class="required">*</span></label>
-                <input
-                  id="dni"
-                  type="text"
-                  class="form-control"
-                  formControlName="dni"
-                  placeholder="12345678Z"
-                  maxlength="9"
-                />
+                <input id="dni" type="text" class="form-control" formControlName="dni" placeholder="DNI" />
                 <div *ngIf="form.get('dni')?.touched && form.get('dni')?.hasError('required')" class="field-error">
                   El DNI es obligatorio.
-                </div>
-                <div *ngIf="form.get('dni')?.touched && form.get('dni')?.hasError('pattern')" class="field-error">
-                  El DNI debe tener 8 dígitos y una letra (ej: 12345678Z).
                 </div>
                 <div *ngIf="fieldErrors['dni']" class="field-error">{{ fieldErrors['dni'] }}</div>
               </div>
 
               <div class="form-group">
                 <label for="email" class="form-label">Email corporativo <span class="required">*</span></label>
-                <input
-                  id="email"
-                  type="email"
-                  class="form-control"
-                  formControlName="email"
-                  placeholder="admin@esibuy.com"
-                  maxlength="120"
-                  autocomplete="email"
-                />
+                <input id="email" type="email" class="form-control" formControlName="email"
+                  placeholder="usuario@dominio.com" maxlength="120" autocomplete="email" />
                 <div *ngIf="form.get('email')?.touched && form.get('email')?.hasError('required')" class="field-error">
                   El email es obligatorio.
                 </div>
                 <div *ngIf="form.get('email')?.touched && form.get('email')?.hasError('email')" class="field-error">
-                  El formato de email no es válido.
+                  Formato de email no válido (ejemplo: usuario@dominio.com)
                 </div>
                 <div *ngIf="fieldErrors['email']" class="field-error">{{ fieldErrors['email'] }}</div>
               </div>
@@ -150,37 +130,36 @@
             <div class="form-row">
               <div class="form-group">
                 <label for="contrasena" class="form-label">Contraseña <span class="required">*</span></label>
-                <input
-                  id="contrasena"
-                  type="password"
-                  class="form-control"
-                  formControlName="contrasena"
-                  placeholder="Mínimo 12 caracteres"
-                  autocomplete="new-password"
-                />
-                <div *ngIf="form.get('contrasena')?.touched && form.get('contrasena')?.hasError('required')" class="field-error">
+                <input id="contrasena" type="password" class="form-control" formControlName="contrasena"
+                  placeholder="Mínimo 12 caracteres" autocomplete="new-password" />
+                <div *ngIf="form.get('contrasena')?.touched && form.get('contrasena')?.hasError('required')"
+                  class="field-error">
                   La contraseña es obligatoria.
                 </div>
-                <div *ngIf="form.get('contrasena')?.touched && (form.get('contrasena')?.hasError('minlength') || form.get('contrasena')?.hasError('pattern'))" class="field-error">
-                  Debe tener al menos 12 caracteres, mayúscula, minúscula, número y símbolo.
+                <div *ngIf="form.get('contrasena')?.touched && form.get('contrasena')?.hasError('minlength')"
+                  class="field-error">
+                  Debe tener al menos 12 caracteres.
+                </div>
+                <div *ngIf="form.get('contrasena')?.touched && form.get('contrasena')?.hasError('pattern')"
+                  class="field-error">
+                  La contraseña debe tener mayúscula, minúscula, número y un carácter especial.
                 </div>
                 <div *ngIf="fieldErrors['contrasena']" class="field-error">{{ fieldErrors['contrasena'] }}</div>
               </div>
 
               <div class="form-group">
-                <label for="repetirContrasena" class="form-label">Repetir contraseña <span class="required">*</span></label>
-                <input
-                  id="repetirContrasena"
-                  type="password"
-                  class="form-control"
-                  formControlName="repetirContrasena"
-                  placeholder="Repite la contraseña"
-                  autocomplete="new-password"
-                />
-                <div *ngIf="form.get('repetirContrasena')?.touched && form.get('repetirContrasena')?.hasError('required')" class="field-error">
+                <label for="repetirContrasena" class="form-label">Repetir contraseña <span
+                    class="required">*</span></label>
+                <input id="repetirContrasena" type="password" class="form-control" formControlName="repetirContrasena"
+                  placeholder="Repite la contraseña" autocomplete="new-password" />
+                <div
+                  *ngIf="form.get('repetirContrasena')?.touched && form.get('repetirContrasena')?.hasError('required')"
+                  class="field-error">
                   Debe repetir la contraseña.
                 </div>
-                <div *ngIf="form.hasError('passwordsMismatch') && (form.get('repetirContrasena')?.touched || form.get('contrasena')?.touched)" class="field-error">
+                <div
+                  *ngIf="form.hasError('passwordsMismatch') && (form.get('repetirContrasena')?.touched || form.get('contrasena')?.touched)"
+                  class="field-error">
                   Las contraseñas no coinciden.
                 </div>
               </div>
@@ -190,65 +169,38 @@
             <div class="form-row">
               <div class="form-group">
                 <label for="sede" class="form-label">Sede</label>
-                <input
-                  id="sede"
-                  type="text"
-                  class="form-control"
-                  formControlName="sede"
-                  placeholder="Ej: Ciudad Real, Albacete, Toledo..."
-                  maxlength="100"
-                />
+                <input id="sede" type="text" class="form-control" formControlName="sede"
+                  placeholder="Ej: Ciudad Real, Albacete, Toledo..." maxlength="100" />
                 <div *ngIf="fieldErrors['sede']" class="field-error">{{ fieldErrors['sede'] }}</div>
               </div>
 
               <div class="form-group">
                 <label for="fechaCreacion" class="form-label">Fecha de creación</label>
-                <input
-                  id="fechaCreacion"
-                  type="text"
-                  class="form-control readonly-control"
-                  [value]="fechaCreacion"
-                  readonly
-                  aria-readonly="true"
-                  tabindex="-1"
-                />
+                <input id="fechaCreacion" type="text" class="form-control readonly-control" [value]="fechaCreacion"
+                  readonly aria-readonly="true" tabindex="-1" />
               </div>
             </div>
 
             <!-- Avatares del registro -->
-            <div class="form-group avatar-section">
-              <label class="form-label">Avatar de perfil</label>
+            <fieldset class="form-group avatar-section">
+              <legend class="form-label">Avatar de perfil</legend>
               <div class="avatar-selector-grid">
-                <button
-                  *ngFor="let av of avatars"
-                  type="button"
-                  class="avatar-item"
-                  [class.selected]="form.get('imagenPerfil')?.value === av"
-                  (click)="selectAvatar(av)"
-                  [attr.aria-label]="'Seleccionar avatar'"
-                >
+                <button *ngFor="let av of avatars" type="button" class="avatar-item"
+                  [class.selected]="form.get('imagenPerfil')?.value === av" (click)="selectAvatar(av)"
+                  [attr.aria-label]="'Seleccionar avatar'">
                   <img [src]="av" alt="Avatar disponible" />
                   <span *ngIf="form.get('imagenPerfil')?.value === av" class="avatar-check">✓</span>
                 </button>
               </div>
               <p class="avatar-hint">Selecciona una imagen de perfil de las opciones disponibles.</p>
-            </div>
+            </fieldset>
 
             <!-- Botones de acción -->
             <div class="btn-wrapper">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                (click)="cancelar()"
-                [disabled]="submitting"
-              >
+              <button type="button" class="btn btn-secondary" (click)="cancelar()" [disabled]="submitting">
                 Volver
               </button>
-              <button
-                type="submit"
-                class="btn btn-primary"
-                [disabled]="submitting"
-              >
+              <button type="submit" class="btn btn-primary" [disabled]="submitting">
                 <span *ngIf="submitting" class="spinner" aria-hidden="true"></span>
                 <span>Crear administrador</span>
               </button>

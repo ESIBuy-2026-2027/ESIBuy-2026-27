@@ -42,6 +42,7 @@
 
 .back-link:focus-visible,
 .role-card-btn:focus-visible,
+.role-card-radio:focus-visible + .role-icon-wrapper,
 .btn:focus-visible {
   outline: 3px solid rgb(66 214 178 / 28%);
   outline-offset: 2px;
@@ -179,6 +180,20 @@
   transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
 }
 
+.role-card-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.role-card-btn:has(.role-card-radio:focus-visible) {
+  outline: 3px solid rgb(66 214 178 / 28%);
+  outline-offset: 2px;
+}
+
 .role-card-btn:hover {
   border-color: #9edfd0;
   background: #f2fbf8;
@@ -311,6 +326,62 @@
   color: #b34b4b;
   font-size: 11px;
   line-height: 1.4;
+}
+
+/* ==========================================================================
+   PASSWORD WRAPPER Y TOGGLE (IGUAL QUE EN REGISTRO / LOGIN)
+   ========================================================================== */
+.password-wrapper,
+.custom-password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-wrapper .form-control,
+.password-wrapper input,
+.custom-password-container .form-control,
+.custom-password-container input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.password-toggle,
+.password-toggle-btn {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: #72828e;
+  cursor: pointer;
+  z-index: 2;
+  transition: color .2s ease;
+}
+
+.password-toggle:hover,
+.password-toggle-btn:hover {
+  color: #146b69;
+}
+
+.password-toggle:focus-visible,
+.password-toggle-btn:focus-visible {
+  outline: none;
+}
+
+.password-toggle svg,
+.password-toggle-btn svg {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
 }
 
 .avatar-selection-group {

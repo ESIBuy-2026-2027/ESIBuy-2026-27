@@ -40,7 +40,7 @@ export class AdminUserList implements OnInit {
   constructor(
     private readonly authService: AuthService,
     private readonly cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.cargarUsuarios();
@@ -82,31 +82,108 @@ export class AdminUserList implements OnInit {
     return this.authService.currentUser()?.id !== usuario.id;
   }
 
-  puedeBloquear(usuario: UserAdmin): boolean {
+  puedeCambiarEstado(usuario: UserAdmin): boolean {
     return this.authService.currentUser()?.id !== usuario.id;
   }
 
-  alternarEstadoUsuario(usuario: UserAdmin): void {
-    if (!this.puedeBloquear(usuario) || this.actualizandoEstado()) {
+  cambiarEstadoUsuario(usuario: UserAdmin, accion: 'activar' | 'desactivar' | 'bloquear' | 'desbloquear'): void {
+    if (!this.puedeCambiarEstado(usuario) || this.actualizandoEstado()) {
       return;
     }
 
     this.actualizandoEstado.set(usuario.id);
     this.error.set('');
-    this.authService.alternarEstadoUsuarioAdmin(usuario.id).subscribe({
+    this.mensajeExito.set('');
+
+    let peticion;
+
+    switch (accion) {
+      case 'activar':
+        peticion = this.authService.activarUsuarioAdmin(usuario.id);
+        break;
+
+      case 'desactivar':
+        peticion = this.authService.desactivarUsuarioAdmin(usuario.id);
+        break;
+
+      case 'bloquear':
+        peticion = this.authService.bloquearUsuarioAdmin(usuario.id);
+        break;
+
+      case 'desbloquear':
+        peticion = this.authService.desbloquearUsuarioAdmin(usuario.id);
+        break;
+    }
+
+    peticion.subscribe({
       next: () => {
-        this.usuarios.update((usuarios) => usuarios.map((actual) =>
-          actual.id === usuario.id ? { ...actual, active: !actual.active } : actual));
-        this.mensajeExito.set(
-          `La cuenta de ${usuario.email} se ha ${usuario.active ? 'bloqueado' : 'desbloqueado'} correctamente.`,
+        this.usuarios.update((usuarios) =>
+          usuarios.map((actual) => {
+            if (actual.id !== usuario.id) {
+              return actual;
+            }
+
+            switch (accion) {
+              case 'activar':
+                return { ...actual, active: true, blocked: false };
+
+              case 'desactivar':
+                return { ...actual, active: false, blocked: false };
+
+              case 'bloquear':
+                return { ...actual, active: false, blocked: true };
+
+              case 'desbloquear':
+                return { ...actual, active: true, blocked: false };
+            }
+          }),
         );
+
+        const mensajes = {
+          activar: `La cuenta de ${usuario.email} se ha activado correctamente.`,
+          desactivar: `La cuenta de ${usuario.email} se ha desactivado correctamente.`,
+          bloquear: `La cuenta de ${usuario.email} se ha bloqueado correctamente.`,
+          desbloquear: `La cuenta de ${usuario.email} se ha desbloqueado correctamente.`,
+        };
+
+        this.mensajeExito.set(mensajes[accion]);
         this.actualizandoEstado.set(null);
       },
+
       error: () => {
         this.error.set('No se pudo cambiar el estado del usuario. Inténtalo de nuevo.');
         this.actualizandoEstado.set(null);
       },
     });
+  }
+
+  getEstadoUsuario(usuario: UserAdmin): 'activo' | 'inactivo' | 'bloqueado' {
+    if (usuario.blocked) {
+      return 'bloqueado';
+    }
+    return usuario.active ? 'activo' : 'inactivo';
+  }
+
+  getTextoEstado(usuario: UserAdmin): string {
+    switch (this.getEstadoUsuario(usuario)) {
+      case 'activo':
+        return 'Activo';
+      case 'inactivo':
+        return 'Inactivo';
+      case 'bloqueado':
+        return 'Bloqueado';
+    }
+  }
+
+  getClaseEstado(usuario: UserAdmin): string {
+    switch (this.getEstadoUsuario(usuario)) {
+      case 'activo':
+        return 'active';
+      case 'inactivo':
+        return 'inactive';
+      case 'bloqueado':
+        return 'blocked';
+    }
   }
 
   abrirConfirmacion(usuario: UserAdmin): void {
