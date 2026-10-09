@@ -88,25 +88,25 @@
           </div>
         </div>
         @if (productsLoading()) {
-          <p class="catalog-message" role="status">Cargando tus productos…</p>
+        <output class="catalog-message">Cargando tus productos…</output>
         } @else if (productsError()) {
-          <div class="catalog-error" role="alert">
-            <span>No se pudieron cargar tus productos. Inténtalo de nuevo.</span>
-            <button type="button" (click)="loadProducts()">Reintentar</button>
-          </div>
+        <div class="catalog-error" role="alert">
+          <span>No se pudieron cargar tus productos. Inténtalo de nuevo.</span>
+          <button type="button" (click)="loadProducts()">Reintentar</button>
+        </div>
         } @else if (products().length === 0) {
-          <div class="empty-state">
-            <span class="empty-icon" aria-hidden="true">▦</span>
-            <h3>Aún no tienes productos</h3>
-            <p>Añade tu primer producto para empezar a mostrar tu oferta en ESIBuy.</p>
-            <a class="secondary-action" routerLink="/products/new">Crear mi primer producto</a>
-          </div>
+        <div class="empty-state">
+          <span class="empty-icon" aria-hidden="true">▦</span>
+          <h3>Aún no tienes productos</h3>
+          <p>Añade tu primer producto para empezar a mostrar tu oferta en ESIBuy.</p>
+          <a class="secondary-action" routerLink="/products/new">Crear mi primer producto</a>
+        </div>
         } @else if (visibleProducts().length === 0) {
-          <div class="empty-state">
-            <span class="empty-icon" aria-hidden="true">⌕</span>
-            <h3>No se encontraron productos</h3>
-            <p>Prueba a buscar con otro nombre.</p>
-          </div>
+        <div class="empty-state">
+          <span class="empty-icon" aria-hidden="true">⌕</span>
+          <h3>No se encontraron productos</h3>
+          <p>Prueba a buscar con otro nombre.</p>
+        </div>
         } @else {
           @if (categoriesError()) {
             <div class="catalog-error category-error" role="alert">

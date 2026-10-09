@@ -1,8 +1,7 @@
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, HttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { vi } from 'vitest';
 import { authInterceptor } from './auth.interceptor';
 import { AuthService } from '../services/auth.service';

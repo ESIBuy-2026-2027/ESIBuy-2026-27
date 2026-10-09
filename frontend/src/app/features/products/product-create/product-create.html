@@ -90,11 +90,11 @@
             }
           </select>
           @if (categoriesLoading) {
-            <span class="field-hint" role="status">Cargando categorías…</span>
+            <output class="field-hint">Cargando categorías…</output>
           } @else if (categoriesError) {
             <span class="field-error" role="alert">No se pudieron cargar las categorías. Vuelve a intentarlo más tarde.</span>
           } @else if (categories.length === 0) {
-            <span class="field-hint" role="status">No hay categorías disponibles en este momento.</span>
+            <output class="field-hint">No hay categorías disponibles en este momento.</output>
           } @else if (form.controls.categoriaIds.touched && form.controls.categoriaIds.hasError('required')) {
             <span class="field-error">Selecciona al menos una categoría.</span>
           }
@@ -208,7 +208,7 @@
           <span class="field-hint">Introduce una URL http o https; si no se indica, el producto se guardará sin imagen.</span>
                   <div class="image-preview" [class.has-error]="previewUrl && imageError()">
             @if (previewUrl) {
-              <img [src]="previewUrl" alt="Vista previa de la imagen del producto"
+              <img [src]="previewUrl" alt="Vista previa del producto"
                 [hidden]="imageError()"
                 (load)="imageError.set(false)"
                 (error)="imageError.set(true)" />
@@ -243,7 +243,7 @@
     </section>
 
     @if (submitSuccess()) {
-      <div class="submit-success" role="status">Producto registrado correctamente.</div>
+      <output class="submit-success">Producto registrado correctamente.</output>
     }
 
     @if (submitError(); as error) {

@@ -32,118 +32,126 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductController.class)
-@Import({ApiExceptionHandler.class, SecurityConfig.class})
+@Import({ ApiExceptionHandler.class, SecurityConfig.class })
 class ProductControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        private static final String CATEGORY_ID = "category-id";
+        private static final String PRODUCT_NAME = "auriculares";
+        private static final String SELLER_ID = "seller-id";
+        private static final String SELLER_EMAIL = "seller@example.com";
+        private static final String PRODUCTS_API = "/api/products";
+        private static final String PRODUCT_PRICE = "19.99";
 
-    @MockitoBean
-    private ProductService productService;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Test
-    @WithMockUser(username = "seller@example.com", roles = "SELLER")
-    void shouldReturnCreatedProductAndUseAuthenticatedIdentity() throws Exception {
-        Product product = new Product(
-                "Auriculares", List.of("category-id"), 0, null,
-                new BigDecimal("19.99"), null, null, null, true, "seller-id");
-        when(productService.createProduct(any(ProductCreateRequest.class), eq("seller@example.com")))
-                .thenReturn(product);
+        @MockitoBean
+        private ProductService productService;
 
-        mockMvc.perform(post("/api/products")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(validRequest()))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value("Auriculares"))
-                .andExpect(jsonPath("$.categoryIds[0]").value("category-id"))
-                .andExpect(jsonPath("$.sellerId").value("seller-id"));
+        @Test
+        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
+        void shouldReturnCreatedProductAndUseAuthenticatedIdentity() throws Exception {
+                Product product = new Product(
+                                PRODUCT_NAME, List.of(CATEGORY_ID), 0, null,
+                                new BigDecimal("19.99"), null, null, null, true, SELLER_ID);
+                when(productService.createProduct(any(ProductCreateRequest.class), eq(SELLER_EMAIL)))
+                                .thenReturn(product);
 
-        verify(productService).createProduct(any(ProductCreateRequest.class), eq("seller@example.com"));
-    }
+                mockMvc.perform(post(PRODUCTS_API)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(validRequest()))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.name").value(PRODUCT_NAME))
+                                .andExpect(jsonPath("$.categoryIds[0]").value(CATEGORY_ID))
+                                .andExpect(jsonPath("$.sellerId").value(SELLER_ID));
 
-    @Test
-    @WithMockUser(username = "seller@example.com", roles = "SELLER")
-    void shouldReturnAllFieldValidationErrors() throws Exception {
-        mockMvc.perform(post("/api/products")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"name":"","categoryIds":[],"price":0,"available":null}
-                                """))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.name").isNotEmpty())
-                .andExpect(jsonPath("$.errors.categoryIds").isNotEmpty())
-                .andExpect(jsonPath("$.errors.price").isNotEmpty())
-                .andExpect(jsonPath("$.errors.available").isNotEmpty());
-    }
+                verify(productService).createProduct(any(ProductCreateRequest.class), eq(SELLER_EMAIL));
+        }
 
-    @Test
-    @WithMockUser(username = "seller@example.com", roles = "SELLER")
-    void shouldReturnClearBadRequestForUnknownCategory() throws Exception {
-        when(productService.createProduct(any(ProductCreateRequest.class), eq("seller@example.com")))
-                .thenThrow(new CategoryNotFoundException(List.of("category-id")));
+        @Test
+        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
+        void shouldReturnAllFieldValidationErrors() throws Exception {
+                mockMvc.perform(post(PRODUCTS_API)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"name":"","categoryIds":[],"price":0,"available":null}
+                                                """))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.errors.name").isNotEmpty())
+                                .andExpect(jsonPath("$.errors.categoryIds").isNotEmpty())
+                                .andExpect(jsonPath("$.errors.price").isNotEmpty())
+                                .andExpect(jsonPath("$.errors.available").isNotEmpty());
+        }
 
-        mockMvc.perform(post("/api/products")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(validRequest()))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("No existen las categorías indicadas: category-id"));
-    }
+        @Test
+        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
+        void shouldReturnClearBadRequestForUnknownCategory() throws Exception {
+                when(productService.createProduct(any(ProductCreateRequest.class), eq(SELLER_EMAIL)))
+                                .thenThrow(new CategoryNotFoundException(List.of(CATEGORY_ID)));
 
-    @Test
-    @WithMockUser(username = "seller@example.com", roles = "SELLER")
-    void shouldReturnSellerSummary() throws Exception {
-        when(productService.getSummary("seller@example.com"))
-                .thenReturn(new ProductSummaryResponse(12, 2, 3, 5));
+                mockMvc.perform(post(PRODUCTS_API)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(validRequest()))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.message")
+                                                .value("No existen las categorías indicadas: " + CATEGORY_ID));
+        }
 
-        mockMvc.perform(get("/api/products/summary"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalProducts").value(12))
-                .andExpect(jsonPath("$.outOfStockProducts").value(2))
-                .andExpect(jsonPath("$.lowStockProducts").value(3))
-                .andExpect(jsonPath("$.lowStockThreshold").value(5));
-    }
+        @Test
+        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
+        void shouldReturnSellerSummary() throws Exception {
+                when(productService.getSummary(SELLER_EMAIL))
+                                .thenReturn(new ProductSummaryResponse(12, 2, 3, 5));
 
-    @Test
-    @WithMockUser(username = "seller@example.com", roles = "SELLER")
-    void shouldReturnProductsForAuthenticatedSeller() throws Exception {
-        when(productService.getSellerProducts("seller@example.com"))
-                .thenReturn(List.of(new ProductResponse(
-                        "product-1", "Auriculares", List.of("category-id"), 3,
-                        "Inalámbricos", new BigDecimal("19.99"), null, null,
-                        null, true, "seller-id")));
+                mockMvc.perform(get(PRODUCTS_API + "/summary"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.totalProducts").value(12))
+                                .andExpect(jsonPath("$.outOfStockProducts").value(2))
+                                .andExpect(jsonPath("$.lowStockProducts").value(3))
+                                .andExpect(jsonPath("$.lowStockThreshold").value(5));
+        }
 
-        mockMvc.perform(get("/api/products/mine"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value("product-1"))
-                .andExpect(jsonPath("$[0].name").value("Auriculares"))
-                .andExpect(jsonPath("$[0].stock").value(3))
-                .andExpect(jsonPath("$[0].sellerId").value("seller-id"));
+        @Test
+        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
+        void shouldReturnProductsForAuthenticatedSeller() throws Exception {
+                when(productService.getSellerProducts(SELLER_EMAIL))
+                                .thenReturn(List.of(new ProductResponse(
+                                                "product-1", PRODUCT_NAME, List.of(CATEGORY_ID), 3,
+                                                "Inalámbricos", new BigDecimal(PRODUCT_PRICE), null, null,
+                                                null, true, SELLER_ID)));
 
-        verify(productService).getSellerProducts("seller@example.com");
-    }
+                mockMvc.perform(get(PRODUCTS_API + "/mine"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$[0].id").value("product-1"))
+                                .andExpect(jsonPath("$[0].name").value(PRODUCT_NAME))
+                                .andExpect(jsonPath("$[0].stock").value(3))
+                                .andExpect(jsonPath("$[0].sellerId").value(SELLER_ID));
 
-    @Test
-    void shouldRejectClientFromProductEndpoints() throws Exception {
-        mockMvc.perform(get("/api/products/mine")
-                        .with(user("client@example.com").roles("CLIENT")))
-                .andExpect(status().isForbidden());
-    }
+                verify(productService).getSellerProducts(SELLER_EMAIL);
+        }
 
-    @Test
-    void shouldReturnUnauthorizedForProductCreationWithoutSession() throws Exception {
-        mockMvc.perform(post("/api/products")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(validRequest()))
-                .andExpect(status().isUnauthorized());
-    }
+        @Test
+        void shouldRejectClientFromProductEndpoints() throws Exception {
+                mockMvc.perform(get(PRODUCTS_API + "/mine")
+                                .with(user("client@example.com").roles("CLIENT")))
+                                .andExpect(status().isForbidden());
+        }
 
-    private String validRequest() {
-        return """
-                {"name":"Auriculares","categoryIds":["category-id"],"price":19.99,"available":true}
-                """;
-    }
+        @Test
+        void shouldReturnUnauthorizedForProductCreationWithoutSession() throws Exception {
+                mockMvc.perform(post(PRODUCTS_API)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(validRequest()))
+                                .andExpect(status().isUnauthorized());
+        }
+
+        private String validRequest() {
+                return """
+                                {"name":"%s","categoryIds":["%s"],"price":19.99,"available":true}
+                                """.formatted(PRODUCT_NAME, CATEGORY_ID);
+        }
 }

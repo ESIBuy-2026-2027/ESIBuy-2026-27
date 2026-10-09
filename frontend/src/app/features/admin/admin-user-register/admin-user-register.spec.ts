@@ -60,8 +60,8 @@ describe('AdminUserRegister', () => {
 
     it('NUNCA debe permitir crear un usuario administrador desde esta vista', () => {
       // Verificación en la lista de roles permitidos del componente
-      expect(component.allowedRoles as string[]).not.toContain('admin');
-      expect(component.allowedRoles as string[]).not.toContain('administrador');
+      expect(component.allowedRoles).not.toContain('admin');
+      expect(component.allowedRoles).not.toContain('administrador');
       expect(component.allowedRoles).toEqual(['cliente', 'vendedor']);
 
       // Intento de forzar un rol 'admin' mediante setRole

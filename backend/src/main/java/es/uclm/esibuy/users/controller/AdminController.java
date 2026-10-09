@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -46,7 +47,8 @@ public class AdminController {
         response.put("dni", user.getNationalId());
         response.put("rol", user.getRole() != null ? user.getRole().name() : null);
         response.put("activo", user.isActive());
-        response.put("fechaIncorporacion", user.getAdminProfile() != null ? user.getAdminProfile().getHireDate() : null);
+        response.put("fechaIncorporacion",
+                user.getAdminProfile() != null ? user.getAdminProfile().getHireDate() : null);
         response.put("sede", user.getAdminProfile() != null ? user.getAdminProfile().getHeadquarters() : null);
         response.put("imagenPerfil", user.getProfileImage());
         return response;
@@ -59,5 +61,33 @@ public class AdminController {
             @RequestParam(required = false) String estado) {
 
         return ResponseEntity.ok(adminService.obtenerUsuariosFiltrados(rol, estado));
+    }
+
+    @PostMapping("/usuarios/{id}/bloquear")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> bloquearUsuario(@PathVariable String id) {
+        adminService.bloquearUsuario(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/usuarios/{id}/desbloquear")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> desbloquearUsuario(@PathVariable String id) {
+        adminService.desbloquearUsuario(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/usuarios/{id}/activar")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> activarUsuario(@PathVariable String id) {
+        adminService.activarUsuario(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/usuarios/{id}/desactivar")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> desactivarUsuario(@PathVariable String id) {
+        adminService.desactivarUsuario(id);
+        return ResponseEntity.ok().build();
     }
 }
