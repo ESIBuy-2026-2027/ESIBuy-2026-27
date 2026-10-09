@@ -39,7 +39,7 @@ describe('authInterceptor', () => {
     );
 
     expect(clearCurrentUser).toHaveBeenCalledOnce();
-    expect(navigate).toHaveBeenCalledWith(['/login'], {
+    expect(navigate).toHaveBeenCalledWith(['/'], {
       queryParams: { expired: 'true' },
     });
   });

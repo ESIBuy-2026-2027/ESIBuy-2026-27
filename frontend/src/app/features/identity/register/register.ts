@@ -349,7 +349,7 @@ export class Register {
             'Registro completado exitosamente. Tu cuenta requiere activación por un administrador.'
           );
 
-          this.router.navigate(['/login']);
+          this.router.navigate(['/']);
         },
 
         error: (err) => {
@@ -386,7 +386,7 @@ export class Register {
             'Registro completado exitosamente. Tu cuenta requiere activación por un administrador.'
           );
 
-          this.router.navigate(['/login']);
+          this.router.navigate(['/']);
         },
 
         error: (err) => {
