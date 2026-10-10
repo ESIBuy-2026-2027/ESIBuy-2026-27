@@ -7,3 +7,142 @@
 body {
   margin: 0;
 }
+
+/* Sidebar común del panel de administración */
+.admin-layout .admin-sidebar.admin-sidebar--shared {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 2;
+  display: flex;
+  width: 248px;
+  min-height: 100vh;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 30px 18px 20px;
+  background: #102c40;
+  color: #edf5f8;
+}
+
+.admin-layout .admin-sidebar.admin-sidebar--shared .admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: fit-content;
+  margin: 0 0 54px 8px;
+  color: #fff;
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -0.7px;
+  text-decoration: none;
+}
+
+.admin-layout .admin-sidebar.admin-sidebar--shared .brand-mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 11px;
+  background: #42d6b2;
+  color: #102c40;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.admin-layout .admin-sidebar.admin-sidebar--shared .brand-accent {
+  color: #42d6b2;
+}
+
+.admin-layout .admin-sidebar.admin-sidebar--shared .sidebar-caption {
+  margin: 0;
+  padding: 0 10px 13px;
+  color: #8396a4;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 1.15px;
+}
+
+.admin-layout .admin-sidebar.admin-sidebar--shared .admin-navigation {
+  display: grid;
+  gap: 7px;
+}
+
+.admin-layout .admin-sidebar.admin-sidebar--shared .navigation-link {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: #c1d0d8;
+  font-size: 13px;
+  font-weight: 550;
+  text-decoration: none;
+  transition: background-color .2s ease, color .2s ease, box-shadow .2s ease;
+}
+
+.admin-layout .admin-sidebar.admin-sidebar--shared .navigation-link:hover,
+.admin-layout .admin-sidebar.admin-sidebar--shared .navigation-link.is-active {
+  background: #1d4357;
+  color: #fff;
+}
+
+.admin-layout .admin-sidebar.admin-sidebar--shared .navigation-link.is-active {
+  box-shadow: inset 3px 0 #42d6b2;
+}
+
+.admin-layout .admin-sidebar.admin-sidebar--shared .navigation-icon {
+  display: block;
+  width: 19px;
+  height: 19px;
+  place-items: center;
+  flex: 0 0 19px;
+  color: #42d6b2;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.admin-layout .admin-sidebar.admin-sidebar--shared .text-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 19px;
+  height: 19px;
+  font-size: 25px;
+  font-weight: 500;
+  line-height: 1;
+  stroke: none;
+  /* Corrige el desfase tipográfico vertical */
+  margin-top: -2px;
+}
+
+@media (max-width: 760px) {
+  .admin-layout .admin-sidebar.admin-sidebar--shared {
+    position: static;
+    width: 100%;
+    min-height: auto;
+    padding: 14px 18px 12px;
+  }
+
+  .admin-layout .admin-sidebar.admin-sidebar--shared .admin-brand {
+    margin: 0 0 14px 2px;
+  }
+
+  .admin-layout .admin-sidebar.admin-sidebar--shared .sidebar-caption {
+    display: none;
+  }
+
+  .admin-layout .admin-sidebar.admin-sidebar--shared .admin-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .admin-layout .admin-sidebar.admin-sidebar--shared .navigation-link {
+    min-height: 38px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+}
