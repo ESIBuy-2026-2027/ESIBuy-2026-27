@@ -236,6 +236,50 @@
   box-shadow: 0 0 0 3px rgb(66 214 178 / 16%);
 }
 
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper .form-control {
+  padding-right: 48px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #718492;
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  background: #edf7f5;
+  color: #168e78;
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid #42bfa4;
+  outline-offset: 1px;
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .form-control.readonly-control,
 .form-control[readonly] {
   border-color: #dce6ea;

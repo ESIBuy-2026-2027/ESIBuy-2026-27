@@ -33,6 +33,7 @@ export class AdminUserCreate {
   private readonly router = inject(Router);
 
   submitting = false;
+  showPassword = false;
   errorMessage = '';
   successMessage = '';
   fieldErrors: Record<string, string> = {};

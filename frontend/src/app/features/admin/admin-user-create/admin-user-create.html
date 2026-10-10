@@ -139,8 +139,24 @@
             <div class="form-row">
               <div class="form-group">
                 <label for="contrasena" class="form-label">Contraseña <span class="required">*</span></label>
-                <input id="contrasena" type="password" class="form-control" formControlName="contrasena"
-                  placeholder="Mínimo 12 caracteres" autocomplete="new-password" />
+                <div class="password-wrapper">
+                  <input id="contrasena" [type]="showPassword ? 'text' : 'password'" class="form-control"
+                    formControlName="contrasena" placeholder="Mínimo 12 caracteres"
+                    [attr.autocomplete]="showPassword ? 'off' : 'new-password'" />
+                  <button type="button" class="password-toggle" (click)="showPassword = !showPassword"
+                    [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                    <svg *ngIf="!showPassword" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                      <circle cx="12" cy="12" r="2.5"></circle>
+                    </svg>
+                    <svg *ngIf="showPassword" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M3 3l18 18"></path>
+                      <path
+                        d="M10.6 6.2A10.5 10.5 0 0 1 12 6c6 0 9.5 6 9.5 6a17.5 17.5 0 0 1-3.2 3.8M6.2 6.2C3.9 7.8 2.5 12 2.5 12s3.5 6 9.5 6c1.4 0 2.7-.3 3.8-.8">
+                      </path>
+                    </svg>
+                  </button>
+                </div>
                 <div *ngIf="form.get('contrasena')?.touched && form.get('contrasena')?.hasError('required')"
                   class="field-error">
                   La contraseña es obligatoria.
@@ -159,8 +175,11 @@
               <div class="form-group">
                 <label for="repetirContrasena" class="form-label">Repetir contraseña <span
                     class="required">*</span></label>
-                <input id="repetirContrasena" type="password" class="form-control" formControlName="repetirContrasena"
-                  placeholder="Repite la contraseña" autocomplete="new-password" />
+                <div class="password-wrapper">
+                  <input id="repetirContrasena" [type]="showPassword ? 'text' : 'password'" class="form-control"
+                    formControlName="repetirContrasena" placeholder="Repite la contraseña"
+                    [attr.autocomplete]="showPassword ? 'off' : 'new-password'" />
+                </div>
                 <div
                   *ngIf="form.get('repetirContrasena')?.touched && form.get('repetirContrasena')?.hasError('required')"
                   class="field-error">
