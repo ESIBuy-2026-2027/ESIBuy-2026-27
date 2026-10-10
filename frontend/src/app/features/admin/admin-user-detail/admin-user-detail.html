@@ -1,108 +1,127 @@
 <div class="admin-layout edit-layout">
   <aside class="admin-sidebar" aria-label="Panel de administración">
-    <a routerLink="/" class="admin-brand" aria-label="ESIBuy">
+    <a routerLink="/" class="admin-brand back-home-button" aria-label="ESIBuy">
       <span class="brand-mark" aria-hidden="true">E</span>
       <span>ESI<span class="brand-accent">Buy</span></span>
     </a>
     <p class="sidebar-caption">GESTIÓN DE ADMINISTRACIÓN</p>
     <nav class="admin-navigation" aria-label="Navegación de administración">
-      <a class="navigation-link is-active" routerLink="/admin/usuarios">
-        <span class="navigation-icon" aria-hidden="true">♙</span>
+      <a class="navigation-link is-active" routerLink="/admin/usuarios" aria-current="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20"></path>
+          <circle cx="10" cy="7" r="3"></circle>
+          <path d="M16 11a3 3 0 1 0 0-6"></path>
+          <path d="M16 14h1a4 4 0 0 1 4 4v2"></path>
+        </svg>
         <span>Usuarios</span>
+      </a>
+      <a class="navigation-link" routerLink="/admin/usuarios/alta">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="9" cy="7" r="3"></circle>
+          <path d="M3.5 20a5.5 5.5 0 0 1 11 0"></path>
+          <path d="M18 11v6m-3-3h6"></path>
+        </svg>
+        <span>Dar de alta usuario</span>
       </a>
       <a class="navigation-link" routerLink="/admin/altas">
         <span class="navigation-icon" aria-hidden="true">＋</span>
-        <span>Crear administrador</span>
+        <span>Dar de alta Administrador</span>
       </a>
     </nav>
   </aside>
 
   <div class="admin-workspace">
-  <main class="admin-create-container edit-page">
-  <div class="main-container">
-    <a class="back-link" routerLink="/admin/usuarios" aria-label="Volver al listado de usuarios">← Usuarios</a>
+    <main class="admin-create-container edit-page">
+      <div class="main-container">
+        <a class="back-link" routerLink="/admin/usuarios" aria-label="Volver al listado de usuarios">← Usuarios</a>
 
-  @if (cargando()) {
-    <output class="status" aria-live="polite">Cargando datos del usuario...</output>
-  } @else {
-    @if (successMessage()) {
-      <output class="alert-box alert-success" aria-live="polite">{{ successMessage() }}</output>
-    }
-    @if (errorMessage()) {
-      <div class="alert-box alert-danger" role="alert" aria-live="assertive">{{ errorMessage() }}</div>
-    }
+        @if (cargando()) {
+        <output class="status" aria-live="polite">Cargando datos del usuario...</output>
+        } @else {
+        @if (successMessage()) {
+        <output class="alert-box alert-success" aria-live="polite">{{ successMessage() }}</output>
+        }
+        @if (errorMessage()) {
+        <div class="alert-box alert-danger" role="alert" aria-live="assertive">{{ errorMessage() }}</div>
+        }
 
-    <section class="card">
-      <div class="card-header">
-        <h1 class="card-title">Editar usuario</h1>
-        <p class="card-subtitle">Actualice la información de la cuenta. Los datos identificativos y las credenciales permanecen protegidos.</p>
+        <section class="card">
+          <div class="card-header">
+            <h1 class="card-title">Editar usuario</h1>
+            <p class="card-subtitle">Actualice la información de la cuenta. Los datos identificativos y las credenciales
+              permanecen protegidos.</p>
+          </div>
+
+          <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+            <section class="account-section" aria-labelledby="account-heading">
+              <h2 class="section-title" id="account-heading">Información de la cuenta</h2>
+              <div class="form-row readonly-row">
+                <div class="form-group">
+                  <label class="form-label" for="accountEmail">Correo electrónico</label>
+                  <input id="accountEmail" type="email" class="form-control readonly-control" [value]="getEmail()"
+                    readonly aria-readonly="true" />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="accountRole">Rol</label>
+                  <input id="accountRole" type="text" class="form-control readonly-control" [value]="getRole()" readonly
+                    aria-readonly="true" />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="accountCredential">Contraseña</label>
+                  <input id="accountCredential" type="password" class="form-control readonly-control"
+                    [value]="credentialMask" readonly aria-readonly="true" autocomplete="off" />
+                </div>
+              </div>
+              <p class="locked-indicator">El correo, el rol y la contraseña no se pueden cambiar desde esta pantalla.
+              </p>
+            </section>
+
+            <section class="editable-section" aria-labelledby="editable-heading">
+              <h2 class="section-title" id="editable-heading">Datos editables</h2>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="firstName">Nombre</label>
+                  <input id="firstName" type="text" formControlName="firstName" class="form-control"
+                    autocomplete="given-name"
+                    [attr.aria-invalid]="form.controls.firstName.invalid && form.controls.firstName.touched" />
+                  @if (form.controls.firstName.touched && form.controls.firstName.invalid) {
+                  <small class="field-error">Indique un nombre válido de 2 a 25 caracteres.</small>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="lastName">Apellidos</label>
+                  <input id="lastName" type="text" formControlName="lastName" class="form-control"
+                    autocomplete="family-name"
+                    [attr.aria-invalid]="form.controls.lastName.invalid && form.controls.lastName.touched" />
+                  @if (form.controls.lastName.touched && form.controls.lastName.invalid) {
+                  <small class="field-error">Indique apellidos válidos de 2 a 50 caracteres.</small>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="phone">Teléfono <span class="optional-label">Opcional</span></label>
+                  <input id="phone" type="tel" formControlName="phone" class="form-control" autocomplete="tel"
+                    inputmode="tel" [attr.aria-invalid]="form.controls.phone.invalid && form.controls.phone.touched" />
+                  @if (form.controls.phone.touched && form.controls.phone.invalid) {
+                  <small class="field-error">El teléfono debe contener exactamente 9 dígitos numéricos</small>
+                  }
+                </div>
+              </div>
+            </section>
+
+            <footer class="btn-wrapper">
+              <a class="btn btn-secondary" routerLink="/admin/usuarios">Cancelar</a>
+              <button class="btn btn-primary" type="submit" [disabled]="guardando()">
+                {{ guardando() ? 'Guardando...' : 'Guardar cambios' }}
+              </button>
+            </footer>
+          </form>
+        </section>
+        }
       </div>
-
-      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-        <section class="account-section" aria-labelledby="account-heading">
-          <h2 class="section-title" id="account-heading">Información de la cuenta</h2>
-          <div class="form-row readonly-row">
-            <div class="form-group">
-              <label class="form-label" for="accountEmail">Correo electrónico</label>
-              <input id="accountEmail" type="email" class="form-control readonly-control" [value]="getEmail()" readonly aria-readonly="true" />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="accountRole">Rol</label>
-              <input id="accountRole" type="text" class="form-control readonly-control" [value]="getRole()" readonly aria-readonly="true" />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="accountCredential">Contraseña</label>
-              <input id="accountCredential" type="password" class="form-control readonly-control"
-                [value]="credentialMask" readonly aria-readonly="true" autocomplete="off" />
-            </div>
-          </div>
-          <p class="locked-indicator">El correo, el rol y la contraseña no se pueden cambiar desde esta pantalla.</p>
-        </section>
-
-        <section class="editable-section" aria-labelledby="editable-heading">
-          <h2 class="section-title" id="editable-heading">Datos editables</h2>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="firstName">Nombre</label>
-              <input id="firstName" type="text" formControlName="firstName" class="form-control" autocomplete="given-name"
-                [attr.aria-invalid]="form.controls.firstName.invalid && form.controls.firstName.touched" />
-              @if (form.controls.firstName.touched && form.controls.firstName.invalid) {
-                <small class="field-error">Indique un nombre válido de 2 a 25 caracteres.</small>
-              }
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="lastName">Apellidos</label>
-              <input id="lastName" type="text" formControlName="lastName" class="form-control" autocomplete="family-name"
-                [attr.aria-invalid]="form.controls.lastName.invalid && form.controls.lastName.touched" />
-              @if (form.controls.lastName.touched && form.controls.lastName.invalid) {
-                <small class="field-error">Indique apellidos válidos de 2 a 50 caracteres.</small>
-              }
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="phone">Teléfono <span class="optional-label">Opcional</span></label>
-              <input id="phone" type="tel" formControlName="phone" class="form-control" autocomplete="tel" inputmode="tel"
-                [attr.aria-invalid]="form.controls.phone.invalid && form.controls.phone.touched" />
-              @if (form.controls.phone.touched && form.controls.phone.invalid) {
-                <small class="field-error">El teléfono debe contener exactamente 9 dígitos numéricos</small>
-              }
-            </div>
-          </div>
-        </section>
-
-        <footer class="btn-wrapper">
-          <a class="btn btn-secondary" routerLink="/admin/usuarios">Cancelar</a>
-          <button class="btn btn-primary" type="submit" [disabled]="guardando()">
-            {{ guardando() ? 'Guardando...' : 'Guardar cambios' }}
-          </button>
-        </footer>
-      </form>
-    </section>
-  }
-  </div>
-</main>
+    </main>
   </div>
 </div>

@@ -1,4 +1,4 @@
-<div class="admin-layout edit-layout">
+<div class="admin-layout">
   <aside class="admin-sidebar" aria-label="Panel de administración">
     <a routerLink="/" class="admin-brand" aria-label="ESIBuy">
       <span class="brand-mark" aria-hidden="true">E</span>
@@ -7,12 +7,25 @@
     <p class="sidebar-caption">GESTIÓN DE ADMINISTRACIÓN</p>
     <nav class="admin-navigation" aria-label="Navegación de administración">
       <a class="navigation-link" routerLink="/admin/usuarios">
-        <span class="navigation-icon" aria-hidden="true">♙</span>
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20"></path>
+          <circle cx="10" cy="7" r="3"></circle>
+          <path d="M16 11a3 3 0 1 0 0-6"></path>
+          <path d="M16 14h1a4 4 0 0 1 4 4v2"></path>
+        </svg>
         <span>Usuarios</span>
       </a>
+      <a class="navigation-link" routerLink="/admin/usuarios/alta">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="9" cy="7" r="3"></circle>
+          <path d="M3.5 20a5.5 5.5 0 0 1 11 0"></path>
+          <path d="M18 11v6m-3-3h6"></path>
+        </svg>
+        <span>Dar de alta usuario</span>
+      </a>
       <a class="navigation-link is-active" routerLink="/admin/altas" aria-current="page">
-        <span class="navigation-icon" aria-hidden="true">＋</span>
-        <span>Crear administrador</span>
+        <span class="navigation-icon text-icon" aria-hidden="true">＋</span>
+        <span>Dar de alta Administrador</span>
       </a>
     </nav>
   </aside>
@@ -20,10 +33,6 @@
   <div class="admin-workspace">
     <main class="admin-create-container edit-page">
       <div class="main-container">
-        <a class="back-link" routerLink="/admin/usuarios" aria-label="Volver al listado de usuarios">
-          ← Volver a usuarios
-        </a>
-
         <div *ngIf="errorMessage" class="alert-box alert-danger" role="alert">
           <div class="alert-title">
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -57,7 +66,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
               </svg>
-              Crear nuevo administrador
+              Alta de cuenta de Administrador
             </h1>
             <p class="card-subtitle">
               Completa los datos del nuevo administrador para registrarlo en el sistema. Los campos con asterisco (*)
@@ -198,11 +207,11 @@
             <!-- Botones de acción -->
             <div class="btn-wrapper">
               <button type="button" class="btn btn-secondary" (click)="cancelar()" [disabled]="submitting">
-                Volver
+                Cancelar
               </button>
               <button type="submit" class="btn btn-primary" [disabled]="submitting">
                 <span *ngIf="submitting" class="spinner" aria-hidden="true"></span>
-                <span>Crear administrador</span>
+                <span>Dar de alta Administrador</span>
               </button>
             </div>
           </form>
