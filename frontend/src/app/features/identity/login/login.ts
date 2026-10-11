@@ -69,6 +69,8 @@ export class Login implements OnDestroy {
           void this.router.navigate(['/admin/usuarios']);
         } else if (response.role === 'SELLER') {
           void this.router.navigate(['/seller/catalog']);
+        } else if (response.role === 'CLIENT') {
+          void this.router.navigate(['/client/dashboard']);
         } else {
           void this.router.navigate(['/']);
         }

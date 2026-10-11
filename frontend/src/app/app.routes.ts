@@ -9,6 +9,7 @@ import { AdminUserList } from './features/admin/admin-user-list/admin-user-list'
 import { AdminUserDetail } from './features/admin/admin-user-detail/admin-user-detail';
 import { AdminUserRegister } from './features/admin/admin-user-register/admin-user-register';
 import { SellerCatalog } from './features/products/seller-catalog/seller-catalog';
+import { ClientDashboard } from './features/client/client-dashboard/client-dashboard';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -32,5 +33,9 @@ export const routes: Routes = [
 
   { path: 'seller/catalog', component: SellerCatalog, canActivate: [authGuard, roleGuard('SELLER')] },
   { path: 'products/new', component: ProductCreate, canActivate: [authGuard, roleGuard('SELLER')] },
+
+  { path: 'client/dashboard', component: ClientDashboard, canActivate: [authGuard, roleGuard('CLIENT')] },
+  { path: 'client', redirectTo: 'client/dashboard', pathMatch: 'full' },
+
   { path: '**', redirectTo: '' }
 ];
