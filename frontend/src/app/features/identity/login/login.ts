@@ -1,10 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, Input,OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, computed } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService, AuthenticatedUser, UserRole } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +16,14 @@ import { AuthService } from '../../../core/services/auth.service';
 export class Login implements OnDestroy {
   @Input() embedded = false;
   
-  loginForm: FormGroup;
+  readonly currentUser = computed<AuthenticatedUser | null>(() => {
+    if (typeof this.authService?.currentUser === 'function') {
+      return this.authService.currentUser();
+    }
+    return null;
+  });
+
+  readonly loginForm: FormGroup;
   serverError: string | null = null;
   forgotPasswordMessage: string | null = null;
   retryAfterSeconds = 0;
@@ -26,11 +33,11 @@ export class Login implements OnDestroy {
   private retryBaseMessage: string | null = null;
 
   constructor(
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private router: Router,
-    private authService: AuthService,
-    private changeDetectorRef: ChangeDetectorRef
+    private readonly fb: FormBuilder,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly authService: AuthService,
+    private readonly changeDetectorRef: ChangeDetectorRef
   ) {
     this.loginForm = this.fb.group({
       email: ['', [
@@ -69,6 +76,8 @@ export class Login implements OnDestroy {
           void this.router.navigate(['/admin/usuarios']);
         } else if (response.role === 'SELLER') {
           void this.router.navigate(['/seller/catalog']);
+        } else if (response.role === 'CLIENT') {
+          void this.router.navigate(['/client/dashboard']);
         } else {
           void this.router.navigate(['/']);
         }
@@ -152,4 +161,66 @@ export class Login implements OnDestroy {
     this.forgotPasswordMessage = 'La recuperación de contraseña estará disponible próximamente.';
   }
 
+  getUserDisplayName(user: AuthenticatedUser | null): string {
+    if (!user?.email) {
+      return 'Usuario';
+    }
+    const namePart = user.email.split('@')[0];
+    return namePart.charAt(0).toUpperCase() + namePart.slice(1);
+  }
+
+  getDashboardRoute(role?: UserRole): string {
+    switch (role) {
+      case 'ADMIN':
+        return '/admin/usuarios';
+      case 'SELLER':
+        return '/seller/catalog';
+      case 'CLIENT':
+        return '/client/dashboard';
+      default:
+        return '/';
+    }
+  }
+
+  getDashboardButtonText(role?: UserRole): string {
+    switch (role) {
+      case 'ADMIN':
+        return 'Ir al panel de administración';
+      case 'SELLER':
+        return 'Ir a mi catálogo de vendedor';
+      case 'CLIENT':
+        return 'Ir a mi panel de cliente';
+      default:
+        return 'Ir a mi panel';
+    }
+  }
+
+  getRoleLabel(role?: UserRole): string {
+    switch (role) {
+      case 'ADMIN':
+        return 'Administrador';
+      case 'SELLER':
+        return 'Vendedor';
+      case 'CLIENT':
+        return 'Cliente';
+      default:
+        return 'Usuario';
+    }
+  }
+
+  logout(): void {
+    if (typeof this.authService?.logout === 'function') {
+      this.authService.logout().subscribe({
+        next: () => {
+          void this.router.navigate(['/']);
+          this.changeDetectorRef.markForCheck();
+        },
+        error: () => {
+          this.authService.clearCurrentUser?.();
+          void this.router.navigate(['/']);
+          this.changeDetectorRef.markForCheck();
+        }
+      });
+    }
+  }
 }

@@ -31,17 +31,21 @@
 
   <section class="auth-panel" aria-labelledby="login-title">
     <div class="auth-content">
-      <h2 id="login-title">Iniciar sesión</h2>
-      <p class="auth-subtitle">Introduce tus credenciales de ESIBuy</p>
+      @if (!isAuthenticated()) {
+        <h2 id="login-title">Iniciar sesión</h2>
+        <p class="auth-subtitle">Introduce tus credenciales de ESIBuy</p>
+      }
 
       <app-login [embedded]="true"></app-login>
 
-      <p class="register-prompt">
-        ¿Todavía no tienes una cuenta?
-        <a routerLink="/register">Regístrate</a>
-      </p>
+      @if (!isAuthenticated()) {
+        <p class="register-prompt">
+          ¿Todavía no tienes una cuenta?
+          <a routerLink="/register">Regístrate</a>
+        </p>
 
-      <p class="security-note">Tus datos están protegidos con cifrado seguro</p>
+        <p class="security-note">Tus datos están protegidos con cifrado seguro</p>
+      }
     </div>
   </section>
 </div>
