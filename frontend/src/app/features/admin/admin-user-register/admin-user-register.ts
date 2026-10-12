@@ -30,7 +30,7 @@ function ageValidator(control: AbstractControl): ValidationErrors | null {
 })
 export class AdminUserRegister implements OnInit {
   form!: FormGroup;
-  
+
   // Variables de estado esperadas por el HTML y los Tests
   successMessage = '';
   serverError = '';
@@ -44,12 +44,15 @@ export class AdminUserRegister implements OnInit {
 
   // Variables para categorías y avatares
   categories: any[] = [];
-  readonly avatars: string[] = [
+  readonly clientAvatars: string[] = [
     'assets/images/avatars/av_client_1.jpeg',
     'assets/images/avatars/av_client_2.jpeg',
     'assets/images/avatars/av_client_3.jpeg',
     'assets/images/avatars/av_client_4.jpeg',
     'assets/images/avatars/av_client_5.jpeg',
+  ];
+
+  readonly sellerAvatars: string[] = [
     'assets/images/avatars/av_seller_1.jpeg',
     'assets/images/avatars/av_seller_2.jpeg',
     'assets/images/avatars/av_seller_3.jpeg',
@@ -58,13 +61,13 @@ export class AdminUserRegister implements OnInit {
   ];
 
   get currentAvatarList(): string[] {
-    return this.avatars;
+    return this.selectedRole === 'cliente' ? this.clientAvatars : this.sellerAvatars;
   }
 
   selectedAvatar: string | null = null;
 
   constructor(
-    private fb: FormBuilder, 
+    private fb: FormBuilder,
     private authService: AuthService,
     private productsService: ProductsService,
     private router: Router,
@@ -80,8 +83,8 @@ export class AdminUserRegister implements OnInit {
       nationalId: ['', [Validators.required, Validators.maxLength(20)]],
       phone: ['', [Validators.pattern(/^\d{9}$/)]],
       password: ['', [
-        Validators.required, 
-        Validators.minLength(12), 
+        Validators.required,
+        Validators.minLength(12),
         // Patrón básico: al menos una minúscula, mayúscula, número y carácter especial
         Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/)
       ]],
@@ -125,6 +128,8 @@ export class AdminUserRegister implements OnInit {
 
     this.serverError = '';
     this.selectedRole = role as 'cliente' | 'vendedor';
+    this.selectedAvatar = null;
+    this.form.patchValue({ imagenPerfil: '', profileImage: '' });
 
     // Añadimos y quitamos controles dinámicamente según el rol
     if (this.selectedRole === 'cliente') {
@@ -150,6 +155,10 @@ export class AdminUserRegister implements OnInit {
   }
 
   selectAvatar(av: string): void {
+    if (!this.currentAvatarList.includes(av)) {
+      return;
+    }
+
     if (this.form.get('imagenPerfil')?.value === av || this.selectedAvatar === av) {
       this.selectedAvatar = null;
       this.form.patchValue({ imagenPerfil: '', profileImage: '' });
@@ -196,7 +205,7 @@ export class AdminUserRegister implements OnInit {
       imagenPerfil: selectedImg,
     };
 
-    const request$ = this.selectedRole === 'cliente' 
+    const request$ = this.selectedRole === 'cliente'
       ? (typeof this.authService.adminRegisterClient === 'function' ? this.authService.adminRegisterClient(formData) : (this.authService as any).registerClient(formData))
       : (typeof this.authService.adminRegisterSeller === 'function' ? this.authService.adminRegisterSeller(formData) : (this.authService as any).registerSeller(formData));
 
@@ -208,10 +217,10 @@ export class AdminUserRegister implements OnInit {
     ).subscribe({
       next: () => {
         // Los test comprueban que el nombre aparezca en el mensaje de éxito
-        const nameToDisplay = this.selectedRole === 'cliente' 
-          ? `${formData.firstName} ${formData.lastName}` 
+        const nameToDisplay = this.selectedRole === 'cliente'
+          ? `${formData.firstName} ${formData.lastName}`
           : formData.businessName;
-        
+
         this.successMessage = `Alta Realizada con Éxito. Usuario: ${nameToDisplay}`;
         this.cdr.detectChanges();
       },

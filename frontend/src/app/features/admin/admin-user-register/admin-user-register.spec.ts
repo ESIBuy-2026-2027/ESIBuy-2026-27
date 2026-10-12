@@ -190,16 +190,16 @@ describe('AdminUserRegister', () => {
       expect(navigateSpy).toHaveBeenCalledWith(['/admin/usuarios']);
     });
 
-    it('debe renderizar los 10 botones de avatar y permitir alternar la selección', () => {
+    it('debe renderizar solo avatares de cliente y permitir alternar la selección', () => {
       const rendered = fixture.nativeElement as HTMLElement;
       const avatarButtons = rendered.querySelectorAll('.avatar-selector-grid .avatar-item');
-      expect(avatarButtons.length).toBe(10);
+      expect(avatarButtons.length).toBe(5);
 
       const firstAvatarBtn = avatarButtons[0] as HTMLButtonElement;
       firstAvatarBtn.click();
       fixture.detectChanges();
-      expect(component.form.get('imagenPerfil')?.value).toBe(component.avatars[0]);
-      expect(component.selectedAvatar).toBe(component.avatars[0]);
+      expect(component.form.get('imagenPerfil')?.value).toBe(component.clientAvatars[0]);
+      expect(component.selectedAvatar).toBe(component.clientAvatars[0]);
 
       // Al pulsar de nuevo, se deselecciona
       firstAvatarBtn.click();
@@ -208,9 +208,22 @@ describe('AdminUserRegister', () => {
       expect(component.selectedAvatar).toBeNull();
     });
 
+    it('debe cambiar los avatares disponibles y limpiar la selección al cambiar de rol', () => {
+      component.selectAvatar(component.clientAvatars[0]);
+      component.setRole('vendedor');
+      fixture.detectChanges();
+
+      const rendered = fixture.nativeElement as HTMLElement;
+      const avatarButtons = rendered.querySelectorAll('.avatar-selector-grid .avatar-item');
+      expect(avatarButtons.length).toBe(5);
+      expect(avatarButtons[0].querySelector('img')?.src).toContain('av_seller_1.jpeg');
+      expect(component.selectedAvatar).toBeNull();
+      expect(component.form.get('imagenPerfil')?.value).toBe('');
+    });
+
     it('debe incluir el avatar seleccionado en el payload al enviar el formulario', () => {
       component.setRole('cliente');
-      component.selectAvatar(component.avatars[2]);
+      component.selectAvatar(component.clientAvatars[2]);
       component.form.patchValue({
         firstName: 'Laura',
         lastName: 'Gómez',
@@ -227,8 +240,8 @@ describe('AdminUserRegister', () => {
 
       expect(authServiceSpy.registerClient).toHaveBeenCalled();
       const payload = authServiceSpy.registerClient.mock.calls[0][0];
-      expect(payload.profileImage).toBe(component.avatars[2]);
-      expect(payload.imagenPerfil).toBe(component.avatars[2]);
+      expect(payload.profileImage).toBe(component.clientAvatars[2]);
+      expect(payload.imagenPerfil).toBe(component.clientAvatars[2]);
     });
   });
 });

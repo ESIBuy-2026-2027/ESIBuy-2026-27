@@ -637,7 +637,7 @@
           <fieldset class="form-group avatar-section">
             <legend class="form-label">Avatar de perfil</legend>
             <div class="avatar-selector-grid">
-              <button *ngFor="let av of avatars" type="button" class="avatar-item"
+              <button *ngFor="let av of currentAvatarList" type="button" class="avatar-item"
                 [class.selected]="form.get('imagenPerfil')?.value === av" (click)="selectAvatar(av)"
                 [attr.aria-label]="'Seleccionar avatar'">
                 <img [src]="av" alt="Avatar disponible" />
