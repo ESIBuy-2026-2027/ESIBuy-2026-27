@@ -43,6 +43,10 @@ export class AdminUserList implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    const stateMessage = history.state?.successMessage;
+    if (stateMessage && typeof stateMessage === 'string') {
+      this.mensajeExito.set(stateMessage);
+    }
     this.cargarUsuarios();
   }
 

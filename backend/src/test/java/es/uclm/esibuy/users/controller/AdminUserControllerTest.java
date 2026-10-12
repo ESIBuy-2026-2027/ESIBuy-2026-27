@@ -66,6 +66,8 @@ class AdminUserControllerTest {
     void adminCanUpdateUserWithoutChangingSensitiveProperties() throws Exception {
         User updated = new User("cliente@example.com", "Ana", "García", UserRole.CLIENT);
         updated.setPhone("600111222");
+        updated.setNationalId("12345678A");
+        updated.setProfileImage("assets/images/avatars/av_client_1.jpeg");
         when(adminUserService.actualizar(eq(UPDATE_USER_ID), any(UpdateUserRequestDTO.class))).thenReturn(updated);
 
         mockMvc.perform(put(UPDATE_USER_API)
@@ -73,6 +75,8 @@ class AdminUserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {"firstName":" Ana ","lastName":"García","phone":"600111222",
+                         "nationalId":"12345678A",
+                         "profileImage":"assets/images/avatars/av_client_1.jpeg",
                          "role":"ADMIN","password":"ChangedPassword123!"}
                         """))
                 .andExpect(status().isOk())
@@ -80,6 +84,8 @@ class AdminUserControllerTest {
                 .andExpect(jsonPath(SUCCESS_JSON_PATH).value(true))
                 .andExpect(jsonPath("$.data.email").value("cliente@example.com"))
                 .andExpect(jsonPath("$.data.role").value("CLIENT"))
+                .andExpect(jsonPath("$.data.nationalId").value("12345678A"))
+                .andExpect(jsonPath("$.data.profileImage").value("assets/images/avatars/av_client_1.jpeg"))
                 .andExpect(jsonPath("$.data.password").doesNotExist());
 
         verify(adminUserService).actualizar(eq(UPDATE_USER_ID), any(UpdateUserRequestDTO.class));
@@ -138,10 +144,21 @@ class AdminUserControllerTest {
         mockMvc.perform(put(UPDATE_USER_API)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"firstName\":\"Ana\",\"lastName\":\"García\",\"phone\":\"555555555555555\"}"))
+                .content("{\"firstName\":\"Ana\",\"lastName\":\"García\",\"nationalId\":\"12345678A\",\"phone\":\"555555555555555\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(
                         jsonPath("$.errors.phone").value("El teléfono debe contener exactamente 9 dígitos numéricos"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void rejectsBlankNationalId() throws Exception {
+        mockMvc.perform(put(UPDATE_USER_API)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"firstName\":\"Ana\",\"lastName\":\"García\",\"nationalId\":\"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.nationalId").value("El documento de identidad es obligatorio"));
     }
 
     @Test

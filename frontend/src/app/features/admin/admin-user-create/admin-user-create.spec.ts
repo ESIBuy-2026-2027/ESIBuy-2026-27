@@ -90,7 +90,7 @@ describe('AdminUserCreate', () => {
 
     const submitBtn = rendered.querySelector('button[type="submit"]');
     expect(submitBtn).toBeTruthy();
-    expect(submitBtn?.textContent?.trim()).toContain('Crear administrador');
+    expect(submitBtn?.textContent?.trim()).toContain('Dar de alta Administrador');
   });
 
   it('calls crearAdministrador on submit when form is valid', () => {
@@ -152,7 +152,7 @@ describe('AdminUserCreate', () => {
   });
 
   it('has back link pointing to /admin/usuarios', () => {
-    const backLink = fixture.nativeElement.querySelector('a.back-link') as HTMLAnchorElement;
+    const backLink = fixture.nativeElement.querySelector('a[routerLink="/admin/usuarios"]') as HTMLAnchorElement;
     expect(backLink).toBeTruthy();
     expect(backLink.getAttribute('routerLink')).toBe('/admin/usuarios');
   });

@@ -86,7 +86,7 @@
               <h2 class="section-title" id="editable-heading">Datos editables</h2>
               <div class="form-row">
                 <div class="form-group">
-                  <label class="form-label" for="firstName">Nombre</label>
+                  <label class="form-label" for="firstName">Nombre <span class="required">*</span></label>
                   <input id="firstName" type="text" formControlName="firstName" class="form-control"
                     autocomplete="given-name"
                     [attr.aria-invalid]="form.controls.firstName.invalid && form.controls.firstName.touched" />
@@ -96,7 +96,7 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label" for="lastName">Apellidos</label>
+                  <label class="form-label" for="lastName">Apellidos <span class="required">*</span></label>
                   <input id="lastName" type="text" formControlName="lastName" class="form-control"
                     autocomplete="family-name"
                     [attr.aria-invalid]="form.controls.lastName.invalid && form.controls.lastName.touched" />
@@ -105,12 +105,157 @@
                   }
                 </div>
 
-                <div class="form-group">
-                  <label class="form-label" for="phone">Teléfono <span class="optional-label">Opcional</span></label>
-                  <input id="phone" type="tel" formControlName="phone" class="form-control" autocomplete="tel"
-                    inputmode="tel" [attr.aria-invalid]="form.controls.phone.invalid && form.controls.phone.touched" />
-                  @if (form.controls.phone.touched && form.controls.phone.invalid) {
-                  <small class="field-error">El teléfono debe contener exactamente 9 dígitos numéricos</small>
+                @if (isClient()) {
+                  <div class="form-group">
+                    <label class="form-label" for="birthDate">Fecha de Nacimiento <span class="required">*</span></label>
+                    <input id="birthDate" type="date" formControlName="birthDate" class="form-control"
+                      [attr.aria-invalid]="form.controls.birthDate.invalid && form.controls.birthDate.touched" />
+                    @if (form.controls.birthDate.touched && form.controls.birthDate.errors?.['required']) {
+                      <small class="field-error">La fecha de nacimiento es obligatoria</small>
+                    }
+                    @if (form.controls.birthDate.touched && form.controls.birthDate.errors?.['underAge']) {
+                      <small class="field-error">Debes ser mayor de 18 años para registrarte</small>
+                    }
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="clientNationalId">DNI <span class="required">*</span></label>
+                    <input id="clientNationalId" type="text" formControlName="nationalId" class="form-control" autocomplete="off"
+                      [attr.aria-invalid]="form.controls.nationalId.invalid && form.controls.nationalId.touched" />
+                    @if (form.controls.nationalId.touched && form.controls.nationalId.errors?.['required']) {
+                      <small class="field-error">El DNI es obligatorio</small>
+                    }
+                    @if (form.controls.nationalId.touched && form.controls.nationalId.errors?.['maxlength']) {
+                      <small class="field-error">El documento no puede superar los 20 caracteres</small>
+                    }
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="clientPhone">Teléfono</label>
+                    <input id="clientPhone" type="tel" formControlName="phone" class="form-control" autocomplete="tel" inputmode="tel"
+                      placeholder="Ej: 600112233"
+                      [attr.aria-invalid]="form.controls.phone.invalid && form.controls.phone.touched" />
+                    @if (form.controls.phone.touched && form.controls.phone.errors?.['pattern']) {
+                      <small class="field-error">El teléfono debe contener exactamente 9 dígitos numéricos</small>
+                    }
+                  </div>
+                }
+
+                @if (isSeller()) {
+                  <div class="form-group">
+                    <label class="form-label" for="defaultCategory">Categoría por defecto <span class="required">*</span></label>
+                    <select id="defaultCategory" formControlName="defaultCategory" class="form-control"
+                      [attr.aria-invalid]="form.controls.defaultCategory.invalid && form.controls.defaultCategory.touched">
+                      @for (cat of categories; track cat) {
+                        <option [value]="cat">{{ cat }}</option>
+                      }
+                    </select>
+                    @if (form.controls.defaultCategory.touched && form.controls.defaultCategory.errors?.['required']) {
+                      <small class="field-error">La categoría por defecto es obligatoria</small>
+                    }
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="businessName">Nombre Comercial / Tienda <span class="required">*</span></label>
+                    <input id="businessName" type="text" formControlName="businessName" class="form-control"
+                      placeholder="Ej. Tienda Central"
+                      [attr.aria-invalid]="form.controls.businessName.invalid && form.controls.businessName.touched" />
+                    @if (form.controls.businessName.touched && form.controls.businessName.errors?.['required']) {
+                      <small class="field-error">El nombre comercial es obligatorio</small>
+                    }
+                    @if (form.controls.businessName.touched && (form.controls.businessName.errors?.['minlength'] || form.controls.businessName.errors?.['maxlength'])) {
+                      <small class="field-error">Debe tener entre 2 y 100 caracteres</small>
+                    }
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="sellerNationalId">DNI / NIF <span class="required">*</span></label>
+                    <input id="sellerNationalId" type="text" formControlName="nationalId" class="form-control" autocomplete="off"
+                      [attr.aria-invalid]="form.controls.nationalId.invalid && form.controls.nationalId.touched" />
+                    @if (form.controls.nationalId.touched && form.controls.nationalId.errors?.['required']) {
+                      <small class="field-error">El DNI/NIF es obligatorio</small>
+                    }
+                    @if (form.controls.nationalId.touched && form.controls.nationalId.errors?.['maxlength']) {
+                      <small class="field-error">El documento no puede superar los 20 caracteres</small>
+                    }
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="sellerPhone">Teléfono</label>
+                    <input id="sellerPhone" type="tel" formControlName="phone" class="form-control" autocomplete="tel" inputmode="tel"
+                      placeholder="Ej: 600112233"
+                      [attr.aria-invalid]="form.controls.phone.invalid && form.controls.phone.touched" />
+                    @if (form.controls.phone.touched && form.controls.phone.errors?.['pattern']) {
+                      <small class="field-error">El teléfono debe contener exactamente 9 dígitos numéricos</small>
+                    }
+                  </div>
+                }
+
+                @if (isAdmin()) {
+                  <div class="form-group">
+                    <label class="form-label" for="adminNationalId">DNI / Documento <span class="required">*</span></label>
+                    <input id="adminNationalId" type="text" formControlName="nationalId" class="form-control" autocomplete="off"
+                      [attr.aria-invalid]="form.controls.nationalId.invalid && form.controls.nationalId.touched" />
+                    @if (form.controls.nationalId.touched && form.controls.nationalId.errors?.['required']) {
+                      <small class="field-error">El DNI es obligatorio</small>
+                    }
+                    @if (form.controls.nationalId.touched && form.controls.nationalId.errors?.['maxlength']) {
+                      <small class="field-error">El documento no puede superar los 20 caracteres</small>
+                    }
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="headquarters">Sede</label>
+                    <input id="headquarters" type="text" formControlName="headquarters" class="form-control"
+                      placeholder="Ej. Ciudad Real"
+                      [attr.aria-invalid]="form.controls.headquarters.invalid && form.controls.headquarters.touched" />
+                    @if (form.controls.headquarters.touched && form.controls.headquarters.errors?.['maxlength']) {
+                      <small class="field-error">La sede no puede superar los 100 caracteres</small>
+                    }
+                  </div>
+                }
+
+                @if (!isClient() && !isSeller() && !isAdmin()) {
+                  <div class="form-group">
+                    <label class="form-label" for="otherNationalId">DNI / Documento <span class="required">*</span></label>
+                    <input id="otherNationalId" type="text" formControlName="nationalId" class="form-control" autocomplete="off"
+                      [attr.aria-invalid]="form.controls.nationalId.invalid && form.controls.nationalId.touched" />
+                    @if (form.controls.nationalId.touched && form.controls.nationalId.errors?.['required']) {
+                      <small class="field-error">El DNI es obligatorio</small>
+                    }
+                    @if (form.controls.nationalId.touched && form.controls.nationalId.errors?.['maxlength']) {
+                      <small class="field-error">El documento no puede superar los 20 caracteres</small>
+                    }
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="otherPhone">Teléfono</label>
+                    <input id="otherPhone" type="tel" formControlName="phone" class="form-control" autocomplete="tel" inputmode="tel"
+                      placeholder="Ej: 600112233"
+                      [attr.aria-invalid]="form.controls.phone.invalid && form.controls.phone.touched" />
+                    @if (form.controls.phone.touched && form.controls.phone.errors?.['pattern']) {
+                      <small class="field-error">El teléfono debe contener exactamente 9 dígitos numéricos</small>
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="avatar-section">
+                <span class="form-label">Imagen de perfil</span>
+                <p class="avatar-help-text">Selecciona el avatar que quieres utilizar.</p>
+                <div class="avatar-selector-grid">
+                  @for (avatar of currentAvatarList; track avatar) {
+                    <button
+                      type="button"
+                      class="avatar-item"
+                      [class.selected]="selectedAvatar === avatar"
+                      (click)="selectAvatar(avatar)"
+                      [attr.aria-label]="'Seleccionar avatar'">
+                      <img [src]="avatar" alt="Avatar disponible" />
+                      @if (selectedAvatar === avatar) {
+                        <span class="avatar-check" aria-hidden="true">✓</span>
+                      }
+                    </button>
                   }
                 </div>
               </div>

@@ -12,13 +12,13 @@ describe('AdminUserList', () => {
   let fixture: ComponentFixture<AdminUserList>;
   let obtenerTodosLosUsuarios: ReturnType<typeof vi.fn>;
   let eliminarUsuarioAdmin: ReturnType<typeof vi.fn>;
-  let alternarEstadoUsuarioAdmin: ReturnType<typeof vi.fn>;
+  let desactivarUsuarioAdmin: ReturnType<typeof vi.fn>;
   let currentUser: ReturnType<typeof signal<{ id: string } | null>>;
 
   beforeEach(async () => {
     obtenerTodosLosUsuarios = vi.fn().mockReturnValue(of([]));
     eliminarUsuarioAdmin = vi.fn().mockReturnValue(of({ success: true, message: '', data: null, correlationId: null }));
-    alternarEstadoUsuarioAdmin = vi.fn().mockReturnValue(of({ success: true, message: '', data: null, correlationId: null }));
+    desactivarUsuarioAdmin = vi.fn().mockReturnValue(of({ success: true, message: '', data: null, correlationId: null }));
     currentUser = signal<{ id: string } | null>(null);
     await TestBed.configureTestingModule({
       imports: [AdminUserList],
@@ -26,7 +26,7 @@ describe('AdminUserList', () => {
         provideRouter([]),
         {
           provide: AuthService,
-          useValue: { obtenerTodosLosUsuarios, eliminarUsuarioAdmin, alternarEstadoUsuarioAdmin, currentUser },
+          useValue: { obtenerTodosLosUsuarios, eliminarUsuarioAdmin, desactivarUsuarioAdmin, currentUser },
         },
       ],
     }).compileComponents();
@@ -66,8 +66,9 @@ describe('AdminUserList', () => {
       nationalId: '12345678Z',
       phone: '600123456',
       profileImage: '',
-      role: 'CLIENT',
+      role: 'CLIENT' as const,
       active: true,
+      blocked: false,
       createdAt: '2026-01-01T00:00:00Z',
     }];
     obtenerTodosLosUsuarios.mockReturnValue(of(users));
@@ -90,8 +91,9 @@ describe('AdminUserList', () => {
       nationalId: '12345678Z',
       phone: '',
       profileImage: '',
-      role: 'CLIENT',
+      role: 'CLIENT' as const,
       active: true,
+      blocked: false,
       createdAt: '2026-01-01T00:00:00Z',
     }];
     obtenerTodosLosUsuarios.mockReturnValue(of(users));
@@ -114,15 +116,15 @@ describe('AdminUserList', () => {
       profileImage: null,
       role: 'CLIENT' as const,
       active: true,
+      blocked: false,
       createdAt: null,
     };
     component.usuarios.set([user]);
 
-    component.alternarEstadoUsuario(user);
+    component.cambiarEstadoUsuario(user, 'desactivar');
 
-    expect(alternarEstadoUsuarioAdmin).toHaveBeenCalledWith(user.id);
+    expect(desactivarUsuarioAdmin).toHaveBeenCalledWith(user.id);
     expect(component.usuarios()[0].active).toBe(false);
-    expect(component.mensajeExito()).toContain('bloqueado');
   });
 
   it('shows a permissions error only when the endpoint returns 403', () => {
@@ -155,6 +157,7 @@ describe('AdminUserList', () => {
       profileImage: null,
       role: 'CLIENT' as const,
       active: true,
+      blocked: false,
       createdAt: null,
     };
     component.usuarios.set([user]);
@@ -187,6 +190,7 @@ describe('AdminUserList', () => {
       profileImage: null,
       role: 'ADMIN' as const,
       active: true,
+      blocked: false,
       createdAt: null,
     };
     currentUser.set({ id: user.id });
@@ -208,6 +212,7 @@ describe('AdminUserList', () => {
       profileImage: null,
       role: 'CLIENT' as const,
       active: true,
+      blocked: false,
       createdAt: null,
     };
     eliminarUsuarioAdmin.mockReturnValue(throwError(() =>
@@ -232,6 +237,7 @@ describe('AdminUserList', () => {
       profileImage: null,
       role: 'SELLER' as const,
       active: true,
+      blocked: false,
       createdAt: null,
     };
     eliminarUsuarioAdmin.mockReturnValue(throwError(() =>
@@ -256,6 +262,7 @@ describe('AdminUserList', () => {
       profileImage: null,
       role: 'CLIENT' as const,
       active: true,
+      blocked: false,
       createdAt: null,
     };
     component.abrirConfirmacion(user);
@@ -277,6 +284,7 @@ describe('AdminUserList', () => {
       profileImage: null,
       role: 'CLIENT' as const,
       active: true,
+      blocked: false,
       createdAt: null,
     };
     component.abrirConfirmacion(user);
@@ -303,6 +311,7 @@ describe('AdminUserList', () => {
       profileImage: null,
       role: 'CLIENT' as const,
       active: true,
+      blocked: false,
       createdAt: null,
     };
     component.abrirConfirmacion(user);
@@ -313,5 +322,12 @@ describe('AdminUserList', () => {
 
     expect(component.usuarioPendiente()).toBeNull();
     expect(component.pasoConfirmacion()).toBe(1);
+  });
+
+  it('initializes mensajeExito if history.state.successMessage is present', () => {
+    history.replaceState({ successMessage: 'Los cambios se han guardado correctamente.' }, '');
+    component.ngOnInit();
+    expect(component.mensajeExito()).toBe('Los cambios se han guardado correctamente.');
+    history.replaceState(null, '');
   });
 });
