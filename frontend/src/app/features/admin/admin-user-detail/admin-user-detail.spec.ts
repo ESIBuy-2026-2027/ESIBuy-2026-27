@@ -17,9 +17,11 @@ describe('AdminUserDetail', () => {
       email: 'test@example.com',
       firstName: 'Carlos',
       lastName: 'García',
+      nationalId: '12345678A',
       phone: '612345678',
       role: 'CLIENT',
-      profileImage: 'assets/images/avatars/av_client_3.jpeg'
+      profileImage: 'assets/images/avatars/av_client_3.jpeg',
+      birthDate: '1995-05-15'
     },
     correlationId: 'cid-1'
   };
@@ -41,7 +43,7 @@ describe('AdminUserDetail', () => {
     await TestBed.configureTestingModule({
       imports: [AdminUserDetail],
       providers: [
-        provideRouter([]),
+        provideRouter([{ path: 'admin/usuarios', component: AdminUserDetail }]),
         {
           provide: ActivatedRoute,
           useValue: {
@@ -70,9 +72,12 @@ describe('AdminUserDetail', () => {
     expect(authServiceSpy.obtenerUsuarioAdmin).toHaveBeenCalledWith('user-123');
     expect(component.getEmail()).toBe('test@example.com');
     expect(component.getRole()).toBe('CLIENT');
+    expect(component.isClient()).toBe(true);
     expect(component.selectedAvatar).toBe('assets/images/avatars/av_client_3.jpeg');
     expect(component.form.value.firstName).toBe('Carlos');
     expect(component.form.value.lastName).toBe('García');
+    expect(component.form.value.nationalId).toBe('12345678A');
+    expect(component.form.value.birthDate).toBe('1995-05-15');
     expect(component.cargando()).toBe(false);
   });
 
@@ -89,6 +94,8 @@ describe('AdminUserDetail', () => {
       data: {
         ...mockUserResponse.data,
         role: 'SELLER',
+        businessName: 'Tienda de Prueba',
+        defaultCategory: 'Hogar',
         profileImage: 'assets/images/avatars/av_seller_2.jpeg'
       }
     }));
@@ -97,8 +104,11 @@ describe('AdminUserDetail', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
 
+    expect(component.isSeller()).toBe(true);
     expect(component.currentAvatarList).toEqual(component.sellerAvatars);
     expect(component.selectedAvatar).toBe('assets/images/avatars/av_seller_2.jpeg');
+    expect(component.form.value.businessName).toBe('Tienda de Prueba');
+    expect(component.form.value.defaultCategory).toBe('Hogar');
   });
 
   it('should submit form including selected avatar and navigate to user list with success message', () => {
@@ -113,13 +123,79 @@ describe('AdminUserDetail', () => {
     expect(authServiceSpy.actualizarUsuarioAdmin).toHaveBeenCalledWith('user-123', {
       firstName: 'Carlos',
       lastName: 'García',
+      nationalId: '12345678A',
       phone: '612345678',
+      birthDate: '1995-05-15',
       profileImage: 'assets/images/avatars/av_client_1.jpeg'
     });
     expect(navigateSpy).toHaveBeenCalledWith(['/admin/usuarios'], {
       state: { successMessage: 'Los cambios se han guardado correctamente.' }
     });
     expect(component.guardando()).toBe(false);
+  });
+
+  it('should submit seller specific defaultCategory and businessName', () => {
+    authServiceSpy.obtenerUsuarioAdmin.mockReturnValue(of({
+      ...mockUserResponse,
+      data: {
+        ...mockUserResponse.data,
+        role: 'SELLER',
+        businessName: 'Mi Tienda',
+        defaultCategory: 'Hogar',
+        profileImage: 'assets/images/avatars/av_seller_1.jpeg'
+      }
+    }));
+
+    fixture = TestBed.createComponent(AdminUserDetail);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    component.form.patchValue({ defaultCategory: 'Moda' });
+    component.onSubmit();
+
+    expect(authServiceSpy.actualizarUsuarioAdmin).toHaveBeenCalledWith('user-123', expect.objectContaining({
+      defaultCategory: 'Moda',
+      businessName: 'Mi Tienda',
+      phone: '612345678'
+    }));
+  });
+
+  it('should submit admin specific headquarters and omit phone', () => {
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate');
+
+    authServiceSpy.obtenerUsuarioAdmin.mockReturnValue(of({
+      ...mockUserResponse,
+      data: {
+        ...mockUserResponse.data,
+        role: 'ADMIN',
+        headquarters: 'Ciudad Real'
+      }
+    }));
+
+    fixture = TestBed.createComponent(AdminUserDetail);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    component.form.patchValue({ headquarters: 'Toledo' });
+    component.onSubmit();
+
+    expect(authServiceSpy.actualizarUsuarioAdmin).toHaveBeenCalledWith('user-123', {
+      firstName: 'Carlos',
+      lastName: 'García',
+      nationalId: '12345678A',
+      headquarters: 'Toledo',
+      profileImage: 'assets/images/avatars/av_client_3.jpeg'
+    });
+  });
+
+  it('should invalidate client when birthDate is underage', () => {
+    fixture.detectChanges();
+
+    const youngYear = new Date().getFullYear() - 10;
+    component.form.patchValue({ birthDate: `${youngYear}-01-01` });
+    expect(component.form.controls.birthDate.hasError('underAge')).toBe(true);
+    expect(component.form.invalid).toBe(true);
   });
 
   it('should display error message when loading user fails', () => {

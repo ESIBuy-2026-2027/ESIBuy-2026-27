@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService, UpdateUserRequest } from '../../../core/services/auth.service';
+import { isAdultValidator } from '../../identity/register/register';
 
 @Component({
   selector: 'app-admin-user-detail',
@@ -18,12 +19,27 @@ export class AdminUserDetail implements OnInit {
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
   readonly credentialMask = '••••••••••••';
+
+  readonly categories = [
+    'Electrónica',
+    'Hogar',
+    'Moda',
+    'Deportes',
+    'Libros',
+    'Otros'
+  ];
+
   readonly form = this.formBuilder.nonNullable.group({
     firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25),
       Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
     lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50),
       Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
-    phone: ['', [Validators.maxLength(10), Validators.pattern(/^$|^\+?\d{9}$/)]]
+    birthDate: ['', [isAdultValidator]],
+    defaultCategory: ['Electrónica'],
+    businessName: ['', [Validators.maxLength(100)]],
+    nationalId: ['', [Validators.maxLength(20)]],
+    phone: ['', [Validators.maxLength(10), Validators.pattern(/^$|^\+?\d{9}$/)]],
+    headquarters: ['', [Validators.maxLength(100)]]
   });
 
   private userId = '';
@@ -73,6 +89,21 @@ export class AdminUserDetail implements OnInit {
     return path.replace(/^\/+/, '');
   }
 
+  isAdmin(): boolean {
+    const r = (this.role || '').toUpperCase();
+    return r === 'ADMIN';
+  }
+
+  isSeller(): boolean {
+    const r = (this.role || '').toUpperCase();
+    return r === 'SELLER' || r === 'VENDEDOR';
+  }
+
+  isClient(): boolean {
+    const r = (this.role || '').toUpperCase();
+    return r === 'CLIENT' || r === 'CLIENTE';
+  }
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
@@ -93,10 +124,39 @@ export class AdminUserDetail implements OnInit {
         this.role = data.role;
         const normalized = this.normalizeAvatarPath(data.profileImage);
         this.selectedAvatar = normalized || this.currentAvatarList[0] || this.clientAvatars[0];
+
+        if (this.isClient()) {
+          this.form.controls.birthDate.setValidators([Validators.required, isAdultValidator]);
+          this.form.controls.birthDate.updateValueAndValidity();
+        } else {
+          this.form.controls.birthDate.clearValidators();
+          this.form.controls.birthDate.updateValueAndValidity();
+        }
+
+        if (this.isSeller()) {
+          this.form.controls.defaultCategory.setValidators([Validators.required]);
+          this.form.controls.defaultCategory.updateValueAndValidity();
+          this.form.controls.businessName.setValidators([Validators.required, Validators.maxLength(100)]);
+          this.form.controls.businessName.updateValueAndValidity();
+        } else {
+          this.form.controls.defaultCategory.clearValidators();
+          this.form.controls.defaultCategory.updateValueAndValidity();
+        }
+
+        if (this.isAdmin()) {
+          this.form.controls.phone.clearValidators();
+          this.form.controls.phone.updateValueAndValidity();
+        }
+
         this.form.patchValue({
           firstName: data.firstName,
           lastName: data.lastName,
-          phone: data.phone ?? ''
+          birthDate: data.birthDate ? String(data.birthDate).slice(0, 10) : '',
+          defaultCategory: data.defaultCategory || this.categories[0],
+          businessName: data.businessName ?? '',
+          nationalId: data.nationalId ?? '',
+          phone: data.phone ?? '',
+          headquarters: data.headquarters ?? ''
         });
         this.cargando.set(false);
       },
@@ -127,9 +187,26 @@ export class AdminUserDetail implements OnInit {
     const request: UpdateUserRequest = {
       firstName: this.form.controls.firstName.value.trim(),
       lastName: this.form.controls.lastName.value.trim(),
-      phone: this.form.controls.phone.value.trim(),
+      nationalId: this.form.controls.nationalId.value.trim(),
       profileImage: this.selectedAvatar
     };
+
+    if (this.isClient()) {
+      request.phone = this.form.controls.phone.value.trim();
+      const birth = this.form.controls.birthDate.value;
+      if (birth) {
+        request.birthDate = birth;
+      }
+    } else if (this.isSeller()) {
+      request.phone = this.form.controls.phone.value.trim();
+      request.businessName = this.form.controls.businessName.value.trim();
+      request.defaultCategory = this.form.controls.defaultCategory.value;
+    } else if (this.isAdmin()) {
+      request.headquarters = this.form.controls.headquarters.value.trim();
+    } else {
+      request.phone = this.form.controls.phone.value.trim();
+    }
+
     this.authService.actualizarUsuarioAdmin(this.userId, request).subscribe({
       next: () => {
         this.guardando.set(false);
@@ -148,6 +225,7 @@ export class AdminUserDetail implements OnInit {
     if (error.status === 401) return 'La sesión ha caducado. Inicie sesión como administrador y vuelva a intentarlo.';
     if (error.status === 403) return 'No tiene permisos para modificar usuarios.';
     if (error.status === 404) return 'El usuario solicitado ya no existe.';
+    if (error.status === 409) return error.error?.message || 'Ya existe un usuario o comercio con esos datos.';
     const fieldErrors = error.error?.errors;
     if (fieldErrors && typeof fieldErrors === 'object') {
       return Object.values(fieldErrors).join(' ');

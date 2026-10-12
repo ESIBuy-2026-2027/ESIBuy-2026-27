@@ -42,6 +42,7 @@ class AdminUserControllerTest {
     void adminCanUpdateUserWithoutChangingSensitiveProperties() throws Exception {
         User updated = new User("cliente@example.com", "Ana", "García", UserRole.CLIENT);
         updated.setPhone("600111222");
+        updated.setNationalId("12345678A");
         updated.setProfileImage("assets/images/avatars/av_client_1.jpeg");
         when(adminUserService.actualizar(eq("user-1"), any(UpdateUserRequestDTO.class))).thenReturn(updated);
 
@@ -50,6 +51,7 @@ class AdminUserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {"firstName":" Ana ","lastName":"García","phone":"600111222",
+                         "nationalId":"12345678A",
                          "profileImage":"assets/images/avatars/av_client_1.jpeg",
                          "role":"ADMIN","password":"ChangedPassword123!"}
                         """))
@@ -58,6 +60,7 @@ class AdminUserControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.email").value("cliente@example.com"))
                 .andExpect(jsonPath("$.data.role").value("CLIENT"))
+                .andExpect(jsonPath("$.data.nationalId").value("12345678A"))
                 .andExpect(jsonPath("$.data.profileImage").value("assets/images/avatars/av_client_1.jpeg"))
                 .andExpect(jsonPath("$.data.password").doesNotExist());
 

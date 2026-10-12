@@ -21,8 +21,13 @@ export interface UserAdmin {
 export interface UpdateUserRequest {
   firstName: string;
   lastName: string;
-  phone: string;
+  nationalId?: string;
+  phone?: string;
   profileImage?: string;
+  headquarters?: string;
+  businessName?: string;
+  birthDate?: string;
+  defaultCategory?: string;
 }
 
 export interface UserResponse {
@@ -30,9 +35,14 @@ export interface UserResponse {
   email: string;
   firstName: string;
   lastName: string;
+  nationalId?: string | null;
   phone: string | null;
   role: string;
   profileImage?: string | null;
+  headquarters?: string | null;
+  businessName?: string | null;
+  birthDate?: string | null;
+  defaultCategory?: string | null;
 }
 
 export interface ApiResponse<T> {

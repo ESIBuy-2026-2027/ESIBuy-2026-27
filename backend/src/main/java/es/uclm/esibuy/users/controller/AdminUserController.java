@@ -46,9 +46,15 @@ public class AdminUserController {
     }
 
     private ApiResponse<UserResponseDTO> response(String message, User user, HttpServletRequest request) {
+        String headquarters = user.getAdminProfile() != null ? user.getAdminProfile().getHeadquarters() : null;
+        String businessName = user.getSellerProfile() != null ? user.getSellerProfile().getBusinessName() : null;
+        String defaultCategory = user.getSellerProfile() != null ? user.getSellerProfile().getDefaultCategory() : null;
+        java.time.LocalDate birthDate = user.getClientProfile() != null ? user.getClientProfile().getBirthDate() : null;
+        String phone = user.getRole() == es.uclm.esibuy.users.model.UserRole.ADMIN ? null : user.getPhone();
         UserResponseDTO data = new UserResponseDTO(user.getId(), user.getEmail(), user.getFirstName(),
-            user.getLastName(), user.getPhone(), user.getRole() == null ? null : user.getRole().name(),
-            user.getProfileImage());
+            user.getLastName(), phone, user.getRole() == null ? null : user.getRole().name(),
+            user.getProfileImage(), user.getNationalId(), headquarters, businessName,
+            birthDate, defaultCategory);
         Object correlationId = request.getAttribute(CorrelationIdFilter.ATTRIBUTE);
         return new ApiResponse<>(true, message, data, correlationId == null ? null : correlationId.toString());
     }
