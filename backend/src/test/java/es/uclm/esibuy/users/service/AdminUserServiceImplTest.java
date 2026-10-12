@@ -42,6 +42,7 @@ class AdminUserServiceImplTest {
         UpdateUserRequestDTO request = new UpdateUserRequestDTO();
         request.setFirstName(" New ");
         request.setLastName(" Name ");
+        request.setNationalId("12345678A");
         request.setPhone("600111222");
         request.setProfileImage("assets/images/avatars/av_client_2.jpeg");
         when(userRepository.findById("user-1")).thenReturn(Optional.of(existing));

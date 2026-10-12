@@ -156,8 +156,7 @@
   cursor: not-allowed;
 }
 
-.locked-badge,
-.optional-label {
+.locked-badge {
   display: inline-block;
   margin-left: 0.35rem;
   border-radius: 6px;
@@ -167,6 +166,12 @@
   font-size: 0.72rem;
   font-weight: 500;
   vertical-align: middle;
+}
+
+.required {
+  color: #dc2626;
+  margin-left: 0.2rem;
+  font-weight: 700;
 }
 
 .locked-indicator {

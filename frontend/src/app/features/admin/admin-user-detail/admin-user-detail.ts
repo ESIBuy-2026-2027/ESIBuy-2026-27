@@ -34,11 +34,11 @@ export class AdminUserDetail implements OnInit {
       Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
     lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50),
       Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
+    nationalId: ['', [Validators.required, Validators.maxLength(20)]],
     birthDate: ['', [isAdultValidator]],
     defaultCategory: ['Electrónica'],
-    businessName: ['', [Validators.maxLength(100)]],
-    nationalId: ['', [Validators.maxLength(20)]],
-    phone: ['', [Validators.maxLength(10), Validators.pattern(/^$|^\+?\d{9}$/)]],
+    businessName: ['', [Validators.minLength(2), Validators.maxLength(100)]],
+    phone: ['', [Validators.pattern(/^\d{9}$/)]],
     headquarters: ['', [Validators.maxLength(100)]]
   });
 
@@ -136,15 +136,24 @@ export class AdminUserDetail implements OnInit {
         if (this.isSeller()) {
           this.form.controls.defaultCategory.setValidators([Validators.required]);
           this.form.controls.defaultCategory.updateValueAndValidity();
-          this.form.controls.businessName.setValidators([Validators.required, Validators.maxLength(100)]);
+          this.form.controls.businessName.setValidators([
+            Validators.required,
+            Validators.minLength(2),
+            Validators.maxLength(100)
+          ]);
           this.form.controls.businessName.updateValueAndValidity();
         } else {
           this.form.controls.defaultCategory.clearValidators();
           this.form.controls.defaultCategory.updateValueAndValidity();
+          this.form.controls.businessName.clearValidators();
+          this.form.controls.businessName.updateValueAndValidity();
         }
 
         if (this.isAdmin()) {
           this.form.controls.phone.clearValidators();
+          this.form.controls.phone.updateValueAndValidity();
+        } else {
+          this.form.controls.phone.setValidators([Validators.pattern(/^\d{9}$/)]);
           this.form.controls.phone.updateValueAndValidity();
         }
 

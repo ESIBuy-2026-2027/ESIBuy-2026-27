@@ -198,6 +198,46 @@ describe('AdminUserDetail', () => {
     expect(component.form.invalid).toBe(true);
   });
 
+  it('should invalidate form when nationalId is empty', () => {
+    fixture.detectChanges();
+
+    component.form.patchValue({ nationalId: '' });
+    expect(component.form.controls.nationalId.hasError('required')).toBe(true);
+    expect(component.form.invalid).toBe(true);
+  });
+
+  it('should invalidate seller form when businessName is too short or empty', () => {
+    authServiceSpy.obtenerUsuarioAdmin.mockReturnValue(of({
+      ...mockUserResponse,
+      data: {
+        ...mockUserResponse.data,
+        role: 'SELLER',
+        businessName: 'Mi Tienda',
+        defaultCategory: 'Hogar'
+      }
+    }));
+
+    fixture = TestBed.createComponent(AdminUserDetail);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    component.form.patchValue({ businessName: '' });
+    expect(component.form.controls.businessName.hasError('required')).toBe(true);
+    expect(component.form.invalid).toBe(true);
+
+    component.form.patchValue({ businessName: 'A' });
+    expect(component.form.controls.businessName.hasError('minlength')).toBe(true);
+    expect(component.form.invalid).toBe(true);
+  });
+
+  it('should invalidate form when phone has invalid format', () => {
+    fixture.detectChanges();
+
+    component.form.patchValue({ phone: '123' });
+    expect(component.form.controls.phone.hasError('pattern')).toBe(true);
+    expect(component.form.invalid).toBe(true);
+  });
+
   it('should display error message when loading user fails', () => {
     authServiceSpy.obtenerUsuarioAdmin.mockReturnValue(
       throwError(() => ({ status: 404 }))

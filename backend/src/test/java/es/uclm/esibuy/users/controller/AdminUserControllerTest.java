@@ -120,8 +120,19 @@ class AdminUserControllerTest {
         mockMvc.perform(put("/api/v1/admin/users/user-1")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"firstName\":\"Ana\",\"lastName\":\"García\",\"phone\":\"555555555555555\"}"))
+                .content("{\"firstName\":\"Ana\",\"lastName\":\"García\",\"nationalId\":\"12345678A\",\"phone\":\"555555555555555\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors.phone").value("El teléfono debe contener exactamente 9 dígitos numéricos"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void rejectsBlankNationalId() throws Exception {
+        mockMvc.perform(put("/api/v1/admin/users/user-1")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"firstName\":\"Ana\",\"lastName\":\"García\",\"nationalId\":\"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.nationalId").value("El documento de identidad es obligatorio"));
     }
 }
