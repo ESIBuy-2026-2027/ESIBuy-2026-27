@@ -410,6 +410,75 @@
   outline-offset: 1px;
 }
 
+/* ==========================================================================
+   AVATARES DE PERFIL (IGUAL QUE EN ALTA ADMINISTRADOR)
+   ========================================================================== */
+.avatar-section {
+  margin-top: 0.5rem;
+}
+
+.avatar-selector-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.avatar-item {
+  position: relative;
+  width: 66px;
+  height: 66px;
+  padding: 0;
+  overflow: hidden;
+  border: 3px solid #dce6ea;
+  border-radius: 50%;
+  background: #f3f7f8;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.avatar-item:hover {
+  border-color: #9edfd0;
+  transform: translateY(-2px);
+}
+
+.avatar-item.selected {
+  border-color: #42d6b2;
+  box-shadow: 0 0 0 3px rgb(66 214 178 / 25%);
+  transform: scale(1.04);
+}
+
+.avatar-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-check {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #42d6b2;
+  color: #102c40;
+  font-size: 11px;
+  font-weight: 800;
+  border: 2px solid #fff;
+}
+
+.avatar-hint {
+  font-size: 0.82rem;
+  color: #72828e;
+  margin: 0.5rem 0 0;
+}
+
 .btn-wrapper,
 .success-actions {
   display: flex;

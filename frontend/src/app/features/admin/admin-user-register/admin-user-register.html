@@ -633,6 +633,20 @@
 
           </div>
 
+          <!-- Avatares del registro -->
+          <fieldset class="form-group avatar-section">
+            <legend class="form-label">Avatar de perfil</legend>
+            <div class="avatar-selector-grid">
+              <button *ngFor="let av of avatars" type="button" class="avatar-item"
+                [class.selected]="form.get('imagenPerfil')?.value === av" (click)="selectAvatar(av)"
+                [attr.aria-label]="'Seleccionar avatar'">
+                <img [src]="av" alt="Avatar disponible" />
+                <span *ngIf="form.get('imagenPerfil')?.value === av" class="avatar-check">✓</span>
+              </button>
+            </div>
+            <p class="avatar-hint">Selecciona una imagen de perfil de las opciones disponibles.</p>
+          </fieldset>
+
           <!-- botones de acción -->
 
           <div class="btn-wrapper">
