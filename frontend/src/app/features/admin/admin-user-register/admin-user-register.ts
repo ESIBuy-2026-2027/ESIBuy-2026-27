@@ -72,7 +72,7 @@ export class AdminUserRegister implements OnInit {
     private productsService: ProductsService,
     private router: Router,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Definimos el formulario base con los campos comunes
@@ -205,9 +205,16 @@ export class AdminUserRegister implements OnInit {
       imagenPerfil: selectedImg,
     };
 
-    const request$ = this.selectedRole === 'cliente'
-      ? (typeof this.authService.adminRegisterClient === 'function' ? this.authService.adminRegisterClient(formData) : (this.authService as any).registerClient(formData))
-      : (typeof this.authService.adminRegisterSeller === 'function' ? this.authService.adminRegisterSeller(formData) : (this.authService as any).registerSeller(formData));
+    let request$;
+    if (this.selectedRole === 'cliente') {
+      request$ = typeof this.authService.adminRegisterClient === 'function'
+        ? this.authService.adminRegisterClient(formData)
+        : (this.authService as any).registerClient(formData);
+    } else {
+      request$ = typeof this.authService.adminRegisterSeller === 'function'
+        ? this.authService.adminRegisterSeller(formData)
+        : (this.authService as any).registerSeller(formData);
+    }
 
     request$.pipe(
       finalize(() => {

@@ -24,7 +24,8 @@ public class AdminUserService {
     private final ProductRepository productRepository;
     private final UserService userService;
 
-    public AdminUserService(UserRepository userRepository, ProductRepository productRepository, UserService userService) {
+    public AdminUserService(UserRepository userRepository, ProductRepository productRepository,
+            UserService userService) {
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.userService = userService;
@@ -36,6 +37,18 @@ public class AdminUserService {
 
     public User actualizar(String id, UpdateUserRequestDTO request) {
         User user = obtenerPorId(id);
+        actualizarDatosGenerales(user, request);
+
+        switch (user.getRole()) {
+            case ADMIN -> actualizarPerfilAdmin(user, request);
+            case SELLER -> actualizarPerfilSeller(user, request);
+            case CLIENT -> actualizarPerfilCliente(user, request);
+        }
+
+        return userRepository.save(user);
+    }
+
+    private void actualizarDatosGenerales(User user, UpdateUserRequestDTO request) {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setNationalId(blankToNull(request.getNationalId()));
@@ -44,45 +57,53 @@ public class AdminUserService {
         if (user.getRole() != UserRole.ADMIN) {
             user.setPhone(blankToNull(request.getPhone()));
         }
+    }
 
-        if (user.getRole() == UserRole.ADMIN && request.getHeadquarters() != null) {
-            AdminProfile profile = user.getAdminProfile();
-            if (profile == null) {
-                profile = new AdminProfile();
-                user.setAdminProfile(profile);
-            }
-            profile.setHeadquarters(blankToNull(request.getHeadquarters()));
+    private void actualizarPerfilAdmin(User user, UpdateUserRequestDTO request) {
+        if (request.getHeadquarters() == null) {
+            return;
         }
 
-        if (user.getRole() == UserRole.SELLER) {
-            SellerProfile profile = user.getSellerProfile();
-            if (profile == null) {
-                profile = new SellerProfile();
-                user.setSellerProfile(profile);
-            }
-            if (request.getBusinessName() != null) {
-                String newBusinessName = blankToNull(request.getBusinessName());
-                if (newBusinessName != null && !newBusinessName.equalsIgnoreCase(profile.getBusinessName())
-                        && userRepository.existsBySellerProfileBusinessNameIgnoreCase(newBusinessName)) {
-                    throw new DuplicateUserException("Ya existe un vendedor con ese nombre comercial");
-                }
-                profile.setBusinessName(newBusinessName);
-            }
-            if (request.getDefaultCategory() != null) {
-                profile.setDefaultCategory(blankToNull(request.getDefaultCategory()));
-            }
+        AdminProfile profile = user.getAdminProfile();
+        if (profile == null) {
+            profile = new AdminProfile();
+            user.setAdminProfile(profile);
+        }
+        profile.setHeadquarters(blankToNull(request.getHeadquarters()));
+    }
+
+    private void actualizarPerfilSeller(User user, UpdateUserRequestDTO request) {
+        SellerProfile profile = user.getSellerProfile();
+        if (profile == null) {
+            profile = new SellerProfile();
+            user.setSellerProfile(profile);
         }
 
-        if (user.getRole() == UserRole.CLIENT && request.getBirthDate() != null) {
-            ClientProfile profile = user.getClientProfile();
-            if (profile == null) {
-                profile = new ClientProfile();
-                user.setClientProfile(profile);
+        if (request.getBusinessName() != null) {
+            String newBusinessName = blankToNull(request.getBusinessName());
+            if (newBusinessName != null && !newBusinessName.equalsIgnoreCase(profile.getBusinessName())
+                    && userRepository.existsBySellerProfileBusinessNameIgnoreCase(newBusinessName)) {
+                throw new DuplicateUserException("Ya existe un vendedor con ese nombre comercial");
             }
-            profile.setBirthDate(request.getBirthDate());
+            profile.setBusinessName(newBusinessName);
         }
 
-        return userRepository.save(user);
+        if (request.getDefaultCategory() != null) {
+            profile.setDefaultCategory(blankToNull(request.getDefaultCategory()));
+        }
+    }
+
+    private void actualizarPerfilCliente(User user, UpdateUserRequestDTO request) {
+        if (request.getBirthDate() == null) {
+            return;
+        }
+
+        ClientProfile profile = user.getClientProfile();
+        if (profile == null) {
+            profile = new ClientProfile();
+            user.setClientProfile(profile);
+        }
+        profile.setBirthDate(request.getBirthDate());
     }
 
     public void eliminar(String id, String authenticatedUserId) {
@@ -122,7 +143,6 @@ public class AdminUserService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getPhone(),
-                user.getRole().name()
-        );
+                user.getRole().name());
     }
 }

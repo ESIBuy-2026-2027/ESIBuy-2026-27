@@ -21,15 +21,18 @@ public class UserResponseDTO {
         this(id, email, firstName, lastName, phone, role, null, null, null, null, null, null);
     }
 
-    public UserResponseDTO(String id, String email, String firstName, String lastName, String phone, String role, String profileImage) {
+    public UserResponseDTO(String id, String email, String firstName, String lastName, String phone, String role,
+            String profileImage) {
         this(id, email, firstName, lastName, phone, role, profileImage, null, null, null, null, null);
     }
 
     public UserResponseDTO(String id, String email, String firstName, String lastName, String phone, String role,
             String profileImage, String nationalId, String headquarters, String businessName) {
-        this(id, email, firstName, lastName, phone, role, profileImage, nationalId, headquarters, businessName, null, null);
+        this(id, email, firstName, lastName, phone, role, profileImage, nationalId, headquarters, businessName, null,
+                null);
     }
 
+    @SuppressWarnings("java:S107")
     public UserResponseDTO(String id, String email, String firstName, String lastName, String phone, String role,
             String profileImage, String nationalId, String headquarters, String businessName,
             LocalDate birthDate, String defaultCategory) {
