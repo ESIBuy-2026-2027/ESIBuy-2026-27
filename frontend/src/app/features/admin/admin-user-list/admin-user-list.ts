@@ -14,6 +14,7 @@ export class AdminUserList implements OnInit {
   usuarios = signal<UserAdmin[]>([]);
   cargando = signal(true);
   error = signal('');
+  mensajeExito = signal('');
 
   constructor(
     private readonly authService: AuthService,
@@ -21,6 +22,10 @@ export class AdminUserList implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    const stateMessage = history.state?.successMessage;
+    if (stateMessage && typeof stateMessage === 'string') {
+      this.mensajeExito.set(stateMessage);
+    }
     this.cargarUsuarios();
   }
 

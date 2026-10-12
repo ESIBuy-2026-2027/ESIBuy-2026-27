@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService, UpdateUserRequest } from '../../../core/services/auth.service';
 
@@ -75,6 +75,7 @@ export class AdminUserDetail implements OnInit {
 
   constructor(
     private readonly route: ActivatedRoute,
+    private readonly router: Router,
     private readonly authService: AuthService
   ) {}
 
@@ -130,12 +131,11 @@ export class AdminUserDetail implements OnInit {
       profileImage: this.selectedAvatar
     };
     this.authService.actualizarUsuarioAdmin(this.userId, request).subscribe({
-      next: ({ message, data }) => {
-        this.successMessage.set(message);
-        if (data?.profileImage) {
-          this.selectedAvatar = this.normalizeAvatarPath(data.profileImage);
-        }
+      next: () => {
         this.guardando.set(false);
+        this.router.navigate(['/admin/usuarios'], {
+          state: { successMessage: 'Los cambios se han guardado correctamente.' }
+        });
       },
       error: (error) => {
         this.errorMessage.set(this.errorMessageFor(error));

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { AdminUserDetail } from './admin-user-detail';
 import { AuthService, ApiResponse, UserResponse } from '../../../core/services/auth.service';
@@ -101,7 +101,10 @@ describe('AdminUserDetail', () => {
     expect(component.selectedAvatar).toBe('assets/images/avatars/av_seller_2.jpeg');
   });
 
-  it('should submit form including selected avatar', () => {
+  it('should submit form including selected avatar and navigate to user list with success message', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate');
+
     fixture.detectChanges();
 
     component.selectAvatar('assets/images/avatars/av_client_1.jpeg');
@@ -113,7 +116,9 @@ describe('AdminUserDetail', () => {
       phone: '612345678',
       profileImage: 'assets/images/avatars/av_client_1.jpeg'
     });
-    expect(component.successMessage()).toBe('Usuario actualizado correctamente');
+    expect(navigateSpy).toHaveBeenCalledWith(['/admin/usuarios'], {
+      state: { successMessage: 'Los cambios se han guardado correctamente.' }
+    });
     expect(component.guardando()).toBe(false);
   });
 

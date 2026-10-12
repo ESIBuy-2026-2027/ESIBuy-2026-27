@@ -89,4 +89,14 @@ describe('AdminUserList', () => {
     expect(btnAlta.textContent).toContain('Dar Alta Administrador');
     expect(btnAlta.getAttribute('routerLink') || btnAlta.getAttribute('href')).toContain('/admin/altas');
   });
+
+  it('should display success alert when mensajeExito is set', () => {
+    component.mensajeExito.set('Los cambios se han guardado correctamente.');
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const alert = compiled.querySelector('.success-alert');
+    expect(alert).not.toBeNull();
+    expect(alert?.textContent).toContain('Los cambios se han guardado correctamente.');
+  });
 });
