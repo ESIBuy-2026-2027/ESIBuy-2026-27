@@ -4,6 +4,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ProductsService } from '../../products/products.service';
 import { of, throwError } from 'rxjs';
 import { provideRouter, Router } from '@angular/router';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 describe('AdminUserRegister', () => {
   let component: AdminUserRegister;
@@ -187,6 +188,47 @@ describe('AdminUserRegister', () => {
       const navigateSpy = vi.spyOn(router, 'navigate');
       component.cancelar();
       expect(navigateSpy).toHaveBeenCalledWith(['/admin/usuarios']);
+    });
+
+    it('debe renderizar los 10 botones de avatar y permitir alternar la selección', () => {
+      const rendered = fixture.nativeElement as HTMLElement;
+      const avatarButtons = rendered.querySelectorAll('.avatar-selector-grid .avatar-item');
+      expect(avatarButtons.length).toBe(10);
+
+      const firstAvatarBtn = avatarButtons[0] as HTMLButtonElement;
+      firstAvatarBtn.click();
+      fixture.detectChanges();
+      expect(component.form.get('imagenPerfil')?.value).toBe(component.avatars[0]);
+      expect(component.selectedAvatar).toBe(component.avatars[0]);
+
+      // Al pulsar de nuevo, se deselecciona
+      firstAvatarBtn.click();
+      fixture.detectChanges();
+      expect(component.form.get('imagenPerfil')?.value).toBe('');
+      expect(component.selectedAvatar).toBeNull();
+    });
+
+    it('debe incluir el avatar seleccionado en el payload al enviar el formulario', () => {
+      component.setRole('cliente');
+      component.selectAvatar(component.avatars[2]);
+      component.form.patchValue({
+        firstName: 'Laura',
+        lastName: 'Gómez',
+        birthDate: '1998-03-15',
+        nationalId: '87654321X',
+        email: 'laura@example.com',
+        phone: '611999888',
+        customerType: 'STANDARD',
+        password: 'Password123!',
+        repeatedPassword: 'Password123!'
+      });
+
+      component.onSubmit();
+
+      expect(authServiceSpy.registerClient).toHaveBeenCalled();
+      const payload = authServiceSpy.registerClient.mock.calls[0][0];
+      expect(payload.profileImage).toBe(component.avatars[2]);
+      expect(payload.imagenPerfil).toBe(component.avatars[2]);
     });
   });
 });

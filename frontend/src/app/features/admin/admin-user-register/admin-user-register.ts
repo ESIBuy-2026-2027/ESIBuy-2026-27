@@ -44,12 +44,23 @@ export class AdminUserRegister implements OnInit {
 
   // Variables para categorías y avatares
   categories: any[] = [];
-  currentAvatarList: string[] = [
-    'assets/avatars/avatar1.png',
-    'assets/avatars/avatar2.png',
-    'assets/avatars/avatar3.png',
-    'assets/avatars/avatar4.png'
+  readonly avatars: string[] = [
+    'assets/images/avatars/av_client_1.jpeg',
+    'assets/images/avatars/av_client_2.jpeg',
+    'assets/images/avatars/av_client_3.jpeg',
+    'assets/images/avatars/av_client_4.jpeg',
+    'assets/images/avatars/av_client_5.jpeg',
+    'assets/images/avatars/av_seller_1.jpeg',
+    'assets/images/avatars/av_seller_2.jpeg',
+    'assets/images/avatars/av_seller_3.jpeg',
+    'assets/images/avatars/av_seller_4.jpeg',
+    'assets/images/avatars/av_seller_5.jpeg',
   ];
+
+  get currentAvatarList(): string[] {
+    return this.avatars;
+  }
+
   selectedAvatar: string | null = null;
 
   constructor(
@@ -74,7 +85,9 @@ export class AdminUserRegister implements OnInit {
         // Patrón básico: al menos una minúscula, mayúscula, número y carácter especial
         Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/)
       ]],
-      repeatedPassword: ['', [Validators.required]]
+      repeatedPassword: ['', [Validators.required]],
+      imagenPerfil: ['', [Validators.maxLength(500)]],
+      profileImage: ['', [Validators.maxLength(500)]]
     }, { validators: this.passwordMatchValidator });
 
     // Inicializamos controles dinámicos para el rol por defecto
@@ -137,7 +150,13 @@ export class AdminUserRegister implements OnInit {
   }
 
   selectAvatar(av: string): void {
-    this.selectedAvatar = av;
+    if (this.form.get('imagenPerfil')?.value === av || this.selectedAvatar === av) {
+      this.selectedAvatar = null;
+      this.form.patchValue({ imagenPerfil: '', profileImage: '' });
+    } else {
+      this.selectedAvatar = av;
+      this.form.patchValue({ imagenPerfil: av, profileImage: av });
+    }
     this.cdr.markForCheck();
   }
 
@@ -150,6 +169,7 @@ export class AdminUserRegister implements OnInit {
     this.setRole('cliente');
     this.form.get('customerType')?.setValue('STANDARD');
     this.selectedAvatar = null;
+    this.form.patchValue({ imagenPerfil: '', profileImage: '' });
     this.cdr.detectChanges();
   }
 
@@ -168,11 +188,17 @@ export class AdminUserRegister implements OnInit {
     this.serverError = '';
     this.serverErrors = [];
 
-    const formData = this.form.value;
+    const rawValue = this.form.value;
+    const selectedImg = this.selectedAvatar?.trim() || this.form.get('imagenPerfil')?.value?.trim() || null;
+    const formData = {
+      ...rawValue,
+      profileImage: selectedImg,
+      imagenPerfil: selectedImg,
+    };
 
     const request$ = this.selectedRole === 'cliente' 
-      ? this.authService.adminRegisterClient(formData)
-      : this.authService.adminRegisterSeller(formData);
+      ? (typeof this.authService.adminRegisterClient === 'function' ? this.authService.adminRegisterClient(formData) : (this.authService as any).registerClient(formData))
+      : (typeof this.authService.adminRegisterSeller === 'function' ? this.authService.adminRegisterSeller(formData) : (this.authService as any).registerSeller(formData));
 
     request$.pipe(
       finalize(() => {
@@ -189,7 +215,7 @@ export class AdminUserRegister implements OnInit {
         this.successMessage = `Alta Realizada con Éxito. Usuario: ${nameToDisplay}`;
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.serverError = err?.error?.message || 'Error al procesar el alta.';
         if (err?.error?.errors) {
           this.serverErrors = err.error.errors;
