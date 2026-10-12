@@ -30,6 +30,49 @@ export class AdminUserDetail implements OnInit {
   private email = '';
   private role = '';
 
+  clientAvatars: string[] = [
+    'assets/images/avatars/av_client_1.jpeg',
+    'assets/images/avatars/av_client_2.jpeg',
+    'assets/images/avatars/av_client_3.jpeg',
+    'assets/images/avatars/av_client_4.jpeg',
+    'assets/images/avatars/av_client_5.jpeg'
+  ];
+
+  sellerAvatars: string[] = [
+    'assets/images/avatars/av_seller_1.jpeg',
+    'assets/images/avatars/av_seller_2.jpeg',
+    'assets/images/avatars/av_seller_3.jpeg',
+    'assets/images/avatars/av_seller_4.jpeg',
+    'assets/images/avatars/av_seller_5.jpeg'
+  ];
+
+  selectedAvatar = '';
+
+  get currentAvatarList(): string[] {
+    const r = (this.role || '').toUpperCase();
+    let list: string[];
+    if (r === 'SELLER' || r === 'VENDEDOR') {
+      list = [...this.sellerAvatars];
+    } else if (r === 'CLIENT' || r === 'CLIENTE') {
+      list = [...this.clientAvatars];
+    } else {
+      list = [...this.clientAvatars, ...this.sellerAvatars];
+    }
+    if (this.selectedAvatar && !list.includes(this.selectedAvatar)) {
+      list = [this.selectedAvatar, ...list];
+    }
+    return list;
+  }
+
+  selectAvatar(avatar: string): void {
+    this.selectedAvatar = avatar;
+  }
+
+  private normalizeAvatarPath(path: string | null | undefined): string {
+    if (!path) return '';
+    return path.replace(/^\/+/, '');
+  }
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly authService: AuthService
@@ -47,6 +90,8 @@ export class AdminUserDetail implements OnInit {
       next: ({ data }) => {
         this.email = data.email;
         this.role = data.role;
+        const normalized = this.normalizeAvatarPath(data.profileImage);
+        this.selectedAvatar = normalized || this.currentAvatarList[0] || this.clientAvatars[0];
         this.form.patchValue({
           firstName: data.firstName,
           lastName: data.lastName,
@@ -81,11 +126,15 @@ export class AdminUserDetail implements OnInit {
     const request: UpdateUserRequest = {
       firstName: this.form.controls.firstName.value.trim(),
       lastName: this.form.controls.lastName.value.trim(),
-      phone: this.form.controls.phone.value.trim()
+      phone: this.form.controls.phone.value.trim(),
+      profileImage: this.selectedAvatar
     };
     this.authService.actualizarUsuarioAdmin(this.userId, request).subscribe({
-      next: ({ message }) => {
+      next: ({ message, data }) => {
         this.successMessage.set(message);
+        if (data?.profileImage) {
+          this.selectedAvatar = this.normalizeAvatarPath(data.profileImage);
+        }
         this.guardando.set(false);
       },
       error: (error) => {

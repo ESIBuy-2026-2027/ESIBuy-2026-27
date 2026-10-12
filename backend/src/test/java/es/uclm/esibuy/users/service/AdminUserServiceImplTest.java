@@ -41,6 +41,7 @@ class AdminUserServiceImplTest {
         request.setFirstName(" New ");
         request.setLastName(" Name ");
         request.setPhone("600111222");
+        request.setProfileImage("assets/images/avatars/av_client_2.jpeg");
         when(userRepository.findById("user-1")).thenReturn(Optional.of(existing));
         when(userRepository.save(any(User.class))).thenAnswer(call -> call.getArgument(0));
 
@@ -49,6 +50,7 @@ class AdminUserServiceImplTest {
         assertEquals("New", result.getFirstName());
         assertEquals("Name", result.getLastName());
         assertEquals("600111222", result.getPhone());
+        assertEquals("assets/images/avatars/av_client_2.jpeg", result.getProfileImage());
         assertEquals(UserRole.CLIENT, result.getRole());
         assertEquals("encoded-secret", result.getPasswordHash());
         assertEquals("cliente@example.com", result.getEmail());

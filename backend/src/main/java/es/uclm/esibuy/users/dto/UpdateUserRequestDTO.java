@@ -19,6 +19,9 @@ public class UpdateUserRequestDTO {
     @Pattern(regexp = "^$|^\\+?\\d{9}$", message = "El teléfono debe contener exactamente 9 dígitos numéricos")
     private String phone;
 
+    @Size(max = 500, message = "La imagen de perfil no puede superar los 500 caracteres")
+    private String profileImage;
+
     public String getFirstName() {
         return firstName;
     }
@@ -41,6 +44,14 @@ public class UpdateUserRequestDTO {
 
     public void setPhone(String phone) {
         this.phone = normalize(phone);
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = normalize(profileImage);
     }
 
     private String normalize(String value) {

@@ -79,6 +79,26 @@
               }
             </div>
           </div>
+
+          <div class="avatar-section">
+            <span class="form-label">Imagen de perfil</span>
+            <p class="avatar-help-text">Selecciona el avatar que quieres utilizar.</p>
+            <div class="avatar-selector-grid">
+              @for (avatar of currentAvatarList; track avatar) {
+                <button
+                  type="button"
+                  class="avatar-item"
+                  [class.selected]="selectedAvatar === avatar"
+                  (click)="selectAvatar(avatar)"
+                  [attr.aria-label]="'Seleccionar avatar'">
+                  <img [src]="avatar" alt="Avatar disponible" />
+                  @if (selectedAvatar === avatar) {
+                    <span class="avatar-check" aria-hidden="true">✓</span>
+                  }
+                </button>
+              }
+            </div>
+          </div>
         </section>
 
         <footer class="btn-wrapper">

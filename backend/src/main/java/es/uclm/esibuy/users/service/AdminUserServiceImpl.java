@@ -26,6 +26,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setPhone(blankToNull(request.getPhone()));
+        user.setProfileImage(blankToNull(request.getProfileImage()));
         return userRepository.save(user);
     }
 

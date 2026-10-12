@@ -47,7 +47,8 @@ public class AdminUserController {
 
     private ApiResponse<UserResponseDTO> response(String message, User user, HttpServletRequest request) {
         UserResponseDTO data = new UserResponseDTO(user.getId(), user.getEmail(), user.getFirstName(),
-            user.getLastName(), user.getPhone(), user.getRole() == null ? null : user.getRole().name());
+            user.getLastName(), user.getPhone(), user.getRole() == null ? null : user.getRole().name(),
+            user.getProfileImage());
         Object correlationId = request.getAttribute(CorrelationIdFilter.ATTRIBUTE);
         return new ApiResponse<>(true, message, data, correlationId == null ? null : correlationId.toString());
     }

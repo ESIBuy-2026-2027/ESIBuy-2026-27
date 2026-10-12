@@ -22,6 +22,7 @@ export interface UpdateUserRequest {
   firstName: string;
   lastName: string;
   phone: string;
+  profileImage?: string;
 }
 
 export interface UserResponse {
@@ -31,6 +32,7 @@ export interface UserResponse {
   lastName: string;
   phone: string | null;
   role: string;
+  profileImage?: string | null;
 }
 
 export interface ApiResponse<T> {
