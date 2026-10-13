@@ -51,11 +51,14 @@ public class SecurityConfig {
     CookieCsrfTokenRepository csrfTokenRepository(
             @Value("${server.servlet.session.cookie.secure:false}") boolean secureCookie,
             @Value("${server.servlet.session.cookie.same-site:Lax}") String sameSite) {
+
         CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+
         repository.setCookieCustomizer(cookie -> cookie
                 .path("/")
                 .secure(secureCookie)
                 .sameSite(sameSite));
+
         return repository;
     }
 
@@ -69,8 +72,7 @@ public class SecurityConfig {
                     .cors(Customizer.withDefaults())
                     .csrf(csrf -> csrf
                             .csrfTokenRepository(csrfTokenRepository)
-                            .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                            .ignoringRequestMatchers("/api/users/register/**"))
+                            .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                     .securityContext(context -> context.securityContextRepository(securityContextRepository))
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                     .exceptionHandling(errors -> errors
