@@ -57,6 +57,9 @@ export function passwordMatchValidator(
   styleUrl: './register.css'
 })
 export class Register {
+  blockClipboardAction($event: ClipboardEvent) {
+    $event.preventDefault();
+  }
 
   userRole: 'cliente' | 'vendedor' = 'cliente';
 

@@ -409,7 +409,8 @@
           <div class="password-wrapper">
 
             <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
-              [attr.autocomplete]="showPassword ? 'off' : 'new-password'" />
+              [attr.autocomplete]="showPassword ? 'off' : 'new-password'" (copy)="blockClipboardAction($event)"
+              (cut)="blockClipboardAction($event)" (paste)="blockClipboardAction($event)" />
 
             <button type="button" class="password-toggle" (click)="showPassword = !showPassword"
               [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
@@ -459,7 +460,8 @@
           <div class="password-wrapper">
 
             <input id="repeatedPassword" [type]="showPassword ? 'text' : 'password'" formControlName="repeatedPassword"
-              [attr.autocomplete]="showPassword ? 'off' : 'new-password'" />
+              [attr.autocomplete]="showPassword ? 'off' : 'new-password'" (copy)="blockClipboardAction($event)"
+              (cut)="blockClipboardAction($event)" (paste)="blockClipboardAction($event)" />
 
           </div>
 
