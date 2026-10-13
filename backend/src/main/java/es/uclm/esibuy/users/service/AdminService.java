@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class AdminService {
 
     private static final String DEFAULT_ADMIN_AVATAR = "avatar-admin-default";
-    private static final String MSG_DUPLICATE_EMAIL = "Ya existe un usuario con ese email";
+    private static final String MSG_DUPLICATE_EMAIL = "No se ha podido completar el registro. Comprueba los datos introducidos e inténtalo de nuevo";
     private static final String MSG_USER_NOT_FOUND = "Usuario no encontrado";
 
     private final UserRepository userRepository;

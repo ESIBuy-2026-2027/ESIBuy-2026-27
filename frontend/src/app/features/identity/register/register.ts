@@ -64,8 +64,6 @@ export class Register {
 
   serverError: string | null = null;
 
-  emailServerError: string | null = null;
-
   loading = false;
 
   showPassword = false;
@@ -125,7 +123,6 @@ export class Register {
     this.userRole = role;
 
     this.serverError = null;
-    this.emailServerError = null;
 
     this.selectedAvatar =
       role === 'cliente'
@@ -318,7 +315,6 @@ export class Register {
 
   onSubmit(): void {
     this.serverError = null;
-    this.emailServerError = null;
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -354,7 +350,6 @@ export class Register {
 
         error: (err) => {
           this.serverError = this.getRegistrationErrorMessage(err);
-          this.emailServerError = this.getEmailRegistrationError(err);
           this.changeDetector.markForCheck();
           this.scrollToEmailError();
         }
@@ -391,7 +386,6 @@ export class Register {
 
         error: (err) => {
           this.serverError = this.getRegistrationErrorMessage(err);
-          this.emailServerError = this.getEmailRegistrationError(err);
           this.changeDetector.markForCheck();
           this.scrollToEmailError();
         }
@@ -414,16 +408,15 @@ export class Register {
   }
 
   private getRegistrationErrorMessage(error: unknown): string {
-    if (error instanceof HttpErrorResponse && error.status === 409) {
-      const serverMessage = this.getServerMessage(error.error);
-      return serverMessage ?? 'El correo electrónico ya está registrado. Utiliza otro correo.';
-    }
-
     if (error instanceof HttpErrorResponse) {
-      return this.getServerMessage(error.error) ?? 'Error en el servidor durante el registro.';
+      if (error.status === 409) {
+        return 'No se ha podido completar el registro. Comprueba los datos introducidos e inténtalo de nuevo.';
+      }
+
+      return 'No se ha podido completar el registro. Inténtalo de nuevo más tarde.';
     }
 
-    return 'Error en el servidor durante el registro.';
+    return 'No se ha podido completar el registro. Inténtalo de nuevo más tarde.';
   }
 
   private getServerMessage(errorBody: unknown): string | null {
@@ -443,7 +436,7 @@ export class Register {
     const message = this.getServerMessage(error.error);
     return message?.toLowerCase().includes('email')
       ? message
-      : 'Este correo electrónico ya está registrado.';
+      : 'No se ha podido completar el registro. Comprueba los datos introducidos e inténtalo de nuevo';
   }
 
   private scrollToEmailError(): void {

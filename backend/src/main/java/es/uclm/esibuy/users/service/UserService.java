@@ -22,7 +22,7 @@ import es.uclm.esibuy.users.repository.UserRepository;
 @Service
 public class UserService {
 
-    private static final String MSG_DUPLICATE_EMAIL = "Ya existe un usuario con ese email";
+    private static final String MSG_DUPLICATE_EMAIL = "No se ha podido completar el registro. Comprueba los datos introducidos e inténtalo de nuevo";
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
