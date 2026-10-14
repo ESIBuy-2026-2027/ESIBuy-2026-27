@@ -34,14 +34,11 @@ class AdminUserServiceTest {
     @Mock
     private ProductRepository productRepository;
 
-    @Mock
-    private UserService userService;
-
     private AdminUserService service;
 
     @BeforeEach
     void setUp() {
-        service = new AdminUserService(userRepository, productRepository, userService);
+        service = new AdminUserService(userRepository, productRepository);
     }
 
     @Test

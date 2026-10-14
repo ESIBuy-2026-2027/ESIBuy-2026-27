@@ -93,14 +93,6 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/register/seller`, data, { withCredentials: true });
   }
 
-  adminRegisterClient(data: unknown): Observable<unknown> {
-    return this.http.post('/api/v1/admin/users/register/client', data, { withCredentials: true });
-  }
-
-  adminRegisterSeller(data: unknown): Observable<unknown> {
-    return this.http.post('/api/v1/admin/users/register/seller', data, { withCredentials: true });
-  }
-
   createAdmin(data: unknown): Observable<unknown> {
     return this.http.post(`${this.apiUrl}/admin`, data, { withCredentials: true });
   }

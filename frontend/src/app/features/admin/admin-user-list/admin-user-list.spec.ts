@@ -40,16 +40,15 @@ describe('AdminUserList', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-  
-  it('renders the link to normal user creation', () => {
+
+  it('does not render a link to administrative user creation', () => {
     component.cargarUsuarios();
     fixture.detectChanges();
 
     const rendered = fixture.nativeElement as HTMLElement;
-    const btnAltaUsuario = rendered.querySelector('#btnDarAltaUsuario');
-    
-    expect(btnAltaUsuario).toBeTruthy();
-    expect(btnAltaUsuario?.getAttribute('href')).toContain('/admin/usuarios/alta');
+
+    expect(rendered.querySelector('#btnDarAltaUsuario')).toBeNull();
+    expect(rendered.textContent).not.toContain('Dar de alta usuario');
   });
 
   it('renders a link to the home page', () => {

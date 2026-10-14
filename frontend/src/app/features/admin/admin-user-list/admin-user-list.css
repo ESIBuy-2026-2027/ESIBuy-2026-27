@@ -53,37 +53,6 @@
     line-height: 1.5;
 }
 
-.btn-alta-admin {
-    display: inline-flex;
-    box-sizing: border-box;
-    width: 270px;
-    flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
-    min-height: 42px;
-    gap: 8px;
-    padding: 0 15px;
-    color: #0a2c3a;
-    background: #42d6b2;
-    border: 1px solid #42d6b2;
-    border-radius: 8px;
-    box-shadow: none;
-    font-size: 13px;
-    font-weight: 650;
-    text-decoration: none;
-    transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
-}
-
-.btn-alta-admin:hover {
-    background: linear-gradient(135deg, #7fe0d2 0%, #63d8c6 100%);
-    box-shadow: 0 10px 20px rgba(92, 207, 192, 0.32);
-    transform: translateY(-1px);
-}
-
-.btn-alta-admin svg {
-    flex: 0 0 auto;
-}
-
 .back-home-button {
     margin-bottom: 1rem;
 }
@@ -669,10 +638,6 @@
         flex-direction: column;
     }
 
-    :where(.btn-alta-admin) {
-        width: 100%;
-    }
-
     :where(.delete-dialog) {
         padding: 1.1rem;
     }
@@ -884,14 +849,12 @@
     transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
 }
 
-.primary-action:hover,
-:where(.btn-alta-admin:hover) {
+.primary-action:hover {
     background: #2bb79a;
     border-color: #2bb79a;
     transform: translateY(-1px);
 }
 
-.btn-alta-admin svg,
 .primary-action svg {
     width: 17px;
     height: 17px;
@@ -1042,7 +1005,6 @@
         gap: 10px;
     }
 
-    :where(.btn-alta-admin),
     :is(.primary-action) {
         width: 100%;
     }
