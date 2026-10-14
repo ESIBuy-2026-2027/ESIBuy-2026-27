@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.common.exception.UserDeletionConflictException;
 import es.uclm.esibuy.common.exception.UserNotFoundException;
-import es.uclm.esibuy.products.repository.ProductRepository;
 import es.uclm.esibuy.users.dto.UpdateUserRequestDTO;
 import es.uclm.esibuy.users.model.AdminProfile;
 import es.uclm.esibuy.users.model.ClientProfile;
@@ -18,11 +17,9 @@ import es.uclm.esibuy.users.repository.UserRepository;
 public class AdminUserService {
 
     private final UserRepository userRepository;
-    private final ProductRepository productRepository;
 
-    public AdminUserService(UserRepository userRepository, ProductRepository productRepository) {
+    public AdminUserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.productRepository = productRepository;
     }
 
     public User obtenerPorId(String id) {
@@ -109,7 +106,7 @@ public class AdminUserService {
         }
 
         User user = obtenerPorId(id);
-        if (user.getRole() == UserRole.SELLER && productRepository.countBySellerId(id) > 0) {
+        if (user.getRole() != UserRole.ADMIN) {
             throw new UserDeletionConflictException();
         }
 

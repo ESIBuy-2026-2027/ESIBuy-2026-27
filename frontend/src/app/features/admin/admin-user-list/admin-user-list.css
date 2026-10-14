@@ -579,10 +579,10 @@
 
 /* Botones de Acción */
 .actions-wrapper {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, 34px);
     align-items: center;
     gap: 8px;
-    flex-wrap: nowrap;
     justify-content: flex-end;
 }
 
@@ -680,6 +680,10 @@
         width: 28px;
         height: 28px;
         font-size: 0.85rem;
+    }
+
+    :where(.actions-wrapper) {
+        grid-template-columns: repeat(3, 28px);
     }
 }
 

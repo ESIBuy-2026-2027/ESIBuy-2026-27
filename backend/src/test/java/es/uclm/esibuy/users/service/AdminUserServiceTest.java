@@ -19,7 +19,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import es.uclm.esibuy.common.exception.UserDeletionConflictException;
 import es.uclm.esibuy.common.exception.UserNotFoundException;
-import es.uclm.esibuy.products.repository.ProductRepository;
 import es.uclm.esibuy.users.dto.UpdateUserRequestDTO;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
@@ -31,14 +30,11 @@ class AdminUserServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private ProductRepository productRepository;
-
     private AdminUserService service;
 
     @BeforeEach
     void setUp() {
-        service = new AdminUserService(userRepository, productRepository);
+        service = new AdminUserService(userRepository);
     }
 
     @Test
@@ -142,9 +138,9 @@ class AdminUserServiceTest {
     }
 
     @Test
-    void deletesExistingUserWhenIdIsValidAndItIsNotTheAuthenticatedAdmin() {
+    void deletesAnotherAdministratorWhenIdIsValid() {
         String userId = "507f1f77bcf86cd799439011";
-        User user = new User("cliente@example.com", "Ana", "López", UserRole.CLIENT);
+        User user = new User("admin@example.com", "Ana", "López", UserRole.ADMIN);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         service.eliminar(userId, "507f1f77bcf86cd799439012");
@@ -182,27 +178,26 @@ class AdminUserServiceTest {
     }
 
     @Test
-    void refusesToDeleteSellerWithProducts() {
-        String sellerId = "507f1f77bcf86cd799439011";
-        User seller = new User("seller@example.com", "Vera", "Seller", UserRole.SELLER);
-        when(userRepository.findById(sellerId)).thenReturn(Optional.of(seller));
-        when(productRepository.countBySellerId(sellerId)).thenReturn(1L);
+    void refusesToDeleteClientAccount() {
+        String clientId = "507f1f77bcf86cd799439011";
+        User client = new User("client@example.com", "Ana", "Client", UserRole.CLIENT);
+        when(userRepository.findById(clientId)).thenReturn(Optional.of(client));
 
         assertThrows(UserDeletionConflictException.class,
-                () -> service.eliminar(sellerId, "507f1f77bcf86cd799439012"));
+                () -> service.eliminar(clientId, "507f1f77bcf86cd799439012"));
 
         verify(userRepository, never()).delete(any(User.class));
     }
 
     @Test
-    void deletesSellerWithoutProducts() {
+    void refusesToDeleteSellerAccountEvenWithoutProducts() {
         String sellerId = "507f1f77bcf86cd799439011";
         User seller = new User("seller@example.com", "Vera", "Seller", UserRole.SELLER);
         when(userRepository.findById(sellerId)).thenReturn(Optional.of(seller));
-        when(productRepository.countBySellerId(sellerId)).thenReturn(0L);
 
-        service.eliminar(sellerId, "507f1f77bcf86cd799439012");
+        assertThrows(UserDeletionConflictException.class,
+                () -> service.eliminar(sellerId, "507f1f77bcf86cd799439012"));
 
-        verify(userRepository).delete(seller);
+        verify(userRepository, never()).delete(any(User.class));
     }
 }

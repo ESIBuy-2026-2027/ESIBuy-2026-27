@@ -234,7 +234,7 @@ class AdminUserControllerTest {
         }
 
         @Test
-        void sellerWithProductsGetsConflictResponse() throws Exception {
+        void nonAdministratorAccountGetsConflictResponse() throws Exception {
                 doThrow(new UserDeletionConflictException()).when(adminUserService).eliminar(USER_ID, ADMIN_ID);
 
                 mockMvc.perform(delete("/api/v1/admin/users/{id}", USER_ID)
@@ -242,7 +242,7 @@ class AdminUserControllerTest {
                                 .with(csrf()))
                                 .andExpect(status().isConflict())
                                 .andExpect(jsonPath("$.message")
-                                                .value("No se puede eliminar el vendedor mientras tenga productos asociados"))
+                                                .value("Solo se pueden eliminar cuentas de otros administradores"))
                                 .andExpect(jsonPath("$.correlationId").isNotEmpty());
         }
 

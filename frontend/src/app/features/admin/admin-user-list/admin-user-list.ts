@@ -83,7 +83,7 @@ export class AdminUserList implements OnInit {
   }
 
   puedeEliminar(usuario: UserAdmin): boolean {
-    return this.authService.currentUser()?.id !== usuario.id;
+    return usuario.role === 'ADMIN' && this.authService.currentUser()?.id !== usuario.id;
   }
 
   puedeCambiarEstado(usuario: UserAdmin): boolean {
@@ -281,7 +281,7 @@ export class AdminUserList implements OnInit {
         case 401: return 'Tu sesión ha caducado. Inicia sesión de nuevo.';
         case 403: return 'No tienes permisos para eliminar usuarios.';
         case 404: return 'El usuario ya no existe. Actualiza el listado.';
-        case 409: return 'No se puede eliminar este vendedor mientras tenga productos asociados.';
+        case 409: return 'Solo se pueden eliminar cuentas de otros administradores.';
         default: break;
       }
     }

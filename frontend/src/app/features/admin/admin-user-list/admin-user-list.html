@@ -231,10 +231,11 @@
                                     </button>
 
                                     }
+                                    @if (user.role === 'ADMIN') {
                                     <button class="btn-icon btn-delete" type="button" [disabled]="!puedeEliminar(user)"
                                         (click)="abrirConfirmacion(user)"
-                                        [title]="puedeEliminar(user) ? 'Eliminar usuario' : 'No puedes eliminar tu propia cuenta'"
-                                        [attr.aria-label]="'Eliminar usuario ' + user.firstName + ' ' + user.lastName">
+                                        [title]="puedeEliminar(user) ? 'Eliminar administrador' : 'No puedes eliminar tu propia cuenta'"
+                                        [attr.aria-label]="'Eliminar administrador ' + user.firstName + ' ' + user.lastName">
                                         <svg viewBox="0 0 24 24" aria-hidden="true">
                                             <path d="M3 6h18" />
                                             <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
@@ -242,6 +243,7 @@
                                             <path d="M10 11v6M14 11v6" />
                                         </svg>
                                     </button>
+                                    }
                                 </div>
                             </td>
                         </tr>

@@ -145,16 +145,16 @@ describe('AdminUserList', () => {
     expect(component.error()).toBe('No se pudo cargar la lista de usuarios. Inténtalo de nuevo.');
   });
 
-  it('requires two confirmations and removes the account after a successful response', () => {
+  it('requires two confirmations and removes another administrator after a successful response', () => {
     const user = {
       id: '507f1f77bcf86cd799439011',
-      email: 'ana@example.com',
+      email: 'admin@example.com',
       firstName: 'Ana',
       lastName: 'López',
       nationalId: null,
       phone: null,
       profileImage: null,
-      role: 'CLIENT' as const,
+      role: 'ADMIN' as const,
       active: true,
       blocked: false,
       createdAt: null,
@@ -163,7 +163,7 @@ describe('AdminUserList', () => {
     fixture.detectChanges();
 
     const rendered = fixture.nativeElement as HTMLElement;
-    rendered.querySelector<HTMLButtonElement>('[aria-label="Eliminar usuario Ana López"]')?.click();
+    rendered.querySelector<HTMLButtonElement>('[aria-label="Eliminar administrador Ana López"]')?.click();
     fixture.detectChanges();
     expect(rendered.querySelector('[role="alertdialog"]')?.textContent).toContain('Retirar cuenta');
 
@@ -174,7 +174,7 @@ describe('AdminUserList', () => {
 
     expect(eliminarUsuarioAdmin).toHaveBeenCalledWith(user.id);
     expect(component.usuarios()).toEqual([]);
-    expect(component.mensajeExito()).toContain('ana@example.com');
+    expect(component.mensajeExito()).toContain('admin@example.com');
     expect(component.usuarioPendiente()).toBeNull();
   });
 
@@ -209,7 +209,7 @@ describe('AdminUserList', () => {
       nationalId: null,
       phone: null,
       profileImage: null,
-      role: 'CLIENT' as const,
+      role: 'ADMIN' as const,
       active: true,
       blocked: false,
       createdAt: null,
@@ -225,29 +225,20 @@ describe('AdminUserList', () => {
     expect(component.usuarios()).toEqual([]);
   });
 
-  it('explains that sellers with associated products cannot be deleted', () => {
-    const user = {
-      id: '507f1f77bcf86cd799439011',
-      email: 'seller@example.com',
-      firstName: 'Vera',
-      lastName: 'Seller',
-      nationalId: null,
-      phone: null,
-      profileImage: null,
-      role: 'SELLER' as const,
-      active: true,
-      blocked: false,
-      createdAt: null,
-    };
-    eliminarUsuarioAdmin.mockReturnValue(throwError(() =>
-      new HttpErrorResponse({ status: 409, statusText: 'Conflict' })));
-    component.abrirConfirmacion(user);
-    component.confirmarPrimerPaso();
+  it('does not offer deletion for client or seller accounts', () => {
+    const users = [
+      { id: 'client-id', email: 'client@example.com', firstName: 'Ana', lastName: 'Client', nationalId: null,
+        phone: null, profileImage: null, role: 'CLIENT' as const, active: true, blocked: false, createdAt: null },
+      { id: 'seller-id', email: 'seller@example.com', firstName: 'Vera', lastName: 'Seller', nationalId: null,
+        phone: null, profileImage: null, role: 'SELLER' as const, active: true, blocked: false, createdAt: null },
+    ];
+    component.usuarios.set(users);
+    fixture.detectChanges();
 
-    component.eliminarUsuario();
-
-    expect(component.errorEliminacion()).toBe(
-      'No se puede eliminar este vendedor mientras tenga productos asociados.');
+    const rendered = fixture.nativeElement as HTMLElement;
+    expect(rendered.querySelector('[aria-label="Eliminar administrador Ana Client"]')).toBeNull();
+    expect(rendered.querySelector('[aria-label="Eliminar administrador Vera Seller"]')).toBeNull();
+    expect(users.every((user) => !component.puedeEliminar(user))).toBe(true);
   });
 
   it('renders user-provided confirmation text as text rather than markup', () => {
@@ -259,7 +250,7 @@ describe('AdminUserList', () => {
       nationalId: null,
       phone: null,
       profileImage: null,
-      role: 'CLIENT' as const,
+      role: 'ADMIN' as const,
       active: true,
       blocked: false,
       createdAt: null,
@@ -281,7 +272,7 @@ describe('AdminUserList', () => {
       nationalId: null,
       phone: null,
       profileImage: null,
-      role: 'CLIENT' as const,
+      role: 'ADMIN' as const,
       active: true,
       blocked: false,
       createdAt: null,
@@ -308,7 +299,7 @@ describe('AdminUserList', () => {
       nationalId: null,
       phone: null,
       profileImage: null,
-      role: 'CLIENT' as const,
+      role: 'ADMIN' as const,
       active: true,
       blocked: false,
       createdAt: null,
