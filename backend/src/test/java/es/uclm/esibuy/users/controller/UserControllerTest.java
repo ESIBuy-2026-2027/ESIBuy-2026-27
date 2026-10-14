@@ -50,14 +50,8 @@ class UserControllerTest {
 
         private static final String SELLER_EMAIL = "seller@example.com";
         private static final String SELLER_ID = "seller-id";
-        private static final String CLIENT_EMAIL = "client@example.com";
         private static final String LOGIN_API = "/api/users/login";
         private static final String CURRENT_USER_API = "/api/users/me";
-        private static final String LOCALHOST = "127.0.0.1";
-        private static final String RETRY_AFTER_HEADER = "Retry-After";
-        private static final String LOGIN_PAYLOAD = """
-                        {"email":"seller@example.com","password":"Password123!"}
-                        """;
 
         @Autowired
         private MockMvc mockMvc;
