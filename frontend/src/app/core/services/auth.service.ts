@@ -10,6 +10,16 @@ export interface AuthenticatedUser {
   email: string;
   role: UserRole;
   active: boolean;
+  totpEnabled?: boolean;
+}
+
+export interface LoginResponse {
+  requires2fa?: boolean;
+  email?: string;
+  id?: string;
+  role?: UserRole;
+  active?: boolean;
+  totpEnabled?: boolean;
 }
 
 export interface UserAdmin {
@@ -97,9 +107,37 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/admin`, data, { withCredentials: true });
   }
 
-  login(data: { email: string; password: string }): Observable<AuthenticatedUser> {
-    return this.http.post<AuthenticatedUser>(`${this.apiUrl}/login`, data, { withCredentials: true })
-      .pipe(tap((user) => this.currentUserSignal.set(user)));
+  login(data: { email: string; password: string; totpCode?: string }): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, data, { withCredentials: true })
+      .pipe(tap((res) => {
+        if (!res.requires2fa && res.id) {
+          this.currentUserSignal.set(res as AuthenticatedUser);
+        }
+      }));
+  }
+
+  setup2FA(): Observable<{ secret: string; qrUri: string }> {
+    return this.http.post<{ secret: string; qrUri: string }>(`${this.apiUrl}/2fa/setup`, {}, { withCredentials: true });
+  }
+
+  enable2FA(code: string): Observable<{ message: string; backupCodes: string[] }> {
+    return this.http.post<{ message: string; backupCodes: string[] }>(`${this.apiUrl}/2fa/enable`, { code }, { withCredentials: true });
+  }
+
+  regenerateBackupCodes(code?: string): Observable<{ message: string; backupCodes: string[] }> {
+    return this.http.post<{ message: string; backupCodes: string[] }>(
+      `${this.apiUrl}/2fa/regenerate-backup-codes`,
+      { code },
+      { withCredentials: true }
+    );
+  }
+
+  disable2FA(code: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.apiUrl}/2fa/disable`,
+      { code },
+      { withCredentials: true }
+    );
   }
 
   me(): Observable<AuthenticatedUser> {
@@ -127,9 +165,6 @@ export class AuthService {
   clearCurrentUser(): void {
     this.currentUserSignal.set(null);
   }
-
-
-
 
   obtenerTodosLosUsuarios(rol?: string, estado?: string): Observable<UserAdmin[]> {
     let params = new HttpParams();

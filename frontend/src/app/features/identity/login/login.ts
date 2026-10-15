@@ -15,7 +15,7 @@ import { AuthService, AuthenticatedUser, UserRole } from '../../../core/services
 })
 export class Login implements OnDestroy {
   @Input() embedded = false;
-  
+
   readonly currentUser = computed<AuthenticatedUser | null>(() => {
     if (typeof this.authService?.currentUser === 'function') {
       return this.authService.currentUser();
@@ -29,6 +29,8 @@ export class Login implements OnDestroy {
   retryAfterSeconds = 0;
   loading = false;
   showPassword = false;
+  requires2FA = false;
+
   private retryCountdownId: ReturnType<typeof setInterval> | null = null;
   private retryBaseMessage: string | null = null;
 
@@ -48,7 +50,8 @@ export class Login implements OnDestroy {
       password: ['', [
         Validators.required,
         Validators.maxLength(128),
-      ]]
+      ]],
+      totpCode: ['']
     });
 
     if (this.route.snapshot.queryParamMap.get('expired') === 'true') {
@@ -62,6 +65,15 @@ export class Login implements OnDestroy {
       return;
     }
 
+    if (this.requires2FA) {
+      const codeVal = this.loginForm.get('totpCode')?.value;
+      if (!codeVal || codeVal.trim().length === 0) {
+        this.loginForm.get('totpCode')?.setErrors({ required: true });
+        this.loginForm.markAllAsTouched();
+        return;
+      }
+    }
+
     this.serverError = null;
     this.loading = true;
 
@@ -72,6 +84,16 @@ export class Login implements OnDestroy {
       })
     ).subscribe({
       next: (response) => {
+        if (response.requires2fa) {
+          this.requires2FA = true;
+          this.serverError = null;
+          const totpCtrl = this.loginForm.get('totpCode');
+          totpCtrl?.setValidators([Validators.required]);
+          totpCtrl?.updateValueAndValidity();
+          this.changeDetectorRef.markForCheck();
+          return;
+        }
+
         if (response.role === 'ADMIN') {
           void this.router.navigate(['/admin/usuarios']);
         } else if (response.role === 'SELLER') {
@@ -100,6 +122,13 @@ export class Login implements OnDestroy {
         this.changeDetectorRef.markForCheck();
       }
     });
+  }
+
+  cancel2FA() {
+    this.requires2FA = false;
+    this.loginForm.get('totpCode')?.setValue('');
+    this.loginForm.get('totpCode')?.clearValidators();
+    this.loginForm.get('totpCode')?.updateValueAndValidity();
   }
 
   ngOnDestroy(): void {
