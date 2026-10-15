@@ -41,7 +41,6 @@
     <main class="admin-content">
       <div class="topbar">
         <span>Administración <span aria-hidden="true">/</span> Categorías</span>
-        <span class="prototype-badge"><span aria-hidden="true"></span> Modo maqueta</span>
       </div>
 
       <section class="page-heading" aria-labelledby="categories-title">
@@ -56,10 +55,6 @@
         </button>
       </section>
 
-      <aside class="prototype-notice" aria-label="Aviso de maqueta">
-        <span class="notice-icon" aria-hidden="true">i</span>
-        <p><strong>Estás viendo una maqueta.</strong> Puedes probar las acciones, pero los cambios son temporales y no se guardan en el servidor.</p>
-      </aside>
 
       @if (feedback()) {
         <output class="feedback" aria-live="polite">{{ feedback() }}</output>
@@ -82,7 +77,7 @@
         </label>
 
         @if (loading()) {
-          <div class="state-message" role="status"><span class="spinner" aria-hidden="true"></span>Cargando categorías...</div>
+          <output class="state-message"><span class="spinner" aria-hidden="true"></span>Cargando categorías...</output>
         } @else if (loadError()) {
           <div class="state-message state-message--error" role="alert">
             No se pudieron cargar las categorías. Comprueba la conexión e inténtalo de nuevo.
@@ -127,10 +122,11 @@
 </div>
 
 @if (dialogMode(); as mode) {
-  <div class="dialog-backdrop" (click)="closeDialog()">
-    <section class="dialog" role="dialog" aria-modal="true"
+  <div class="dialog-backdrop" (click)="closeDialog()" (keydown.escape)="closeDialog()">
+    <dialog class="dialog" aria-modal="true"
       [attr.aria-labelledby]="mode === 'delete' ? 'delete-title' : 'edit-title'"
-      (click)="$event.stopPropagation()">
+      (click)="$event.stopPropagation()"
+      (keydown.escape)="closeDialog()">
       @if (mode === 'delete') {
         <span class="dialog-icon dialog-icon--danger" aria-hidden="true">!</span>
         <h2 id="delete-title">¿Eliminar categoría?</h2>
@@ -158,6 +154,6 @@
             (click)="saveCategory()">{{ mode === 'create' ? 'Añadir categoría' : 'Guardar cambios' }}</button>
         </div>
       }
-    </section>
+    </dialog>
   </div>
 }
