@@ -1,0 +1,347 @@
+:host {
+    display: block;
+    min-height: calc(100vh - var(--app-header-height, 56px));
+    background: #e9eff8;
+    color: #172b3a;
+    font-family: Inter, "Segoe UI", sans-serif;
+}
+
+.profile-page {
+    display: grid;
+    box-sizing: border-box;
+    width: min(1100px, 100%);
+    grid-template-columns: 250px minmax(0, 1fr);
+    align-items: start;
+    gap: 24px;
+    margin: 0 auto;
+    padding: 40px 32px 44px;
+}
+
+/* Tarjeta lateral */
+.profile-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    min-height: 460px;
+    padding: 28px 14px 18px;
+    border: 1px solid #d9e3eb;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(16 44 64 / 5%);
+}
+
+.avatar {
+    display: grid;
+    flex-shrink: 0;
+    width: 76px;
+    height: 76px;
+    place-items: center;
+    border-radius: 50%;
+    background: #102c40;
+    color: #42d6b2;
+    font-size: 26px;
+    font-weight: 750;
+}
+
+.avatar-image {
+    object-fit: cover;
+}
+
+.profile-name {
+    margin: 14px 0 8px;
+    color: #173247;
+    font-size: 15px;
+    font-weight: 750;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.account-badge {
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: #42d6b2;
+    color: #102c40;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.profile-nav {
+    display: grid;
+    width: 100%;
+    gap: 4px;
+    margin-top: 24px;
+}
+
+.nav-item {
+    display: block;
+    padding: 11px 12px;
+    border-radius: 8px;
+    color: #3a5871;
+    font-size: 13px;
+    font-weight: 550;
+    text-decoration: none;
+}
+
+.nav-item.is-active {
+    background: #dde8f0;
+    color: #102c40;
+    font-weight: 700;
+}
+
+.nav-item.is-disabled {
+    color: #8396a4;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* Cerrar sesión */
+.profile-footer {
+    width: 100%;
+    margin-top: auto;
+    padding-top: 18px;
+}
+
+.profile-footer::before {
+    display: block;
+    height: 1px;
+    margin: 0 0 12px;
+    background: #e7edf0;
+    content: "";
+}
+
+.logout-button {
+    width: 100%;
+    padding: 11px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #587388;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 550;
+    text-align: left;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    background: #f4f8f9;
+    color: #173247;
+}
+
+.logout-button:focus-visible {
+    outline: 3px solid rgb(66 214 178 / 35%);
+    outline-offset: 1px;
+}
+
+.logout-error {
+    margin: 8px 12px 0;
+    color: #b3261e;
+    font-size: 12px;
+}
+
+/* Contenido */
+.profile-content {
+    display: grid;
+    min-width: 0;
+    gap: 18px;
+}
+
+.panel {
+    min-width: 0;
+    padding: 26px 28px 30px;
+    border: 1px solid #d9e3eb;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(16 44 64 / 5%);
+}
+
+.panel-title {
+    margin: 0 0 6px;
+    color: #173247;
+    font-size: 20px;
+    font-weight: 750;
+    letter-spacing: -0.4px;
+}
+
+.panel-description {
+    margin: 0 0 22px;
+    color: #587388;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* Secciones y campos */
+.section-title {
+    margin: 26px 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e7edf0;
+    color: #173247;
+    font-size: 15px;
+    font-weight: 750;
+}
+
+.panel-description+.section-title {
+    margin-top: 0;
+}
+
+.field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 18px;
+}
+
+.field {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field label {
+    color: #72828e;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.field input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid #dce6ea;
+    border-radius: 8px;
+    background: #f4f8f9;
+    color: #203b4e;
+    font: inherit;
+    font-size: 13px;
+    cursor: default;
+}
+
+.field input:focus-visible {
+    outline: 3px solid rgb(66 214 178 / 28%);
+    outline-offset: 1px;
+}
+
+/* Carga y errores */
+.profile-status {
+    padding: 1rem 1.25rem;
+    border: 1px solid #d9e3eb;
+    border-radius: 12px;
+    background: #fff;
+    color: #102c40;
+}
+
+.profile-error {
+    margin: 0 0 1.25rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid #f1aeb5;
+    border-radius: 12px;
+    background: #f8d7da;
+    color: #842029;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.retry-button {
+    padding: 0.6rem 1rem;
+    border: 0;
+    border-radius: 8px;
+    background: #102c40;
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.retry-button:hover {
+    background: #173f56;
+}
+
+.retry-button:focus-visible {
+    outline: 2px solid #42d6b2;
+    outline-offset: 3px;
+}
+
+/* Botón Volver */
+.profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -10px;
+}
+
+.back-button {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #587388;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.back-button svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.back-button:hover {
+    background: #dde8f0;
+    color: #102c40;
+}
+
+.back-button:focus-visible {
+    outline: 2px solid #42d6b2;
+    outline-offset: 2px;
+}
+
+/* Adaptación a móviles */
+@media (max-width: 760px) {
+    .profile-page {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 20px 16px 32px;
+    }
+
+    .profile-card {
+        min-height: auto;
+    }
+
+    .profile-nav {
+        margin-top: 18px;
+    }
+
+    .profile-content {
+        gap: 14px;
+    }
+
+    .panel {
+        padding: 22px 18px 24px;
+    }
+
+    .field-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .profile-actions {
+        margin-top: -6px;
+        padding-right: 2px;
+    }
+
+    .back-button {
+        min-height: 36px;
+        padding: 8px;
+    }
+}

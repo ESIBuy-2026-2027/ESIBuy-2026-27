@@ -1,0 +1,115 @@
+<div class="profile-page">
+    <aside class="profile-card" aria-label="Información del administrador">
+        @if (profile()?.profileImage; as image) {
+        <img class="avatar avatar-image" [src]="image" alt="Imagen de perfil" />
+        } @else {
+        <div class="avatar" aria-hidden="true">
+            {{ initials() }}
+        </div>
+        }
+
+        <p class="profile-name">
+            {{ fullName() || 'Mi perfil' }}
+        </p>
+
+        <span class="account-badge">Cuenta de administrador</span>
+
+        <nav class="profile-nav" aria-label="Secciones del perfil">
+            <a class="nav-item is-active" aria-current="page">
+                Datos personales
+            </a>
+            <a class="nav-item is-disabled" aria-disabled="true">
+                Seguridad
+            </a>
+        </nav>
+        <div class="profile-footer">
+            <button type="button" class="logout-button" (click)="logout()">
+                Cerrar sesión
+            </button>
+
+            @if (logoutError(); as error) {
+            <p class="logout-error" role="alert">{{ error }}</p>
+            }
+        </div>
+    </aside>
+
+    <main class="profile-content">
+        @if (loading()) {
+        <section class="panel">
+            <p class="profile-status" role="status">Cargando perfil...</p>
+        </section>
+        }
+
+        @if (profileError(); as error) {
+        <section class="panel">
+            <p class="profile-error" role="alert">{{ error }}</p>
+            <button type="button" class="retry-button" (click)="loadProfile()">
+                Reintentar
+            </button>
+        </section>
+        }
+
+        @if (!loading() && !profileError() && profile(); as admin) {
+        <section class="panel">
+            <h1 class="panel-title">Mi perfil de administrador</h1>
+            <p class="panel-description">
+                Consulta tus datos personales y la información de tu puesto en ESIBuy.
+            </p>
+
+            <h2 class="section-title">Datos personales</h2>
+
+            <div class="field-grid">
+                <div class="field">
+                    <label for="firstName">Nombre</label>
+                    <input id="firstName" type="text" [value]="admin.firstName" readonly />
+                </div>
+
+                <div class="field">
+                    <label for="lastName">Apellidos</label>
+                    <input id="lastName" type="text" [value]="admin.lastName" readonly />
+                </div>
+
+                <div class="field">
+                    <label for="email">Correo electrónico</label>
+                    <input id="email" type="email" [value]="admin.email" readonly />
+                </div>
+
+                <div class="field">
+                    <label for="phone">Teléfono</label>
+                    <input id="phone" type="text" [value]="admin.phone || 'No indicado'" readonly />
+                </div>
+
+                <div class="field">
+                    <label for="nationalId">Documento de identidad</label>
+                    <input id="nationalId" type="text" [value]="admin.maskedNationalId || 'No disponible'" readonly />
+                </div>
+            </div>
+
+            <h2 class="section-title">Información del puesto</h2>
+
+            <div class="field-grid">
+                <div class="field">
+                    <label for="headquarters">Sede central</label>
+                    <input id="headquarters" type="text" [value]="admin.headquarters || 'No indicada'" readonly />
+                </div>
+
+                <div class="field">
+                    <label for="hireDate">Fecha de incorporación</label>
+                    <input id="hireDate" type="text" [value]="formattedHireDate()" readonly />
+                </div>
+            </div>
+        </section>
+
+        <div class="profile-actions">
+            <button type="button" class="back-button" (click)="goBack()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <path d="M19 12H5" />
+                    <path d="m12 19-7-7 7-7" />
+                </svg>
+                Volver
+            </button>
+        </div>
+        }
+    </main>
+</div>

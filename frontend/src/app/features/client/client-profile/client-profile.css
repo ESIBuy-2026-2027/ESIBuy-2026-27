@@ -1,0 +1,355 @@
+:host {
+    display: block;
+    min-height: calc(100vh - var(--app-header-height, 56px));
+    background: #e9eff8;
+    color: #172b3a;
+    font-family: Inter, "Segoe UI", sans-serif;
+}
+
+.profile-page {
+    display: grid;
+    box-sizing: border-box;
+    width: min(1100px, 100%);
+    grid-template-columns: 250px minmax(0, 1fr);
+    align-items: start;
+    gap: 24px;
+    margin: 0 auto;
+    padding: 40px 32px 64px;
+}
+
+/* Tarjeta lateral */
+.profile-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    min-height: 460px;
+    padding: 28px 14px 18px;
+    border: 1px solid #d9e3eb;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(16 44 64 / 5%);
+}
+
+.avatar {
+    display: grid;
+    width: 76px;
+    height: 76px;
+    place-items: center;
+    border-radius: 50%;
+    background: #102c40;
+    color: #42d6b2;
+    font-size: 26px;
+    font-weight: 750;
+}
+
+.profile-name {
+    margin: 14px 0 8px;
+    color: #173247;
+    font-size: 15px;
+    font-weight: 750;
+    text-align: center;
+}
+
+.account-badge {
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: #42d6b2;
+    color: #102c40;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.account-badge--standard {
+    background: #e8f1f5;
+    color: #1f4561;
+}
+
+.profile-nav {
+    display: grid;
+    width: 100%;
+    gap: 4px;
+    margin-top: 24px;
+}
+
+.nav-item {
+    display: block;
+    padding: 11px 12px;
+    border-radius: 8px;
+    color: #3a5871;
+    font-size: 13px;
+    font-weight: 550;
+    text-decoration: none;
+}
+
+.nav-item.is-active {
+    background: #dde8f0;
+    color: #102c40;
+    font-weight: 700;
+}
+
+.nav-item.is-disabled {
+    color: #8396a4;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.profile-footer {
+    width: 100%;
+    margin-top: auto;
+    padding-top: 18px;
+}
+
+.profile-footer::before {
+    display: block;
+    height: 1px;
+    margin: 0 0 12px;
+    background: #e7edf0;
+    content: "";
+}
+
+.logout-button {
+    width: 100%;
+    padding: 11px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #587388;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 550;
+    text-align: left;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    background: #f4f8f9;
+    color: #173247;
+}
+
+.logout-button:focus-visible {
+    outline: 3px solid rgb(66 214 178 / 35%);
+    outline-offset: 1px;
+}
+
+.logout-error {
+    margin: 8px 12px 0;
+    color: #b3261e;
+    font-size: 12px;
+}
+
+/* Contenido */
+.profile-content {
+    display: grid;
+    gap: 18px;
+}
+
+.premium-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 22px 26px;
+    border-radius: 16px;
+    background: #0a3a4a;
+    color: #fff;
+}
+
+.premium-banner h2 {
+    margin: 4px 0 6px;
+    font-size: 18px;
+    letter-spacing: -0.3px;
+}
+
+.premium-banner p {
+    margin: 0;
+    color: #c9dfe6;
+    font-size: 12px;
+}
+
+.premium-banner .premium-eyebrow {
+    color: #5ccfc0;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.premium-action {
+    flex: 0 0 auto;
+    min-height: 42px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 8px;
+    background: #42d6b2;
+    color: #102c40;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.premium-action:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.panel {
+    padding: 26px 28px 30px;
+    border: 1px solid #d9e3eb;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(16 44 64 / 5%);
+}
+
+.panel-title {
+    margin: 0 0 6px;
+    color: #173247;
+    font-size: 20px;
+    font-weight: 750;
+    letter-spacing: -0.4px;
+}
+
+.panel-description {
+    margin: 0 0 22px;
+    color: #587388;
+    font-size: 13px;
+}
+
+.field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 18px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field label {
+    color: #72828e;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.field input {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid #dce6ea;
+    border-radius: 8px;
+    background: #f4f8f9;
+    color: #203b4e;
+    font: inherit;
+    font-size: 13px;
+    cursor: default;
+}
+
+.field input::placeholder {
+    color: #9aaab3;
+}
+
+.field input:focus-visible {
+    outline: 3px solid rgb(66 214 178 / 28%);
+    outline-offset: 1px;
+}
+
+/* Botón Volver: mismo estilo que el perfil del vendedor */
+.profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -10px;
+}
+
+.back-button {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #587388;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.back-button svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.back-button:hover {
+    background: #dde8f0;
+    color: #102c40;
+}
+
+.back-button:focus-visible {
+    outline: 2px solid #42d6b2;
+    outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+    .profile-page {
+        grid-template-columns: 1fr;
+        padding: 20px 16px 44px;
+    }
+
+    .profile-card {
+        min-height: auto;
+    }
+
+    .premium-banner {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .field-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-status {
+        padding: 1rem 1.25rem;
+        color: #102c40;
+        background: #fff;
+        border-radius: 12px;
+    }
+
+    .profile-error {
+        margin-bottom: 1.25rem;
+        padding: 1rem 1.25rem;
+        color: #842029;
+        background: #f8d7da;
+        border: 1px solid #f1aeb5;
+        border-radius: 12px;
+    }
+
+    .profile-error p {
+        margin: 0 0 0.75rem;
+    }
+
+    .profile-error button {
+        padding: 0.6rem 1rem;
+        color: #fff;
+        background: #102c40;
+        border: 0;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .profile-actions {
+        margin-top: -6px;
+        padding-right: 2px;
+    }
+
+    .back-button {
+        min-height: 36px;
+        padding: 8px;
+    }
+}

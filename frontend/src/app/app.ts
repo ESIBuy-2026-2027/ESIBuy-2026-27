@@ -46,9 +46,23 @@ export class App {
     void this.router.navigate(['/seller/catalog']);
   }
 
-  goUsersManagement(): void{
+  goUsersManagement(): void {
     this.closeProfileMenu();
     void this.router.navigate(['/admin/usuarios']);
+  }
+
+  goToProfile(): void {
+    this.closeProfileMenu();
+
+    const role = this.authService.currentUser()?.role;
+
+    if (role === 'SELLER') {
+      void this.router.navigate(['/seller/profile']);
+    } else if (role === 'CLIENT') {
+      void this.router.navigate(['/client/profile']);
+    } else if (role === 'ADMIN') {
+      void this.router.navigate(['/admin/profile']);
+    }
   }
 
   logout(): void {
