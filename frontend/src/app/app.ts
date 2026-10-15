@@ -51,9 +51,18 @@ export class App {
     void this.router.navigate(['/admin/usuarios']);
   }
 
-  goProfile(): void {
+  goToProfile(): void {
     this.closeProfileMenu();
-    void this.router.navigate(['/client/profile']);
+
+    const role = this.authService.currentUser()?.role;
+
+    if (role === 'SELLER') {
+      void this.router.navigate(['/seller/profile']);
+    } else if (role === 'CLIENT') {
+      void this.router.navigate(['/client/profile']);
+    } else if (role === 'ADMIN') {
+      void this.router.navigate(['/admin/usuarios']);
+    }
   }
 
   logout(): void {

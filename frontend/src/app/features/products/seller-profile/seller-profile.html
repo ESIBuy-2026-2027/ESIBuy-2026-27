@@ -1,0 +1,111 @@
+<div class="profile-page">
+    <aside class="profile-card" aria-label="Información del vendedor">
+        @if (profile()?.profileImage; as image) {
+        <img class="avatar avatar-image" [src]="image" alt="Imagen de perfil" />
+        } @else {
+        <div class="avatar" aria-hidden="true">
+            {{ initials() }}
+        </div>
+        }
+
+        <p class="profile-name">
+            {{ fullName() || 'Mi perfil' }}
+        </p>
+
+        <span class="account-badge">
+            Cuenta de vendedor
+        </span>
+
+        <nav class="profile-nav" aria-label="Secciones del perfil">
+            <a class="nav-item is-active" aria-current="page">
+                Datos del negocio
+            </a>
+
+            <a class="nav-item is-disabled" aria-disabled="true">
+                Seguridad
+            </a>
+        </nav>
+    </aside>
+
+    <main class="profile-content">
+        @if (loading()) {
+        <section class="panel">
+            <p role="status">Cargando perfil...</p>
+        </section>
+        }
+
+        @if (profileError(); as error) {
+        <section class="panel">
+            <p class="profile-error" role="alert">{{ error }}</p>
+
+            <button type="button" class="retry-button" (click)="loadProfile()">
+                Reintentar
+            </button>
+        </section>
+        }
+
+        @if (!loading() && !profileError() && profile(); as seller) {
+        <section class="panel">
+            <h1 class="panel-title">Mi perfil de vendedor</h1>
+
+            <p class="panel-description">
+                Consulta los datos de tu cuenta y de tu negocio en ESIBuy.
+            </p>
+
+            <h2 class="section-title">Datos del negocio</h2>
+
+            <div class="field-grid">
+                <div class="field">
+                    <label for="businessName">Nombre del negocio</label>
+                    <input id="businessName" type="text" [value]="seller.businessName || 'No disponible'" readonly />
+                </div>
+
+                <div class="field">
+                    <label for="defaultCategory">Categoría predeterminada</label>
+                    <input id="defaultCategory" type="text" [value]="seller.defaultCategory || 'No especificada'"
+                        readonly />
+                </div>
+            </div>
+
+            <h2 class="section-title">Datos personales</h2>
+
+            <div class="field-grid">
+                <div class="field">
+                    <label for="firstName">Nombre</label>
+                    <input id="firstName" type="text" [value]="seller.firstName" readonly />
+                </div>
+
+                <div class="field">
+                    <label for="lastName">Apellidos</label>
+                    <input id="lastName" type="text" [value]="seller.lastName" readonly />
+                </div>
+
+                <div class="field">
+                    <label for="email">Correo electrónico</label>
+                    <input id="email" type="email" [value]="seller.email" readonly />
+                </div>
+
+                <div class="field">
+                    <label for="phone">Teléfono</label>
+                    <input id="phone" type="text" [value]="seller.phone || 'XXX XXX XXX'" readonly />
+                </div>
+
+                <div class="field">
+                    <label for="nationalId">Documento de identidad</label>
+                    <input id="nationalId" type="text" [value]="seller.maskedNationalId || 'No disponible'" readonly />
+                </div>
+            </div>
+        </section>
+        }
+        <div class="profile-actions">
+            <button type="button" class="back-button" (click)="goBack()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <path d="M19 12H5" />
+                    <path d="m12 19-7-7 7-7" />
+                </svg>
+                Volver
+            </button>
+        </div>
+    </main>
+</div>

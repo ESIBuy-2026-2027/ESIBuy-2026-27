@@ -10,6 +10,8 @@ import { AdminUserDetail } from './features/admin/admin-user-detail/admin-user-d
 import { SellerCatalog } from './features/products/seller-catalog/seller-catalog';
 import { ClientDashboard } from './features/client/client-dashboard/client-dashboard';
 import { ClientProfile } from './features/client/client-profile/client-profile';
+import { SellerProfile } from './features/products/seller-profile/seller-profile';
+//import { AdminProfile } from './features/admin/admin-profile/admin-profile';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -27,9 +29,11 @@ export const routes: Routes = [
   { path: 'admin/users', redirectTo: 'admin/usuarios', pathMatch: 'full' },
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
   { path: 'admin.html', redirectTo: 'admin/usuarios', pathMatch: 'full' },
+  //{ path: 'admin/profile', component: AdminProfile, canActivate: [authGuard, roleGuard('ADMIN')] },
 
   { path: 'seller/catalog', component: SellerCatalog, canActivate: [authGuard, roleGuard('SELLER')] },
   { path: 'products/new', component: ProductCreate, canActivate: [authGuard, roleGuard('SELLER')] },
+  { path: 'seller/profile', component: SellerProfile, canActivate: [authGuard, roleGuard('SELLER')] },
 
   { path: 'client/dashboard', component: ClientDashboard, canActivate: [authGuard, roleGuard('CLIENT')] },
   { path: 'client/profile', component: ClientProfile, canActivate: [authGuard, roleGuard('CLIENT')] },

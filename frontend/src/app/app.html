@@ -22,9 +22,9 @@
       <div id="profile-menu" class="profile-menu" aria-label="Opciones de cuenta" (click)="$event.stopPropagation()"
         (keydown)="$event.stopPropagation()">
         <p class="profile-menu-email">{{ user.email }}</p>
-        @if (user.role === 'CLIENT') {
-        <button type="button" class="profile-menu-item" (click)="goProfile()">Perfil</button>
-        }
+        <button type="button" class="profile-menu-item" (click)="goToProfile()">
+          Mi perfil
+        </button>
         <button type="button" class="profile-menu-item" (click)="logout()">
           Cerrar sesión
         </button>
