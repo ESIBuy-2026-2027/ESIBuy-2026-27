@@ -140,7 +140,7 @@ export class ClientProfile implements OnInit {
         if (window.history.length > 1) {
             this.location.back();
         } else {
-            window.history.replaceState(null, '', '/seller/catalog');
+            window.history.replaceState(null, '', '/client/dashboard');
         }
     }
 

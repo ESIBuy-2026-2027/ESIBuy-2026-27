@@ -1,3 +1,4 @@
+
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
@@ -7,6 +8,7 @@ import { AdminUserCreate } from './features/admin/admin-user-create/admin-user-c
 import { ProductCreate } from './features/products/product-create/product-create';
 import { AdminUserList } from './features/admin/admin-user-list/admin-user-list';
 import { AdminUserDetail } from './features/admin/admin-user-detail/admin-user-detail';
+import { AdminCategoryManagement } from './features/admin/admin-category-management/admin-category-management';
 import { SellerCatalog } from './features/products/seller-catalog/seller-catalog';
 import { ClientDashboard } from './features/client/client-dashboard/client-dashboard';
 import { ClientProfile } from './features/client/client-profile/client-profile';
@@ -21,13 +23,10 @@ export const routes: Routes = [
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
   { path: 'admin/usuarios', component: AdminUserList, canActivate: [authGuard, roleGuard('ADMIN')] },
   { path: 'admin/usuarios/:id/editar', component: AdminUserDetail, canActivate: [authGuard, roleGuard('ADMIN')] },
+  { path: 'admin/categorias', component: AdminCategoryManagement, canActivate: [authGuard, roleGuard('ADMIN')] },
 
-  // Redirecciones
   { path: 'admin', redirectTo: 'admin/usuarios', pathMatch: 'full' },
-
-  // Redirecciones compatibles
   { path: 'admin/users', redirectTo: 'admin/usuarios', pathMatch: 'full' },
-  { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
   { path: 'admin.html', redirectTo: 'admin/usuarios', pathMatch: 'full' },
   { path: 'admin/profile', component: AdminProfile, canActivate: [authGuard, roleGuard('ADMIN')] },
 
