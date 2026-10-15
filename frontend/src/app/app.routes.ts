@@ -9,6 +9,7 @@ import { AdminUserList } from './features/admin/admin-user-list/admin-user-list'
 import { AdminUserDetail } from './features/admin/admin-user-detail/admin-user-detail';
 import { SellerCatalog } from './features/products/seller-catalog/seller-catalog';
 import { ClientDashboard } from './features/client/client-dashboard/client-dashboard';
+import { AdminCategoryManagement } from './features/admin/admin-category-management/admin-category-management';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -18,6 +19,7 @@ export const routes: Routes = [
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
   { path: 'admin/usuarios', component: AdminUserList, canActivate: [ authGuard, roleGuard('ADMIN') ] },
   { path: 'admin/usuarios/:id/editar', component: AdminUserDetail, canActivate: [ authGuard, roleGuard('ADMIN') ] },
+  { path: 'admin/categorias', component: AdminCategoryManagement, canActivate: [ authGuard, roleGuard('ADMIN') ] },
 
   // Redirecciones
   { path: 'admin', redirectTo: 'admin/usuarios', pathMatch: 'full' },
