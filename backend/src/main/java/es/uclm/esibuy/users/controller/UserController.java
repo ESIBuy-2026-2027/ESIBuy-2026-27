@@ -15,6 +15,7 @@ import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
 import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
+import es.uclm.esibuy.users.dto.UserProfileResponse;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -132,6 +133,15 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok(buildUserResponse(principal));
+    }
+
+    @GetMapping("/me/profile")
+    public ResponseEntity<UserProfileResponse> ownProfile(Authentication authentication) {
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(userService.getOwnProfile(principal.id()));
     }
 
     @PostMapping("/logout")

@@ -13,6 +13,7 @@ import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
 import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
+import es.uclm.esibuy.users.dto.UserProfileResponse;
 import es.uclm.esibuy.users.model.AdminProfile;
 import es.uclm.esibuy.users.model.ClientProfile;
 import es.uclm.esibuy.users.model.SellerProfile;
@@ -133,5 +134,9 @@ public class UserService {
 
     public User save(User user) {
         return userRepository.save(user);
+    }
+
+    public UserProfileResponse getOwnProfile(String userId) {
+        return UserProfileResponse.from(findById(userId));
     }
 }
