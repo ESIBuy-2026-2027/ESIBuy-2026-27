@@ -132,7 +132,14 @@ public class UserController {
                 || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(buildUserResponse(principal));
+
+        User user = userService.findById(principal.id());
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return ResponseEntity.ok(buildUserResponse(user));
     }
 
     @GetMapping("/me/profile")
