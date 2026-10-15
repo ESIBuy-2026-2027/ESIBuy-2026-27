@@ -62,7 +62,7 @@ class UserProfileControllerTest {
         void shouldReturnOwnProfileForClient() throws Exception {
                 when(userService.getOwnProfile("user-1")).thenReturn(new UserProfileResponse(
                                 "Ana", "García", "ana@example.com", "600123123", "*****678Z",
-                                "avatar-client-default", CustomerType.PREMIUM, null, null));
+                                "avatar-client-default", CustomerType.PREMIUM, null, null, null, null));
 
                 mockMvc.perform(get(PROFILE_API).with(authentication(authenticationFor(UserRole.CLIENT))))
                                 .andExpect(status().isOk())
