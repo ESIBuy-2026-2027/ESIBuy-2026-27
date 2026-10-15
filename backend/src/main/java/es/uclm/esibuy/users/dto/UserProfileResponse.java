@@ -1,14 +1,11 @@
 package es.uclm.esibuy.users.dto;
 
+import java.time.LocalDateTime;
+
 import es.uclm.esibuy.users.model.CustomerType;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 
-/**
- * Datos del perfil que el propio usuario puede consultar (HU 151).
- * No incluye hash de contraseña, secreto TOTP ni códigos de respaldo,
- * y el DNI se devuelve enmascarado.
- */
 public record UserProfileResponse(
         String firstName,
         String lastName,
@@ -18,7 +15,9 @@ public record UserProfileResponse(
         String profileImage,
         CustomerType customerType,
         String businessName,
-        String defaultCategory) {
+        String defaultCategory,
+        String headquarters,
+        LocalDateTime hireDate) {
 
     private static final int VISIBLE_NATIONAL_ID_CHARS = 4;
 
@@ -26,6 +25,8 @@ public record UserProfileResponse(
         CustomerType customerType = null;
         String businessName = null;
         String defaultCategory = null;
+        String headquarters = null;
+        LocalDateTime hireDate = null;
 
         if (user.getRole() == UserRole.CLIENT) {
             customerType = user.getClientProfile() == null
@@ -40,6 +41,12 @@ public record UserProfileResponse(
             defaultCategory = user.getSellerProfile().getDefaultCategory();
         }
 
+        if (user.getRole() == UserRole.ADMIN
+                && user.getAdminProfile() != null) {
+            headquarters = user.getAdminProfile().getHeadquarters();
+            hireDate = user.getAdminProfile().getHireDate();
+        }
+
         return new UserProfileResponse(
                 user.getFirstName(),
                 user.getLastName(),
@@ -49,7 +56,9 @@ public record UserProfileResponse(
                 user.getProfileImage(),
                 customerType,
                 businessName,
-                defaultCategory);
+                defaultCategory,
+                headquarters,
+                hireDate);
     }
 
     static String maskNationalId(String nationalId) {
@@ -65,7 +74,7 @@ public record UserProfileResponse(
 
         int hidden = value.length() - VISIBLE_NATIONAL_ID_CHARS;
 
-        return "*".repeat(hidden)
-                + value.substring(hidden);
+        return "*".repeat(hidden) + value.substring(hidden);
     }
+
 }

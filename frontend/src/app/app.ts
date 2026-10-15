@@ -61,7 +61,7 @@ export class App {
     } else if (role === 'CLIENT') {
       void this.router.navigate(['/client/profile']);
     } else if (role === 'ADMIN') {
-      void this.router.navigate(['/admin/usuarios']);
+      void this.router.navigate(['/admin/profile']);
     }
   }
 
