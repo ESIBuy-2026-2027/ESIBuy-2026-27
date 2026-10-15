@@ -1,6 +1,5 @@
 package es.uclm.esibuy.users.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,7 +7,6 @@ import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.common.exception.UserNotFoundException;
 import es.uclm.esibuy.users.dto.AltaAdminDTO;
 import es.uclm.esibuy.users.dto.UserAdminDTO;
-import es.uclm.esibuy.users.model.AdminProfile;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
@@ -204,7 +202,7 @@ class AdminServiceTest {
     }
 
     @Test
-    public void ComprobarErrorPorEmailDuplicado() {
+    void ComprobarErrorPorEmailDuplicado() {
         AltaAdminDTO request = new AltaAdminDTO(
                 "12345678Z", "Carlos", "Gómez Pérez", "carlos.duplicado@esibuy.com",
                 "Admin123456!#", "Admin123456!#", "Ciudad Real", null);

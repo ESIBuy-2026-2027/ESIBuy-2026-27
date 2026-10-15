@@ -1,7 +1,6 @@
 package es.uclm.esibuy.users.controller;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import es.uclm.esibuy.common.exception.ApiExceptionHandler;
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.users.dto.AltaAdminDTO;
@@ -20,7 +19,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -46,7 +44,7 @@ class AdminControllerTest {
     }
 
     @Test
-    public void ComprobarAltaAdministradorValido() throws Exception {
+    void ComprobarAltaAdministradorValido() throws Exception {
         String json = """
                 {
                     "dni": "12345678Z",
@@ -79,7 +77,7 @@ class AdminControllerTest {
     }
 
     @Test
-    public void ComprobarErrorPorEmailDuplicado() throws Exception {
+    void ComprobarErrorPorEmailDuplicado() throws Exception {
         String json = """
                 {
                     "dni": "12345678Z",
@@ -104,7 +102,7 @@ class AdminControllerTest {
     }
 
     @Test
-    public void ComprobarErrorPorFormatoEmailInvalido() throws Exception {
+    void ComprobarErrorPorFormatoEmailInvalido() throws Exception {
         String json = """
                 {
                     "dni": "12345678Z",
@@ -127,7 +125,7 @@ class AdminControllerTest {
     }
 
     @Test
-    public void ComprobarErrorPorFormatoContrasenaInvalido() throws Exception {
+    void ComprobarErrorPorFormatoContrasenaInvalido() throws Exception {
         String json = """
                 {
                     "dni": "12345678Z",
@@ -150,7 +148,7 @@ class AdminControllerTest {
     }
 
     @Test
-    public void ComprobarErrorPorContrasenasNoCoincidentes() throws Exception {
+    void ComprobarErrorPorContrasenasNoCoincidentes() throws Exception {
         String json = """
                 {
                     "dni": "12345678Z",
@@ -173,7 +171,7 @@ class AdminControllerTest {
     }
 
     @Test
-    public void ComprobarErrorPorDatosObligatoriosIncompletos() throws Exception {
+    void ComprobarErrorPorDatosObligatoriosIncompletos() throws Exception {
         String json = "{}";
 
         mockMvc.perform(post(ADMIN_CREATE_API)
@@ -189,7 +187,7 @@ class AdminControllerTest {
     }
 
     @Test
-    public void ComprobarAltaAdministradorSinCamposOpcionales() throws Exception {
+    void ComprobarAltaAdministradorSinCamposOpcionales() throws Exception {
         String json = """
                 {
                     "dni": "12345678Z",
@@ -219,7 +217,7 @@ class AdminControllerTest {
     }
 
     @Test
-    public void shouldUnlockUser() throws Exception {
+    void shouldUnlockUser() throws Exception {
         mockMvc.perform(post("/api/admin/usuarios/{id}/desbloquear", "user-1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -228,7 +226,7 @@ class AdminControllerTest {
     }
 
     @Test
-    public void shouldActivateUser() throws Exception {
+    void shouldActivateUser() throws Exception {
         mockMvc.perform(post("/api/admin/usuarios/{id}/activar", "user-1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -237,7 +235,7 @@ class AdminControllerTest {
     }
 
     @Test
-    public void shouldDeactivateUser() throws Exception {
+    void shouldDeactivateUser() throws Exception {
         mockMvc.perform(post("/api/admin/usuarios/{id}/desactivar", "user-1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());

@@ -7,7 +7,6 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,8 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import es.uclm.esibuy.common.dto.ApiResponse;
 import es.uclm.esibuy.common.filter.CorrelationIdFilter;
 import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
-import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
-import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.dto.UpdateUserRequestDTO;
 import es.uclm.esibuy.users.dto.UserResponseDTO;
 import es.uclm.esibuy.users.model.User;
@@ -26,7 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping({"/api/v1/admin/users", "/api/admin/usuarios"})
+@RequestMapping({ "/api/v1/admin/users", "/api/admin/usuarios" })
 public class AdminUserController {
 
     private final AdminUserService adminUserService;
@@ -64,32 +61,6 @@ public class AdminUserController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Usuario eliminado correctamente", null,
                 correlationId == null ? null : correlationId.toString()));
     }
-    
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/register/client")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> registerClient(@Valid @RequestBody ClientRegistrationRequest request,
-            HttpServletRequest servletRequest) {
-
-        UserResponseDTO createdUser = adminUserService.createClientAdmin(request);
-        Object correlationId = servletRequest.getAttribute(CorrelationIdFilter.ATTRIBUTE);
-        ApiResponse<UserResponseDTO> response = new ApiResponse<>(true, "Cliente creado con éxito", 
-            createdUser, correlationId == null ? null : correlationId.toString());
-        
-        return ResponseEntity.ok(response);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/register/seller")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> registerSeller(@Valid @RequestBody SellerRegistrationRequest request,
-            HttpServletRequest servletRequest) {
-                
-        UserResponseDTO createdUser = adminUserService.createSellerAdmin(request);
-        Object correlationId = servletRequest.getAttribute(CorrelationIdFilter.ATTRIBUTE);
-        ApiResponse<UserResponseDTO> response = new ApiResponse<>(true, "Vendedor creado con éxito", 
-            createdUser, correlationId == null ? null : correlationId.toString());
-        
-        return ResponseEntity.ok(response);
-    }
 
     private ApiResponse<UserResponseDTO> response(String message, User user, HttpServletRequest request) {
         String headquarters = user.getAdminProfile() != null ? user.getAdminProfile().getHeadquarters() : null;
@@ -98,9 +69,9 @@ public class AdminUserController {
         java.time.LocalDate birthDate = user.getClientProfile() != null ? user.getClientProfile().getBirthDate() : null;
         String phone = user.getRole() == es.uclm.esibuy.users.model.UserRole.ADMIN ? null : user.getPhone();
         UserResponseDTO data = new UserResponseDTO(user.getId(), user.getEmail(), user.getFirstName(),
-            user.getLastName(), phone, user.getRole() == null ? null : user.getRole().name(),
-            user.getProfileImage(), user.getNationalId(), headquarters, businessName,
-            birthDate, defaultCategory);
+                user.getLastName(), phone, user.getRole() == null ? null : user.getRole().name(),
+                user.getProfileImage(), user.getNationalId(), headquarters, businessName,
+                birthDate, defaultCategory);
         Object correlationId = request.getAttribute(CorrelationIdFilter.ATTRIBUTE);
         return new ApiResponse<>(true, message, data, correlationId == null ? null : correlationId.toString());
     }

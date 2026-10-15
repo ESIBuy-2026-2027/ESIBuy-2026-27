@@ -5,11 +5,7 @@ import org.springframework.stereotype.Service;
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.common.exception.UserDeletionConflictException;
 import es.uclm.esibuy.common.exception.UserNotFoundException;
-import es.uclm.esibuy.products.repository.ProductRepository;
-import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
-import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.dto.UpdateUserRequestDTO;
-import es.uclm.esibuy.users.dto.UserResponseDTO;
 import es.uclm.esibuy.users.model.AdminProfile;
 import es.uclm.esibuy.users.model.ClientProfile;
 import es.uclm.esibuy.users.model.SellerProfile;
@@ -21,14 +17,9 @@ import es.uclm.esibuy.users.repository.UserRepository;
 public class AdminUserService {
 
     private final UserRepository userRepository;
-    private final ProductRepository productRepository;
-    private final UserService userService;
 
-    public AdminUserService(UserRepository userRepository, ProductRepository productRepository,
-            UserService userService) {
+    public AdminUserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.productRepository = productRepository;
-        this.userService = userService;
     }
 
     public User obtenerPorId(String id) {
@@ -115,7 +106,7 @@ public class AdminUserService {
         }
 
         User user = obtenerPorId(id);
-        if (user.getRole() == UserRole.SELLER && productRepository.countBySellerId(id) > 0) {
+        if (user.getRole() != UserRole.ADMIN) {
             throw new UserDeletionConflictException();
         }
 
@@ -126,23 +117,4 @@ public class AdminUserService {
         return value == null || value.isBlank() ? null : value;
     }
 
-    public UserResponseDTO createClientAdmin(ClientRegistrationRequest request) {
-        User createdUser = userService.registerClient(request, true);
-        return mapToDTO(createdUser);
-    }
-
-    public UserResponseDTO createSellerAdmin(SellerRegistrationRequest request) {
-        User createdUser = userService.registerSeller(request, true);
-        return mapToDTO(createdUser);
-    }
-
-    private UserResponseDTO mapToDTO(User user) {
-        return new UserResponseDTO(
-                user.getId(),
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getPhone(),
-                user.getRole().name());
-    }
 }

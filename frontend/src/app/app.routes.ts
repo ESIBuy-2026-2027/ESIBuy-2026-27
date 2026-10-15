@@ -7,7 +7,6 @@ import { AdminUserCreate } from './features/admin/admin-user-create/admin-user-c
 import { ProductCreate } from './features/products/product-create/product-create';
 import { AdminUserList } from './features/admin/admin-user-list/admin-user-list';
 import { AdminUserDetail } from './features/admin/admin-user-detail/admin-user-detail';
-import { AdminUserRegister } from './features/admin/admin-user-register/admin-user-register';
 import { SellerCatalog } from './features/products/seller-catalog/seller-catalog';
 import { ClientDashboard } from './features/client/client-dashboard/client-dashboard';
 import { AdminCategoryManagement } from './features/admin/admin-category-management/admin-category-management';
@@ -15,9 +14,6 @@ import { AdminCategoryManagement } from './features/admin/admin-category-managem
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'register', component: Register },
-
-  { path: 'admin/usuarios/alta', component: AdminUserRegister, canActivate: [ authGuard, roleGuard('ADMIN') ] },
-  { path: 'admin/usuarios/registrar', redirectTo: 'admin/usuarios/alta', pathMatch: 'full' },
 
   { path: 'admin/users/new', component: AdminUserCreate, canActivate: [ authGuard, roleGuard('ADMIN') ] },
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
