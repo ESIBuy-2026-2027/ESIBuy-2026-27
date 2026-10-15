@@ -10,11 +10,11 @@
     display: grid;
     box-sizing: border-box;
     width: min(1100px, 100%);
-    grid-template-columns: 240px minmax(0, 1fr);
+    grid-template-columns: 250px minmax(0, 1fr);
     align-items: start;
     gap: 24px;
     margin: 0 auto;
-    padding: 36px 32px 48px;
+    padding: 40px 32px 44px;
 }
 
 /* Tarjeta lateral */
@@ -23,12 +23,12 @@
     flex-direction: column;
     align-items: center;
     box-sizing: border-box;
-    min-height: 360px;
-    padding: 28px 14px 20px;
+    min-height: 460px;
+    padding: 28px 14px 18px;
     border: 1px solid #d9e3eb;
-    border-radius: 14px;
+    border-radius: 16px;
     background: #fff;
-    box-shadow: 0 4px 16px rgb(16 44 64 / 4%);
+    box-shadow: 0 8px 24px rgb(16 44 64 / 5%);
 }
 
 .avatar {
@@ -58,25 +58,26 @@
 }
 
 .account-badge {
-    padding: 5px 12px;
+    padding: 4px 12px;
     border-radius: 999px;
-    background: #e0f8f1;
-    color: #176c59;
+    background: #42d6b2;
+    color: #102c40;
     font-size: 11px;
     font-weight: 700;
+    text-align: center;
 }
 
 .profile-nav {
     display: grid;
     width: 100%;
-    gap: 5px;
-    margin-top: 26px;
+    gap: 4px;
+    margin-top: 24px;
 }
 
 .nav-item {
     display: block;
     padding: 11px 12px;
-    border-radius: 7px;
+    border-radius: 8px;
     color: #3a5871;
     font-size: 13px;
     font-weight: 550;
@@ -84,10 +85,9 @@
 }
 
 .nav-item.is-active {
-    background: #eaf0f5;
+    background: #dde8f0;
     color: #102c40;
     font-weight: 700;
-    box-shadow: inset 3px 0 #42d6b2;
 }
 
 .nav-item.is-disabled {
@@ -96,45 +96,90 @@
     opacity: 0.8;
 }
 
-/* Contenido principal */
+/* Cerrar sesión */
+.profile-footer {
+    width: 100%;
+    margin-top: auto;
+    padding-top: 18px;
+}
+
+.profile-footer::before {
+    display: block;
+    height: 1px;
+    margin: 0 0 12px;
+    background: #e7edf0;
+    content: "";
+}
+
+.logout-button {
+    width: 100%;
+    padding: 11px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #587388;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 550;
+    text-align: left;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    background: #f4f8f9;
+    color: #173247;
+}
+
+.logout-button:focus-visible {
+    outline: 3px solid rgb(66 214 178 / 35%);
+    outline-offset: 1px;
+}
+
+.logout-error {
+    margin: 8px 12px 0;
+    color: #b3261e;
+    font-size: 12px;
+}
+
+/* Contenido */
 .profile-content {
     display: grid;
     min-width: 0;
-    gap: 12px;
+    gap: 18px;
 }
 
 .panel {
     min-width: 0;
-    padding: 28px 30px;
+    padding: 26px 28px 30px;
     border: 1px solid #d9e3eb;
-    border-radius: 14px;
+    border-radius: 16px;
     background: #fff;
-    box-shadow: 0 4px 16px rgb(16 44 64 / 4%);
+    box-shadow: 0 8px 24px rgb(16 44 64 / 5%);
 }
 
 .panel-title {
-    margin: 0 0 8px;
+    margin: 0 0 6px;
     color: #173247;
-    font-size: 21px;
+    font-size: 20px;
     font-weight: 750;
     letter-spacing: -0.4px;
 }
 
 .panel-description {
-    margin: 0 0 28px;
+    margin: 0 0 22px;
     color: #587388;
     font-size: 13px;
     line-height: 1.6;
 }
 
-/* Secciones y datos */
+/* Secciones y campos */
 .section-title {
     margin: 26px 0 14px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #e6edf2;
+    border-bottom: 1px solid #e7edf0;
     color: #173247;
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 750;
 }
 
 .panel-description+.section-title {
@@ -144,31 +189,31 @@
 .field-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px 20px;
+    gap: 16px 18px;
 }
 
 .field {
     display: flex;
     min-width: 0;
     flex-direction: column;
-    gap: 7px;
+    gap: 6px;
 }
 
 .field label {
-    color: #587388;
-    font-size: 12px;
-    font-weight: 600;
+    color: #72828e;
+    font-size: 11px;
+    font-weight: 650;
 }
 
 .field input {
     box-sizing: border-box;
     width: 100%;
     min-width: 0;
-    min-height: 43px;
+    min-height: 42px;
     padding: 0 12px;
-    border: 1px solid #e0e8ee;
-    border-radius: 7px;
-    background: #f7f9fb;
+    border: 1px solid #dce6ea;
+    border-radius: 8px;
+    background: #f4f8f9;
     color: #203b4e;
     font: inherit;
     font-size: 13px;
@@ -176,25 +221,24 @@
 }
 
 .field input:focus-visible {
-    outline: 2px solid rgb(66 214 178 / 45%);
-    outline-offset: 2px;
+    outline: 3px solid rgb(66 214 178 / 28%);
+    outline-offset: 1px;
 }
 
 /* Carga y errores */
 .profile-status {
-    padding: 16px 18px;
+    padding: 1rem 1.25rem;
     border: 1px solid #d9e3eb;
-    border-radius: 10px;
+    border-radius: 12px;
     background: #fff;
     color: #102c40;
-    font-size: 13px;
 }
 
 .profile-error {
-    margin: 0 0 14px;
-    padding: 14px 16px;
+    margin: 0 0 1.25rem;
+    padding: 1rem 1.25rem;
     border: 1px solid #f1aeb5;
-    border-radius: 8px;
+    border-radius: 12px;
     background: #f8d7da;
     color: #842029;
     font-size: 13px;
@@ -202,17 +246,14 @@
 }
 
 .retry-button {
-    min-height: 38px;
-    padding: 9px 16px;
+    padding: 0.6rem 1rem;
     border: 0;
-    border-radius: 7px;
+    border-radius: 8px;
     background: #102c40;
     color: #fff;
     font: inherit;
     font-size: 13px;
-    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s ease;
 }
 
 .retry-button:hover {
@@ -228,7 +269,7 @@
 .profile-actions {
     display: flex;
     justify-content: flex-end;
-    margin-top: -2px;
+    margin-top: -10px;
 }
 
 .back-button {
@@ -236,22 +277,22 @@
     min-height: 36px;
     align-items: center;
     justify-content: center;
-    gap: 7px;
+    gap: 5px;
     padding: 8px 10px;
-    border: 1px solid transparent;
-    border-radius: 7px;
+    border: 0;
+    border-radius: 8px;
     background: transparent;
     color: #587388;
     font: inherit;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .back-button svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     flex-shrink: 0;
 }
 
@@ -265,17 +306,16 @@
     outline-offset: 2px;
 }
 
-/* Adaptación a tablet y móvil */
+/* Adaptación a móviles */
 @media (max-width: 760px) {
     .profile-page {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: 1fr;
         gap: 16px;
-        padding: 20px 16px 28px;
+        padding: 20px 16px 32px;
     }
 
     .profile-card {
         min-height: auto;
-        padding: 22px 14px 18px;
     }
 
     .profile-nav {
@@ -283,39 +323,25 @@
     }
 
     .profile-content {
-        gap: 10px;
+        gap: 14px;
     }
 
     .panel {
-        padding: 22px 18px;
-    }
-
-    .panel-title {
-        font-size: 20px;
-    }
-
-    .panel-description {
-        margin-bottom: 24px;
+        padding: 22px 18px 24px;
     }
 
     .field-grid {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: 1fr;
         gap: 14px;
     }
 
     .profile-actions {
-        margin-top: 0;
+        margin-top: -6px;
         padding-right: 2px;
     }
-}
 
-@media (max-width: 380px) {
-    .profile-page {
-        padding-right: 12px;
-        padding-left: 12px;
-    }
-
-    .panel {
-        padding: 20px 14px;
+    .back-button {
+        min-height: 36px;
+        padding: 8px;
     }
 }

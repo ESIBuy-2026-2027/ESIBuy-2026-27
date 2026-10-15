@@ -254,6 +254,47 @@
     outline-offset: 1px;
 }
 
+/* Botón Volver: mismo estilo que el perfil del vendedor */
+.profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -10px;
+}
+
+.back-button {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #587388;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.back-button svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.back-button:hover {
+    background: #dde8f0;
+    color: #102c40;
+}
+
+.back-button:focus-visible {
+    outline: 2px solid #42d6b2;
+    outline-offset: 2px;
+}
+
 @media (max-width: 760px) {
     .profile-page {
         grid-template-columns: 1fr;
@@ -302,7 +343,13 @@
         cursor: pointer;
     }
 
-    .profile-error button {
-        opacity: 0.9;
+    .profile-actions {
+        margin-top: -6px;
+        padding-right: 2px;
+    }
+
+    .back-button {
+        min-height: 36px;
+        padding: 8px;
     }
 }

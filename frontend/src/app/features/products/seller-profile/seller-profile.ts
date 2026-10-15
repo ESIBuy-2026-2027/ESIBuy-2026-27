@@ -1,6 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Location } from '@angular/common';
+import { AuthService } from '../../../core/services/auth.service';
+import { Router } from '@angular/router';
 
 interface SellerProfileResponse {
     firstName: string;
@@ -20,6 +22,9 @@ interface SellerProfileResponse {
     styleUrl: './seller-profile.css',
 })
 export class SellerProfile implements OnInit {
+    private readonly authService = inject(AuthService);
+    private readonly router = inject(Router);
+
     private readonly http = inject(HttpClient);
     private readonly apiUrl = '/api/users/me/profile';
 
@@ -28,6 +33,8 @@ export class SellerProfile implements OnInit {
     readonly profile = signal<SellerProfileResponse | null>(null);
     readonly loading = signal(true);
     readonly profileError = signal<string | null>(null);
+    readonly logoutError = signal<string | null>(null);
+
 
     readonly fullName = computed(() => {
         const profile = this.profile();
@@ -91,5 +98,20 @@ export class SellerProfile implements OnInit {
         } else {
             window.history.replaceState(null, '', '/seller/catalog');
         }
+    }
+
+    logout(): void {
+        this.logoutError.set(null);
+
+        this.authService.logout().subscribe({
+            next: () => {
+                void this.router.navigate(['/']);
+            },
+            error: () => {
+                this.logoutError.set(
+                    'No se pudo cerrar la sesión. Inténtalo de nuevo.',
+                );
+            },
+        });
     }
 }

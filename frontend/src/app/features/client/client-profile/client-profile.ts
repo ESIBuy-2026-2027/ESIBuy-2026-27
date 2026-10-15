@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 
 export interface ProfileSection {
@@ -28,6 +29,7 @@ export class ClientProfile implements OnInit {
     private readonly authService = inject(AuthService);
     private readonly http = inject(HttpClient);
     private readonly router = inject(Router);
+    private readonly location = inject(Location);
 
     private readonly apiUrl = '/api/users/me/profile';
 
@@ -132,6 +134,14 @@ export class ClientProfile implements OnInit {
                 );
             },
         });
+    }
+
+    goBack(): void {
+        if (window.history.length > 1) {
+            this.location.back();
+        } else {
+            window.history.replaceState(null, '', '/seller/catalog');
+        }
     }
 
 }

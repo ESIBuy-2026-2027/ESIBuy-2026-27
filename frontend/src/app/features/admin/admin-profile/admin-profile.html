@@ -22,6 +22,15 @@
                 Seguridad
             </a>
         </nav>
+        <div class="profile-footer">
+            <button type="button" class="logout-button" (click)="logout()">
+                Cerrar sesión
+            </button>
+
+            @if (logoutError(); as error) {
+            <p class="logout-error" role="alert">{{ error }}</p>
+            }
+        </div>
     </aside>
 
     <main class="profile-content">
