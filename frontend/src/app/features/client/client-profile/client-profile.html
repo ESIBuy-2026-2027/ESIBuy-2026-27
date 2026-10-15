@@ -1,0 +1,79 @@
+<div class="profile-page">
+    <aside class="profile-card" aria-label="Menú de perfil">
+        <div class="avatar" aria-hidden="true">{{ initials() }}</div>
+        <p class="profile-name">Nombre Apellidos</p>
+        @if (isPremium) {
+        <span class="account-badge">Cuenta premium</span>
+        } @else {
+        <span class="account-badge account-badge--standard">Cuenta estándar</span>
+        }
+
+        <nav class="profile-nav" aria-label="Secciones del perfil">
+            @for (section of sections; track section.label) {
+            @if (section.active) {
+            <a class="nav-item is-active" aria-current="page">{{ section.label }}</a>
+            } @else {
+            <a class="nav-item is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">{{
+                section.label }}</a>
+            }
+            }
+        </nav>
+
+        <div class="profile-footer">
+            <button type="button" class="logout-button" (click)="logout()">Cerrar sesión</button>
+            @if (logoutError(); as error) {
+            <p class="logout-error" role="alert">{{ error }}</p>
+            }
+        </div>
+    </aside>
+
+    <main class="profile-content">
+        @if (isPremium) {
+        <section class="premium-banner" aria-label="Suscripción premium">
+            <div>
+                <p class="premium-eyebrow">Premium</p>
+                <h2>Estás disfrutando de precios exclusivos</h2>
+                <p>Tu descuento premium se aplica solo en los productos que lo incluyen.</p>
+            </div>
+            <button type="button" class="premium-action" disabled aria-disabled="true" title="Próximamente">
+                Gestionar suscripción
+            </button>
+        </section>
+        }
+
+        <section class="panel" aria-labelledby="personal-title">
+            <h1 id="personal-title" class="panel-title">Datos personales</h1>
+            <p class="panel-description">Consulta tus datos y comprueba que tu información es correcta.</p>
+
+            <div class="field-grid">
+                <div class="field">
+                    <label for="firstName">Nombre</label>
+                    <input id="firstName" type="text" value="" placeholder="Tu nombre" readonly aria-readonly="true" />
+                </div>
+                <div class="field">
+                    <label for="lastName">Apellidos</label>
+                    <input id="lastName" type="text" value="" placeholder="Tus apellidos" readonly
+                        aria-readonly="true" />
+                </div>
+                <div class="field">
+                    <label for="email">Correo electrónico</label>
+                    <input id="email" type="email" [value]="email()" placeholder="nombre@correo.com" readonly
+                        aria-readonly="true" />
+                </div>
+                <div class="field">
+                    <label for="phone">Teléfono</label>
+                    <input id="phone" type="tel" value="" placeholder="600 000 000" readonly aria-readonly="true" />
+                </div>
+                <div class="field">
+                    <label for="nationalId">DNI</label>
+                    <input id="nationalId" type="text" value="" placeholder="*****678Z" readonly aria-readonly="true" />
+                </div>
+                <div class="field">
+                    <label for="customerType">Tipo de cliente</label>
+                    <input id="customerType" type="text" value="" placeholder="Estándar" readonly
+                        aria-readonly="true" />
+                </div>
+            </div>
+        </section>
+    </main>
+</div>

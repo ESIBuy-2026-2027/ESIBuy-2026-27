@@ -9,15 +9,16 @@ import { AdminUserList } from './features/admin/admin-user-list/admin-user-list'
 import { AdminUserDetail } from './features/admin/admin-user-detail/admin-user-detail';
 import { SellerCatalog } from './features/products/seller-catalog/seller-catalog';
 import { ClientDashboard } from './features/client/client-dashboard/client-dashboard';
+import { ClientProfile } from './features/client/client-profile/client-profile';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'register', component: Register },
 
-  { path: 'admin/users/new', component: AdminUserCreate, canActivate: [ authGuard, roleGuard('ADMIN') ] },
+  { path: 'admin/users/new', component: AdminUserCreate, canActivate: [authGuard, roleGuard('ADMIN')] },
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
-  { path: 'admin/usuarios', component: AdminUserList, canActivate: [ authGuard, roleGuard('ADMIN') ] },
-  { path: 'admin/usuarios/:id/editar', component: AdminUserDetail, canActivate: [ authGuard, roleGuard('ADMIN') ] },
+  { path: 'admin/usuarios', component: AdminUserList, canActivate: [authGuard, roleGuard('ADMIN')] },
+  { path: 'admin/usuarios/:id/editar', component: AdminUserDetail, canActivate: [authGuard, roleGuard('ADMIN')] },
 
   // Redirecciones
   { path: 'admin', redirectTo: 'admin/usuarios', pathMatch: 'full' },
@@ -31,7 +32,7 @@ export const routes: Routes = [
   { path: 'products/new', component: ProductCreate, canActivate: [authGuard, roleGuard('SELLER')] },
 
   { path: 'client/dashboard', component: ClientDashboard, canActivate: [authGuard, roleGuard('CLIENT')] },
-  { path: 'client', redirectTo: 'client/dashboard', pathMatch: 'full' },
+  { path: 'client/profile', component: ClientProfile, canActivate: [authGuard, roleGuard('CLIENT')] },
 
   { path: '**', redirectTo: '' }
 ];

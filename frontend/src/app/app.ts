@@ -46,9 +46,14 @@ export class App {
     void this.router.navigate(['/seller/catalog']);
   }
 
-  goUsersManagement(): void{
+  goUsersManagement(): void {
     this.closeProfileMenu();
     void this.router.navigate(['/admin/usuarios']);
+  }
+
+  goProfile(): void {
+    this.closeProfileMenu();
+    void this.router.navigate(['/client/profile']);
   }
 
   logout(): void {
