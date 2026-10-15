@@ -7,6 +7,7 @@ import java.util.Optional;
 import es.uclm.esibuy.categories.model.Category;
 import es.uclm.esibuy.categories.repository.CategoryRepository;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
+import es.uclm.esibuy.common.exception.ProductNotFoundException;
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
 import es.uclm.esibuy.products.dto.ProductResponse;
 import es.uclm.esibuy.products.dto.ProductSummaryResponse;
@@ -169,6 +170,67 @@ class ProductServiceTest {
         assertEquals(PRODUCT_NAME, result.get(0).name());
         assertEquals(3, result.get(0).stock());
         verify(productRepository).findAllBySellerId(SELLER_ID);
+    }
+
+    @Test
+    void shouldUpdateOwnedProductAndPreserveItsSeller() {
+        User seller = org.mockito.Mockito.mock(User.class);
+        when(seller.getId()).thenReturn(SELLER_ID);
+        when(seller.getRole()).thenReturn(UserRole.SELLER);
+        when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(seller));
+        Product product = new Product(
+                PRODUCT_NAME, List.of(CATEGORY_ID), 3, "Descripción anterior",
+                new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID);
+        when(productRepository.findById("product-id")).thenReturn(Optional.of(product));
+        when(categoryRepository.findAllById(List.of(CATEGORY_ID)))
+                .thenReturn(List.of(new Category(CATEGORY_ID, "Electrónica")));
+        when(productRepository.save(product)).thenReturn(product);
+
+        ProductCreateRequest request = validRequest();
+        request.setName("  Nuevo nombre  ");
+        request.setStock(8);
+        request.setDescription("Nueva descripción");
+        request.setPrice(new BigDecimal("25.50"));
+        request.setAvailable(false);
+
+        Product result = productService.updateProduct("product-id", request, SELLER_EMAIL);
+
+        assertEquals("Nuevo nombre", result.getName());
+        assertEquals(8, result.getStock());
+        assertEquals("Nueva descripción", result.getDescription());
+        assertEquals(new BigDecimal("25.50"), result.getPrice());
+        assertEquals(false, result.isAvailable());
+        assertEquals(SELLER_ID, result.getSellerId());
+        verify(productRepository).save(product);
+    }
+
+    @Test
+    void shouldHideProductsOwnedByAnotherSeller() {
+        User seller = org.mockito.Mockito.mock(User.class);
+        when(seller.getId()).thenReturn(SELLER_ID);
+        when(seller.getRole()).thenReturn(UserRole.SELLER);
+        when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(seller));
+        when(productRepository.findById("product-id")).thenReturn(Optional.of(new Product(
+                PRODUCT_NAME, List.of(CATEGORY_ID), 3, null, new BigDecimal(PRODUCT_PRICE),
+                null, null, null, true, "another-seller")));
+
+        assertThrows(ProductNotFoundException.class,
+                () -> productService.getProduct("product-id", SELLER_EMAIL));
+        verify(categoryRepository, never()).findAllById(any());
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    void shouldRejectUpdatingUnknownProduct() {
+        User seller = org.mockito.Mockito.mock(User.class);
+        when(seller.getRole()).thenReturn(UserRole.SELLER);
+        when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(seller));
+        when(productRepository.findById("unknown")).thenReturn(Optional.empty());
+
+        assertThrows(ProductNotFoundException.class,
+                () -> productService.updateProduct("unknown", validRequest(), SELLER_EMAIL));
+        verify(categoryRepository, never()).findAllById(any());
+        verify(productRepository, never()).save(any(Product.class));
     }
 
     @Test

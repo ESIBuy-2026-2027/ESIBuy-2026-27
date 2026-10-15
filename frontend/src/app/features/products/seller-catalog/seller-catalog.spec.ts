@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
-import { ProductsService } from '../products.service';
+import { ProductDetails, ProductsService } from '../products.service';
 import { SellerCatalogService, SellerProduct } from './seller-catalog.service';
 import { SellerCatalog } from './seller-catalog';
 
@@ -25,6 +25,9 @@ describe('SellerCatalog', () => {
   let catalogService: {
     getProducts: () => Observable<SellerProduct[]>;
   };
+  let updateProduct: ReturnType<typeof vi.fn<
+    (id: string, request: Parameters<ProductsService['updateProduct']>[1]) => Observable<ProductDetails>
+  >>;
 
   beforeEach(async () => {
     productsResponse = of(products);
@@ -32,12 +35,27 @@ describe('SellerCatalog', () => {
     catalogService = {
       getProducts: () => productsResponse,
     };
+    updateProduct = vi.fn((id: string, request: Parameters<ProductsService['updateProduct']>[1]) =>
+      of({
+        ...products[0],
+        id,
+        name: request.name,
+        categoryIds: request.categoryIds,
+        stock: request.stock ?? products[0].stock,
+        description: request.description ?? null,
+        price: request.price,
+        discount: request.discount ?? null,
+        premiumDiscount: request.premiumDiscount ?? null,
+        imageUrl: request.imageUrl ?? null,
+        available: request.available,
+        sellerId: products[0].sellerId,
+      }));
     await TestBed.configureTestingModule({
       imports: [SellerCatalog],
       providers: [
         provideRouter([]),
         { provide: SellerCatalogService, useValue: catalogService },
-        { provide: ProductsService, useValue: { getCategories: () => categoriesResponse } },
+        { provide: ProductsService, useValue: { getCategories: () => categoriesResponse, updateProduct } },
       ],
     }).compileComponents();
 
@@ -76,11 +94,9 @@ describe('SellerCatalog', () => {
     expect(element.querySelectorAll('.navigation-link[aria-disabled="true"]')).toHaveLength(3);
     expect(element.querySelectorAll('.navigation-link[title="Próximamente"]')).toHaveLength(3);
 
-    const actionButtons = Array.from(element.querySelectorAll<HTMLButtonElement>('.icon-button'));
-    expect(actionButtons).toHaveLength(2);
-    expect(actionButtons.every((button) => button.disabled && button.getAttribute('aria-disabled') === 'true'))
-      .toBe(true);
-    expect(actionButtons.every((button) => button.title === 'Próximamente')).toBe(true);
+    expect(element.querySelector<HTMLAnchorElement>('.edit-button')?.getAttribute('href'))
+      .toBe('/products/product-1/edit');
+    expect(element.querySelector('.delete-button')).toBeNull();
   });
 
   it('should show the quantity alone for normal stock and keep labels for exceptional stock', () => {
@@ -96,6 +112,41 @@ describe('SellerCatalog', () => {
     component.products.set([{ ...products[0], stock: 0 }]);
     fixture.detectChanges();
     expect(element.querySelector('.stock-badge')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Sin stock · 0');
+  });
+
+  it('should update price inline and replace the product after saving', async () => {
+    const component = fixture.componentInstance;
+    const element = fixture.nativeElement as HTMLElement;
+    const priceButton = element.querySelector<HTMLButtonElement>('.price-value');
+
+    priceButton?.click();
+    fixture.detectChanges();
+    const input = element.querySelector<HTMLInputElement>('.price-input');
+    expect(input).not.toBeNull();
+    input!.value = '24.5';
+    input!.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    element.querySelector<HTMLButtonElement>('.inline-save')?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(updateProduct).toHaveBeenCalledWith('product-1', expect.objectContaining({
+      price: 24.5,
+      stock: 3,
+      categoryIds: ['category-1'],
+    }));
+    expect(component.products()[0].price).toBe(24.5);
+    expect(element.querySelector('.price-value')?.textContent).toContain('24,50');
+  });
+
+  it('should reject negative inline stock without calling the API', () => {
+    const component = fixture.componentInstance;
+    component.startInlineEdit(products[0], 'stock');
+    component.inlineValue.set(-1);
+    component.saveInlineEdit(products[0]);
+
+    expect(updateProduct).not.toHaveBeenCalled();
+    expect(component.inlineError()).toBe('El stock debe ser un número entero no negativo.');
   });
 
   it('should link to the product creation route', () => {

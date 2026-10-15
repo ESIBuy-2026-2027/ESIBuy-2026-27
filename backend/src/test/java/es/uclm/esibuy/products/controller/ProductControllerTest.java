@@ -5,6 +5,7 @@ import java.util.List;
 
 import es.uclm.esibuy.common.exception.ApiExceptionHandler;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
+import es.uclm.esibuy.common.exception.ProductNotFoundException;
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
 import es.uclm.esibuy.products.dto.ProductResponse;
 import es.uclm.esibuy.products.model.Product;
@@ -28,6 +29,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -131,6 +133,71 @@ class ProductControllerTest {
                                 .andExpect(jsonPath("$[0].sellerId").value(SELLER_ID));
 
                 verify(productService).getSellerProducts(SELLER_EMAIL);
+        }
+
+        @Test
+        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
+        void shouldReturnProductDetailsForEditing() throws Exception {
+                when(productService.getProduct("product-1", SELLER_EMAIL)).thenReturn(new Product(
+                                PRODUCT_NAME, List.of(CATEGORY_ID), 3, "Descripción",
+                                new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID));
+
+                mockMvc.perform(get(PRODUCTS_API + "/product-1"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.name").value(PRODUCT_NAME))
+                                .andExpect(jsonPath("$.categoryIds[0]").value(CATEGORY_ID))
+                                .andExpect(jsonPath("$.stock").value(3));
+
+                verify(productService).getProduct("product-1", SELLER_EMAIL);
+        }
+
+        @Test
+        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
+        void shouldReturnNotFoundWhenProductDoesNotExistOrBelongToAnotherSeller() throws Exception {
+                when(productService.getProduct("product-1", SELLER_EMAIL))
+                                .thenThrow(new ProductNotFoundException());
+
+                mockMvc.perform(get(PRODUCTS_API + "/product-1"))
+                                .andExpect(status().isNotFound())
+                                .andExpect(jsonPath("$.message").value("Producto no encontrado"))
+                                .andExpect(jsonPath("$.correlationId").isNotEmpty());
+        }
+
+        @Test
+        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
+        void shouldUpdateProductForAuthenticatedSeller() throws Exception {
+                when(productService.updateProduct(
+                                eq("product-1"), any(ProductCreateRequest.class), eq(SELLER_EMAIL)))
+                                .thenReturn(new Product(
+                                                "Producto actualizado", List.of(CATEGORY_ID), 4, null,
+                                                new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID));
+
+                mockMvc.perform(put(PRODUCTS_API + "/product-1")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(validRequest()))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.name").value("Producto actualizado"))
+                                .andExpect(jsonPath("$.sellerId").value(SELLER_ID));
+
+                verify(productService).updateProduct(
+                                eq("product-1"), any(ProductCreateRequest.class), eq(SELLER_EMAIL));
+        }
+
+        @Test
+        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
+        void shouldValidateProductUpdates() throws Exception {
+                mockMvc.perform(put(PRODUCTS_API + "/product-1")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"name":"","categoryIds":[],"price":0,"available":null}
+                                                """))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.errors.name").isNotEmpty())
+                                .andExpect(jsonPath("$.errors.categoryIds").isNotEmpty())
+                                .andExpect(jsonPath("$.errors.price").isNotEmpty())
+                                .andExpect(jsonPath("$.errors.available").isNotEmpty());
         }
 
         @Test

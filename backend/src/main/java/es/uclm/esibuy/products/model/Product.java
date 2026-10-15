@@ -92,4 +92,25 @@ public class Product {
     public String getSellerId() {
         return sellerId;
     }
+
+    public void updateDetails(
+            String name,
+            List<String> categoryIds,
+            int stock,
+            String description,
+            BigDecimal price,
+            BigDecimal discount,
+            BigDecimal premiumDiscount,
+            String imageUrl,
+            boolean available) {
+        this.name = name;
+        this.categoryIds = List.copyOf(categoryIds);
+        this.stock = stock;
+        this.description = description;
+        this.price = price;
+        this.discount = discount;
+        this.premiumDiscount = premiumDiscount;
+        this.imageUrl = imageUrl;
+        this.available = available;
+    }
 }

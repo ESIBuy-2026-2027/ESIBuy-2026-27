@@ -15,9 +15,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/products")
+@PreAuthorize("hasRole('SELLER')")
 public class ProductController {
 
     private final ProductService productService;
@@ -40,6 +44,21 @@ public class ProductController {
     public List<ProductResponse> getSellerProducts(Authentication authentication) {
         String email = authentication != null ? authentication.getName() : null;
         return productService.getSellerProducts(email);
+    }
+
+    @GetMapping("/{id}")
+    public ProductResponse getProduct(@PathVariable String id, Authentication authentication) {
+        String email = authentication != null ? authentication.getName() : null;
+        return ProductResponse.from(productService.getProduct(id, email));
+    }
+
+    @PutMapping("/{id}")
+    public ProductResponse updateProduct(
+            @PathVariable String id,
+            @Valid @RequestBody ProductCreateRequest request,
+            Authentication authentication) {
+        String email = authentication != null ? authentication.getName() : null;
+        return ProductResponse.from(productService.updateProduct(id, request, email));
     }
 
     @GetMapping({"/summary", "/resumen"})

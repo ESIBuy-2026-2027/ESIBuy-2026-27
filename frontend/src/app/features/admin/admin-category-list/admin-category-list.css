@@ -410,40 +410,60 @@
 }
 
 .row-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 34px);
   flex: 0 0 auto;
   align-items: center;
-  gap: 4px;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
-.icon-button {
-  display: inline-flex;
-  min-height: 34px;
-  align-items: center;
-  gap: 5px;
-  padding: 0 8px;
-  border: 0;
-  border-radius: 6px;
-  color: #577183;
-  background: transparent;
-  font: inherit;
-  font-size: 11px;
+.btn-icon {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  place-items: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #3a5871;
+  background: #f5fafb;
+  font-size: initial;
   cursor: pointer;
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease;
 }
 
-.icon-button:hover {
-  color: #1d6f60;
-  background: #eef8f5;
+.btn-edit:hover {
+  border-color: rgb(92 207 192 / 45%);
+  color: #0a2c3a;
+  background: rgb(92 207 192 / 12%);
 }
 
-.icon-button--danger:hover {
-  color: #b42318;
-  background: #fff1f0;
+.btn-delete {
+  color: #a84f41;
+  background: #fff0ed;
 }
 
-.icon-button svg {
-  width: 15px;
-  height: 15px;
+.btn-delete:hover:not(:disabled) {
+  border-color: #e3b8b1;
+  color: #a84f41;
+  background: #fde1db;
+}
+
+.btn-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.btn-icon:focus-visible {
+  outline: 3px solid rgb(92 207 192 / 45%);
+  outline-offset: 2px;
 }
 
 .state-message,
@@ -714,17 +734,6 @@ input:focus-visible {
 
   .category-index {
     display: none;
-  }
-
-  .row-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .icon-button {
-    min-height: 28px;
-    justify-content: center;
-    padding: 0 6px;
   }
 
   .topbar {

@@ -370,6 +370,27 @@ h1 {
   font-size: 13px;
 }
 
+.submit-error button {
+  margin-left: 12px;
+  border: 0;
+  background: transparent;
+  color: #773d39;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.product-load-message {
+  display: block;
+  padding: 18px;
+  border: 1px solid #e7edf0;
+  border-radius: 12px;
+  background: #fff;
+  color: #52616c;
+  font-size: 13px;
+}
+
 .submit-success {
   display: block;
   padding: 13px 15px;
