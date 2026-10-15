@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.common.exception.InvalidCredentialsException;
+import es.uclm.esibuy.common.exception.UserNotFoundException;
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
 import es.uclm.esibuy.users.dto.LoginRequest;
@@ -123,5 +124,14 @@ public class UserService {
 
     private String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    public User findById(String id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+    }
+
+    public User save(User user) {
+        return userRepository.save(user);
     }
 }

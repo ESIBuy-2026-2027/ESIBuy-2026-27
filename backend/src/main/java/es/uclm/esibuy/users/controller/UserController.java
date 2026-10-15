@@ -1,12 +1,16 @@
 package es.uclm.esibuy.users.controller;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import es.uclm.esibuy.common.exception.InvalidCredentialsException;
 import es.uclm.esibuy.common.exception.TooManyRequestsException;
 import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
+import es.uclm.esibuy.security.service.EncryptionService;
 import es.uclm.esibuy.security.service.LoginAttemptService;
 import es.uclm.esibuy.security.service.SessionAuthenticationService;
+import es.uclm.esibuy.security.service.TotpService;
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
 import es.uclm.esibuy.users.dto.LoginRequest;
@@ -34,14 +38,19 @@ public class UserController {
     private final UserService userService;
     private final LoginAttemptService loginAttemptService;
     private final SessionAuthenticationService sessionAuthenticationService;
+    private final TotpService totpService;
+    private final EncryptionService encryptionService;
 
     public UserController(
             UserService userService,
             LoginAttemptService loginAttemptService,
-            SessionAuthenticationService sessionAuthenticationService) {
+            SessionAuthenticationService sessionAuthenticationService,
+            TotpService totpService) {
         this.userService = userService;
         this.loginAttemptService = loginAttemptService;
         this.sessionAuthenticationService = sessionAuthenticationService;
+        this.totpService = totpService;
+        this.encryptionService = new EncryptionService();
     }
 
     @PostMapping("/register/client")
@@ -81,6 +90,34 @@ public class UserController {
             throw exception;
         }
 
+        // Si el usuario tiene activo el 2FA
+        if (user.isTotpEnabled()) {
+            String code = request.getTotpCode();
+            if (code == null || code.isBlank()) {
+                // Notificar al frontend que se requiere el segundo factor
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of(
+                        "requires2fa", true,
+                        "email", user.getEmail()));
+            }
+
+            boolean isValidTotp = totpService.verifyCode(user.getTotpSecret(), code);
+            boolean isValidBackup = false;
+
+            if (!isValidTotp && user.getBackupCodes() != null) {
+                isValidBackup = user.getBackupCodes().contains(code.trim());
+                if (isValidBackup) {
+                    // Consumir el código de respaldo utilizado
+                    user.getBackupCodes().remove(code.trim());
+                    userService.save(user);
+                }
+            }
+
+            if (!isValidTotp && !isValidBackup) {
+                loginAttemptService.loginFailed(request.getEmail(), ipAddress);
+                throw new InvalidCredentialsException();
+            }
+        }
+
         loginAttemptService.loginSucceeded(request.getEmail(), ipAddress);
         sessionAuthenticationService.authenticate(user, servletRequest, servletResponse);
         return ResponseEntity.ok(buildUserResponse(user));
@@ -105,19 +142,68 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/2fa/setup")
+    public ResponseEntity<Map<String, String>> setup2FA(Authentication authentication) {
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = userService.findById(principal.id());
+        String secret = totpService.generateSecret();
+
+        String encryptedSecret = encryptionService.encrypt(secret);
+        user.setTotpSecret(encryptedSecret);
+        userService.save(user);
+
+        String qrUri = String.format("otpauth://totp/ESIBuy:%s?secret=%s&issuer=ESIBuy", user.getEmail(), secret);
+        return ResponseEntity.ok(Map.of(
+                "secret", secret,
+                "qrUri", qrUri));
+    }
+
+    @PostMapping("/2fa/enable")
+    public ResponseEntity<Map<String, Object>> enable2FA(
+            @RequestBody Map<String, String> body,
+            Authentication authentication) {
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String code = body.get("code");
+        User user = userService.findById(principal.id());
+
+        if (!totpService.verifyCode(user.getTotpSecret(), code)) {
+            throw new InvalidCredentialsException();
+        }
+
+        List<String> rawBackupCodes = totpService.generateBackupCodes(8);
+        user.setTotpEnabled(true);
+        user.setBackupCodes(new ArrayList<>(rawBackupCodes));
+        userService.save(user);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "2FA activado correctamente",
+                "backupCodes", rawBackupCodes));
+    }
+
     private Map<String, Object> buildUserResponse(User user) {
         return Map.of(
                 "id", user.getId(),
                 "email", user.getEmail(),
                 "role", user.getRole(),
-                "active", user.isActive());
+                "active", user.isActive(),
+                "totpEnabled", user.isTotpEnabled());
     }
 
     private Map<String, Object> buildUserResponse(AuthenticatedUserPrincipal principal) {
+        User user = userService.findById(principal.id());
         return Map.of(
                 "id", principal.id(),
                 "email", principal.email(),
                 "role", principal.role(),
-                "active", principal.active());
+                "active", principal.active(),
+                "totpEnabled", user.isTotpEnabled());
     }
 }
