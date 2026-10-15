@@ -212,11 +212,21 @@
                       }
                     </td>
                     <td>
-                      <span class="availability-badge"
+                      <button type="button" class="availability-badge editable-availability"
                         [class.is-published]="product.available"
-                        [class.is-paused]="!product.available">
-                        {{ product.available ? 'Publicado' : 'Pausado' }}
-                      </span>
+                        [class.is-paused]="!product.available"
+                        (click)="toggleVisibility(product)"
+                        [disabled]="visibilitySaving() === product.id || inlineSaving()"
+                        [attr.aria-label]="product.available
+                          ? 'Ocultar ' + product.name
+                          : 'Mostrar ' + product.name"
+                        [title]="product.available ? 'Ocultar producto' : 'Mostrar producto'">
+                        @if (visibilitySaving() === product.id) {
+                          Guardando…
+                        } @else {
+                          {{ product.available ? 'Publicado' : 'Oculto' }}
+                        }
+                      </button>
                     </td>
                     <td class="action-column">
                       <div class="action-buttons">
@@ -232,7 +242,8 @@
                       </div>
                     </td>
                   </tr>
-                  @if (isEditing(product.id, 'price') || isEditing(product.id, 'stock')) {
+                  @if (isEditing(product.id, 'price') || isEditing(product.id, 'stock')
+                    || visibilityError()) {
                     <tr class="inline-error-row">
                       <td colspan="6">
                         @if (inlineError(); as error) {

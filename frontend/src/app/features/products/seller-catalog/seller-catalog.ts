@@ -34,6 +34,8 @@ export class SellerCatalog implements OnInit {
   inlineValue = signal<number | null>(null);
   inlineSaving = signal(false);
   inlineError = signal<string | null>(null);
+  visibilitySaving = signal<string | null>(null);
+  visibilityError = signal<string | null>(null);
   visibleProducts = computed(() => {
     const query = this.productSearch().trim().toLocaleLowerCase();
     if (!query) {
@@ -96,6 +98,29 @@ export class SellerCatalog implements OnInit {
     return this.currencyFormatter.format(price);
   }
 
+  toggleVisibility(product: SellerProduct): void {
+    if (this.inlineSaving() || this.visibilitySaving()) {
+      return;
+    }
+
+    this.visibilitySaving.set(product.id);
+    this.visibilityError.set(null);
+    this.productsService.updateProduct(
+      product.id,
+      this.toUpdateRequest(product, null, null, !product.available),
+    ).subscribe({
+      next: (updatedProduct) => {
+        this.products.update((products) => products.map((currentProduct) =>
+          currentProduct.id === updatedProduct.id ? updatedProduct : currentProduct));
+        this.visibilitySaving.set(null);
+      },
+      error: (error: unknown) => {
+        this.visibilitySaving.set(null);
+        this.visibilityError.set(this.getInlineErrorMessage(error));
+      },
+    });
+  }
+
   startInlineEdit(product: SellerProduct, field: InlineField): void {
     if (this.inlineSaving()) {
       return;
@@ -131,7 +156,7 @@ export class SellerCatalog implements OnInit {
       return;
     }
 
-    const request = this.toUpdateRequest(product, edit.field, value);
+    const request = this.toUpdateRequest(product, edit.field, value, product.available);
     this.inlineSaving.set(true);
     this.inlineError.set(null);
     this.productsService.updateProduct(product.id, request).subscribe({
@@ -156,16 +181,17 @@ export class SellerCatalog implements OnInit {
 
   private toUpdateRequest(
       product: SellerProduct,
-      field: InlineField,
-      value: number): ProductCreateRequest {
+      field: InlineField | null,
+      value: number | null,
+      available: boolean): ProductCreateRequest {
     const request: ProductCreateRequest = {
       name: product.name,
       categoryIds: product.categoryIds,
-      price: field === 'price' ? value : product.price,
-      available: product.available,
+      price: field === 'price' && value !== null ? value : product.price,
+      available,
     };
     if (product.stock !== null) {
-      request.stock = field === 'stock' ? value : product.stock;
+      request.stock = field === 'stock' && value !== null ? value : product.stock;
     }
     if (product.description) {
       request.description = product.description;

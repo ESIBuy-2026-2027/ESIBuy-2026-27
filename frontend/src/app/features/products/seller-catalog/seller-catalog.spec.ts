@@ -149,6 +149,24 @@ describe('SellerCatalog', () => {
     expect(component.inlineError()).toBe('El stock debe ser un número entero no negativo.');
   });
 
+  it('should toggle product visibility without removing it from the catalog', async () => {
+    const component = fixture.componentInstance;
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.editable-availability')?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(updateProduct).toHaveBeenCalledWith('product-1', expect.objectContaining({
+      available: false,
+      price: 19.99,
+      stock: 3,
+    }));
+    expect(component.products()[0].available).toBe(false);
+    expect(element.querySelector('.editable-availability')?.textContent).toContain('Oculto');
+    expect(element.textContent).toContain('Auriculares');
+  });
+
   it('should link to the product creation route', () => {
     const element = fixture.nativeElement as HTMLElement;
     const createLinks = element.querySelectorAll('a[href="/products/new"]');

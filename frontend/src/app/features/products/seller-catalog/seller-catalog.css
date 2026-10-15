@@ -407,6 +407,21 @@ h2 {
   color: #853a32;
 }
 
+.editable-availability {
+  border: 1px dashed transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
+.editable-availability:hover:not(:disabled) {
+  border-color: #8bcfc0;
+}
+
+.editable-availability:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .editable-value {
   border: 1px dashed transparent;
   cursor: pointer;
