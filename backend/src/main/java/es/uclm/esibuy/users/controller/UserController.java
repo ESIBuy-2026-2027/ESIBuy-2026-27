@@ -281,14 +281,4 @@ public class UserController {
                 "active", user.isActive(),
                 "totpEnabled", user.isTotpEnabled());
     }
-
-    private Map<String, Object> buildUserResponse(AuthenticatedUserPrincipal principal) {
-        User user = userService.findById(principal.id());
-        return Map.of(
-                "id", principal.id(),
-                "email", principal.email(),
-                "role", principal.role(),
-                "active", principal.active(),
-                "totpEnabled", user.isTotpEnabled());
-    }
 }

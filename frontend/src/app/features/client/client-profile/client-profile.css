@@ -272,4 +272,37 @@
     .field-grid {
         grid-template-columns: 1fr;
     }
+
+    .profile-status {
+        padding: 1rem 1.25rem;
+        color: #102c40;
+        background: #fff;
+        border-radius: 12px;
+    }
+
+    .profile-error {
+        margin-bottom: 1.25rem;
+        padding: 1rem 1.25rem;
+        color: #842029;
+        background: #f8d7da;
+        border: 1px solid #f1aeb5;
+        border-radius: 12px;
+    }
+
+    .profile-error p {
+        margin: 0 0 0.75rem;
+    }
+
+    .profile-error button {
+        padding: 0.6rem 1rem;
+        color: #fff;
+        background: #102c40;
+        border: 0;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .profile-error button {
+        opacity: 0.9;
+    }
 }
