@@ -4,7 +4,7 @@
     <aside class="profile-card" aria-label="Menú de perfil">
 
         <div class="sidebar-profile">
-            <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Imagen de perfil" />
+            <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Perfil" />
 
             <h2 class="sidebar-name">
                 {{ fullName() || 'Mi perfil' }}
@@ -46,9 +46,9 @@
 
         @if (loading()) {
         <section class="panel">
-            <p class="panel-description" role="status">
+            <output class="panel-description">
                 Cargando los datos de tu perfil...
-            </p>
+            </output>
         </section>
         } @else if (profileError(); as error) {
         <section class="panel">
@@ -102,9 +102,9 @@
             </div>
 
             @if (editSuccess(); as message) {
-            <p class="success-message" role="status">
+            <output class="success-message">
                 {{ message }}
-            </p>
+            </output>
             }
 
             @if (editError(); as error) {
@@ -231,7 +231,8 @@
                         Selecciona uno de los avatares disponibles.
                     </p>
 
-                    <div class="avatar-selector-grid" role="group" aria-label="Seleccionar avatar">
+                    <fieldset class="avatar-selector-grid">
+                        <legend>Seleccionar avatar</legend>
                         @for (avatar of clientAvatars; track avatar; let i = $index) {
                         <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
                             [attr.aria-pressed]="selectedAvatar() === avatar"
@@ -246,7 +247,7 @@
                             }
                         </button>
                         }
-                    </div>
+                    </fieldset>
                 </div>
                 }
 
@@ -266,7 +267,7 @@
             </form>
         </section>
 
-        <app-delete-account role="CLIENT" />
+        <app-delete-account [role]="'CLIENT'" />
 
         <div class="profile-actions">
             <button type="button" class="back-button" (click)="goBack()">

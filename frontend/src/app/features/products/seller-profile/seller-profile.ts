@@ -286,15 +286,18 @@ export class SellerProfile implements OnInit {
                     ? Object.values(error.error.errors).join('. ')
                     : null;
 
+                let fallbackError = 'No se han podido guardar los cambios. Inténtalo de nuevo.';
+                if (error.status === 409) {
+                    fallbackError = 'Ya existe un vendedor con ese nombre comercial.';
+                } else if (error.status === 400) {
+                    fallbackError = 'Revisa los campos introducidos. Comprueba también que el teléfono tenga 9 dígitos.';
+                }
+
                 this.editError.set(
                     validationErrors
                     ?? error.error?.detail
                     ?? error.error?.message
-                    ?? (error.status === 409
-                        ? 'Ya existe un vendedor con ese nombre comercial.'
-                        : error.status === 400
-                            ? 'Revisa los campos introducidos. Comprueba también que el teléfono tenga 9 dígitos.'
-                            : 'No se han podido guardar los cambios. Inténtalo de nuevo.'),
+                    ?? fallbackError,
                 );
             },
         });

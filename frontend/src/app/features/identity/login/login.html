@@ -60,9 +60,11 @@
       </p>
     </header>
 
-    <div *ngIf="successMessage" class="server-success-banner" role="status">
+    @if (successMessage) {
+    <output class="server-success-banner">
       {{ successMessage }}
-    </div>
+    </output>
+    }
 
     <div *ngIf="serverError" class="server-error-banner" role="alert">
       {{ serverError }}

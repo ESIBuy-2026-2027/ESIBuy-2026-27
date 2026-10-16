@@ -17,9 +17,9 @@
 </section>
 
 @if (open()) {
-<div class="modal-backdrop" (click)="closeDialog()">
+<div class="modal-backdrop" tabindex="-1" (click)="closeDialog()" (keydown.escape)="closeDialog()">
     <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="delete-title"
-        aria-describedby="delete-description" (click)="$event.stopPropagation()">
+        aria-describedby="delete-description" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
         @if (step() === 1) {
         <p class="modal-step">Paso 1 de 2</p>
         <h2 id="delete-title">¿Quieres eliminar tu cuenta?</h2>

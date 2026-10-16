@@ -310,16 +310,21 @@ export class AdminProfile implements OnInit {
                 const validationErrors = error.error?.errors
                     ? Object.values(error.error.errors).join('. ')
                     : null;
+                let defaultErrorMessage =
+                    'No se han podido guardar los cambios. Inténtalo de nuevo.';
+
+                if (error.status === 409) {
+                    defaultErrorMessage =
+                        'El documento de identidad ya está registrado.';
+                } else if (error.status === 400) {
+                    defaultErrorMessage = 'Revisa los datos introducidos.';
+                }
 
                 this.editError.set(
                     validationErrors
                     ?? error.error?.detail
                     ?? error.error?.message
-                    ?? (error.status === 409
-                        ? 'El documento de identidad ya está registrado.'
-                        : error.status === 400
-                            ? 'Revisa los datos introducidos.'
-                            : 'No se han podido guardar los cambios. Inténtalo de nuevo.'),
+                    ?? defaultErrorMessage,
                 );
             },
         });
