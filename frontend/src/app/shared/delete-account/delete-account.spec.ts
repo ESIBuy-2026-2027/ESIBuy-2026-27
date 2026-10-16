@@ -3,8 +3,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AccountService } from '../account.service';
-import { AuthService, UserRole } from '../auth.service';
+import { AccountService } from '../../core/services/account.service';
+import { AuthService, UserRole } from '../../core/services/auth.service';
 import { DeleteAccount } from './delete-account';
 
 describe('DeleteAccount', () => {

@@ -101,23 +101,43 @@
     margin-top: 24px;
 }
 
-.nav-item {
+.sidebar-nav .nav-item {
     display: block;
+    width: 100%;
     padding: 11px 12px;
+    border: 0;
     border-radius: 8px;
+    background: transparent;
     color: #3a5871;
+    font-family: inherit;
     font-size: 13px;
     font-weight: 550;
+    text-align: left;
     text-decoration: none;
+    cursor: pointer;
 }
 
-.nav-item.active {
+.sidebar-nav .nav-item.active {
     background: #dde8f0;
     color: #102c40;
     font-weight: 700;
 }
 
-.nav-item.disabled {
+.sidebar-nav .nav-item:not(.disabled):hover {
+    background: #edf3f7;
+    color: #102c40;
+}
+
+.sidebar-nav .nav-item.active:hover {
+    background: #dde8f0;
+}
+
+.sidebar-nav .nav-item:focus-visible {
+    outline: 3px solid rgb(66 214 178 / 35%);
+    outline-offset: 2px;
+}
+
+.sidebar-nav .nav-item.disabled {
     color: #8396a4;
     cursor: not-allowed;
     opacity: 0.8;
@@ -126,39 +146,59 @@
 /* PIE DE LA BARRA LATERAL */
 
 .sidebar-footer {
+    display: flex;
     width: 100%;
+    flex-direction: column;
+    gap: 6px;
     margin-top: auto;
     padding-top: 18px;
+    border-top: 1px solid #e7edf0;
 }
 
-.sidebar-footer::before {
-    display: block;
-    height: 1px;
-    margin-bottom: 12px;
-    background: #e7edf0;
-    content: "";
+.sidebar-footer .form-error {
+    margin-bottom: 8px;
 }
 
-.logout-button {
+.logout-button,
+.sidebar-footer .back-button {
+    display: flex;
     width: 100%;
-    padding: 11px 12px;
+    min-height: 40px;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
     border: 0;
     border-radius: 8px;
     background: transparent;
-    color: #587388;
     font: inherit;
     font-size: 13px;
     font-weight: 550;
     text-align: left;
     cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.logout-button {
+    color: #587388;
 }
 
 .logout-button:hover {
-    background: #f4f8f9;
-    color: #173247;
+    background: #c43434ba;
+    color: #ffe2e2;
 }
 
-.logout-button:focus-visible {
+.sidebar-footer .back-button {
+    color: #3a5871;
+}
+
+.sidebar-footer .back-button:hover {
+    background: #dde8f0;
+    color: #102c40;
+}
+
+.sidebar-footer .logout-button:focus-visible,
+.sidebar-footer .back-button:focus-visible {
     outline: 3px solid rgb(66 214 178 / 35%);
     outline-offset: 2px;
 }
@@ -166,7 +206,6 @@
 /* CONTENIDO PRINCIPAL */
 
 .profile-main {
-    flex: 1;
     min-width: 0;
 }
 
@@ -237,6 +276,7 @@ app-two-factor-settings {
     align-items: center;
     justify-content: space-between;
     gap: 18px;
+    margin-bottom: 24px;
     padding: 22px 26px;
     border-radius: 16px;
     background: #0a3a4a;
@@ -522,6 +562,7 @@ app-two-factor-settings {
 /* MENSAJES */
 
 .success-message {
+    display: block;
     margin: 0 0 18px;
     padding: 12px 14px;
     border: 1px solid #a9ddc5;
@@ -543,116 +584,15 @@ app-two-factor-settings {
     line-height: 1.5;
 }
 
-/* VOLVER */
+/* ZONA DE PELIGRO */
 
-.profile-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: -10px;
+.danger-zone {
+    margin-top: 1.5rem;
+    border: 1px solid #e5b8b8;
 }
 
-.back-button {
-    min-height: 36px;
-    padding: 8px 10px;
-    border: 0;
-    background: transparent;
-    color: #587388;
-    font-weight: 500;
-}
-
-.back-button:hover {
-    background: #dde8f0;
-    color: #102c40;
-}
-
-/* TABLET Y MÓVIL */
-
-@media (max-width: 760px) {
-    .profile-page {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 16px;
-        padding: 20px 16px 44px;
-    }
-
-    .profile-card {
-        min-height: auto;
-    }
-
-    .sidebar-nav {
-        margin-top: 18px;
-    }
-
-    .profile-main {
-        gap: 14px;
-    }
-
-    .premium-banner {
-        align-items: stretch;
-        flex-direction: column;
-        padding: 20px;
-    }
-
-    .premium-action {
-        align-self: flex-start;
-    }
-
-    .panel {
-        padding: 22px 18px 24px;
-    }
-
-    .field-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
-    }
-
-    .profile-actions {
-        margin-top: -6px;
-    }
-}
-
-@media (max-width: 520px) {
-    .panel-heading {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .panel-heading .edit-button {
-        align-self: flex-start;
-    }
-
-    .field-grid {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .form-actions {
-        flex-direction: column-reverse;
-    }
-
-    .form-actions button {
-        width: 100%;
-    }
-
-    .panel-title {
-        font-size: 18px;
-    }
-
-    .avatar-item {
-        width: 64px;
-        height: 64px;
-        flex-basis: 64px;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-
-    *,
-    *::before,
-    *::after {
-        scroll-behavior: auto !important;
-        transition-duration: 0.01ms !important;
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-    }
+.danger-zone .panel-title {
+    color: #a52828;
 }
 
 /* SEGURIDAD / AUTENTICACIÓN EN DOS FACTORES */
@@ -891,8 +831,8 @@ app-two-factor-settings {
 }
 
 .danger-button:hover:not(:disabled) {
-    background: #fff0f1;
     border-color: #c75b65;
+    background: #fff0f1;
 }
 
 .danger-button:disabled {
@@ -904,28 +844,6 @@ app-two-factor-settings {
     outline: 3px solid rgb(199 91 101 / 25%);
     outline-offset: 2px;
 }
-
-@media (max-width: 520px) {
-    .security-panel .panel-heading {
-        align-items: flex-start;
-    }
-
-    .security-status {
-        align-self: flex-start;
-    }
-
-    .backup-code-list {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .security-actions .primary-button,
-    .security-actions .secondary-button,
-    .setup-instructions .form-actions button,
-    .disable-two-factor .form-actions button {
-        width: 100%;
-    }
-}
-
 
 /* CONFIGURACIÓN QR DE AUTENTICACIÓN */
 
@@ -991,62 +909,4 @@ app-two-factor-settings {
 
 .download-codes-button {
     margin-bottom: 16px;
-}
-
-@media (max-width: 520px) {
-    .qr-container {
-        align-items: center;
-    }
-
-    .manual-setup {
-        padding: 14px;
-    }
-
-    .copy-secret-button,
-    .download-codes-button {
-        width: 100%;
-    }
-}
-
-
-.sidebar-nav .nav-item {
-    width: 100%;
-    border: 0;
-    background: transparent;
-    font-family: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.sidebar-nav .nav-item.active {
-    background: #dde8f0;
-    color: #102c40;
-    font-weight: 700;
-}
-
-.sidebar-nav .nav-item:not(.disabled):hover {
-    background: #edf3f7;
-    color: #102c40;
-}
-
-.sidebar-nav .nav-item.active:hover {
-    background: #dde8f0;
-}
-
-.sidebar-nav .nav-item:focus-visible {
-    outline: 3px solid rgb(66 214 178 / 35%);
-    outline-offset: 2px;
-}
-
-.sidebar-nav .nav-item.disabled {
-    cursor: not-allowed;
-}
-
-.danger-zone {
-    border: 1px solid #e5b8b8;
-    margin-top: 1.5rem;
-}
-
-.danger-zone .panel-title {
-    color: #a52828;
 }

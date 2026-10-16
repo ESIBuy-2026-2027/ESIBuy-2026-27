@@ -43,15 +43,21 @@
             }
         </nav>
 
+
         <div class="sidebar-footer">
             @if (logoutError(); as error) {
             <p class="form-error" role="alert">{{ error }}</p>
             }
+            <button type="button" class="back-button" (click)="goBack()">
+                <span aria-hidden="true">←</span>
+                Volver
+            </button>
 
             <button type="button" class="logout-button" (click)="logout()">
                 Cerrar sesión
             </button>
         </div>
+
     </aside>
 
     <!-- CONTENIDO PRINCIPAL -->
@@ -305,14 +311,6 @@
         <app-two-factor-settings [enabled]="twoFactorEnabled()"
             (enabledChange)="onTwoFactorEnabledChange($any($event))" />
         }
-
-        <!-- ACCIÓN PARA VOLVER -->
-        <div class="profile-actions">
-            <button type="button" class="back-button" (click)="goBack()">
-                ← Volver
-            </button>
-        </div>
-
         }
     </main>
 </div>
