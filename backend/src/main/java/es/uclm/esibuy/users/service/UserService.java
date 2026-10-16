@@ -20,6 +20,8 @@ import es.uclm.esibuy.users.model.SellerProfile;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
+import es.uclm.esibuy.products.model.Product;
+import es.uclm.esibuy.products.repository.ProductRepository;
 
 @Service
 public class UserService {
@@ -27,11 +29,14 @@ public class UserService {
     private static final String MSG_DUPLICATE_EMAIL = "No se ha podido completar el registro. Comprueba los datos introducidos e inténtalo de nuevo";
 
     private final UserRepository userRepository;
+    private final ProductRepository productRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            ProductRepository productRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.productRepository = productRepository;
     }
 
     public User registerClient(ClientRegistrationRequest request) {
@@ -138,5 +143,26 @@ public class UserService {
 
     public UserProfileResponse getOwnProfile(String userId) {
         return UserProfileResponse.from(findById(userId));
+    }
+
+    public void deleteOwnAccount(String userId) {
+        User user = findById(userId);
+
+        // Un administrador no puede eliminar su propia cuenta.
+        // Su eliminación debe realizarla otro administrador.
+        if (user.getRole() == UserRole.ADMIN) {
+            throw new IllegalStateException(
+                    "No puedes eliminar tu propia cuenta de administrador. "
+                            + "Solicita a otro administrador que la elimine.");
+        }
+
+        // Si es vendedor, eliminar también sus productos.
+        if (user.getRole() == UserRole.SELLER) {
+            productRepository.deleteAll(
+                    productRepository.findAllBySellerId(user.getId()));
+        }
+
+        // Eliminar la cuenta del usuario.
+        userRepository.delete(user);
     }
 }

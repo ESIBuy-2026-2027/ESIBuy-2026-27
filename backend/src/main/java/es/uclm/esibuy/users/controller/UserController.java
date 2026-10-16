@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 @RestController
 @RequestMapping("/api/users")
@@ -158,6 +159,28 @@ public class UserController {
             session.invalidate();
         }
         SecurityContextHolder.clearContext();
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteOwnAccount(
+            Authentication authentication,
+            HttpServletRequest request) {
+
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        userService.deleteOwnAccount(principal.id());
+
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        SecurityContextHolder.clearContext();
+
         return ResponseEntity.noContent().build();
     }
 
