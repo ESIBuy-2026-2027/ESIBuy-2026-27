@@ -38,6 +38,9 @@ public class UpdateOwnProfileRequestDTO {
     @Size(max = 20, message = "El documento de identidad no puede superar los 20 caracteres")
     private String nationalId;
 
+    @Size(max = 100, message = "La sede no puede superar los 100 caracteres")
+    private String headquarters;
+
     public String getFirstName() {
         return firstName;
     }
@@ -115,5 +118,13 @@ public class UpdateOwnProfileRequestDTO {
 
     public void setNationalId(String nationalId) {
         this.nationalId = normalize(nationalId);
+    }
+
+    public String getHeadquarters() {
+        return headquarters;
+    }
+
+    public void setHeadquarters(String headquarters) {
+        this.headquarters = normalize(headquarters);
     }
 }

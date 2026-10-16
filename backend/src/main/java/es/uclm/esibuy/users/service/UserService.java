@@ -234,6 +234,21 @@ public class UserService {
 
             profile.setBirthDate(request.getBirthDate());
         }
+
+        if (request.getHeadquarters() != null) {
+            AdminProfile profile = user.getAdminProfile();
+
+            if (profile == null) {
+                profile = new AdminProfile();
+            }
+
+            String headquarters = request.getHeadquarters().trim();
+
+            profile.setHeadquarters(
+                    headquarters.isEmpty() ? null : headquarters);
+
+            user.setAdminProfile(profile);
+        }
         // Guardar y devolver el perfil actualizado.
         User savedUser = userRepository.save(user);
 

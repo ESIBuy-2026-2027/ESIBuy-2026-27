@@ -1,115 +1,272 @@
 <div class="profile-page">
-    <aside class="profile-card" aria-label="Información del administrador">
-        @if (profile()?.profileImage; as image) {
-        <img class="avatar avatar-image" [src]="image" alt="Imagen de perfil" />
-        } @else {
-        <div class="avatar" aria-hidden="true">
-            {{ initials() }}
-        </div>
-        }
+    <div class="profile-card">
 
-        <p class="profile-name">
-            {{ fullName() || 'Mi perfil' }}
-        </p>
+        <!-- Barra lateral -->
+        <aside class="profile-sidebar">
+            <div class="sidebar-profile">
+                @if (selectedAvatar()) {
+                <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Imagen de perfil" />
+                } @else {
+                <div class="avatar" aria-hidden="true">
+                    {{ initials() }}
+                </div>
+                }
 
-        <span class="account-badge">Cuenta de administrador</span>
+                <h2 class="sidebar-name">
+                    {{ fullName() || 'Administrador' }}
+                </h2>
 
-        <nav class="profile-nav" aria-label="Secciones del perfil">
-            <a class="nav-item is-active" aria-current="page">
-                Datos personales
-            </a>
-            <a class="nav-item is-disabled" aria-disabled="true">
-                Seguridad
-            </a>
-        </nav>
-        <div class="profile-footer">
-            <button type="button" class="logout-button" (click)="logout()">
-                Cerrar sesión
-            </button>
+                <span class="role-badge">Administrador</span>
+            </div>
 
-            @if (logoutError(); as error) {
-            <p class="logout-error" role="alert">{{ error }}</p>
+            <nav class="sidebar-nav" aria-label="Navegación del perfil">
+                <a class="nav-item active" routerLink="/admin/perfil">
+                    <span aria-hidden="true"></span>
+                    Mi perfil
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                @if (logoutError()) {
+                <p class="form-error" role="alert">
+                    {{ logoutError() }}
+                </p>
+                }
+
+                <button type="button" class="logout-button" (click)="logout()">
+                    Cerrar sesión
+                </button>
+            </div>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="profile-main">
+
+            @if (loading()) {
+            <section class="panel">
+                <p class="panel-description loading-message">
+                    Cargando los datos de tu perfil...
+                </p>
+            </section>
             }
-        </div>
-    </aside>
 
-    <main class="profile-content">
-        @if (loading()) {
-        <section class="panel">
-            <p class="profile-status" role="status">Cargando perfil...</p>
-        </section>
-        }
+            @if (!loading() && profileError()) {
+            <section class="panel">
+                <h1 class="panel-title">Mi perfil de administrador</h1>
 
-        @if (profileError(); as error) {
-        <section class="panel">
-            <p class="profile-error" role="alert">{{ error }}</p>
-            <button type="button" class="retry-button" (click)="loadProfile()">
-                Reintentar
-            </button>
-        </section>
-        }
+                <p class="form-error" role="alert">
+                    {{ profileError() }}
+                </p>
 
-        @if (!loading() && !profileError() && profile(); as admin) {
-        <section class="panel">
-            <h1 class="panel-title">Mi perfil de administrador</h1>
-            <p class="panel-description">
-                Consulta tus datos personales y la información de tu puesto en ESIBuy.
-            </p>
+                <button type="button" class="primary-button" (click)="loadProfile()">
+                    Reintentar
+                </button>
+            </section>
+            }
 
-            <h2 class="section-title">Datos personales</h2>
+            @if (!loading() && !profileError() && profile(); as admin) {
+            <section class="panel">
 
-            <div class="field-grid">
-                <div class="field">
-                    <label for="firstName">Nombre</label>
-                    <input id="firstName" type="text" [value]="admin.firstName" readonly />
+                <!-- Cabecera -->
+                <div class="panel-heading">
+                    <div class="panel-heading-text">
+                        <span class="eyebrow">CUENTA DE ADMINISTRADOR</span>
+
+                        <h1 class="panel-title">Mi perfil</h1>
+
+                        <p class="panel-description">
+                            Consulta y actualiza tus datos personales y la información
+                            de tu puesto en ESIBuy.
+                        </p>
+                    </div>
+
+                    @if (!editing()) {
+                    <button type="button" class="primary-button edit-button" (click)="startEditing()">
+                        <span aria-hidden="true">✎</span>
+                        Editar perfil
+                    </button>
+                    }
                 </div>
 
-                <div class="field">
-                    <label for="lastName">Apellidos</label>
-                    <input id="lastName" type="text" [value]="admin.lastName" readonly />
+                @if (editSuccess()) {
+                <p class="success-message" role="status">
+                    {{ editSuccess() }}
+                </p>
+                }
+
+                @if (editError()) {
+                <p class="form-error" role="alert">
+                    {{ editError() }}
+                </p>
+                }
+
+                <!-- MODO EDICIÓN -->
+                @if (editing()) {
+                <form (ngSubmit)="saveProfile()">
+
+                    <h2 class="section-title">Datos personales</h2>
+
+                    <div class="field-grid">
+
+                        <div class="field">
+                            <label for="firstName">Nombre <span>*</span></label>
+                            <input id="firstName" name="firstName" type="text" [(ngModel)]="editForm.firstName" required
+                                maxlength="100" autocomplete="given-name" [disabled]="saving()" />
+                        </div>
+
+                        <div class="field">
+                            <label for="lastName">Apellidos <span>*</span></label>
+                            <input id="lastName" name="lastName" type="text" [(ngModel)]="editForm.lastName" required
+                                maxlength="150" autocomplete="family-name" [disabled]="saving()" />
+                        </div>
+
+                        <div class="field">
+                            <label for="email">Correo electrónico</label>
+                            <input id="email" type="email" [value]="admin.email" readonly />
+                            <small>El correo electrónico no se puede modificar.</small>
+                        </div>
+
+                        <div class="field">
+                            <label for="nationalId">Documento de identidad</label>
+                            <input id="nationalId" name="nationalId" type="text" [(ngModel)]="editForm.nationalId"
+                                maxlength="20" autocomplete="off" placeholder="Nuevo documento (opcional)"
+                                [disabled]="saving()" />
+                            <small>
+                                Deja el campo vacío para conservar el documento actual.
+                            </small>
+                        </div>
+
+                        <div class="field">
+                            <label for="phone">Teléfono</label>
+                            <input id="phone" type="text" [value]="admin.phone || 'No indicado'" readonly />
+                        </div>
+
+                    </div>
+
+                    <div class="job-section">
+                        <h2 class="section-title">Información del puesto</h2>
+
+                        <div class="field-grid">
+
+                            <div class="field">
+                                <label for="headquarters">Sede central</label>
+                                <input id="headquarters" name="headquarters" type="text"
+                                    [(ngModel)]="editForm.headquarters" maxlength="150" [disabled]="saving()" />
+                            </div>
+
+                            <div class="field">
+                                <label for="hireDate">Fecha de incorporación</label>
+                                <input id="hireDate" type="text" [value]="formattedHireDate()" readonly />
+                                <small>Este dato no se puede modificar desde el perfil.</small>
+                            </div>
+
+                        </div>
+                    </div>
+                    <!-- Avatares -->
+                    <div class="avatar-section">
+                        <h2 class="section-title">Imagen de perfil</h2>
+
+                        <p class="section-description">
+                            Selecciona una de las imágenes disponibles.
+                        </p>
+
+                        <div class="avatar-selector-grid" role="group" aria-label="Seleccionar imagen de perfil">
+                            @for (avatar of adminAvatars; track avatar; let i = $index) {
+                            <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
+                                [attr.aria-pressed]="selectedAvatar() === avatar"
+                                [attr.aria-label]="'Seleccionar avatar ' + (i + 1)" (click)="selectAvatar(avatar)"
+                                [disabled]="saving()">
+                                <img [src]="avatar" [alt]="'Avatar disponible ' + (i + 1)" />
+
+                                @if (selectedAvatar() === avatar) {
+                                <span class="avatar-check" aria-hidden="true">✓</span>
+                                }
+                            </button>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="secondary-button" (click)="cancelEditing()" [disabled]="saving()">
+                            Cancelar
+                        </button>
+
+                        <button type="submit" class="primary-button" [disabled]="saving()">
+                            @if (saving()) {
+                            Guardando...
+                            } @else {
+                            Guardar cambios
+                            }
+                        </button>
+                    </div>
+
+                </form>
+                }
+
+                <!-- MODO CONSULTA -->
+                @else {
+                <h2 class="section-title">Datos personales</h2>
+
+                <div class="field-grid">
+
+                    <div class="field">
+                        <label for="viewFirstName">Nombre</label>
+                        <input id="viewFirstName" type="text" [value]="admin.firstName" readonly />
+                    </div>
+
+                    <div class="field">
+                        <label for="viewLastName">Apellidos</label>
+                        <input id="viewLastName" type="text" [value]="admin.lastName" readonly />
+                    </div>
+
+                    <div class="field">
+                        <label for="viewEmail">Correo electrónico</label>
+                        <input id="viewEmail" type="email" [value]="admin.email" readonly />
+                    </div>
+
+                    <div class="field">
+                        <label for="viewPhone">Teléfono</label>
+                        <input id="viewPhone" type="text" [value]="admin.phone || 'No indicado'" readonly />
+                    </div>
+
+                    <div class="field">
+                        <label for="viewNationalId">Documento de identidad</label>
+                        <input id="viewNationalId" type="text" [value]="admin.maskedNationalId || 'No disponible'"
+                            readonly />
+                    </div>
+
                 </div>
 
-                <div class="field">
-                    <label for="email">Correo electrónico</label>
-                    <input id="email" type="email" [value]="admin.email" readonly />
-                </div>
+                <h2 class="section-title">Información del puesto</h2>
 
-                <div class="field">
-                    <label for="phone">Teléfono</label>
-                    <input id="phone" type="text" [value]="admin.phone || 'No indicado'" readonly />
-                </div>
+                <div class="field-grid">
 
-                <div class="field">
-                    <label for="nationalId">Documento de identidad</label>
-                    <input id="nationalId" type="text" [value]="admin.maskedNationalId || 'No disponible'" readonly />
+                    <div class="field">
+                        <label for="viewHeadquarters">Sede central</label>
+                        <input id="viewHeadquarters" type="text" [value]="admin.headquarters || 'No indicada'"
+                            readonly />
+                    </div>
+
+                    <div class="field">
+                        <label for="viewHireDate">Fecha de incorporación</label>
+                        <input id="viewHireDate" type="text" [value]="formattedHireDate()" readonly />
+                    </div>
+
                 </div>
+                }
+
+            </section>
+
+            <!-- Baja de cuenta existente -->
+            <app-delete-account role="ADMIN" />
+
+            <div class="profile-actions">
+                <button type="button" class="back-button" (click)="goBack()">
+                    ← Volver
+                </button>
             </div>
+            }
 
-            <h2 class="section-title">Información del puesto</h2>
-
-            <div class="field-grid">
-                <div class="field">
-                    <label for="headquarters">Sede central</label>
-                    <input id="headquarters" type="text" [value]="admin.headquarters || 'No indicada'" readonly />
-                </div>
-
-                <div class="field">
-                    <label for="hireDate">Fecha de incorporación</label>
-                    <input id="hireDate" type="text" [value]="formattedHireDate()" readonly />
-                </div>
-            </div>
-        </section>
-        <app-delete-account role="ADMIN" />
-        <div class="profile-actions">
-            <button type="button" class="back-button" (click)="goBack()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                    stroke-linejoin="round" aria-hidden="true">
-                    <path d="M19 12H5" />
-                    <path d="m12 19-7-7 7-7" />
-                </svg>
-                Volver
-            </button>
-        </div>
-        }
-    </main>
+        </main>
+    </div>
 </div>
