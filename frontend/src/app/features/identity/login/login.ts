@@ -24,6 +24,7 @@ export class Login implements OnDestroy {
   });
 
   readonly loginForm: FormGroup;
+  successMessage: string | null = null;
   serverError: string | null = null;
   forgotPasswordMessage: string | null = null;
   retryAfterSeconds = 0;
@@ -56,6 +57,9 @@ export class Login implements OnDestroy {
 
     if (this.route.snapshot.queryParamMap.get('expired') === 'true') {
       this.serverError = 'Tu sesión ha expirado';
+    }
+    if (this.route.snapshot.queryParamMap.get('deleted') === 'true') {
+      this.successMessage = 'Tu cuenta se ha eliminado correctamente.';
     }
   }
 

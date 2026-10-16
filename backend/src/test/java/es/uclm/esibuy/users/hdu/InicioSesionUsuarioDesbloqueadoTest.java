@@ -15,45 +15,48 @@ import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
+import es.uclm.esibuy.products.repository.ProductRepository;
 import es.uclm.esibuy.users.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class InicioSesionUsuarioDesbloqueadoTest {
 
-    @Mock
-    private UserRepository userRepository;
+        @Mock
+        private UserRepository userRepository;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+        @Mock
+        private ProductRepository productRepository;
 
-    @Test
-    void unaCuentaDesbloqueadaPuedeIniciarSesionConCredencialesValidas() {
-        // Arrange
-        User usuario = new User(
-                "usuario@test.com",
-                "Juan",
-                "Pérez",
-                UserRole.CLIENT
-        );
-        usuario.setActive(true);
-        usuario.setPasswordHash("hash");
+        @Mock
+        private PasswordEncoder passwordEncoder;
 
-        LoginRequest request = new LoginRequest();
-        request.setEmail("usuario@test.com");
-        request.setPassword("123456");
+        @Test
+        void unaCuentaDesbloqueadaPuedeIniciarSesionConCredencialesValidas() {
+                // Arrange
+                User usuario = new User(
+                                "usuario@test.com",
+                                "Juan",
+                                "Pérez",
+                                UserRole.CLIENT);
+                usuario.setActive(true);
+                usuario.setPasswordHash("hash");
 
-        when(userRepository.findByEmailIgnoreCase("usuario@test.com"))
-                .thenReturn(Optional.of(usuario));
+                LoginRequest request = new LoginRequest();
+                request.setEmail("usuario@test.com");
+                request.setPassword("123456");
 
-        when(passwordEncoder.matches("123456", "hash"))
-                .thenReturn(true);
+                when(userRepository.findByEmailIgnoreCase("usuario@test.com"))
+                                .thenReturn(Optional.of(usuario));
 
-        UserService userService = new UserService(userRepository, passwordEncoder);
+                when(passwordEncoder.matches("123456", "hash"))
+                                .thenReturn(true);
 
-        // Act
-        User resultado = userService.login(request);
+                UserService userService = new UserService(userRepository, passwordEncoder, productRepository);
 
-        // Assert
-        assertEquals(usuario, resultado);
-    }
+                // Act
+                User resultado = userService.login(request);
+
+                // Assert
+                assertEquals(usuario, resultado);
+        }
 }

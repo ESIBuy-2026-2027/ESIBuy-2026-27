@@ -1,0 +1,67 @@
+<section class="danger-zone" aria-labelledby="danger-title">
+    <div class="danger-text">
+        <h2 id="danger-title">Eliminar cuenta</h2>
+        @if (blocked()) {
+        <p>
+            Los administradores no pueden darse de baja a sí mismos. Otro administrador debe eliminar tu cuenta
+            desde la gestión de usuarios.
+        </p>
+        } @else {
+        <p>Si te das de baja, se eliminarán tus datos de ESIBuy. Esta acción no se puede deshacer.</p>
+        }
+    </div>
+    <button type="button" class="danger-button" [disabled]="blocked()" [attr.aria-disabled]="blocked()"
+        [attr.title]="blocked() ? 'Otro administrador debe eliminar tu cuenta' : null" (click)="openDialog()">
+        Eliminar mi cuenta
+    </button>
+</section>
+
+@if (open()) {
+<div class="modal-backdrop" (click)="closeDialog()">
+    <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="delete-title"
+        aria-describedby="delete-description" (click)="$event.stopPropagation()">
+        @if (step() === 1) {
+        <p class="modal-step">Paso 1 de 2</p>
+        <h2 id="delete-title">¿Quieres eliminar tu cuenta?</h2>
+        <div id="delete-description">
+            <p>Antes de continuar, ten en cuenta lo siguiente:</p>
+            <ul>
+                @for (item of consequences(); track item) {
+                <li>{{ item }}</li>
+                }
+            </ul>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="secondary-button" data-autofocus (click)="closeDialog()">Cancelar</button>
+            <button type="button" class="danger-button" (click)="goToConfirmation()">Continuar</button>
+        </div>
+        } @else {
+        <p class="modal-step">Paso 2 de 2</p>
+        <h2 id="delete-title">Confirma la eliminación</h2>
+        <div id="delete-description">
+            <p>
+                Esta acción es definitiva. Para confirmarla, escribe
+                <strong>{{ confirmationWord }}</strong> en el campo.
+            </p>
+            <label for="delete-confirmation" class="visually-hidden">Escribe {{ confirmationWord }} para
+                confirmar</label>
+            <input id="delete-confirmation" type="text" autocomplete="off" data-autofocus [value]="confirmText()"
+                [disabled]="deleting()" (input)="onConfirmInput($event)" (keydown.enter)="confirmDeletion()" />
+        </div>
+
+        @if (error(); as message) {
+        <p class="modal-error" role="alert">{{ message }}</p>
+        }
+
+        <div class="modal-actions">
+            <button type="button" class="secondary-button" [disabled]="deleting()" (click)="closeDialog()">
+                Cancelar
+            </button>
+            <button type="button" class="danger-button" [disabled]="!canConfirm()" (click)="confirmDeletion()">
+                {{ deleting() ? 'Eliminando…' : 'Eliminar definitivamente' }}
+            </button>
+        </div>
+        }
+    </div>
+</div>
+}

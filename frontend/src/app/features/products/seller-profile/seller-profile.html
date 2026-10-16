@@ -1,120 +1,338 @@
 <div class="profile-page">
-    <aside class="profile-card" aria-label="Información del vendedor">
-        @if (profile()?.profileImage; as image) {
-        <img class="avatar avatar-image" [src]="image" alt="Imagen de perfil" />
-        } @else {
-        <div class="avatar" aria-hidden="true">
-            {{ initials() }}
-        </div>
-        }
+    <div class="profile-card">
 
-        <p class="profile-name">
-            {{ fullName() || 'Mi perfil' }}
-        </p>
+        <!-- Barra lateral -->
+        <aside class="profile-sidebar">
+            <div class="sidebar-profile">
+                @if (displayAvatar()) {
+                <img class="avatar avatar-image" [src]="displayAvatar()" alt="Imagen de perfil" />
+                } @else {
+                <div class="avatar" aria-hidden="true">
+                    {{ initials() }}
+                </div>
+                }
 
-        <span class="account-badge">
-            Cuenta de vendedor
-        </span>
+                <h2 class="sidebar-name">
+                    {{ fullName() || 'Vendedor' }}
+                </h2>
 
-        <nav class="profile-nav" aria-label="Secciones del perfil">
-            <a class="nav-item is-active" aria-current="page">
-                Datos del negocio
-            </a>
+                <span class="role-badge">Vendedor</span>
+            </div>
 
-            <a class="nav-item is-disabled" aria-disabled="true">
-                Seguridad
-            </a>
-        </nav>
-        <div class="profile-footer">
-            <button type="button" class="logout-button" (click)="logout()">
-                Cerrar sesión
-            </button>
+            <nav class="sidebar-nav" aria-label="Navegación del perfil">
+                <a class="nav-item active" aria-current="page">
+                    Mi perfil
+                </a>
+            </nav>
 
-            @if (logoutError(); as error) {
-            <p class="logout-error" role="alert">{{ error }}</p>
+            <div class="sidebar-footer">
+                @if (logoutError(); as error) {
+                <p class="form-error" role="alert">
+                    {{ error }}
+                </p>
+                }
+
+                <button type="button" class="logout-button" (click)="logout()">
+                    Cerrar sesión
+                </button>
+            </div>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="profile-main">
+
+            @if (loading()) {
+            <section class="panel">
+                <p class="panel-description loading-message" role="status">
+                    Cargando los datos de tu perfil...
+                </p>
+            </section>
             }
-        </div>
-    </aside>
 
-    <main class="profile-content">
-        @if (loading()) {
-        <section class="panel">
-            <p role="status">Cargando perfil...</p>
-        </section>
-        }
+            @if (!loading() && profileError()) {
+            <section class="panel">
+                <h1 class="panel-title">Mi perfil de vendedor</h1>
 
-        @if (profileError(); as error) {
-        <section class="panel">
-            <p class="profile-error" role="alert">{{ error }}</p>
+                <p class="form-error" role="alert">
+                    {{ profileError() }}
+                </p>
 
-            <button type="button" class="retry-button" (click)="loadProfile()">
-                Reintentar
-            </button>
-        </section>
-        }
+                <button type="button" class="primary-button" (click)="loadProfile()">
+                    Reintentar
+                </button>
+            </section>
+            }
 
-        @if (!loading() && !profileError() && profile(); as seller) {
-        <section class="panel">
-            <h1 class="panel-title">Mi perfil de vendedor</h1>
+            @if (!loading() && !profileError() && profile(); as seller) {
+            <section class="panel">
 
-            <p class="panel-description">
-                Consulta los datos de tu cuenta y de tu negocio en ESIBuy.
-            </p>
+                <!-- Cabecera -->
+                <div class="panel-heading">
+                    <div class="panel-heading-text">
+                        <span class="eyebrow">CUENTA DE VENDEDOR</span>
 
-            <h2 class="section-title">Datos del negocio</h2>
+                        <h1 class="panel-title">Mi perfil</h1>
 
-            <div class="field-grid">
-                <div class="field">
-                    <label for="businessName">Nombre del negocio</label>
-                    <input id="businessName" type="text" [value]="seller.businessName || 'No disponible'" readonly />
+                        <p class="panel-description">
+                            Consulta y actualiza tus datos personales y la
+                            información de tu negocio en ESIBuy.
+                        </p>
+                    </div>
+
+                    @if (!editing()) {
+                    <button type="button" class="primary-button edit-button" (click)="startEditing()">
+                        <span aria-hidden="true">✎</span>
+                        Editar perfil
+                    </button>
+                    }
                 </div>
 
-                <div class="field">
-                    <label for="defaultCategory">Categoría predeterminada</label>
-                    <input id="defaultCategory" type="text" [value]="seller.defaultCategory || 'No especificada'"
-                        readonly />
+                @if (editSuccess(); as message) {
+                <p class="success-message" role="status">
+                    {{ message }}
+                </p>
+                }
+
+                @if (editError(); as error) {
+                <p class="form-error" role="alert">
+                    {{ error }}
+                </p>
+                }
+
+                <!-- MODO EDICIÓN -->
+                @if (editing()) {
+                <form #sellerForm="ngForm" (ngSubmit)="saveProfile()">
+
+                    <h2 class="section-title">Datos personales</h2>
+
+                    <div class="field-grid">
+
+                        <div class="field">
+                            <label for="firstName">
+                                Nombre <span>*</span>
+                            </label>
+
+                            <input id="firstName" name="firstName" type="text" [(ngModel)]="editForm.firstName" required
+                                minlength="2" maxlength="25" autocomplete="given-name" [disabled]="saving()" />
+                        </div>
+
+                        <div class="field">
+                            <label for="lastName">
+                                Apellidos <span>*</span>
+                            </label>
+
+                            <input id="lastName" name="lastName" type="text" [(ngModel)]="editForm.lastName" required
+                                minlength="2" maxlength="50" autocomplete="family-name" [disabled]="saving()" />
+                        </div>
+
+                        <div class="field">
+                            <label for="email">
+                                Correo electrónico
+                            </label>
+
+                            <input id="email" type="email" [value]="seller.email" readonly />
+
+                            <small>
+                                El correo electrónico no se puede modificar.
+                            </small>
+                        </div>
+
+                        <div class="field">
+                            <label for="phone">Teléfono</label>
+
+                            <input id="phone" name="phone" type="tel" [(ngModel)]="editForm.phone" pattern="[0-9]{9}"
+                                maxlength="9" inputmode="numeric" autocomplete="tel" placeholder="9 dígitos"
+                                [disabled]="saving()" />
+
+                            <small>
+                                Es opcional. Si lo introduces, debe tener
+                                9 dígitos.
+                            </small>
+                        </div>
+
+                        <div class="field">
+                            <label for="nationalId">DNI/NIF</label>
+
+                            <input id="nationalId" name="nationalId" type="text" [(ngModel)]="editForm.nationalId"
+                                maxlength="20" autocomplete="off" placeholder="Nuevo DNI/NIF (opcional)"
+                                [disabled]="saving()" />
+
+                            <small>
+                                Deja el campo vacío para conservar el
+                                documento actual.
+                            </small>
+                        </div>
+
+                    </div>
+                    <h2 class="section-title">Datos del negocio</h2>
+
+                    <div class="field-grid">
+
+                        <div class="field">
+                            <label for="businessName">
+                                Nombre comercial <span>*</span>
+                            </label>
+
+                            <input id="businessName" name="businessName" type="text" [(ngModel)]="editForm.businessName"
+                                required minlength="2" maxlength="100" autocomplete="organization"
+                                [disabled]="saving()" />
+                        </div>
+
+                        <div class="field">
+                            <label for="defaultCategory">
+                                Categoría por defecto <span>*</span>
+                            </label>
+
+                            <select id="defaultCategory" name="defaultCategory" [(ngModel)]="editForm.defaultCategory"
+                                required
+                                [disabled]="saving() || categoriesLoading() || categoriesError() || categories().length === 0">
+                                <option value="" disabled>
+                                    Selecciona una categoría
+                                </option>
+
+                                @for (cat of categories(); track cat.name) {
+                                <option [value]="cat.name">
+                                    {{ cat.name }}
+                                </option>
+                                }
+                            </select>
+
+                            @if (categoriesLoading()) {
+                            <small>Cargando categorías...</small>
+                            }
+
+                            @if (categoriesError()) {
+                            <small class="field-error">
+                                No se pudieron cargar las categorías.
+                                Inténtalo de nuevo.
+                            </small>
+                            }
+
+                            @if (!categoriesLoading() && !categoriesError() && categories().length === 0) {
+                            <small class="field-error">
+                                No hay categorías disponibles.
+                            </small>
+                            }
+                        </div>
+
+                    </div>
+                    <!-- Imagen de perfil -->
+                    <div class="avatar-section">
+                        <h2 class="section-title">Imagen de perfil</h2>
+
+                        <p class="section-description">
+                            Selecciona una de las imágenes disponibles.
+                        </p>
+
+                        <div class="avatar-selector-grid" role="group" aria-label="Seleccionar imagen de perfil">
+                            @for (avatar of sellerAvatars; track avatar; let i = $index) {
+                            <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
+                                [attr.aria-pressed]="selectedAvatar() === avatar"
+                                [attr.aria-label]="'Seleccionar avatar ' + (i + 1)" [disabled]="saving()"
+                                (click)="selectAvatar(avatar)">
+                                <img [src]="avatar" [alt]="'Avatar de vendedor ' + (i + 1)" />
+
+                                @if (selectedAvatar() === avatar) {
+                                <span class="avatar-check" aria-hidden="true">
+                                    ✓
+                                </span>
+                                }
+                            </button>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="form-actions">
+                        <button type="button" class="secondary-button" (click)="cancelEditing()" [disabled]="saving()">
+                            Cancelar
+                        </button>
+
+                        <button type="submit" class="primary-button" [disabled]="saving()">
+                            {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
+                        </button>
+                    </div>
+
+                </form>
+                }
+
+                <!-- MODO CONSULTA -->
+                @else {
+                <h2 class="section-title">Datos del negocio</h2>
+
+                <div class="field-grid">
+
+                    <div class="field">
+                        <label for="viewBusinessName">
+                            Nombre comercial
+                        </label>
+
+                        <input id="viewBusinessName" type="text" [value]="seller.businessName || 'No indicado'"
+                            readonly />
+                    </div>
+
+                    <div class="field">
+                        <label for="viewDefaultCategory">
+                            Categoría por defecto
+                        </label>
+
+                        <input id="viewDefaultCategory" type="text" [value]="seller.defaultCategory || 'No indicada'"
+                            readonly />
+                    </div>
+
                 </div>
+
+                <h2 class="section-title">Datos personales</h2>
+
+                <div class="field-grid">
+
+                    <div class="field">
+                        <label for="viewFirstName">Nombre</label>
+
+                        <input id="viewFirstName" type="text" [value]="seller.firstName" readonly />
+                    </div>
+
+                    <div class="field">
+                        <label for="viewLastName">Apellidos</label>
+
+                        <input id="viewLastName" type="text" [value]="seller.lastName" readonly />
+                    </div>
+
+                    <div class="field">
+                        <label for="viewEmail">Correo electrónico</label>
+
+                        <input id="viewEmail" type="email" [value]="seller.email" readonly />
+                    </div>
+
+                    <div class="field">
+                        <label for="viewPhone">Teléfono</label>
+
+                        <input id="viewPhone" type="text" [value]="seller.phone || 'No indicado'" readonly />
+                    </div>
+
+                    <div class="field">
+                        <label for="viewNationalId">DNI/NIF</label>
+
+                        <input id="viewNationalId" type="text" [value]="seller.maskedNationalId || 'No disponible'"
+                            readonly />
+                    </div>
+
+                </div>
+                }
+
+            </section>
+
+            <!-- Baja de cuenta -->
+            <app-delete-account role="SELLER" />
+
+            <!-- Volver -->
+            <div class="profile-actions">
+                <button type="button" class="back-button" (click)="goBack()">
+                    ← Volver
+                </button>
             </div>
+            }
 
-            <h2 class="section-title">Datos personales</h2>
-
-            <div class="field-grid">
-                <div class="field">
-                    <label for="firstName">Nombre</label>
-                    <input id="firstName" type="text" [value]="seller.firstName" readonly />
-                </div>
-
-                <div class="field">
-                    <label for="lastName">Apellidos</label>
-                    <input id="lastName" type="text" [value]="seller.lastName" readonly />
-                </div>
-
-                <div class="field">
-                    <label for="email">Correo electrónico</label>
-                    <input id="email" type="email" [value]="seller.email" readonly />
-                </div>
-
-                <div class="field">
-                    <label for="phone">Teléfono</label>
-                    <input id="phone" type="text" [value]="seller.phone || 'XXX XXX XXX'" readonly />
-                </div>
-
-                <div class="field">
-                    <label for="nationalId">Documento de identidad</label>
-                    <input id="nationalId" type="text" [value]="seller.maskedNationalId || 'No disponible'" readonly />
-                </div>
-            </div>
-        </section>
-        }
-        <div class="profile-actions">
-            <button type="button" class="back-button" (click)="goBack()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                    stroke-linejoin="round" aria-hidden="true">
-                    <path d="M19 12H5" />
-                    <path d="m12 19-7-7 7-7" />
-                </svg>
-                Volver
-            </button>
-        </div>
-    </main>
+        </main>
+    </div>
 </div>
