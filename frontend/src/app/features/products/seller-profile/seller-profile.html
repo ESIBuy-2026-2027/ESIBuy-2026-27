@@ -1,30 +1,20 @@
 <div class="profile-page">
     <aside class="profile-card" aria-label="Información del vendedor">
         @if (profile()?.profileImage; as image) {
-        <img class="avatar avatar-image" [src]="image" alt="Imagen de perfil" />
+
+        <img class="avatar avatar-image" [src]="displayAvatar()" alt="Imagen de perfil" />
         } @else {
-        <div class="avatar" aria-hidden="true">
-            {{ initials() }}
-        </div>
+        <div class="avatar" aria-hidden="true">{{ initials() }}</div>
         }
 
-        <p class="profile-name">
-            {{ fullName() || 'Mi perfil' }}
-        </p>
-
-        <span class="account-badge">
-            Cuenta de vendedor
-        </span>
+        <p class="profile-name">{{ fullName() || 'Mi perfil' }}</p>
+        <span class="account-badge">Cuenta de vendedor</span>
 
         <nav class="profile-nav" aria-label="Secciones del perfil">
-            <a class="nav-item is-active" aria-current="page">
-                Datos del negocio
-            </a>
-
-            <a class="nav-item is-disabled" aria-disabled="true">
-                Seguridad
-            </a>
+            <a class="nav-item is-active" aria-current="page">Datos del negocio</a>
+            <a class="nav-item is-disabled" aria-disabled="true">Seguridad</a>
         </nav>
+
         <div class="profile-footer">
             <button type="button" class="logout-button" (click)="logout()">
                 Cerrar sesión
@@ -46,7 +36,6 @@
         @if (profileError(); as error) {
         <section class="panel">
             <p class="profile-error" role="alert">{{ error }}</p>
-
             <button type="button" class="retry-button" (click)="loadProfile()">
                 Reintentar
             </button>
@@ -55,58 +44,148 @@
 
         @if (!loading() && !profileError() && profile(); as seller) {
         <section class="panel">
-            <h1 class="panel-title">Mi perfil de vendedor</h1>
-
-            <p class="panel-description">
-                Consulta los datos de tu cuenta y de tu negocio en ESIBuy.
-            </p>
-
-            <h2 class="section-title">Datos del negocio</h2>
-
-            <div class="field-grid">
-                <div class="field">
-                    <label for="businessName">Nombre del negocio</label>
-                    <input id="businessName" type="text" [value]="seller.businessName || 'No disponible'" readonly />
+            <div class="panel-heading">
+                <div>
+                    <h1 class="panel-title">Mi perfil de vendedor</h1>
+                    <p class="panel-description">
+                        Consulta y modifica los datos de tu cuenta y de tu negocio.
+                    </p>
                 </div>
 
-                <div class="field">
-                    <label for="defaultCategory">Categoría predeterminada</label>
-                    <input id="defaultCategory" type="text" [value]="seller.defaultCategory || 'No especificada'"
-                        readonly />
-                </div>
+                @if (!editing()) {
+                <button type="button" class="edit-button" (click)="startEditing()">
+                    Editar perfil
+                </button>
+                }
             </div>
 
-            <h2 class="section-title">Datos personales</h2>
+            @if (editSuccess(); as message) {
+            <p class="success-message" role="status">{{ message }}</p>
+            }
 
-            <div class="field-grid">
-                <div class="field">
-                    <label for="firstName">Nombre</label>
-                    <input id="firstName" type="text" [value]="seller.firstName" readonly />
+            @if (editError(); as error) {
+            <p class="form-error" role="alert">{{ error }}</p>
+            }
+
+            <form #sellerForm="ngForm" (ngSubmit)="saveProfile()">
+                <h2 class="section-title">Datos del negocio</h2>
+
+                <div class="field-grid">
+                    <div class="field">
+                        <label for="businessName">Nombre comercial</label>
+                        <input id="businessName" name="businessName" type="text" [(ngModel)]="editForm.businessName"
+                            [readonly]="!editing()" required minlength="2" maxlength="100" />
+                    </div>
+
+                    <div class="field">
+                        <label for="defaultCategory">Categoría por defecto</label>
+
+                        <select id="defaultCategory" name="defaultCategory" [(ngModel)]="editForm.defaultCategory"
+                            required
+                            [disabled]="!editing() || categoriesLoading() || categoriesError() || categories().length === 0">
+
+                            @for (cat of categories(); track cat.name) {
+                            <option [value]="cat.name">{{ cat.name }}</option>
+                            }
+                        </select>
+
+                        @if (categoriesLoading()) {
+                        <small>Cargando categorías...</small>
+                        }
+
+                        @if (categoriesError()) {
+                        <small class="field-error">
+                            No se pudieron cargar las categorías. Inténtalo de nuevo.
+                        </small>
+                        }
+
+                        @if (!categoriesLoading() && !categoriesError() && categories().length === 0) {
+                        <small class="field-error">No hay categorías disponibles.</small>
+                        }
+                    </div>
                 </div>
 
-                <div class="field">
-                    <label for="lastName">Apellidos</label>
-                    <input id="lastName" type="text" [value]="seller.lastName" readonly />
+                <h2 class="section-title">Datos personales</h2>
+
+                <div class="field-grid">
+                    <div class="field">
+                        <label for="firstName">Nombre</label>
+                        <input id="firstName" name="firstName" type="text" [(ngModel)]="editForm.firstName"
+                            [readonly]="!editing()" required minlength="2" maxlength="25"
+                            pattern="[\p{L}\p{M}][\p{L}\p{M} '\-]*" />
+                    </div>
+
+                    <div class="field">
+                        <label for="lastName">Apellidos</label>
+                        <input id="lastName" name="lastName" type="text" [(ngModel)]="editForm.lastName"
+                            [readonly]="!editing()" required minlength="2" maxlength="50"
+                            pattern="[\p{L}\p{M}][\p{L}\p{M} '\-]*" />
+                    </div>
+
+                    <div class="field">
+                        <label for="email">Correo electrónico</label>
+                        <input id="email" type="email" [value]="seller.email" readonly />
+                    </div>
+
+                    <div class="field">
+                        <label for="phone">Teléfono</label>
+                        <input id="phone" name="phone" type="tel" [(ngModel)]="editForm.phone" [readonly]="!editing()"
+                            pattern="[0-9]{9}" maxlength="9" placeholder="9 dígitos" />
+                    </div>
+
+                    <div class="field">
+                        <label for="nationalId">DNI/NIF</label>
+                        @if (editing()) {
+                        <input id="nationalId" name="nationalId" type="text" [(ngModel)]="editForm.nationalId"
+                            maxlength="20" placeholder="Introduce un nuevo DNI/NIF (opcional)" />
+                        <small>Déjalo vacío para conservar el documento actual.</small>
+                        } @else {
+                        <input id="nationalId" type="text" [value]="seller.maskedNationalId || 'No disponible'"
+                            readonly />
+                        }
+                    </div>
+
+                    <div class="avatar-section">
+                        <div class="avatar-section">
+                            <label>Imagen de perfil</label>
+                            <p>Selecciona el avatar que quieres utilizar.</p>
+
+                            <div class="avatar-selector-grid" role="group" aria-label="Seleccionar imagen de perfil">
+                                @for (avatar of sellerAvatars; track avatar) {
+                                <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
+                                    [attr.aria-pressed]="selectedAvatar() === avatar"
+                                    [disabled]="!editing() || saving()" (click)="selectAvatar(avatar)"
+                                    [attr.aria-label]="'Seleccionar avatar ' + ($index + 1)">
+                                    <img [src]="avatar" [alt]="'Avatar de vendedor ' + ($index + 1)" />
+
+                                    @if (selectedAvatar() === avatar) {
+                                    <span class="avatar-check" aria-hidden="true">✓</span>
+                                    }
+                                </button>
+                                }
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
 
-                <div class="field">
-                    <label for="email">Correo electrónico</label>
-                    <input id="email" type="email" [value]="seller.email" readonly />
-                </div>
+                @if (editing()) {
+                <div class="form-actions">
+                    <button type="button" class="cancel-button" [disabled]="saving()" (click)="cancelEditing()">
+                        Cancelar
+                    </button>
 
-                <div class="field">
-                    <label for="phone">Teléfono</label>
-                    <input id="phone" type="text" [value]="seller.phone || 'XXX XXX XXX'" readonly />
+                    <button type="submit" class="save-button" [disabled]="saving()">
+                        {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
+                    </button>
                 </div>
-
-                <div class="field">
-                    <label for="nationalId">Documento de identidad</label>
-                    <input id="nationalId" type="text" [value]="seller.maskedNationalId || 'No disponible'" readonly />
-                </div>
-            </div>
+                }
+            </form>
         </section>
+
         <app-delete-account role="SELLER" />
         }
+
         <div class="profile-actions">
             <button type="button" class="back-button" (click)="goBack()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"

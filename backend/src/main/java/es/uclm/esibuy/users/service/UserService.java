@@ -178,6 +178,12 @@ public class UserService {
         user.setPhone(blankToNull(request.getPhone()));
         user.setProfileImage(blankToNull(request.getProfileImage()));
 
+        // Cambiar el DNI solo si el usuario ha introducido uno nuevo.
+        // Nunca utilizar el DNI enmascarado recibido en la consulta.
+        if (request.getNationalId() != null) {
+            user.setNationalId(request.getNationalId());
+        }
+
         // Datos exclusivos del vendedor.
         if (user.getRole() == UserRole.SELLER) {
             SellerProfile profile = user.getSellerProfile();

@@ -35,6 +35,9 @@ public class UpdateOwnProfileRequestDTO {
     @Past(message = "La fecha de nacimiento debe ser anterior a la actual")
     private LocalDate birthDate;
 
+    @Size(max = 20, message = "El documento de identidad no puede superar los 20 caracteres")
+    private String nationalId;
+
     public String getFirstName() {
         return firstName;
     }
@@ -104,5 +107,13 @@ public class UpdateOwnProfileRequestDTO {
     public boolean isAdult() {
         return birthDate == null
                 || Period.between(birthDate, LocalDate.now()).getYears() >= 18;
+    }
+
+    public String getNationalId() {
+        return nationalId;
+    }
+
+    public void setNationalId(String nationalId) {
+        this.nationalId = normalize(nationalId);
     }
 }
