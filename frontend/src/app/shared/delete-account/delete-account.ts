@@ -1,8 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, ElementRef, HostListener, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { AccountService } from '../account.service';
-import { AuthService, UserRole } from '../auth.service';
+import { AccountService } from '../../core/services/account.service';
+import { AuthService, UserRole } from '../../core/services/auth.service';
 
 export const DELETE_CONFIRMATION_WORD = 'ELIMINAR';
 

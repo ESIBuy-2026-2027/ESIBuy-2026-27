@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
-import { DeleteAccount } from '../../../core/services/delete-account/delete-account';
+import { DeleteAccount } from '../../../shared/delete-account/delete-account';
 
 interface AdminProfileResponse {
     firstName: string;

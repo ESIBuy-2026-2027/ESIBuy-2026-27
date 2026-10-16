@@ -1,12 +1,14 @@
 
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
-import { DeleteAccount } from '../../../core/services/delete-account/delete-account';
+import { DeleteAccount } from '../../../shared/delete-account/delete-account';
 import QRCode from 'qrcode';
+import { TwoFactorService, TwoFactorSetupResponse, } from '../../../core/services/two-factor.service';
+import { TwoFactorSettingsComponent } from '../../../shared/two-factor-settings/two-factor-settings';
 
 export interface ProfileSection {
     label: string;
@@ -34,25 +36,11 @@ interface UpdateClientProfileRequest {
     nationalId?: string;
 }
 
-interface TwoFactorSetupResponse {
-    secret: string;
-    qrUri: string;
-}
-
-interface TwoFactorEnableResponse {
-    message?: string;
-    backupCodes: string[];
-}
-
-interface BackupCodesResponse {
-    message?: string;
-    backupCodes: string[];
-}
-
 @Component({
     selector: 'app-client-profile',
     standalone: true,
-    imports: [FormsModule, DeleteAccount],
+    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA],
     templateUrl: './client-profile.html',
     styleUrl: './client-profile.css',
 })
@@ -62,7 +50,7 @@ export class ClientProfile implements OnInit {
     private readonly router = inject(Router);
     private readonly location = inject(Location);
     private readonly apiUrl = '/api/users/me/profile';
-    private readonly twoFactorUrl = '/api/users/2fa';
+    private readonly twoFactorService = inject(TwoFactorService);
     readonly qrImage = signal<string | null>(null);
     readonly qrGenerating = signal(false);
     readonly copiedSecret = signal(false);
@@ -393,13 +381,9 @@ export class ClientProfile implements OnInit {
         this.twoFactorBusy.set(true);
         this.qrGenerating.set(true);
 
-        this.http.post<TwoFactorSetupResponse>(
-            `${this.twoFactorUrl}/setup`,
-            {},
-            { withCredentials: true },
-        ).subscribe({
+        this.twoFactorService.setup().subscribe({
             next: result => {
-                // La clave manual queda disponible aunque falle el QR.
+                // Conserva aquí el código actual que genera el QR.
                 this.twoFactorSetup.set(result);
 
                 void QRCode.toDataURL(result.qrUri, {
@@ -430,12 +414,18 @@ export class ClientProfile implements OnInit {
             error: error => {
                 this.qrGenerating.set(false);
                 this.twoFactorBusy.set(false);
-                this.twoFactorError.set(this.getTwoFactorError(
-                    error,
-                    'No se ha podido iniciar la configuración de la autenticación en dos factores.',
-                ));
+                this.twoFactorError.set(
+                    this.twoFactorService.getErrorMessage(
+                        error,
+                        'No se ha podido iniciar la configuración de la autenticación en dos factores.',
+                    ),
+                );
             },
         });
+    }
+
+    onTwoFactorEnabledChange(enabled: boolean): void {
+        this.refreshTwoFactorStateInProfile(enabled);
     }
 
     async copyTwoFactorSecret(): Promise<void> {
@@ -501,11 +491,7 @@ export class ClientProfile implements OnInit {
         this.clearTwoFactorMessages();
         this.twoFactorBusy.set(true);
 
-        this.http.post<TwoFactorEnableResponse>(
-            `${this.twoFactorUrl}/enable`,
-            { code },
-            { withCredentials: true },
-        ).subscribe({
+        this.twoFactorService.enable(code).subscribe({
             next: result => {
                 this.twoFactorEnabled.set(true);
                 this.twoFactorSetup.set(null);
@@ -522,10 +508,12 @@ export class ClientProfile implements OnInit {
             },
             error: error => {
                 this.twoFactorBusy.set(false);
-                this.twoFactorError.set(this.getTwoFactorError(
-                    error,
-                    'No se ha podido activar la autenticación en dos factores. Comprueba el código e inténtalo de nuevo.',
-                ));
+                this.twoFactorError.set(
+                    this.twoFactorService.getErrorMessage(
+                        error,
+                        'No se ha podido activar la autenticación en dos factores. Comprueba el código e inténtalo de nuevo.',
+                    ),
+                );
             },
         });
     }
@@ -546,11 +534,7 @@ export class ClientProfile implements OnInit {
         this.twoFactorBusy.set(true);
         this.backupCodes.set([]);
 
-        this.http.post<BackupCodesResponse>(
-            `${this.twoFactorUrl}/regenerate-backup-codes`,
-            { code },
-            { withCredentials: true },
-        ).subscribe({
+        this.twoFactorService.regenerateBackupCodes(code).subscribe({
             next: result => {
                 this.backupCodes.set(result.backupCodes ?? []);
                 this.recoveryCode.set('');
@@ -562,10 +546,12 @@ export class ClientProfile implements OnInit {
             },
             error: error => {
                 this.twoFactorBusy.set(false);
-                this.twoFactorError.set(this.getTwoFactorError(
-                    error,
-                    'No se han podido regenerar los códigos. Comprueba el código actual e inténtalo de nuevo.',
-                ));
+                this.twoFactorError.set(
+                    this.twoFactorService.getErrorMessage(
+                        error,
+                        'No se han podido regenerar los códigos. Comprueba el código actual e inténtalo de nuevo.',
+                    ),
+                );
             },
         });
     }
@@ -585,11 +571,7 @@ export class ClientProfile implements OnInit {
         this.clearTwoFactorMessages();
         this.twoFactorBusy.set(true);
 
-        this.http.post<{ message?: string }>(
-            `${this.twoFactorUrl}/disable`,
-            { code },
-            { withCredentials: true },
-        ).subscribe({
+        this.twoFactorService.disable(code).subscribe({
             next: result => {
                 this.twoFactorEnabled.set(false);
                 this.twoFactorSetup.set(null);
@@ -600,16 +582,19 @@ export class ClientProfile implements OnInit {
                 this.backupCodes.set([]);
                 this.twoFactorBusy.set(false);
                 this.twoFactorSuccess.set(
-                    result.message ?? 'La autenticación en dos factores se ha desactivado.',
+                    result.message
+                    ?? 'La autenticación en dos factores se ha desactivado.',
                 );
                 this.refreshTwoFactorStateInProfile(false);
             },
             error: error => {
                 this.twoFactorBusy.set(false);
-                this.twoFactorError.set(this.getTwoFactorError(
-                    error,
-                    'No se ha podido desactivar la autenticación en dos factores. Comprueba el código e inténtalo de nuevo.',
-                ));
+                this.twoFactorError.set(
+                    this.twoFactorService.getErrorMessage(
+                        error,
+                        'No se ha podido desactivar la autenticación en dos factores. Comprueba el código e inténtalo de nuevo.',
+                    ),
+                );
             },
         });
     }
@@ -625,23 +610,6 @@ export class ClientProfile implements OnInit {
         if (current) {
             this.profile.set({ ...current, totpEnabled: enabled });
         }
-    }
-
-    private getTwoFactorError(
-        error: {
-            status?: number;
-            error?: { message?: string; detail?: string; error?: string };
-        },
-        fallback: string,
-    ): string {
-        return error.error?.detail
-            ?? error.error?.message
-            ?? error.error?.error
-            ?? (
-                error.status === 401
-                    ? 'Tu sesión ha caducado. Inicia sesión de nuevo.'
-                    : fallback
-            );
     }
 
     logout(): void {

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { DeleteAccount } from '../../../core/services/delete-account/delete-account';
+import { DeleteAccount } from '../../../shared/delete-account/delete-account';
 import { Category, ProductsService } from '../../products/products.service';
 
 interface SellerProfileResponse {

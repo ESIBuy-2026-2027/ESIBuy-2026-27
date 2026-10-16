@@ -166,10 +166,14 @@
 /* CONTENIDO PRINCIPAL */
 
 .profile-main {
-    display: grid;
+    flex: 1;
     min-width: 0;
-    gap: 18px;
-    align-content: start;
+}
+
+app-two-factor-settings {
+    display: block;
+    width: 100%;
+    min-width: 0;
 }
 
 /* PANELES */
@@ -1036,4 +1040,13 @@
 
 .sidebar-nav .nav-item.disabled {
     cursor: not-allowed;
+}
+
+.danger-zone {
+    border: 1px solid #e5b8b8;
+    margin-top: 1.5rem;
+}
+
+.danger-zone .panel-title {
+    color: #a52828;
 }
