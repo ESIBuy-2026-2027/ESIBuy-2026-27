@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { DeleteAccount } from '../../../shared/delete-account/delete-account';
 import { Category, ProductsService } from '../../products/products.service';
+import { TwoFactorSettingsComponent } from '../../../shared/two-factor-settings/two-factor-settings';
 
 interface SellerProfileResponse {
     firstName: string;
@@ -16,6 +17,7 @@ interface SellerProfileResponse {
     profileImage: string | null;
     businessName: string | null;
     defaultCategory: string | null;
+    totpEnabled: boolean;
 }
 
 interface UpdateSellerProfileRequest {
@@ -31,7 +33,7 @@ interface UpdateSellerProfileRequest {
 @Component({
     selector: 'app-seller-profile',
     standalone: true,
-    imports: [FormsModule, DeleteAccount],
+    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent],
     templateUrl: './seller-profile.html',
     styleUrl: './seller-profile.css',
 })
@@ -111,6 +113,27 @@ export class SellerProfile implements OnInit {
         this.loadCategories();
     }
 
+    readonly activeSection = signal<'personal' | 'security'>('personal');
+
+    readonly twoFactorEnabled = signal(false);
+
+    selectSection(section: 'personal' | 'security'): void {
+        this.activeSection.set(section);
+    }
+
+    onTwoFactorEnabledChange(enabled: boolean): void {
+        this.twoFactorEnabled.set(enabled);
+
+        const currentProfile = this.profile();
+
+        if (currentProfile) {
+            this.profile.set({
+                ...currentProfile,
+                totpEnabled: enabled,
+            });
+        }
+    }
+
     private emptyForm(): UpdateSellerProfileRequest {
         return {
             firstName: '',
@@ -146,6 +169,9 @@ export class SellerProfile implements OnInit {
             next: profile => {
                 this.profile.set(profile);
 
+                // Igual que en el perfil del cliente.
+                this.twoFactorEnabled.set(profile.totpEnabled === true);
+
                 const savedAvatar = this.avatarImage();
                 const avatar = savedAvatar || this.sellerAvatars[0];
 
@@ -158,8 +184,6 @@ export class SellerProfile implements OnInit {
                     profileImage: avatar,
                     businessName: profile.businessName ?? '',
                     defaultCategory: profile.defaultCategory ?? '',
-                    // El DNI/NIF real no se devuelve enmascarado.
-                    // Vacío significa conservar el documento existente.
                     nationalId: '',
                 };
 

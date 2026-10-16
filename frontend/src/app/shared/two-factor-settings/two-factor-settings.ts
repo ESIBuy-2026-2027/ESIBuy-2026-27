@@ -1,11 +1,16 @@
-
-import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import QRCode from 'qrcode';
-import {
-    TwoFactorService,
-    TwoFactorSetupResponse,
-} from '../../core/services/two-factor.service';
+import { TwoFactorService, TwoFactorSetupResponse, } from '../../core/services/two-factor.service';
+
+type TwoFactorHttpError = {
+    status?: number;
+    error?: {
+        message?: string;
+        detail?: string;
+        error?: string;
+    };
+};
 
 @Component({
     selector: 'app-two-factor-settings',
@@ -15,6 +20,7 @@ import {
     styleUrl: './two-factor-settings.css',
 })
 export class TwoFactorSettingsComponent {
+    private readonly cdr = inject(ChangeDetectorRef);
     private readonly twoFactorService = inject(TwoFactorService);
 
     @Input()
@@ -64,46 +70,84 @@ export class TwoFactorSettingsComponent {
         return /^\d{6}$/.test(code);
     }
 
-    async setupTwoFactor(): Promise<void> {
+    /**
+     * Inicia la configuración de la verificación en dos pasos.
+     */
+    setupTwoFactor(): void {
         this.clearMessages();
         this.twoFactorBusy = true;
         this.qrGenerating = true;
         this.twoFactorSetup = null;
         this.qrImage = '';
 
+        this.cdr.detectChanges();
+
         this.twoFactorService.setup().subscribe({
             next: (result) => {
-                this.twoFactorSetup = result;
-
-                void QRCode.toDataURL(result.qrUri, {
-                    errorCorrectionLevel: 'M',
-                    margin: 2,
-                    width: 240,
-                })
-                    .then((qrImage) => {
-                        this.qrImage = qrImage;
-                    })
-                    .catch(() => {
-                        this.twoFactorError =
-                            'No se ha podido generar el código QR. Puedes utilizar la clave manual.';
-                    })
-                    .finally(() => {
-                        this.qrGenerating = false;
-                        this.twoFactorBusy = false;
-                    });
+                void this.processTwoFactorSetup(result);
             },
-            error: (error) => {
+            error: (error: TwoFactorHttpError) => {
+                console.error('[2FA] Error en la petición:', error);
+
                 this.twoFactorError = this.twoFactorService.getErrorMessage(
                     error,
                     'No se ha podido iniciar la configuración de la verificación en dos pasos.',
                 );
 
-                this.qrGenerating = false;
                 this.twoFactorBusy = false;
+                this.qrGenerating = false;
+                this.cdr.detectChanges();
             },
         });
     }
 
+    /**
+     * Valida la respuesta del servidor y genera el código QR.
+     */
+    private async processTwoFactorSetup(
+        result: TwoFactorSetupResponse,
+    ): Promise<void> {
+        if (!result?.qrUri || !result?.secret) {
+            this.twoFactorError =
+                'El servidor no ha devuelto los datos necesarios para configurar la verificación.';
+
+            this.twoFactorBusy = false;
+            this.qrGenerating = false;
+            this.cdr.detectChanges();
+            return;
+        }
+
+        this.twoFactorSetup = result;
+        this.cdr.detectChanges();
+
+        try {
+            this.qrImage = await QRCode.toDataURL(result.qrUri, {
+                errorCorrectionLevel: 'M',
+                margin: 2,
+                width: 240,
+            });
+        } catch (error: unknown) {
+            console.error('[2FA] Error generando el QR:', error);
+
+            this.twoFactorError =
+                'No se ha podido generar el código QR. Puedes utilizar la clave manual.';
+        } finally {
+            this.qrGenerating = false;
+            this.twoFactorBusy = false;
+            this.cdr.detectChanges();
+
+            console.log('[2FA] Estado final:', {
+                setupDisponible: !!this.twoFactorSetup,
+                qrDisponible: !!this.qrImage,
+                generandoQR: this.qrGenerating,
+                ocupado: this.twoFactorBusy,
+            });
+        }
+    }
+
+    /**
+     * Activa la verificación en dos pasos tras validar el código.
+     */
     enableTwoFactor(): void {
         const code = this.getVerificationCode(this.twoFactorCode);
 
@@ -122,6 +166,8 @@ export class TwoFactorSettingsComponent {
                 this.enabledChange.emit(true);
                 this.backupCodes = result.backupCodes ?? [];
                 this.twoFactorSetup = null;
+                this.qrImage = '';
+                this.qrGenerating = false;
                 this.twoFactorCode = '';
 
                 this.twoFactorSuccess =
@@ -130,7 +176,9 @@ export class TwoFactorSettingsComponent {
 
                 this.twoFactorBusy = false;
             },
-            error: (error) => {
+            error: (error: TwoFactorHttpError) => {
+                console.error('[2FA] Error en la petición:', error);
+
                 this.twoFactorError = this.twoFactorService.getErrorMessage(
                     error,
                     'No se ha podido activar la verificación en dos pasos.',
@@ -141,6 +189,9 @@ export class TwoFactorSettingsComponent {
         });
     }
 
+    /**
+     * Regenera los códigos de recuperación.
+     */
     regenerateBackupCodes(): void {
         const code = this.getVerificationCode(this.recoveryCode);
 
@@ -164,7 +215,7 @@ export class TwoFactorSettingsComponent {
 
                 this.twoFactorBusy = false;
             },
-            error: (error) => {
+            error: (error: TwoFactorHttpError) => {
                 this.twoFactorError = this.twoFactorService.getErrorMessage(
                     error,
                     'No se han podido regenerar los códigos de recuperación.',
@@ -175,6 +226,9 @@ export class TwoFactorSettingsComponent {
         });
     }
 
+    /**
+     * Desactiva la verificación en dos pasos.
+     */
     disableTwoFactor(): void {
         const code = this.getVerificationCode(this.twoFactorCode);
 
@@ -192,6 +246,8 @@ export class TwoFactorSettingsComponent {
                 this.twoFactorEnabled = false;
                 this.enabledChange.emit(false);
                 this.twoFactorSetup = null;
+                this.qrImage = '';
+                this.qrGenerating = false;
                 this.backupCodes = [];
                 this.twoFactorCode = '';
                 this.recoveryCode = '';
@@ -202,7 +258,7 @@ export class TwoFactorSettingsComponent {
 
                 this.twoFactorBusy = false;
             },
-            error: (error) => {
+            error: (error: TwoFactorHttpError) => {
                 this.twoFactorError = this.twoFactorService.getErrorMessage(
                     error,
                     'No se ha podido desactivar la verificación en dos pasos.',
@@ -213,6 +269,9 @@ export class TwoFactorSettingsComponent {
         });
     }
 
+    /**
+     * Copia la clave secreta al portapapeles.
+     */
     async copyTwoFactorSecret(): Promise<void> {
         if (!this.twoFactorSetup?.secret) {
             return;
@@ -231,6 +290,9 @@ export class TwoFactorSettingsComponent {
         }
     }
 
+    /**
+     * Descarga los códigos de recuperación en un archivo de texto.
+     */
     downloadBackupCodes(): void {
         if (this.backupCodes.length === 0) {
             return;
@@ -260,6 +322,9 @@ export class TwoFactorSettingsComponent {
         URL.revokeObjectURL(url);
     }
 
+    /**
+     * Limpia los mensajes anteriores.
+     */
     private clearMessages(): void {
         this.twoFactorError = '';
         this.twoFactorSuccess = '';
