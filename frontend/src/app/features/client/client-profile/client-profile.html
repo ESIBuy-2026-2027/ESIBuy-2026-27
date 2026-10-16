@@ -1,89 +1,101 @@
 <div class="profile-page">
+
+    <!-- BARRA LATERAL -->
     <aside class="profile-card" aria-label="Menú de perfil">
-        <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Imagen de perfil" />
 
-        <p class="profile-name">{{ fullName() || 'Mi perfil' }}</p>
+        <div class="sidebar-profile">
+            <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Imagen de perfil" />
 
-        @if (isPremium()) {
-        <span class="account-badge">Cuenta premium</span>
-        } @else {
-        <span class="account-badge account-badge--standard">
-            Cuenta estándar
-        </span>
-        }
+            <h2 class="sidebar-name">
+                {{ fullName() || 'Mi perfil' }}
+            </h2>
 
-        <nav class="profile-nav" aria-label="Secciones del perfil">
-            @for (section of sections; track section.label) {
-            @if (section.active) {
-            <a class="nav-item is-active" aria-current="page">
-                {{ section.label }}
-            </a>
+            @if (isPremium()) {
+            <span class="role-badge premium-badge">
+                Cuenta premium
+            </span>
             } @else {
-            <a class="nav-item is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
+            <span class="role-badge">
+                Cuenta estándar
+            </span>
+            }
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Secciones del perfil">
+            @for (section of sections; track section.label) {
+            <a class="nav-item" [class.active]="section.active" [class.disabled]="!section.active"
+                [attr.aria-current]="section.active ? 'page' : null" [attr.aria-disabled]="!section.active">
                 {{ section.label }}
             </a>
-            }
             }
         </nav>
 
-        <div class="profile-footer">
+        <div class="sidebar-footer">
+            @if (logoutError(); as error) {
+            <p class="form-error" role="alert">{{ error }}</p>
+            }
+
             <button type="button" class="logout-button" (click)="logout()">
                 Cerrar sesión
             </button>
-
-            @if (logoutError(); as error) {
-            <p class="logout-error" role="alert">{{ error }}</p>
-            }
         </div>
     </aside>
 
-    <main class="profile-content">
-        @if (loading()) {
-        <p class="profile-status" role="status">
-            Cargando los datos de tu perfil...
-        </p>
-        }
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="profile-main">
 
-        @if (profileError(); as error) {
-        <div class="profile-error" role="alert">
-            <p>{{ error }}</p>
-            <button type="button" class="retry-button" (click)="loadProfile()">
+        @if (loading()) {
+        <section class="panel">
+            <p class="panel-description" role="status">
+                Cargando los datos de tu perfil...
+            </p>
+        </section>
+        } @else if (profileError(); as error) {
+        <section class="panel">
+            <h1 class="panel-title">Mi perfil</h1>
+
+            <p class="form-error" role="alert">{{ error }}</p>
+
+            <button type="button" class="primary-button" (click)="loadProfile()">
                 Reintentar
             </button>
-        </div>
-        }
+        </section>
+        } @else if (profile(); as client) {
 
-        @if (isPremium() && !loading() && !profileError()) {
-        <section class="premium-banner" aria-label="Suscripción premium">
+        <!-- BANNER PREMIUM -->
+        @if (isPremium()) {
+        <section class="premium-banner">
             <div>
-                <p class="premium-eyebrow">Premium</p>
-                <h2>Estás disfrutando de precios exclusivos</h2>
+                <span class="premium-eyebrow">
+                    CUENTA PREMIUM
+                </span>
+
+                <h2>Disfruta de ventajas exclusivas</h2>
+
                 <p>
-                    Tu descuento premium se aplica solo en los productos
-                    que lo incluyen.
+                    Tu cuenta Premium te permite disfrutar
+                    de las ventajas disponibles para suscriptores.
                 </p>
             </div>
-
-            <button type="button" class="premium-action" disabled aria-disabled="true" title="Próximamente">
-                Gestionar suscripción
-            </button>
         </section>
         }
 
-        @if (!loading() && !profileError() && profile(); as client) {
-        <section class="panel" aria-labelledby="personal-title">
+        <!-- PANEL DEL PERFIL -->
+        <section class="panel">
+
             <div class="panel-heading">
-                <div>
-                    <h1 id="personal-title" class="panel-title">
-                        Datos personales
-                    </h1>
+                <div class="panel-heading-text">
+                    <span class="eyebrow">CUENTA DE CLIENTE</span>
+
+                    <h1 class="panel-title">Mi perfil</h1>
+
                     <p class="panel-description">
-                        Consulta y modifica los datos de tu cuenta.
+                        Consulta y actualiza tus datos personales.
                     </p>
                 </div>
 
                 @if (!editing()) {
-                <button type="button" class="edit-button" (click)="startEditing()">
+                <button type="button" class="primary-button" (click)="startEditing()">
                     Editar perfil
                 </button>
                 }
@@ -96,116 +108,172 @@
             }
 
             @if (editError(); as error) {
-            <p class="form-error" role="alert">{{ error }}</p>
+            <p class="form-error" role="alert">
+                {{ error }}
+            </p>
             }
 
             <form #clientForm="ngForm" (ngSubmit)="saveProfile()">
+
+                <h2 class="section-title">Datos personales</h2>
+
                 <div class="field-grid">
+
+                    <!-- NOMBRE -->
                     <div class="field">
-                        <label for="firstName">Nombre</label>
-                        <input id="firstName" name="firstName" type="text" [(ngModel)]="editForm.firstName"
-                            [readonly]="!editing()" required minlength="2" maxlength="25"
-                            pattern="[\p{L}\p{M}][\p{L}\p{M} '\-]*" placeholder="Tu nombre" />
+                        <label for="firstName">
+                            Nombre <span>*</span>
+                        </label>
+
+                        @if (editing()) {
+                        <input id="firstName" name="firstName" type="text" [(ngModel)]="editForm.firstName" required
+                            minlength="2" maxlength="25" autocomplete="given-name" [disabled]="saving()" />
+                        } @else {
+                        <input id="firstName" type="text" [value]="client.firstName || ''" readonly />
+                        }
                     </div>
 
+                    <!-- APELLIDOS -->
                     <div class="field">
-                        <label for="lastName">Apellidos</label>
-                        <input id="lastName" name="lastName" type="text" [(ngModel)]="editForm.lastName"
-                            [readonly]="!editing()" required minlength="2" maxlength="50"
-                            pattern="[\p{L}\p{M}][\p{L}\p{M} '\-]*" placeholder="Tus apellidos" />
+                        <label for="lastName">
+                            Apellidos <span>*</span>
+                        </label>
+
+                        @if (editing()) {
+                        <input id="lastName" name="lastName" type="text" [(ngModel)]="editForm.lastName" required
+                            minlength="2" maxlength="50" autocomplete="family-name" [disabled]="saving()" />
+                        } @else {
+                        <input id="lastName" type="text" [value]="client.lastName || ''" readonly />
+                        }
                     </div>
 
+                    <!-- EMAIL -->
                     <div class="field">
                         <label for="email">Correo electrónico</label>
-                        <input id="email" type="email" [value]="client.email" readonly aria-readonly="true" />
+
+                        <input id="email" type="email" [value]="client.email || ''" readonly />
+
+                        <small>
+                            El correo electrónico no se puede modificar.
+                        </small>
                     </div>
 
+                    <!-- TELÉFONO -->
                     <div class="field">
                         <label for="phone">Teléfono</label>
-                        <input id="phone" name="phone" type="tel" [(ngModel)]="editForm.phone" [readonly]="!editing()"
-                            pattern="[0-9]{9}" maxlength="9" placeholder="9 dígitos" />
+
+                        @if (editing()) {
+                        <input id="phone" name="phone" type="tel" [(ngModel)]="editForm.phone" pattern="[0-9]{9}"
+                            maxlength="9" inputmode="numeric" autocomplete="tel" placeholder="Teléfono de 9 cifras"
+                            [disabled]="saving()" />
+
+                        <small>
+                            Campo opcional. Introduce 9 cifras si
+                            deseas indicar tu teléfono.
+                        </small>
+                        } @else {
+                        <input id="phone" type="text" [value]="client.phone || 'No indicado'" readonly />
+                        }
                     </div>
 
+                    <!-- FECHA DE NACIMIENTO -->
                     <div class="field">
-                        <label for="birthDate">Fecha de nacimiento</label>
+                        <label for="birthDate">
+                            Fecha de nacimiento <span>*</span>
+                        </label>
+
+                        @if (editing()) {
                         <input id="birthDate" name="birthDate" type="date" [(ngModel)]="editForm.birthDate"
-                            [readonly]="!editing()" [max]="maxBirthDate" required />
+                            [max]="maxBirthDate" required [disabled]="saving()" />
+                        } @else {
+                        <input id="birthDate" type="text" [value]="client.birthDate || 'No indicada'" readonly />
+                        }
+
+                        @if (editing()) {
+                        <small>Debes tener al menos 18 años.</small>
+                        }
                     </div>
 
+                    <!-- DNI -->
                     <div class="field">
                         <label for="nationalId">DNI</label>
 
                         @if (editing()) {
                         <input id="nationalId" name="nationalId" type="text" [(ngModel)]="editForm.nationalId"
-                            maxlength="20" placeholder="Introduce un nuevo DNI (opcional)" />
+                            maxlength="20" placeholder="Introduce un DNI nuevo" autocomplete="off"
+                            [disabled]="saving()" />
+
                         <small>
-                            Déjalo vacío para conservar el documento
-                            actual.
+                            Déjalo vacío para mantener el DNI actual.
                         </small>
                         } @else {
-                        <input id="nationalId" type="text" [value]="client.maskedNationalId || 'No disponible'" readonly
-                            aria-readonly="true" />
+                        <input id="nationalId" type="text" [value]="client.maskedNationalId || 'No disponible'"
+                            readonly />
                         }
                     </div>
 
+                    <!-- TIPO DE CLIENTE -->
                     <div class="field">
                         <label for="customerType">Tipo de cliente</label>
-                        <input id="customerType" type="text" [value]="customerTypeLabel()" readonly
-                            aria-readonly="true" />
+
+                        <input id="customerType" type="text" [value]="customerTypeLabel() || 'No disponible'"
+                            readonly />
                     </div>
 
-                    <!-- Selector de avatar: solo aparece al editar -->
-                    @if (editing()) {
-                    <div class="field field--avatar">
-                        <span class="field-label">
-                            Imagen de perfil
-                        </span>
-
-                        <p class="avatar-help">
-                            Selecciona una de las imágenes disponibles.
-                        </p>
-
-                        <div class="avatar-selector" role="group" aria-label="Seleccionar imagen de perfil">
-                            @for (avatar of clientAvatars; track avatar) {
-                            <button type="button" class="avatar-option"
-                                [class.is-selected]="selectedAvatar() === avatar"
-                                [attr.aria-pressed]="selectedAvatar() === avatar"
-                                [attr.aria-label]="'Seleccionar avatar ' + ($index + 1)" [disabled]="saving()"
-                                (click)="selectAvatar(avatar)">
-                                <img [src]="avatar" [alt]="'Avatar ' + ($index + 1)" />
-                            </button>
-                            }
-                        </div>
-                    </div>
-                    }
                 </div>
 
+                <!-- AVATARES: SOLO EN MODO EDICIÓN -->
+                @if (editing()) {
+                <div class="avatar-section">
+                    <h2 class="section-title">Imagen de perfil</h2>
+
+                    <p class="section-description">
+                        Selecciona uno de los avatares disponibles.
+                    </p>
+
+                    <div class="avatar-selector-grid" role="group" aria-label="Seleccionar avatar">
+                        @for (avatar of clientAvatars; track avatar; let i = $index) {
+                        <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
+                            [attr.aria-pressed]="selectedAvatar() === avatar"
+                            [attr.aria-label]="'Seleccionar avatar ' + (i + 1)" [disabled]="saving()"
+                            (click)="selectAvatar(avatar)">
+                            <img [src]="avatar" [alt]="'Avatar ' + (i + 1)" />
+
+                            @if (selectedAvatar() === avatar) {
+                            <span class="avatar-check" aria-hidden="true">
+                                ✓
+                            </span>
+                            }
+                        </button>
+                        }
+                    </div>
+                </div>
+                }
+
+                <!-- ACCIONES -->
                 @if (editing()) {
                 <div class="form-actions">
-                    <button type="button" class="cancel-button" [disabled]="saving()" (click)="cancelEditing()">
+                    <button type="button" class="secondary-button" [disabled]="saving()" (click)="cancelEditing()">
                         Cancelar
                     </button>
 
-                    <button type="submit" class="save-button" [disabled]="saving()">
+                    <button type="submit" class="primary-button" [disabled]="saving()">
                         {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
                     </button>
                 </div>
                 }
+
             </form>
         </section>
 
         <app-delete-account role="CLIENT" />
-        }
 
         <div class="profile-actions">
             <button type="button" class="back-button" (click)="goBack()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M19 12H5"></path>
-                    <path d="m12 19-7-7 7-7"></path>
-                </svg>
-                Volver
+                ← Volver
             </button>
         </div>
+        }
+
     </main>
 </div>

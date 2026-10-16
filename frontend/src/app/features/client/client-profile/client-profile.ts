@@ -84,9 +84,14 @@ export class ClientProfile implements OnInit {
     readonly customerTypeLabel = computed(() => {
         const type = this.profile()?.customerType;
 
-        if (!type) return '';
-
-        return type === 'STANDARD' ? 'Estándar' : type;
+        switch (type) {
+            case 'STANDARD':
+                return 'Estándar';
+            case 'PREMIUM':
+                return 'Premium';
+            default:
+                return type ?? '';
+        }
     });
 
     readonly isPremium = computed(
@@ -241,24 +246,59 @@ export class ClientProfile implements OnInit {
         this.editError.set(null);
         this.editSuccess.set(null);
 
-        if (!this.editForm.birthDate) {
-            this.editError.set('La fecha de nacimiento es obligatoria.');
+        const firstName = this.editForm.firstName.trim();
+        const lastName = this.editForm.lastName.trim();
+        const phone = this.editForm.phone.trim();
+        const birthDate = this.editForm.birthDate;
+
+        // Validar nombre.
+        if (firstName.length < 2 || firstName.length > 25) {
+            this.editError.set(
+                'El nombre debe tener entre 2 y 25 caracteres.',
+            );
             return;
         }
 
-        if (this.editForm.birthDate > this.maxBirthDate) {
-            this.editError.set('Debes tener al menos 18 años.');
+        // Validar apellidos.
+        if (lastName.length < 2 || lastName.length > 50) {
+            this.editError.set(
+                'Los apellidos deben tener entre 2 y 50 caracteres.',
+            );
+            return;
+        }
+
+        // El teléfono es opcional, pero debe tener 9 cifras si se indica.
+        if (phone && !/^[0-9]{9}$/.test(phone)) {
+            this.editError.set(
+                'El teléfono debe tener exactamente 9 cifras.',
+            );
+            return;
+        }
+
+        // Validar fecha de nacimiento.
+        if (!birthDate) {
+            this.editError.set(
+                'La fecha de nacimiento es obligatoria.',
+            );
+            return;
+        }
+
+        if (birthDate > this.maxBirthDate) {
+            this.editError.set(
+                'Debes tener al menos 18 años.',
+            );
             return;
         }
 
         const payload: UpdateClientProfileRequest = {
-            firstName: this.editForm.firstName.trim(),
-            lastName: this.editForm.lastName.trim(),
-            phone: this.editForm.phone.trim(),
+            firstName,
+            lastName,
+            phone,
             profileImage: this.selectedAvatar(),
-            birthDate: this.editForm.birthDate,
+            birthDate,
         };
 
+        // No enviar un DNI vacío ni el DNI enmascarado.
         const newNationalId = this.editForm.nationalId?.trim();
 
         if (newNationalId) {
@@ -267,23 +307,25 @@ export class ClientProfile implements OnInit {
 
         this.saving.set(true);
 
-        this.http.put<ClientProfileResponse>(this.apiUrl, payload, {
-            withCredentials: true,
-        }).subscribe({
+        this.http.put<ClientProfileResponse>(
+            this.apiUrl,
+            payload,
+            { withCredentials: true },
+        ).subscribe({
             next: profile => {
-                const avatar = this.normalizeAvatarPath(profile.profileImage);
+                const avatar = this.normalizeAvatarPath(
+                    profile.profileImage,
+                );
 
-                // Mantener una ruta local válida incluso si el backend
-                // devuelve la ruta con una barra inicial.
-                const updatedProfile: ClientProfileResponse = {
+                this.profile.set({
                     ...profile,
                     profileImage: avatar,
-                };
+                });
 
-                this.profile.set(updatedProfile);
                 this.selectedAvatar.set(avatar);
                 this.saving.set(false);
                 this.editing.set(false);
+
                 this.editSuccess.set(
                     'Tus datos se han actualizado correctamente.',
                 );
@@ -291,6 +333,7 @@ export class ClientProfile implements OnInit {
                 this.editForm = this.emptyForm();
                 this.editForm.profileImage = avatar;
             },
+
             error: (error: {
                 status?: number;
                 error?: {
@@ -309,9 +352,11 @@ export class ClientProfile implements OnInit {
                     validationErrors
                     ?? error.error?.detail
                     ?? error.error?.message
-                    ?? (error.status === 400
-                        ? 'Revisa los datos introducidos. Comprueba que tienes al menos 18 años y que el teléfono tiene 9 cifras.'
-                        : 'No se han podido guardar los cambios. Inténtalo de nuevo.'),
+                    ?? (
+                        error.status === 400
+                            ? 'Revisa los datos introducidos. Comprueba que tienes al menos 18 años y que el teléfono tiene 9 cifras.'
+                            : 'No se han podido guardar los cambios. Inténtalo de nuevo.'
+                    ),
                 );
             },
         });
