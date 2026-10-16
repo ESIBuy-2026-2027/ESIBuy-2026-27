@@ -96,9 +96,18 @@ class UserProfileControllerTest {
         @Test
         void shouldReturnOwnProfileForAdmin() throws Exception {
                 when(userService.getOwnProfile("user-1")).thenReturn(new UserProfileResponse(
-                                "Marta", "López", "marta@example.com", "600333444", null,
-                                "avatar-admin-default", null, null, null, "Madrid", null, null));
-
+                                "Marta",
+                                "López",
+                                "marta@example.com",
+                                "600333444",
+                                null,
+                                "avatar-admin-default",
+                                null,
+                                null,
+                                null,
+                                null,
+                                "Madrid",
+                                null));
                 mockMvc.perform(get(PROFILE_API).with(authentication(authenticationFor(UserRole.ADMIN))))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.firstName").value("Marta"))

@@ -5,7 +5,7 @@
         <aside class="profile-sidebar">
             <div class="sidebar-profile">
                 @if (displayAvatar()) {
-                <img class="avatar avatar-image" [src]="displayAvatar()" alt="Imagen de perfil" />
+                <img class="avatar avatar-image" [src]="displayAvatar()" alt="Perfil" />
                 } @else {
                 <div class="avatar" aria-hidden="true">
                     {{ initials() }}
@@ -43,9 +43,9 @@
 
             @if (loading()) {
             <section class="panel">
-                <p class="panel-description loading-message" role="status">
+                <output class="panel-description loading-message">
                     Cargando los datos de tu perfil...
-                </p>
+                </output>
             </section>
             }
 
@@ -88,9 +88,9 @@
                 </div>
 
                 @if (editSuccess(); as message) {
-                <p class="success-message" role="status">
+                <output class="success-message">
                     {{ message }}
-                </p>
+                </output>
                 }
 
                 @if (editError(); as error) {
@@ -224,7 +224,8 @@
                             Selecciona una de las imágenes disponibles.
                         </p>
 
-                        <div class="avatar-selector-grid" role="group" aria-label="Seleccionar imagen de perfil">
+                        <fieldset class="avatar-selector-grid">
+                            <legend class="visually-hidden">Seleccionar imagen de perfil</legend>
                             @for (avatar of sellerAvatars; track avatar; let i = $index) {
                             <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
                                 [attr.aria-pressed]="selectedAvatar() === avatar"
@@ -239,7 +240,7 @@
                                 }
                             </button>
                             }
-                        </div>
+                        </fieldset>
                     </div>
 
                     <!-- Acciones -->
@@ -323,7 +324,7 @@
             </section>
 
             <!-- Baja de cuenta -->
-            <app-delete-account role="SELLER" />
+            <app-delete-account [role]="'SELLER'" />
 
             <!-- Volver -->
             <div class="profile-actions">

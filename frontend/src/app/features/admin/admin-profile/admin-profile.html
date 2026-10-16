@@ -5,7 +5,7 @@
         <aside class="profile-sidebar">
             <div class="sidebar-profile">
                 @if (selectedAvatar()) {
-                <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Imagen de perfil" />
+                <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Perfil" />
                 } @else {
                 <div class="avatar" aria-hidden="true">
                     {{ initials() }}
@@ -89,9 +89,9 @@
                 </div>
 
                 @if (editSuccess()) {
-                <p class="success-message" role="status">
+                <output class="success-message">
                     {{ editSuccess() }}
-                </p>
+                </output>
                 }
 
                 @if (editError()) {
@@ -170,7 +170,8 @@
                             Selecciona una de las imágenes disponibles.
                         </p>
 
-                        <div class="avatar-selector-grid" role="group" aria-label="Seleccionar imagen de perfil">
+                        <fieldset class="avatar-selector-grid">
+                            <legend>Seleccionar imagen de perfil</legend>
                             @for (avatar of adminAvatars; track avatar; let i = $index) {
                             <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
                                 [attr.aria-pressed]="selectedAvatar() === avatar"
@@ -183,7 +184,7 @@
                                 }
                             </button>
                             }
-                        </div>
+                        </fieldset>
                     </div>
 
                     <div class="form-actions">
@@ -258,7 +259,7 @@
             </section>
 
             <!-- Baja de cuenta existente -->
-            <app-delete-account role="ADMIN" />
+            <app-delete-account [role]="'ADMIN'" />
 
             <div class="profile-actions">
                 <button type="button" class="back-button" (click)="goBack()">

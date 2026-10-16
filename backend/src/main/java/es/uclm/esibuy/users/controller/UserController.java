@@ -39,6 +39,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 @RequestMapping("/api/users")
 public class UserController {
 
+    private static final String MESSAGE_KEY = "message";
+
     private final UserService userService;
     private final LoginAttemptService loginAttemptService;
     private final SessionAuthenticationService sessionAuthenticationService;
@@ -223,7 +225,7 @@ public class UserController {
     }
 
     @PostMapping("/2fa/enable")
-    public ResponseEntity<?> enable2FA(
+    public ResponseEntity<Map<String, Object>> enable2FA(
             @RequestBody Map<String, String> body,
             Authentication authentication) {
         if (authentication == null
@@ -237,7 +239,7 @@ public class UserController {
 
         if (!totpService.verifyCode(rawSecret, code)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", "El código introducido es incorrecto o ha caducado"));
+                    .body(Map.of(MESSAGE_KEY, (Object) "El código introducido es incorrecto o ha caducado"));
         }
 
         List<String> rawBackupCodes = totpService.generateBackupCodes(8);
@@ -246,7 +248,7 @@ public class UserController {
         userService.save(user);
 
         return ResponseEntity.ok(Map.of(
-                "message", "2FA activado correctamente",
+                MESSAGE_KEY, "2FA activado correctamente",
                 "backupCodes", rawBackupCodes));
     }
 
@@ -262,7 +264,7 @@ public class UserController {
         User user = userService.findById(principal.id());
         if (!user.isTotpEnabled()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", "El usuario no tiene activado el 2FA"));
+                    .body(Map.of(MESSAGE_KEY, "El usuario no tiene activado el 2FA"));
         }
 
         String code = body != null ? body.get("code") : null;
@@ -270,7 +272,7 @@ public class UserController {
             String rawSecret = encryptionService.decrypt(user.getTotpSecret());
             if (!totpService.verifyCode(rawSecret, code)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("message", "Código 2FA incorrecto"));
+                        .body(Map.of(MESSAGE_KEY, "Código 2FA incorrecto"));
             }
         }
 
@@ -279,7 +281,7 @@ public class UserController {
         userService.save(user);
 
         return ResponseEntity.ok(Map.of(
-                "message", "Nuevos códigos de respaldo generados correctamente",
+                MESSAGE_KEY, "Nuevos códigos de respaldo generados correctamente",
                 "backupCodes", newBackupCodes));
     }
 
@@ -297,13 +299,13 @@ public class UserController {
 
         if (!user.isTotpEnabled()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", "El 2FA no está activado"));
+                    .body(Map.of(MESSAGE_KEY, "El 2FA no está activado"));
         }
 
         String rawSecret = encryptionService.decrypt(user.getTotpSecret());
         if (code == null || !totpService.verifyCode(rawSecret, code)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", "El código introducido es incorrecto"));
+                    .body(Map.of(MESSAGE_KEY, "El código introducido es incorrecto"));
         }
 
         user.setTotpEnabled(false);
@@ -311,7 +313,7 @@ public class UserController {
         user.getBackupCodes().clear();
         userService.save(user);
 
-        return ResponseEntity.ok(Map.of("message", "2FA desactivado correctamente"));
+        return ResponseEntity.ok(Map.of(MESSAGE_KEY, "2FA desactivado correctamente"));
     }
 
     private Map<String, Object> buildUserResponse(User user) {

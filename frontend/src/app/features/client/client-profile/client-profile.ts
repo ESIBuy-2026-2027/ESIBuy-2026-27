@@ -268,7 +268,7 @@ export class ClientProfile implements OnInit {
         }
 
         // El teléfono es opcional, pero debe tener 9 cifras si se indica.
-        if (phone && !/^[0-9]{9}$/.test(phone)) {
+        if (phone && !/^\d{9}$/.test(phone)) {
             this.editError.set(
                 'El teléfono debe tener exactamente 9 cifras.',
             );

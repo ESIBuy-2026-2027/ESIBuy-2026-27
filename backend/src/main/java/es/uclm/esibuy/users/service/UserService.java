@@ -171,6 +171,17 @@ public class UserService {
             UpdateOwnProfileRequestDTO request) {
 
         User user = findById(userId);
+        updateCommonProfileData(user, request);
+        updateSellerProfile(user, request);
+        updateClientProfile(user, request);
+        updateAdminProfile(user, request);
+
+        User savedUser = userRepository.save(user);
+        return UserProfileResponse.from(savedUser);
+    }
+
+    private void updateCommonProfileData(User user,
+            UpdateOwnProfileRequestDTO request) {
 
         // Datos generales que pueden modificar cliente y vendedor.
         user.setFirstName(request.getFirstName());
@@ -183,45 +194,49 @@ public class UserService {
         if (request.getNationalId() != null) {
             user.setNationalId(request.getNationalId());
         }
+    }
 
+    private void updateSellerProfile(User user,
+            UpdateOwnProfileRequestDTO request) {
         // Datos exclusivos del vendedor.
-        if (user.getRole() == UserRole.SELLER) {
-            SellerProfile profile = user.getSellerProfile();
-
-            if (profile == null) {
-                profile = new SellerProfile();
-                user.setSellerProfile(profile);
-            }
-
-            if (request.getBusinessName() != null) {
-                String businessName = blankToNull(request.getBusinessName());
-
-                if (businessName == null) {
-                    throw new IllegalArgumentException(
-                            "El nombre comercial no puede estar vacío");
-                }
-
-                boolean sameBusinessName = profile.getBusinessName() != null
-                        && businessName.equalsIgnoreCase(
-                                profile.getBusinessName());
-
-                if (!sameBusinessName
-                        && userRepository
-                                .existsBySellerProfileBusinessNameIgnoreCase(
-                                        businessName)) {
-                    throw new DuplicateUserException(
-                            "Ya existe un vendedor con ese nombre comercial");
-                }
-
-                profile.setBusinessName(businessName);
-            }
-
-            if (request.getDefaultCategory() != null) {
-                profile.setDefaultCategory(
-                        blankToNull(request.getDefaultCategory()));
-            }
+        if (user.getRole() != UserRole.SELLER) {
+            return;
         }
 
+        SellerProfile profile = user.getSellerProfile();
+        if (profile == null) {
+            profile = new SellerProfile();
+            user.setSellerProfile(profile);
+        }
+
+        if (request.getBusinessName() != null) {
+            String businessName = blankToNull(request.getBusinessName());
+
+            if (businessName == null) {
+                throw new IllegalArgumentException(
+                        "El nombre comercial no puede estar vacío");
+            }
+
+            boolean sameBusinessName = profile.getBusinessName() != null
+                    && businessName.equalsIgnoreCase(profile.getBusinessName());
+
+            if (!sameBusinessName
+                    && userRepository.existsBySellerProfileBusinessNameIgnoreCase(
+                            businessName)) {
+                throw new DuplicateUserException(
+                        "Ya existe un vendedor con ese nombre comercial");
+            }
+
+            profile.setBusinessName(businessName);
+        }
+
+        if (request.getDefaultCategory() != null) {
+            profile.setDefaultCategory(blankToNull(request.getDefaultCategory()));
+        }
+    }
+
+    private void updateClientProfile(User user,
+            UpdateOwnProfileRequestDTO request) {
         if (user.getRole() == UserRole.CLIENT
                 && request.getBirthDate() != null) {
 
@@ -234,7 +249,10 @@ public class UserService {
 
             profile.setBirthDate(request.getBirthDate());
         }
+    }
 
+    private void updateAdminProfile(User user,
+            UpdateOwnProfileRequestDTO request) {
         if (request.getHeadquarters() != null) {
             AdminProfile profile = user.getAdminProfile();
 
@@ -249,10 +267,6 @@ public class UserService {
 
             user.setAdminProfile(profile);
         }
-        // Guardar y devolver el perfil actualizado.
-        User savedUser = userRepository.save(user);
-
-        return UserProfileResponse.from(savedUser);
     }
 
 }
