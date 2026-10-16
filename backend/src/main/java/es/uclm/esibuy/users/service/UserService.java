@@ -20,7 +20,6 @@ import es.uclm.esibuy.users.model.SellerProfile;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
-import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
 
 @Service

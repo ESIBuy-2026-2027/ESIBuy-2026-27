@@ -12,6 +12,7 @@ import es.uclm.esibuy.users.model.CustomerType;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
+import es.uclm.esibuy.products.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,13 +38,16 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
+    private ProductRepository productRepository;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     private UserService userService;
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(userRepository, passwordEncoder);
+        userService = new UserService(userRepository, passwordEncoder, productRepository);
     }
 
     @Test
