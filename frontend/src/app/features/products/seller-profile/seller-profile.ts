@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Location } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { DeleteAccount } from '../../../core/services/delete-account/delete-account';
 import { Router } from '@angular/router';
 
 interface SellerProfileResponse {
@@ -18,6 +19,7 @@ interface SellerProfileResponse {
 @Component({
     selector: 'app-seller-profile',
     standalone: true,
+    imports: [DeleteAccount],
     templateUrl: './seller-profile.html',
     styleUrl: './seller-profile.css',
 })

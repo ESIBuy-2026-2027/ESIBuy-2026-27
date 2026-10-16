@@ -3,6 +3,8 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { DeleteAccount } from '../../../core/services/delete-account/delete-account';
+
 
 export interface ProfileSection {
     label: string;
@@ -22,6 +24,7 @@ interface ClientProfileResponse {
 @Component({
     selector: 'app-client-profile',
     standalone: true,
+    imports: [DeleteAccount],
     templateUrl: './client-profile.html',
     styleUrl: './client-profile.css',
 })

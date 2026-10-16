@@ -117,4 +117,12 @@ describe('Login', () => {
     expect(component.serverError).toBe('Demasiados intentos de inicio de sesión.');
     vi.useRealTimers();
   });
+
+  it('shows the account-deleted message from the redirect query parameter', () => {
+    routeSnapshot.queryParamMap = convertToParamMap({ deleted: 'true' });
+    fixture = TestBed.createComponent(Login);
+
+    expect(fixture.componentInstance.successMessage).toBe('Tu cuenta se ha eliminado correctamente.');
+  });
+
 });

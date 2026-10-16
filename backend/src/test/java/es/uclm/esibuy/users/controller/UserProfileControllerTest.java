@@ -81,11 +81,28 @@ class UserProfileControllerTest {
         }
 
         @Test
-        void shouldReturnForbiddenForNonClientRoles() throws Exception {
+        void shouldReturnOwnProfileForSeller() throws Exception {
+                when(userService.getOwnProfile("user-1")).thenReturn(new UserProfileResponse(
+                                "Luis", "Martín", "luis@example.com", "600111222", null,
+                                "avatar-seller-default", null, "Tienda Luis", "Electrónica", null, null));
+
                 mockMvc.perform(get(PROFILE_API).with(authentication(authenticationFor(UserRole.SELLER))))
-                                .andExpect(status().isForbidden());
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.firstName").value("Luis"))
+                                .andExpect(jsonPath("$.businessName").value("Tienda Luis"))
+                                .andExpect(jsonPath("$.defaultCategory").value("Electrónica"));
+        }
+
+        @Test
+        void shouldReturnOwnProfileForAdmin() throws Exception {
+                when(userService.getOwnProfile("user-1")).thenReturn(new UserProfileResponse(
+                                "Marta", "López", "marta@example.com", "600333444", null,
+                                "avatar-admin-default", null, null, null, "Madrid", null));
+
                 mockMvc.perform(get(PROFILE_API).with(authentication(authenticationFor(UserRole.ADMIN))))
-                                .andExpect(status().isForbidden());
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.firstName").value("Marta"))
+                                .andExpect(jsonPath("$.headquarters").value("Madrid"));
         }
 
         @Test

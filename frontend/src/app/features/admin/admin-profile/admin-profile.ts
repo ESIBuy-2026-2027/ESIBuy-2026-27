@@ -3,6 +3,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { DeleteAccount } from '../../../core/services/delete-account/delete-account';
 
 
 interface AdminProfileResponse {
@@ -19,6 +20,7 @@ interface AdminProfileResponse {
 @Component({
     selector: 'app-admin-profile',
     standalone: true,
+    imports: [DeleteAccount],
     templateUrl: './admin-profile.html',
     styleUrl: './admin-profile.css',
 })
