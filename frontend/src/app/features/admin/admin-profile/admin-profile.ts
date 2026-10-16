@@ -5,7 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
-import { DeleteAccount } from '../../../core/services/delete-account/delete-account';
+import { DeleteAccount } from '../../../shared/delete-account/delete-account';
+import { TwoFactorSettingsComponent } from '../../../shared/two-factor-settings/two-factor-settings';
 
 interface AdminProfileResponse {
     firstName: string;
@@ -16,6 +17,7 @@ interface AdminProfileResponse {
     profileImage: string | null;
     headquarters: string | null;
     hireDate: string | null;
+    totpEnabled: boolean;
 }
 
 interface UpdateAdminProfileRequest {
@@ -29,7 +31,7 @@ interface UpdateAdminProfileRequest {
 @Component({
     selector: 'app-admin-profile',
     standalone: true,
-    imports: [FormsModule, DeleteAccount],
+    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent],
     templateUrl: './admin-profile.html',
     styleUrl: './admin-profile.css',
 })
@@ -40,8 +42,6 @@ export class AdminProfile implements OnInit {
     private readonly location = inject(Location);
     private readonly apiUrl = '/api/users/me/profile';
 
-    // El panel de administración utiliza avatares de cliente
-    // para los perfiles que no tienen una colección propia.
     readonly adminAvatars: string[] = [
         'assets/images/avatars/av_client_1.jpeg',
         'assets/images/avatars/av_client_2.jpeg',
@@ -67,6 +67,19 @@ export class AdminProfile implements OnInit {
     readonly saving = signal(false);
     readonly editError = signal<string | null>(null);
     readonly editSuccess = signal<string | null>(null);
+
+    readonly twoFactorEnabled = signal(false);
+
+    readonly sections = [
+        { label: 'Datos personales' },
+        { label: 'Seguridad' },
+    ];
+
+    readonly activeSection = signal<'personal' | 'security'>('personal');
+
+    selectSection(section: 'personal' | 'security'): void {
+        this.activeSection.set(section);
+    }
 
     editForm: UpdateAdminProfileRequest = this.emptyForm();
 
@@ -159,6 +172,7 @@ export class AdminProfile implements OnInit {
         }).subscribe({
             next: profile => {
                 this.profile.set(profile);
+                this.twoFactorEnabled.set(profile.totpEnabled === true);
 
                 const avatar = this.getValidAvatar(profile.profileImage);
                 this.selectedAvatar.set(avatar);
@@ -188,6 +202,19 @@ export class AdminProfile implements OnInit {
                 );
             },
         });
+    }
+
+    onTwoFactorEnabledChange(enabled: boolean): void {
+        this.twoFactorEnabled.set(enabled);
+
+        const current = this.profile();
+
+        if (current) {
+            this.profile.set({
+                ...current,
+                totpEnabled: enabled,
+            });
+        }
     }
 
     startEditing(): void {

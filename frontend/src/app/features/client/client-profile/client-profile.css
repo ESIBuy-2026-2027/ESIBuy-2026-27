@@ -101,23 +101,43 @@
     margin-top: 24px;
 }
 
-.nav-item {
+.sidebar-nav .nav-item {
     display: block;
+    width: 100%;
     padding: 11px 12px;
+    border: 0;
     border-radius: 8px;
+    background: transparent;
     color: #3a5871;
+    font-family: inherit;
     font-size: 13px;
     font-weight: 550;
+    text-align: left;
     text-decoration: none;
+    cursor: pointer;
 }
 
-.nav-item.active {
+.sidebar-nav .nav-item.active {
     background: #dde8f0;
     color: #102c40;
     font-weight: 700;
 }
 
-.nav-item.disabled {
+.sidebar-nav .nav-item:not(.disabled):hover {
+    background: #edf3f7;
+    color: #102c40;
+}
+
+.sidebar-nav .nav-item.active:hover {
+    background: #dde8f0;
+}
+
+.sidebar-nav .nav-item:focus-visible {
+    outline: 3px solid rgb(66 214 178 / 35%);
+    outline-offset: 2px;
+}
+
+.sidebar-nav .nav-item.disabled {
     color: #8396a4;
     cursor: not-allowed;
     opacity: 0.8;
@@ -126,39 +146,59 @@
 /* PIE DE LA BARRA LATERAL */
 
 .sidebar-footer {
+    display: flex;
     width: 100%;
+    flex-direction: column;
+    gap: 6px;
     margin-top: auto;
     padding-top: 18px;
+    border-top: 1px solid #e7edf0;
 }
 
-.sidebar-footer::before {
-    display: block;
-    height: 1px;
-    margin-bottom: 12px;
-    background: #e7edf0;
-    content: "";
+.sidebar-footer .form-error {
+    margin-bottom: 8px;
 }
 
-.logout-button {
+.logout-button,
+.sidebar-footer .back-button {
+    display: flex;
     width: 100%;
-    padding: 11px 12px;
+    min-height: 40px;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
     border: 0;
     border-radius: 8px;
     background: transparent;
-    color: #587388;
     font: inherit;
     font-size: 13px;
     font-weight: 550;
     text-align: left;
     cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.logout-button {
+    color: #587388;
 }
 
 .logout-button:hover {
-    background: #f4f8f9;
-    color: #173247;
+    background: #c43434ba;
+    color: #ffe2e2;
 }
 
-.logout-button:focus-visible {
+.sidebar-footer .back-button {
+    color: #3a5871;
+}
+
+.sidebar-footer .back-button:hover {
+    background: #dde8f0;
+    color: #102c40;
+}
+
+.sidebar-footer .logout-button:focus-visible,
+.sidebar-footer .back-button:focus-visible {
     outline: 3px solid rgb(66 214 178 / 35%);
     outline-offset: 2px;
 }
@@ -166,10 +206,13 @@
 /* CONTENIDO PRINCIPAL */
 
 .profile-main {
-    display: grid;
     min-width: 0;
-    gap: 18px;
-    align-content: start;
+}
+
+app-two-factor-settings {
+    display: block;
+    width: 100%;
+    min-width: 0;
 }
 
 /* PANELES */
@@ -233,6 +276,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 18px;
+    margin-bottom: 24px;
     padding: 22px 26px;
     border-radius: 16px;
     background: #0a3a4a;
@@ -518,6 +562,7 @@
 /* MENSAJES */
 
 .success-message {
+    display: block;
     margin: 0 0 18px;
     padding: 12px 14px;
     border: 1px solid #a9ddc5;
@@ -539,114 +584,329 @@
     line-height: 1.5;
 }
 
-/* VOLVER */
+/* ZONA DE PELIGRO */
 
-.profile-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: -10px;
+.danger-zone {
+    margin-top: 1.5rem;
+    border: 1px solid #e5b8b8;
 }
 
-.back-button {
-    min-height: 36px;
-    padding: 8px 10px;
-    border: 0;
-    background: transparent;
+.danger-zone .panel-title {
+    color: #a52828;
+}
+
+/* SEGURIDAD / AUTENTICACIÓN EN DOS FACTORES */
+
+.security-panel {
+    min-width: 0;
+}
+
+.security-status {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    border: 1px solid #d9e3eb;
+    border-radius: 999px;
+    background: #f4f8f9;
     color: #587388;
-    font-weight: 500;
+    font-size: 11px;
+    font-weight: 750;
+    white-space: nowrap;
 }
 
-.back-button:hover {
-    background: #dde8f0;
-    color: #102c40;
+.security-status-on {
+    border-color: #a9ddc5;
+    background: #edf9f2;
+    color: #17633c;
 }
 
-/* TABLET Y MÓVIL */
-
-@media (max-width: 760px) {
-    .profile-page {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 16px;
-        padding: 20px 16px 44px;
-    }
-
-    .profile-card {
-        min-height: auto;
-    }
-
-    .sidebar-nav {
-        margin-top: 18px;
-    }
-
-    .profile-main {
-        gap: 14px;
-    }
-
-    .premium-banner {
-        align-items: stretch;
-        flex-direction: column;
-        padding: 20px;
-    }
-
-    .premium-action {
-        align-self: flex-start;
-    }
-
-    .panel {
-        padding: 22px 18px 24px;
-    }
-
-    .field-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
-    }
-
-    .profile-actions {
-        margin-top: -6px;
-    }
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #9aaab3;
 }
 
-@media (max-width: 520px) {
-    .panel-heading {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .panel-heading .edit-button {
-        align-self: flex-start;
-    }
-
-    .field-grid {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .form-actions {
-        flex-direction: column-reverse;
-    }
-
-    .form-actions button {
-        width: 100%;
-    }
-
-    .panel-title {
-        font-size: 18px;
-    }
-
-    .avatar-item {
-        width: 64px;
-        height: 64px;
-        flex-basis: 64px;
-    }
+.security-status-on .status-dot {
+    background: #1f9d62;
 }
 
-@media (prefers-reduced-motion: reduce) {
+.security-copy,
+.setup-instructions>p,
+.backup-codes-section>p,
+.disable-two-factor>p,
+.security-enabled-note p {
+    color: #587388;
+    font-size: 13px;
+    line-height: 1.65;
+}
 
-    *,
-    *::before,
-    *::after {
-        scroll-behavior: auto !important;
-        transition-duration: 0.01ms !important;
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-    }
+.security-copy {
+    margin: 0 0 18px;
+}
+
+.security-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.setup-instructions,
+.backup-codes-section,
+.disable-two-factor {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid #e7edf0;
+}
+
+.setup-instructions h3,
+.backup-codes-section h3,
+.disable-two-factor h3,
+.backup-codes-result h3 {
+    margin: 0 0 8px;
+    color: #173247;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.setup-instructions>p,
+.backup-codes-section>p,
+.disable-two-factor>p {
+    margin: 0 0 14px;
+}
+
+.security-label {
+    display: block;
+    margin: 12px 0 7px;
+    color: #72828e;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.secret-value,
+.uri-value {
+    display: block;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #dce6ea;
+    border-radius: 8px;
+    background: #f4f8f9;
+    color: #173247;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.secret-value {
+    letter-spacing: 0.7px;
+}
+
+.otpauth-details {
+    margin-top: 10px;
+    color: #3a5871;
+    font-size: 12px;
+}
+
+.otpauth-details summary {
+    width: fit-content;
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.uri-value {
+    margin-top: 10px;
+    white-space: normal;
+}
+
+.security-code-field {
+    width: min(100%, 320px);
+    margin-top: 14px;
+}
+
+.security-code-field input {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #9aafbf;
+    border-radius: 8px;
+    background: #fff;
+    color: #203b4e;
+    font: inherit;
+    font-size: 15px;
+    letter-spacing: 2px;
+}
+
+.security-code-field input:focus {
+    border-color: #42bfa3;
+    outline: 3px solid rgb(66 214 178 / 22%);
+    outline-offset: 1px;
+}
+
+.security-code-field input:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.security-message {
+    display: block;
+    margin-top: 14px;
+}
+
+.security-enabled-note {
+    padding: 15px 16px;
+    border: 1px solid #a9ddc5;
+    border-radius: 10px;
+    background: #edf9f2;
+    color: #17633c;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.security-enabled-note p {
+    margin: 5px 0 0;
+    color: #32694d;
+}
+
+.backup-codes-result {
+    margin-top: 22px;
+    padding: 18px;
+    border: 1px solid #e3d4a1;
+    border-radius: 10px;
+    background: #fffaf0;
+}
+
+.backup-codes-result h3 {
+    margin-top: 0;
+}
+
+.backup-warning {
+    margin: 0 0 14px;
+    color: #805b12;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.backup-code-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+}
+
+.backup-code-list li {
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid #eadfbf;
+    border-radius: 7px;
+    background: #fff;
+}
+
+.backup-code-list code {
+    color: #173247;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.danger-button {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 16px;
+    border: 1px solid #d9a0a5;
+    border-radius: 8px;
+    background: #fff;
+    color: #a12632;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.danger-button:hover:not(:disabled) {
+    border-color: #c75b65;
+    background: #fff0f1;
+}
+
+.danger-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.danger-button:focus-visible {
+    outline: 3px solid rgb(199 91 101 / 25%);
+    outline-offset: 2px;
+}
+
+/* CONFIGURACIÓN QR DE AUTENTICACIÓN */
+
+.qr-container {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 18px 0 22px;
+}
+
+.totp-qr {
+    display: block;
+    width: 240px;
+    max-width: 100%;
+    height: auto;
+    padding: 12px;
+    border: 1px solid #d9e3eb;
+    border-radius: 12px;
+    background: #fff;
+    image-rendering: pixelated;
+}
+
+.qr-caption {
+    margin: 0;
+    color: #587388;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.manual-setup {
+    min-width: 0;
+    margin-top: 18px;
+    padding: 18px;
+    border: 1px solid #d9e3eb;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.manual-setup h4 {
+    margin: 0 0 8px;
+    color: #173247;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.manual-setup>p {
+    margin: 0 0 12px;
+    color: #587388;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.copy-secret-button,
+.download-codes-button {
+    margin-top: 12px;
+}
+
+.copy-secret-button {
+    max-width: 100%;
+}
+
+.download-codes-button {
+    margin-bottom: 16px;
 }

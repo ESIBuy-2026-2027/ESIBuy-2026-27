@@ -20,7 +20,8 @@ public record UserProfileResponse(
         String businessName,
         String defaultCategory,
         String headquarters,
-        LocalDateTime hireDate) {
+        LocalDateTime hireDate,
+        Boolean totpEnabled) {
 
     private static final int VISIBLE_NATIONAL_ID_CHARS = 4;
 
@@ -67,7 +68,8 @@ public record UserProfileResponse(
                 businessName,
                 defaultCategory,
                 headquarters,
-                hireDate);
+                hireDate,
+                user.isTotpEnabled());
     }
 
     static String maskNationalId(String nationalId) {

@@ -1,0 +1,208 @@
+<section class="panel security-panel" aria-labelledby="two-factor-title">
+    <div class="panel-heading">
+        <div class="panel-heading-text">
+            <p class="eyebrow">SEGURIDAD DE LA CUENTA</p>
+
+            <h2 class="panel-title" id="two-factor-title">
+                Verificación en dos pasos
+            </h2>
+
+            <p class="panel-description">
+                Añade una capa adicional de protección a tu cuenta mediante
+                una aplicación de autenticación.
+            </p>
+        </div>
+
+        <span class="security-status" [class.security-status-on]="twoFactorEnabled">
+            <span class="status-dot"></span>
+            {{ twoFactorEnabled ? 'Activada' : 'Desactivada' }}
+        </span>
+    </div>
+
+    @if (twoFactorError) {
+    <p class="form-error" role="alert">
+        {{ twoFactorError }}
+    </p>
+    }
+
+    @if (twoFactorSuccess) {
+    <output class="success-message">
+        {{ twoFactorSuccess }}
+    </output>
+    }
+
+    @if (!twoFactorEnabled && !twoFactorSetup) {
+    <div class="security-copy">
+        <p>
+            Protege tu cuenta solicitando un código temporal al iniciar
+            sesión.
+        </p>
+    </div>
+
+    <div class="form-actions">
+        <button type="button" class="primary-button" (click)="setupTwoFactor()" [disabled]="twoFactorBusy">
+            {{ twoFactorBusy ? 'Preparando...' : 'Configurar verificación' }}
+        </button>
+    </div>
+    }
+
+    @if (twoFactorSetup && !twoFactorEnabled) {
+    <div class="setup-instructions">
+        <h3>1. Configura tu aplicación</h3>
+
+        <p>
+            Escanea este código QR con tu aplicación de autenticación.
+            Si no puedes escanearlo, introduce manualmente la clave.
+        </p>
+
+        @if (qrGenerating) {
+        <p>Generando código QR...</p>
+        } @else if (qrImage) {
+        <div class="qr-container">
+            <img class="totp-qr" [src]="qrImage" alt="Código QR para configurar la autenticación en dos pasos" />
+
+            <p class="qr-caption">
+                Escanea el código con tu aplicación de autenticación.
+            </p>
+        </div>
+        }
+
+        <div class="manual-setup">
+            <label for="two-factor-secret">
+                Clave de configuración
+            </label>
+
+            <div class="secret-value">
+                <code id="two-factor-secret">
+                        {{ twoFactorSetup.secret }}
+                    </code>
+            </div>
+
+            <button type="button" class="secondary-button copy-secret-button" (click)="copyTwoFactorSecret()">
+                {{ copiedSecret ? 'Copiada' : 'Copiar clave' }}
+            </button>
+        </div>
+    </div>
+
+    <div class="setup-instructions">
+        <h3>2. Confirma la configuración</h3>
+
+        <p>
+            Introduce el código de seis dígitos que aparece en tu
+            aplicación de autenticación.
+        </p>
+
+        <div class="security-code-field">
+            <label for="enable-two-factor-code">
+                Código de verificación
+            </label>
+
+            <input id="enable-two-factor-code" type="text" name="enableTwoFactorCode" [(ngModel)]="twoFactorCode"
+                (ngModelChange)="twoFactorCode = formatVerificationCode($event)" autocomplete="one-time-code"
+                inputmode="numeric" placeholder="XXX XXX" maxlength="7" aria-describedby="enable-code-help" />
+
+            <span id="enable-code-help" class="qr-caption">
+                Introduce los seis dígitos de tu aplicación.
+            </span>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="primary-button" (click)="enableTwoFactor()" [disabled]="twoFactorBusy">
+                {{ twoFactorBusy ? 'Activando...' : 'Activar verificación' }}
+            </button>
+        </div>
+    </div>
+    }
+
+    @if (twoFactorEnabled) {
+    <div class="security-enabled-note">
+        <strong>Verificación en dos pasos activada</strong>
+
+        <p>
+            Tu cuenta tiene activada la verificación en dos pasos.
+            Mantén tus códigos de recuperación en un lugar seguro.
+        </p>
+    </div>
+
+    @if (backupCodes.length > 0) {
+    <div class="backup-codes-result">
+        <h3>Códigos de recuperación</h3>
+
+        <p class="backup-warning">
+            Guarda estos códigos ahora. Se utilizan para recuperar
+            el acceso si no puedes usar tu aplicación de autenticación.
+        </p>
+
+        <ul class="backup-code-list">
+            @for (code of backupCodes; track code) {
+            <li>
+                <code>{{ code }}</code>
+            </li>
+            }
+        </ul>
+
+        <button type="button" class="secondary-button download-codes-button" (click)="downloadBackupCodes()">
+            Descargar códigos
+        </button>
+    </div>
+    }
+
+    <div class="backup-codes-section">
+        <h3>Regenerar códigos de recuperación</h3>
+
+        <p>
+            Introduce un código de tu aplicación para generar un nuevo
+            conjunto de códigos de recuperación.
+        </p>
+
+        <div class="security-code-field">
+            <label for="recovery-two-factor-code">
+                Código de verificación
+            </label>
+
+            <input id="recovery-two-factor-code" type="text" name="recoveryTwoFactorCode" [(ngModel)]="recoveryCode"
+                (ngModelChange)="recoveryCode = formatVerificationCode($event)" autocomplete="one-time-code"
+                inputmode="numeric" placeholder="XXX XXX" maxlength="7" aria-describedby="recovery-code-help" />
+
+            <span id="recovery-code-help" class="qr-caption">
+                Introduce los seis dígitos de tu aplicación.
+            </span>
+        </div>
+
+        <div class="security-actions">
+            <button type="button" class="secondary-button" (click)="regenerateBackupCodes()" [disabled]="twoFactorBusy">
+                {{ twoFactorBusy ? 'Regenerando...' : 'Regenerar códigos' }}
+            </button>
+        </div>
+    </div>
+
+    <div class="disable-two-factor">
+        <h3>Desactivar verificación en dos pasos</h3>
+
+        <p>
+            Para desactivar esta protección, confirma la operación con
+            un código de tu aplicación de autenticación.
+        </p>
+
+        <div class="security-code-field">
+            <label for="disable-two-factor-code">
+                Código de verificación
+            </label>
+
+            <input id="disable-two-factor-code" type="text" name="disableTwoFactorCode" [(ngModel)]="twoFactorCode"
+                (ngModelChange)="twoFactorCode = formatVerificationCode($event)" autocomplete="one-time-code"
+                inputmode="numeric" placeholder="XXX XXX" maxlength="7" aria-describedby="disable-code-help" />
+
+            <span id="disable-code-help" class="qr-caption">
+                Introduce los seis dígitos de tu aplicación.
+            </span>
+        </div>
+
+        <div class="security-actions">
+            <button type="button" class="danger-button" (click)="disableTwoFactor()" [disabled]="twoFactorBusy">
+                {{ twoFactorBusy ? 'Procesando...' : 'Desactivar verificación' }}
+            </button>
+        </div>
+    </div>
+    }
+</section>

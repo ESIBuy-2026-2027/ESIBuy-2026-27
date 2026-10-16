@@ -1,273 +1,258 @@
 <div class="profile-page">
-    <div class="profile-card">
 
-        <!-- Barra lateral -->
-        <aside class="profile-sidebar">
-            <div class="sidebar-profile">
-                @if (selectedAvatar()) {
-                <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Perfil" />
-                } @else {
-                <div class="avatar" aria-hidden="true">
-                    {{ initials() }}
-                </div>
-                }
+    <!-- BARRA LATERAL -->
+    <aside class="profile-card" aria-label="Menú de perfil">
 
-                <h2 class="sidebar-name">
-                    {{ fullName() || 'Administrador' }}
-                </h2>
+        <div class="sidebar-profile">
+            <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Perfil" />
 
-                <span class="role-badge">Administrador</span>
-            </div>
+            <h2 class="sidebar-name">
+                {{ fullName() || 'Administrador' }}
+            </h2>
 
-            <nav class="sidebar-nav" aria-label="Navegación del perfil">
-                <a class="nav-item active" routerLink="/admin/perfil">
-                    <span aria-hidden="true"></span>
-                    Mi perfil
-                </a>
-            </nav>
+            <span class="role-badge">Administrador</span>
+        </div>
 
-            <div class="sidebar-footer">
-                @if (logoutError()) {
-                <p class="form-error" role="alert">
-                    {{ logoutError() }}
-                </p>
-                }
+        <nav class="sidebar-nav" aria-label="Secciones del perfil">
+            @for (section of sections; track section.label) {
+            @if (section.label === 'Datos personales') {
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'personal'"
+                [attr.aria-current]="activeSection() === 'personal' ? 'page' : null"
+                (click)="selectSection('personal')">
+                {{ section.label }}
+            </button>
+            } @else {
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'security'"
+                [attr.aria-current]="activeSection() === 'security' ? 'page' : null"
+                (click)="selectSection('security')">
+                {{ section.label }}
+            </button>
+            }
+            }
+        </nav>
 
-                <button type="button" class="logout-button" (click)="logout()">
-                    Cerrar sesión
-                </button>
-            </div>
-        </aside>
-
-        <!-- Contenido principal -->
-        <main class="profile-main">
-
-            @if (loading()) {
-            <section class="panel">
-                <p class="panel-description loading-message">
-                    Cargando los datos de tu perfil...
-                </p>
-            </section>
+        <div class="sidebar-footer">
+            @if (logoutError(); as error) {
+            <p class="form-error" role="alert">{{ error }}</p>
             }
 
-            @if (!loading() && profileError()) {
-            <section class="panel">
-                <h1 class="panel-title">Mi perfil de administrador</h1>
+            <button type="button" class="back-button" (click)="goBack()">
+                <span aria-hidden="true">←</span>
+                Volver
+            </button>
 
-                <p class="form-error" role="alert">
-                    {{ profileError() }}
-                </p>
+            <button type="button" class="logout-button" (click)="logout()">
+                Cerrar sesión
+            </button>
+        </div>
 
-                <button type="button" class="primary-button" (click)="loadProfile()">
-                    Reintentar
-                </button>
-            </section>
-            }
+    </aside>
 
-            @if (!loading() && !profileError() && profile(); as admin) {
-            <section class="panel">
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="profile-main">
 
-                <!-- Cabecera -->
-                <div class="panel-heading">
-                    <div class="panel-heading-text">
-                        <span class="eyebrow">CUENTA DE ADMINISTRADOR</span>
+        @if (loading()) {
+        <section class="panel">
+            <output class="panel-description">
+                Cargando los datos de tu perfil...
+            </output>
+        </section>
+        } @else if (profileError(); as error) {
+        <section class="panel">
+            <h1 class="panel-title">Mi perfil</h1>
 
-                        <h1 class="panel-title">Mi perfil</h1>
+            <p class="form-error" role="alert">{{ error }}</p>
 
-                        <p class="panel-description">
-                            Consulta y actualiza tus datos personales y la información
-                            de tu puesto en ESIBuy.
-                        </p>
-                    </div>
+            <button type="button" class="primary-button" (click)="loadProfile()">
+                Reintentar
+            </button>
+        </section>
+        } @else if (profile(); as admin) {
 
-                    @if (!editing()) {
-                    <button type="button" class="primary-button edit-button" (click)="startEditing()">
-                        <span aria-hidden="true">✎</span>
-                        Editar perfil
-                    </button>
-                    }
+        <!-- DATOS PERSONALES -->
+        @if (activeSection() === 'personal') {
+        <section class="panel">
+
+            <div class="panel-heading">
+                <div class="panel-heading-text">
+                    <span class="eyebrow">CUENTA DE ADMINISTRADOR</span>
+
+                    <h1 class="panel-title">Mi perfil</h1>
+
+                    <p class="panel-description">
+                        Consulta y actualiza tus datos personales y la información
+                        de tu puesto en ESIBuy.
+                    </p>
                 </div>
 
-                @if (editSuccess()) {
-                <output class="success-message">
-                    {{ editSuccess() }}
-                </output>
+                @if (!editing()) {
+                <button type="button" class="primary-button" (click)="startEditing()">
+                    Editar perfil
+                </button>
                 }
+            </div>
 
-                @if (editError()) {
-                <p class="form-error" role="alert">
-                    {{ editError() }}
-                </p>
-                }
+            @if (editSuccess(); as message) {
+            <output class="success-message">{{ message }}</output>
+            }
 
-                <!-- MODO EDICIÓN -->
-                @if (editing()) {
-                <form (ngSubmit)="saveProfile()">
+            @if (editError(); as error) {
+            <p class="form-error" role="alert">{{ error }}</p>
+            }
 
-                    <h2 class="section-title">Datos personales</h2>
+            <form (ngSubmit)="saveProfile()">
 
-                    <div class="field-grid">
-
-                        <div class="field">
-                            <label for="firstName">Nombre <span>*</span></label>
-                            <input id="firstName" name="firstName" type="text" [(ngModel)]="editForm.firstName" required
-                                maxlength="100" autocomplete="given-name" [disabled]="saving()" />
-                        </div>
-
-                        <div class="field">
-                            <label for="lastName">Apellidos <span>*</span></label>
-                            <input id="lastName" name="lastName" type="text" [(ngModel)]="editForm.lastName" required
-                                maxlength="150" autocomplete="family-name" [disabled]="saving()" />
-                        </div>
-
-                        <div class="field">
-                            <label for="email">Correo electrónico</label>
-                            <input id="email" type="email" [value]="admin.email" readonly />
-                            <small>El correo electrónico no se puede modificar.</small>
-                        </div>
-
-                        <div class="field">
-                            <label for="nationalId">Documento de identidad</label>
-                            <input id="nationalId" name="nationalId" type="text" [(ngModel)]="editForm.nationalId"
-                                maxlength="20" autocomplete="off" placeholder="Nuevo documento (opcional)"
-                                [disabled]="saving()" />
-                            <small>
-                                Deja el campo vacío para conservar el documento actual.
-                            </small>
-                        </div>
-
-                        <div class="field">
-                            <label for="phone">Teléfono</label>
-                            <input id="phone" type="text" [value]="admin.phone || 'No indicado'" readonly />
-                        </div>
-
-                    </div>
-
-                    <div class="job-section">
-                        <h2 class="section-title">Información del puesto</h2>
-
-                        <div class="field-grid">
-
-                            <div class="field">
-                                <label for="headquarters">Sede central</label>
-                                <input id="headquarters" name="headquarters" type="text"
-                                    [(ngModel)]="editForm.headquarters" maxlength="150" [disabled]="saving()" />
-                            </div>
-
-                            <div class="field">
-                                <label for="hireDate">Fecha de incorporación</label>
-                                <input id="hireDate" type="text" [value]="formattedHireDate()" readonly />
-                                <small>Este dato no se puede modificar desde el perfil.</small>
-                            </div>
-
-                        </div>
-                    </div>
-                    <!-- Avatares -->
-                    <div class="avatar-section">
-                        <h2 class="section-title">Imagen de perfil</h2>
-
-                        <p class="section-description">
-                            Selecciona una de las imágenes disponibles.
-                        </p>
-
-                        <fieldset class="avatar-selector-grid">
-                            <legend>Seleccionar imagen de perfil</legend>
-                            @for (avatar of adminAvatars; track avatar; let i = $index) {
-                            <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
-                                [attr.aria-pressed]="selectedAvatar() === avatar"
-                                [attr.aria-label]="'Seleccionar avatar ' + (i + 1)" (click)="selectAvatar(avatar)"
-                                [disabled]="saving()">
-                                <img [src]="avatar" [alt]="'Avatar disponible ' + (i + 1)" />
-
-                                @if (selectedAvatar() === avatar) {
-                                <span class="avatar-check" aria-hidden="true">✓</span>
-                                }
-                            </button>
-                            }
-                        </fieldset>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" class="secondary-button" (click)="cancelEditing()" [disabled]="saving()">
-                            Cancelar
-                        </button>
-
-                        <button type="submit" class="primary-button" [disabled]="saving()">
-                            @if (saving()) {
-                            Guardando...
-                            } @else {
-                            Guardar cambios
-                            }
-                        </button>
-                    </div>
-
-                </form>
-                }
-
-                <!-- MODO CONSULTA -->
-                @else {
                 <h2 class="section-title">Datos personales</h2>
 
                 <div class="field-grid">
 
                     <div class="field">
-                        <label for="viewFirstName">Nombre</label>
-                        <input id="viewFirstName" type="text" [value]="admin.firstName" readonly />
+                        <label for="firstName">Nombre <span>*</span></label>
+
+                        @if (editing()) {
+                        <input id="firstName" name="firstName" type="text" [(ngModel)]="editForm.firstName" required
+                            minlength="2" maxlength="25" autocomplete="given-name" [disabled]="saving()" />
+                        } @else {
+                        <input id="firstName" type="text" [value]="admin.firstName || ''" readonly />
+                        }
                     </div>
 
                     <div class="field">
-                        <label for="viewLastName">Apellidos</label>
-                        <input id="viewLastName" type="text" [value]="admin.lastName" readonly />
+                        <label for="lastName">Apellidos <span>*</span></label>
+
+                        @if (editing()) {
+                        <input id="lastName" name="lastName" type="text" [(ngModel)]="editForm.lastName" required
+                            minlength="2" maxlength="50" autocomplete="family-name" [disabled]="saving()" />
+                        } @else {
+                        <input id="lastName" type="text" [value]="admin.lastName || ''" readonly />
+                        }
                     </div>
 
                     <div class="field">
-                        <label for="viewEmail">Correo electrónico</label>
-                        <input id="viewEmail" type="email" [value]="admin.email" readonly />
+                        <label for="email">Correo electrónico</label>
+                        <input id="email" type="email" [value]="admin.email || ''" readonly />
+                        <small>El correo electrónico no se puede modificar.</small>
                     </div>
 
                     <div class="field">
-                        <label for="viewPhone">Teléfono</label>
-                        <input id="viewPhone" type="text" [value]="admin.phone || 'No indicado'" readonly />
+                        <label for="phone">Teléfono</label>
+                        <input id="phone" type="text" [value]="admin.phone || 'No indicado'" readonly />
                     </div>
 
                     <div class="field">
-                        <label for="viewNationalId">Documento de identidad</label>
-                        <input id="viewNationalId" type="text" [value]="admin.maskedNationalId || 'No disponible'"
+                        <label for="nationalId">Documento de identidad</label>
+
+                        @if (editing()) {
+                        <input id="nationalId" name="nationalId" type="text" [(ngModel)]="editForm.nationalId"
+                            maxlength="20" autocomplete="off" placeholder="Introduce un documento nuevo"
+                            [disabled]="saving()" />
+                        <small>Déjalo vacío para mantener el documento actual.</small>
+                        } @else {
+                        <input id="nationalId" type="text" [value]="admin.maskedNationalId || 'No disponible'"
                             readonly />
+                        }
                     </div>
 
                 </div>
 
-                <h2 class="section-title">Información del puesto</h2>
+                <div class="job-section">
+                    <h2 class="section-title">Información del puesto</h2>
 
-                <div class="field-grid">
+                    <div class="field-grid">
 
-                    <div class="field">
-                        <label for="viewHeadquarters">Sede central</label>
-                        <input id="viewHeadquarters" type="text" [value]="admin.headquarters || 'No indicada'"
-                            readonly />
+                        <div class="field">
+                            <label for="headquarters">Sede central</label>
+
+                            @if (editing()) {
+                            <input id="headquarters" name="headquarters" type="text" [(ngModel)]="editForm.headquarters"
+                                maxlength="100" [disabled]="saving()" />
+                            } @else {
+                            <input id="headquarters" type="text" [value]="admin.headquarters || 'No indicada'"
+                                readonly />
+                            }
+                        </div>
+
+                        <div class="field">
+                            <label for="hireDate">Fecha de incorporación</label>
+                            <input id="hireDate" type="text" [value]="formattedHireDate()" readonly />
+
+                            @if (editing()) {
+                            <small>Este dato no se puede modificar desde el perfil.</small>
+                            }
+                        </div>
+
                     </div>
+                </div>
 
-                    <div class="field">
-                        <label for="viewHireDate">Fecha de incorporación</label>
-                        <input id="viewHireDate" type="text" [value]="formattedHireDate()" readonly />
-                    </div>
+                @if (editing()) {
+                <div class="avatar-section">
+                    <h2 class="section-title">Imagen de perfil</h2>
 
+                    <p class="section-description">
+                        Selecciona uno de los avatares disponibles.
+                    </p>
+
+                    <fieldset class="avatar-selector-grid">
+                        <legend>Seleccionar avatar</legend>
+
+                        @for (avatar of adminAvatars; track avatar; let i = $index) {
+                        <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
+                            [attr.aria-pressed]="selectedAvatar() === avatar"
+                            [attr.aria-label]="'Seleccionar avatar ' + (i + 1)" [disabled]="saving()"
+                            (click)="selectAvatar(avatar)">
+
+                            <img [src]="avatar" [alt]="'Avatar ' + (i + 1)" />
+
+                            @if (selectedAvatar() === avatar) {
+                            <span class="avatar-check" aria-hidden="true">✓</span>
+                            }
+                        </button>
+                        }
+                    </fieldset>
                 </div>
                 }
 
-            </section>
+                @if (editing()) {
+                <div class="form-actions">
+                    <button type="button" class="secondary-button" [disabled]="saving()" (click)="cancelEditing()">
+                        Cancelar
+                    </button>
 
-            <!-- Baja de cuenta existente -->
-            <app-delete-account [role]="'ADMIN'" />
+                    <button type="submit" class="primary-button" [disabled]="saving()">
+                        {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
+                    </button>
+                </div>
+                }
 
-            <div class="profile-actions">
-                <button type="button" class="back-button" (click)="goBack()">
-                    ← Volver
-                </button>
+            </form>
+        </section>
+
+        <!-- ZONA DE PELIGRO -->
+        <section class="panel danger-zone" aria-labelledby="danger-zone-title">
+            <div class="panel-heading">
+                <div class="panel-heading-text">
+                    <span class="eyebrow">ACCIONES IRREVERSIBLES</span>
+
+                    <h2 id="danger-zone-title" class="panel-title">
+                        Zona de peligro
+                    </h2>
+
+                    <p class="panel-description">
+                        Desde aquí puedes iniciar el proceso de eliminación
+                        de tu cuenta de administrador.
+                    </p>
+                </div>
             </div>
-            }
 
-        </main>
-    </div>
+            <app-delete-account [role]="'ADMIN'" />
+        </section>
+        }
+
+        <!-- SEGURIDAD -->
+        @if (activeSection() === 'security') {
+        <app-two-factor-settings [enabled]="twoFactorEnabled()"
+            (enabledChange)="onTwoFactorEnabledChange($any($event))" />
+        }
+        }
+    </main>
 </div>

@@ -23,22 +23,41 @@
 
         <nav class="sidebar-nav" aria-label="Secciones del perfil">
             @for (section of sections; track section.label) {
-            <a class="nav-item" [class.active]="section.active" [class.disabled]="!section.active"
-                [attr.aria-current]="section.active ? 'page' : null" [attr.aria-disabled]="!section.active">
+            @if (section.label === 'Datos personales') {
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'personal'"
+                [attr.aria-current]="activeSection() === 'personal' ? 'page' : null"
+                (click)="selectSection('personal')">
+                {{ section.label }}
+            </button>
+            } @else if (section.label === 'Seguridad') {
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'security'"
+                [attr.aria-current]="activeSection() === 'security' ? 'page' : null"
+                (click)="selectSection('security')">
+                {{ section.label }}
+            </button>
+            } @else {
+            <a class="nav-item disabled" aria-disabled="true">
                 {{ section.label }}
             </a>
             }
+            }
         </nav>
+
 
         <div class="sidebar-footer">
             @if (logoutError(); as error) {
             <p class="form-error" role="alert">{{ error }}</p>
             }
+            <button type="button" class="back-button" (click)="goBack()">
+                <span aria-hidden="true">←</span>
+                Volver
+            </button>
 
             <button type="button" class="logout-button" (click)="logout()">
                 Cerrar sesión
             </button>
         </div>
+
     </aside>
 
     <!-- CONTENIDO PRINCIPAL -->
@@ -66,9 +85,7 @@
         @if (isPremium()) {
         <section class="premium-banner">
             <div>
-                <span class="premium-eyebrow">
-                    CUENTA PREMIUM
-                </span>
+                <span class="premium-eyebrow">CUENTA PREMIUM</span>
 
                 <h2>Disfruta de ventajas exclusivas</h2>
 
@@ -80,7 +97,8 @@
         </section>
         }
 
-        <!-- PANEL DEL PERFIL -->
+        <!-- DATOS PERSONALES -->
+        @if (activeSection() === 'personal') {
         <section class="panel">
 
             <div class="panel-heading">
@@ -233,17 +251,17 @@
 
                     <fieldset class="avatar-selector-grid">
                         <legend>Seleccionar avatar</legend>
+
                         @for (avatar of clientAvatars; track avatar; let i = $index) {
                         <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
                             [attr.aria-pressed]="selectedAvatar() === avatar"
                             [attr.aria-label]="'Seleccionar avatar ' + (i + 1)" [disabled]="saving()"
                             (click)="selectAvatar(avatar)">
+
                             <img [src]="avatar" [alt]="'Avatar ' + (i + 1)" />
 
                             @if (selectedAvatar() === avatar) {
-                            <span class="avatar-check" aria-hidden="true">
-                                ✓
-                            </span>
+                            <span class="avatar-check" aria-hidden="true">✓</span>
                             }
                         </button>
                         }
@@ -251,7 +269,7 @@
                 </div>
                 }
 
-                <!-- ACCIONES -->
+                <!-- ACCIONES DEL FORMULARIO -->
                 @if (editing()) {
                 <div class="form-actions">
                     <button type="button" class="secondary-button" [disabled]="saving()" (click)="cancelEditing()">
@@ -267,14 +285,32 @@
             </form>
         </section>
 
-        <app-delete-account [role]="'CLIENT'" />
+        <!-- ZONA DE PELIGRO: SOLO EN DATOS PERSONALES -->
+        <section class="panel danger-zone" aria-labelledby="danger-zone-title">
+            <div class="panel-heading">
+                <div class="panel-heading-text">
+                    <span class="eyebrow">ACCIONES IRREVERSIBLES</span>
 
-        <div class="profile-actions">
-            <button type="button" class="back-button" (click)="goBack()">
-                ← Volver
-            </button>
-        </div>
+                    <h2 id="danger-zone-title" class="panel-title">
+                        Zona de peligro
+                    </h2>
+
+                    <p class="panel-description">
+                        Desde aquí puedes iniciar el proceso de eliminación
+                        de tu cuenta de cliente.
+                    </p>
+                </div>
+            </div>
+
+            <app-delete-account [role]="'CLIENT'" />
+        </section>
         }
 
+        <!-- SEGURIDAD / AUTENTICACIÓN EN DOS FACTORES -->
+        @if (activeSection() === 'security') {
+        <app-two-factor-settings [enabled]="twoFactorEnabled()"
+            (enabledChange)="onTwoFactorEnabledChange($any($event))" />
+        }
+        }
     </main>
 </div>
