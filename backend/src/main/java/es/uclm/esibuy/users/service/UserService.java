@@ -13,6 +13,7 @@ import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
 import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
+import es.uclm.esibuy.users.dto.UpdateOwnProfileRequestDTO;
 import es.uclm.esibuy.users.dto.UserProfileResponse;
 import es.uclm.esibuy.users.model.AdminProfile;
 import es.uclm.esibuy.users.model.ClientProfile;
@@ -164,4 +165,73 @@ public class UserService {
         // Eliminar la cuenta del usuario.
         userRepository.delete(user);
     }
+
+    public UserProfileResponse updateOwnProfile(
+            String userId,
+            UpdateOwnProfileRequestDTO request) {
+
+        User user = findById(userId);
+
+        // Datos generales que pueden modificar cliente y vendedor.
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setPhone(blankToNull(request.getPhone()));
+        user.setProfileImage(blankToNull(request.getProfileImage()));
+
+        // Datos exclusivos del vendedor.
+        if (user.getRole() == UserRole.SELLER) {
+            SellerProfile profile = user.getSellerProfile();
+
+            if (profile == null) {
+                profile = new SellerProfile();
+                user.setSellerProfile(profile);
+            }
+
+            if (request.getBusinessName() != null) {
+                String businessName = blankToNull(request.getBusinessName());
+
+                if (businessName == null) {
+                    throw new IllegalArgumentException(
+                            "El nombre comercial no puede estar vacío");
+                }
+
+                boolean sameBusinessName = profile.getBusinessName() != null
+                        && businessName.equalsIgnoreCase(
+                                profile.getBusinessName());
+
+                if (!sameBusinessName
+                        && userRepository
+                                .existsBySellerProfileBusinessNameIgnoreCase(
+                                        businessName)) {
+                    throw new DuplicateUserException(
+                            "Ya existe un vendedor con ese nombre comercial");
+                }
+
+                profile.setBusinessName(businessName);
+            }
+
+            if (request.getDefaultCategory() != null) {
+                profile.setDefaultCategory(
+                        blankToNull(request.getDefaultCategory()));
+            }
+        }
+
+        if (user.getRole() == UserRole.CLIENT
+                && request.getBirthDate() != null) {
+
+            ClientProfile profile = user.getClientProfile();
+
+            if (profile == null) {
+                profile = new ClientProfile();
+                user.setClientProfile(profile);
+            }
+
+            profile.setBirthDate(request.getBirthDate());
+        }
+        // Guardar y devolver el perfil actualizado.
+        User savedUser = userRepository.save(user);
+
+        return UserProfileResponse.from(savedUser);
+    }
+
 }

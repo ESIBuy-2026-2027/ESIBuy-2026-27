@@ -1,0 +1,108 @@
+package es.uclm.esibuy.users.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
+import java.time.Period;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Past;
+
+public class UpdateOwnProfileRequestDTO {
+
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(min = 2, max = 25, message = "El nombre debe tener entre 2 y 25 caracteres")
+    @Pattern(regexp = "^[\\p{L}\\p{M}][\\p{L}\\p{M} '\\-]*$", message = "El nombre contiene caracteres no permitidos")
+    private String firstName;
+
+    @NotBlank(message = "Los apellidos son obligatorios")
+    @Size(min = 2, max = 50, message = "Los apellidos deben tener entre 2 y 50 caracteres")
+    @Pattern(regexp = "^[\\p{L}\\p{M}][\\p{L}\\p{M} '\\-]*$", message = "Los apellidos contienen caracteres no permitidos")
+    private String lastName;
+
+    @Pattern(regexp = "^$|^\\d{9}$", message = "El teléfono debe contener exactamente 9 dígitos numéricos")
+    private String phone;
+
+    @Size(max = 500, message = "La imagen de perfil no puede superar los 500 caracteres")
+    private String profileImage;
+
+    @Size(min = 2, max = 100, message = "El nombre comercial debe tener entre 2 y 100 caracteres")
+    private String businessName;
+
+    @Size(min = 2, max = 50, message = "La categoría por defecto debe tener entre 2 y 50 caracteres")
+    private String defaultCategory;
+
+    @Past(message = "La fecha de nacimiento debe ser anterior a la actual")
+    private LocalDate birthDate;
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = normalize(firstName);
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = normalize(lastName);
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = normalize(phone);
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = normalize(profileImage);
+    }
+
+    public String getBusinessName() {
+        return businessName;
+    }
+
+    public void setBusinessName(String businessName) {
+        this.businessName = normalize(businessName);
+    }
+
+    public String getDefaultCategory() {
+        return defaultCategory;
+    }
+
+    public void setDefaultCategory(String defaultCategory) {
+        this.defaultCategory = normalize(defaultCategory);
+    }
+
+    private String normalize(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    @AssertTrue(message = "El cliente debe ser mayor de edad")
+    public boolean isAdult() {
+        return birthDate == null
+                || Period.between(birthDate, LocalDate.now()).getYears() >= 18;
+    }
+}

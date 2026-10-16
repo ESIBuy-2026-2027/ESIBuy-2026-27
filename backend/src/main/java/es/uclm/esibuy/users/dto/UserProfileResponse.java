@@ -1,5 +1,7 @@
+
 package es.uclm.esibuy.users.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import es.uclm.esibuy.users.model.CustomerType;
@@ -14,6 +16,7 @@ public record UserProfileResponse(
         String maskedNationalId,
         String profileImage,
         CustomerType customerType,
+        LocalDate birthDate,
         String businessName,
         String defaultCategory,
         String headquarters,
@@ -23,6 +26,7 @@ public record UserProfileResponse(
 
     public static UserProfileResponse from(User user) {
         CustomerType customerType = null;
+        LocalDate birthDate = null;
         String businessName = null;
         String defaultCategory = null;
         String headquarters = null;
@@ -33,6 +37,10 @@ public record UserProfileResponse(
                     || user.getClientProfile().getCustomerType() == null
                             ? CustomerType.STANDARD
                             : user.getClientProfile().getCustomerType();
+
+            birthDate = user.getClientProfile() == null
+                    ? null
+                    : user.getClientProfile().getBirthDate();
         }
 
         if (user.getRole() == UserRole.SELLER
@@ -55,6 +63,7 @@ public record UserProfileResponse(
                 maskNationalId(user.getNationalId()),
                 user.getProfileImage(),
                 customerType,
+                birthDate,
                 businessName,
                 defaultCategory,
                 headquarters,
@@ -76,5 +85,4 @@ public record UserProfileResponse(
 
         return "*".repeat(hidden) + value.substring(hidden);
     }
-
 }

@@ -94,6 +94,8 @@ public class SecurityConfig {
                             .hasAnyRole("CLIENT", "SELLER", "ADMIN")
                             .requestMatchers(HttpMethod.DELETE, "/api/users/me")
                             .hasAnyRole("CLIENT", "SELLER")
+                            .requestMatchers(HttpMethod.PUT, "/api/users/me/profile")
+                            .hasAnyRole("CLIENT", "SELLER")
                             .anyRequest().authenticated())
                     .addFilterBefore(new CorrelationIdFilter(), UsernamePasswordAuthenticationFilter.class)
                     .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)

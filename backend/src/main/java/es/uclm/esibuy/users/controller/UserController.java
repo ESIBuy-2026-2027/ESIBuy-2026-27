@@ -15,6 +15,7 @@ import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
 import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
+import es.uclm.esibuy.users.dto.UpdateOwnProfileRequestDTO;
 import es.uclm.esibuy.users.dto.UserProfileResponse;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.service.UserService;
@@ -28,6 +29,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -182,6 +184,22 @@ public class UserController {
         SecurityContextHolder.clearContext();
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/me/profile")
+    public ResponseEntity<UserProfileResponse> updateOwnProfile(
+            Authentication authentication,
+            @Valid @RequestBody UpdateOwnProfileRequestDTO request) {
+
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserProfileResponse profile = userService.updateOwnProfile(
+                principal.id(), request);
+
+        return ResponseEntity.ok(profile);
     }
 
     @PostMapping("/2fa/setup")
