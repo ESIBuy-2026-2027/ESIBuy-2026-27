@@ -62,7 +62,7 @@ class UserProfileControllerTest {
         void shouldReturnOwnProfileForClient() throws Exception {
                 when(userService.getOwnProfile("user-1")).thenReturn(new UserProfileResponse(
                                 "Ana", "García", "ana@example.com", "600123123", "*****678Z",
-                                "avatar-client-default", CustomerType.PREMIUM, null, null, null, null, null));
+                                "avatar-client-default", CustomerType.PREMIUM, null, null, null, null, null, null));
 
                 mockMvc.perform(get(PROFILE_API).with(authentication(authenticationFor(UserRole.CLIENT))))
                                 .andExpect(status().isOk())
@@ -84,7 +84,7 @@ class UserProfileControllerTest {
         void shouldReturnOwnProfileForSeller() throws Exception {
                 when(userService.getOwnProfile("user-1")).thenReturn(new UserProfileResponse(
                                 "Luis", "Martín", "luis@example.com", "600111222", null,
-                                "avatar-seller-default", null, null, "Tienda Luis", "Electrónica", null, null));
+                                "avatar-seller-default", null, null, "Tienda Luis", "Electrónica", null, null, null));
 
                 mockMvc.perform(get(PROFILE_API).with(authentication(authenticationFor(UserRole.SELLER))))
                                 .andExpect(status().isOk())
@@ -107,7 +107,7 @@ class UserProfileControllerTest {
                                 null,
                                 null,
                                 "Madrid",
-                                null));
+                                null, false));
                 mockMvc.perform(get(PROFILE_API).with(authentication(authenticationFor(UserRole.ADMIN))))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.firstName").value("Marta"))

@@ -1,3 +1,4 @@
+
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -5,6 +6,7 @@ import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { DeleteAccount } from '../../../core/services/delete-account/delete-account';
+import QRCode from 'qrcode';
 
 export interface ProfileSection {
     label: string;
@@ -20,6 +22,7 @@ interface ClientProfileResponse {
     profileImage: string | null;
     customerType: string;
     birthDate: string | null;
+    totpEnabled?: boolean;
 }
 
 interface UpdateClientProfileRequest {
@@ -29,6 +32,21 @@ interface UpdateClientProfileRequest {
     profileImage: string;
     birthDate: string;
     nationalId?: string;
+}
+
+interface TwoFactorSetupResponse {
+    secret: string;
+    qrUri: string;
+}
+
+interface TwoFactorEnableResponse {
+    message?: string;
+    backupCodes: string[];
+}
+
+interface BackupCodesResponse {
+    message?: string;
+    backupCodes: string[];
 }
 
 @Component({
@@ -44,6 +62,10 @@ export class ClientProfile implements OnInit {
     private readonly router = inject(Router);
     private readonly location = inject(Location);
     private readonly apiUrl = '/api/users/me/profile';
+    private readonly twoFactorUrl = '/api/users/2fa';
+    readonly qrImage = signal<string | null>(null);
+    readonly qrGenerating = signal(false);
+    readonly copiedSecret = signal(false);
 
     readonly profile = signal<ClientProfileResponse | null>(null);
     readonly loading = signal(true);
@@ -55,6 +77,16 @@ export class ClientProfile implements OnInit {
     readonly editError = signal<string | null>(null);
     readonly editSuccess = signal<string | null>(null);
 
+    // Estado de autenticación en dos factores.
+    readonly twoFactorEnabled = signal(false);
+    readonly twoFactorSetup = signal<TwoFactorSetupResponse | null>(null);
+    readonly twoFactorCode = signal('');
+    readonly recoveryCode = signal('');
+    readonly backupCodes = signal<string[]>([]);
+    readonly twoFactorBusy = signal(false);
+    readonly twoFactorError = signal<string | null>(null);
+    readonly twoFactorSuccess = signal<string | null>(null);
+
     // Avatares locales predefinidos para clientes.
     readonly clientAvatars: string[] = [
         'assets/images/avatars/av_client_1.jpeg',
@@ -64,7 +96,6 @@ export class ClientProfile implements OnInit {
         'assets/images/avatars/av_client_5.jpeg',
     ];
 
-    // Ruta del avatar seleccionado actualmente.
     readonly selectedAvatar = signal(this.clientAvatars[0]);
 
     editForm: UpdateClientProfileRequest = this.emptyForm();
@@ -109,6 +140,8 @@ export class ClientProfile implements OnInit {
         { label: 'Métodos de pago', active: false },
     ];
 
+    readonly activeSection = signal('personal');
+
     readonly initials = computed(() => {
         const profile = this.profile();
 
@@ -127,6 +160,14 @@ export class ClientProfile implements OnInit {
         this.loadProfile();
     }
 
+    selectSection(section: string): void {
+        if (section !== 'personal' && section !== 'security') {
+            return;
+        }
+
+        this.activeSection.set(section);
+    }
+
     private emptyForm(): UpdateClientProfileRequest {
         return {
             firstName: '',
@@ -138,10 +179,6 @@ export class ClientProfile implements OnInit {
         };
     }
 
-    /**
-     * Normaliza la ruta para que coincida con las rutas locales
-     * de los avatares definidos en clientAvatars.
-     */
     private normalizeAvatarPath(path: string | null | undefined): string {
         const normalizedPath = path?.trim().replace(/^\/+/, '');
 
@@ -174,8 +211,10 @@ export class ClientProfile implements OnInit {
                 this.profile.set(profile);
 
                 const avatar = this.normalizeAvatarPath(profile.profileImage);
-
                 this.selectedAvatar.set(avatar);
+
+                // El backend debe devolver totpEnabled para conocer el estado real.
+                this.twoFactorEnabled.set(profile.totpEnabled === true);
 
                 this.editForm = {
                     firstName: profile.firstName ?? '',
@@ -210,7 +249,6 @@ export class ClientProfile implements OnInit {
             phone: profile.phone ?? '',
             profileImage: avatar,
             birthDate: profile.birthDate ?? '',
-            // No enviar el DNI enmascarado como si fuera el original.
             nationalId: '',
         };
 
@@ -236,7 +274,6 @@ export class ClientProfile implements OnInit {
 
         this.selectedAvatar.set(avatar);
         this.editForm = this.emptyForm();
-
         this.editForm.profileImage = avatar;
     }
 
@@ -251,42 +288,28 @@ export class ClientProfile implements OnInit {
         const phone = this.editForm.phone.trim();
         const birthDate = this.editForm.birthDate;
 
-        // Validar nombre.
         if (firstName.length < 2 || firstName.length > 25) {
-            this.editError.set(
-                'El nombre debe tener entre 2 y 25 caracteres.',
-            );
+            this.editError.set('El nombre debe tener entre 2 y 25 caracteres.');
             return;
         }
 
-        // Validar apellidos.
         if (lastName.length < 2 || lastName.length > 50) {
-            this.editError.set(
-                'Los apellidos deben tener entre 2 y 50 caracteres.',
-            );
+            this.editError.set('Los apellidos deben tener entre 2 y 50 caracteres.');
             return;
         }
 
-        // El teléfono es opcional, pero debe tener 9 cifras si se indica.
         if (phone && !/^\d{9}$/.test(phone)) {
-            this.editError.set(
-                'El teléfono debe tener exactamente 9 cifras.',
-            );
+            this.editError.set('El teléfono debe tener exactamente 9 cifras.');
             return;
         }
 
-        // Validar fecha de nacimiento.
         if (!birthDate) {
-            this.editError.set(
-                'La fecha de nacimiento es obligatoria.',
-            );
+            this.editError.set('La fecha de nacimiento es obligatoria.');
             return;
         }
 
         if (birthDate > this.maxBirthDate) {
-            this.editError.set(
-                'Debes tener al menos 18 años.',
-            );
+            this.editError.set('Debes tener al menos 18 años.');
             return;
         }
 
@@ -298,7 +321,6 @@ export class ClientProfile implements OnInit {
             birthDate,
         };
 
-        // No enviar un DNI vacío ni el DNI enmascarado.
         const newNationalId = this.editForm.nationalId?.trim();
 
         if (newNationalId) {
@@ -313,9 +335,7 @@ export class ClientProfile implements OnInit {
             { withCredentials: true },
         ).subscribe({
             next: profile => {
-                const avatar = this.normalizeAvatarPath(
-                    profile.profileImage,
-                );
+                const avatar = this.normalizeAvatarPath(profile.profileImage);
 
                 this.profile.set({
                     ...profile,
@@ -325,7 +345,6 @@ export class ClientProfile implements OnInit {
                 this.selectedAvatar.set(avatar);
                 this.saving.set(false);
                 this.editing.set(false);
-
                 this.editSuccess.set(
                     'Tus datos se han actualizado correctamente.',
                 );
@@ -333,7 +352,6 @@ export class ClientProfile implements OnInit {
                 this.editForm = this.emptyForm();
                 this.editForm.profileImage = avatar;
             },
-
             error: (error: {
                 status?: number;
                 error?: {
@@ -360,6 +378,270 @@ export class ClientProfile implements OnInit {
                 );
             },
         });
+    }
+
+    // ---------------- 2FA ----------------
+
+    async startTwoFactorSetup(): Promise<void> {
+        if (this.twoFactorBusy() || this.twoFactorEnabled()) return;
+
+        this.clearTwoFactorMessages();
+        this.twoFactorSetup.set(null);
+        this.qrImage.set(null);
+        this.copiedSecret.set(false);
+        this.backupCodes.set([]);
+        this.twoFactorBusy.set(true);
+        this.qrGenerating.set(true);
+
+        this.http.post<TwoFactorSetupResponse>(
+            `${this.twoFactorUrl}/setup`,
+            {},
+            { withCredentials: true },
+        ).subscribe({
+            next: result => {
+                // La clave manual queda disponible aunque falle el QR.
+                this.twoFactorSetup.set(result);
+
+                void QRCode.toDataURL(result.qrUri, {
+                    errorCorrectionLevel: 'M',
+                    margin: 2,
+                    width: 240,
+                })
+                    .then(dataUrl => {
+                        this.qrImage.set(dataUrl);
+                    })
+                    .catch(() => {
+                        this.qrImage.set(null);
+                        this.twoFactorError.set(
+                            'No se ha podido generar el QR. Puedes configurar la aplicación introduciendo manualmente el secreto.',
+                        );
+                    })
+                    .finally(() => {
+                        this.qrGenerating.set(false);
+                        this.twoFactorBusy.set(false);
+
+                        if (!this.twoFactorError()) {
+                            this.twoFactorSuccess.set(
+                                'Escanea el QR con tu aplicación autenticadora o introduce manualmente el secreto. Después, confirma con el código de seis cifras.',
+                            );
+                        }
+                    });
+            },
+            error: error => {
+                this.qrGenerating.set(false);
+                this.twoFactorBusy.set(false);
+                this.twoFactorError.set(this.getTwoFactorError(
+                    error,
+                    'No se ha podido iniciar la configuración de la autenticación en dos factores.',
+                ));
+            },
+        });
+    }
+
+    async copyTwoFactorSecret(): Promise<void> {
+        const secret = this.twoFactorSetup()?.secret;
+
+        if (!secret) return;
+
+        this.clearTwoFactorMessages();
+
+        try {
+            await navigator.clipboard.writeText(secret);
+            this.copiedSecret.set(true);
+            this.twoFactorSuccess.set('Secreto copiado al portapapeles.');
+        } catch {
+            this.copiedSecret.set(false);
+            this.twoFactorError.set(
+                'No se ha podido copiar automáticamente. Selecciona y copia el secreto manualmente.',
+            );
+        }
+    }
+
+    downloadBackupCodes(): void {
+        const codes = this.backupCodes();
+
+        if (!codes.length) return;
+
+        const content = [
+            'ESIBUY - Códigos de recuperación de autenticación en dos factores',
+            'Guarda este archivo en un lugar seguro.',
+            'Cada código debe tratarse como información confidencial.',
+            '',
+            ...codes,
+            '',
+        ].join('\n');
+
+        const blob = new Blob([content], {
+            type: 'text/plain;charset=utf-8',
+        });
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = 'esibuy-codigos-recuperacion.txt';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    enableTwoFactor(): void {
+        const code = this.twoFactorCode().trim();
+
+        if (this.twoFactorBusy()) return;
+
+        if (!/^\d{6}$/.test(code)) {
+            this.twoFactorError.set(
+                'Introduce el código de seis cifras de tu aplicación autenticadora.',
+            );
+            return;
+        }
+
+        this.clearTwoFactorMessages();
+        this.twoFactorBusy.set(true);
+
+        this.http.post<TwoFactorEnableResponse>(
+            `${this.twoFactorUrl}/enable`,
+            { code },
+            { withCredentials: true },
+        ).subscribe({
+            next: result => {
+                this.twoFactorEnabled.set(true);
+                this.twoFactorSetup.set(null);
+                this.qrImage.set(null);
+                this.copiedSecret.set(false);
+                this.twoFactorCode.set('');
+                this.backupCodes.set(result.backupCodes ?? []);
+                this.twoFactorBusy.set(false);
+                this.twoFactorSuccess.set(
+                    result.message
+                    ?? 'La autenticación en dos factores se ha activado correctamente.',
+                );
+                this.refreshTwoFactorStateInProfile(true);
+            },
+            error: error => {
+                this.twoFactorBusy.set(false);
+                this.twoFactorError.set(this.getTwoFactorError(
+                    error,
+                    'No se ha podido activar la autenticación en dos factores. Comprueba el código e inténtalo de nuevo.',
+                ));
+            },
+        });
+    }
+
+    regenerateBackupCodes(): void {
+        const code = this.recoveryCode().trim();
+
+        if (this.twoFactorBusy()) return;
+
+        if (!/^\d{6}$/.test(code)) {
+            this.twoFactorError.set(
+                'Introduce un código actual de seis cifras para regenerar los códigos de recuperación.',
+            );
+            return;
+        }
+
+        this.clearTwoFactorMessages();
+        this.twoFactorBusy.set(true);
+        this.backupCodes.set([]);
+
+        this.http.post<BackupCodesResponse>(
+            `${this.twoFactorUrl}/regenerate-backup-codes`,
+            { code },
+            { withCredentials: true },
+        ).subscribe({
+            next: result => {
+                this.backupCodes.set(result.backupCodes ?? []);
+                this.recoveryCode.set('');
+                this.twoFactorBusy.set(false);
+                this.twoFactorSuccess.set(
+                    result.message
+                    ?? 'Se han generado nuevos códigos de recuperación. Los anteriores dejan de ser válidos.',
+                );
+            },
+            error: error => {
+                this.twoFactorBusy.set(false);
+                this.twoFactorError.set(this.getTwoFactorError(
+                    error,
+                    'No se han podido regenerar los códigos. Comprueba el código actual e inténtalo de nuevo.',
+                ));
+            },
+        });
+    }
+
+    disableTwoFactor(): void {
+        const code = this.twoFactorCode().trim();
+
+        if (this.twoFactorBusy()) return;
+
+        if (!/^\d{6}$/.test(code)) {
+            this.twoFactorError.set(
+                'Introduce el código de seis cifras de tu aplicación autenticadora para desactivar 2FA.',
+            );
+            return;
+        }
+
+        this.clearTwoFactorMessages();
+        this.twoFactorBusy.set(true);
+
+        this.http.post<{ message?: string }>(
+            `${this.twoFactorUrl}/disable`,
+            { code },
+            { withCredentials: true },
+        ).subscribe({
+            next: result => {
+                this.twoFactorEnabled.set(false);
+                this.twoFactorSetup.set(null);
+                this.qrImage.set(null);
+                this.copiedSecret.set(false);
+                this.twoFactorCode.set('');
+                this.recoveryCode.set('');
+                this.backupCodes.set([]);
+                this.twoFactorBusy.set(false);
+                this.twoFactorSuccess.set(
+                    result.message ?? 'La autenticación en dos factores se ha desactivado.',
+                );
+                this.refreshTwoFactorStateInProfile(false);
+            },
+            error: error => {
+                this.twoFactorBusy.set(false);
+                this.twoFactorError.set(this.getTwoFactorError(
+                    error,
+                    'No se ha podido desactivar la autenticación en dos factores. Comprueba el código e inténtalo de nuevo.',
+                ));
+            },
+        });
+    }
+
+    clearTwoFactorMessages(): void {
+        this.twoFactorError.set(null);
+        this.twoFactorSuccess.set(null);
+    }
+
+    private refreshTwoFactorStateInProfile(enabled: boolean): void {
+        const current = this.profile();
+
+        if (current) {
+            this.profile.set({ ...current, totpEnabled: enabled });
+        }
+    }
+
+    private getTwoFactorError(
+        error: {
+            status?: number;
+            error?: { message?: string; detail?: string; error?: string };
+        },
+        fallback: string,
+    ): string {
+        return error.error?.detail
+            ?? error.error?.message
+            ?? error.error?.error
+            ?? (
+                error.status === 401
+                    ? 'Tu sesión ha caducado. Inicia sesión de nuevo.'
+                    : fallback
+            );
     }
 
     logout(): void {

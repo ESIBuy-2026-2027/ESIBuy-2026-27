@@ -23,10 +23,23 @@
 
         <nav class="sidebar-nav" aria-label="Secciones del perfil">
             @for (section of sections; track section.label) {
-            <a class="nav-item" [class.active]="section.active" [class.disabled]="!section.active"
-                [attr.aria-current]="section.active ? 'page' : null" [attr.aria-disabled]="!section.active">
+            @if (section.label === 'Datos personales') {
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'personal'"
+                [attr.aria-current]="activeSection() === 'personal' ? 'page' : null"
+                (click)="selectSection('personal')">
+                {{ section.label }}
+            </button>
+            } @else if (section.label === 'Seguridad') {
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'security'"
+                [attr.aria-current]="activeSection() === 'security' ? 'page' : null"
+                (click)="selectSection('security')">
+                {{ section.label }}
+            </button>
+            } @else {
+            <a class="nav-item disabled" aria-disabled="true">
                 {{ section.label }}
             </a>
+            }
             }
         </nav>
 
@@ -66,9 +79,7 @@
         @if (isPremium()) {
         <section class="premium-banner">
             <div>
-                <span class="premium-eyebrow">
-                    CUENTA PREMIUM
-                </span>
+                <span class="premium-eyebrow">CUENTA PREMIUM</span>
 
                 <h2>Disfruta de ventajas exclusivas</h2>
 
@@ -80,7 +91,8 @@
         </section>
         }
 
-        <!-- PANEL DEL PERFIL -->
+        <!-- DATOS PERSONALES -->
+        @if (activeSection() === 'personal') {
         <section class="panel">
 
             <div class="panel-heading">
@@ -233,17 +245,17 @@
 
                     <fieldset class="avatar-selector-grid">
                         <legend>Seleccionar avatar</legend>
+
                         @for (avatar of clientAvatars; track avatar; let i = $index) {
                         <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
                             [attr.aria-pressed]="selectedAvatar() === avatar"
                             [attr.aria-label]="'Seleccionar avatar ' + (i + 1)" [disabled]="saving()"
                             (click)="selectAvatar(avatar)">
+
                             <img [src]="avatar" [alt]="'Avatar ' + (i + 1)" />
 
                             @if (selectedAvatar() === avatar) {
-                            <span class="avatar-check" aria-hidden="true">
-                                ✓
-                            </span>
+                            <span class="avatar-check" aria-hidden="true">✓</span>
                             }
                         </button>
                         }
@@ -251,7 +263,7 @@
                 </div>
                 }
 
-                <!-- ACCIONES -->
+                <!-- ACCIONES DEL FORMULARIO -->
                 @if (editing()) {
                 <div class="form-actions">
                     <button type="button" class="secondary-button" [disabled]="saving()" (click)="cancelEditing()">
@@ -267,14 +279,259 @@
             </form>
         </section>
 
-        <app-delete-account [role]="'CLIENT'" />
+        <!-- ZONA DE PELIGRO: SOLO EN DATOS PERSONALES -->
+        <section class="panel danger-zone" aria-labelledby="danger-zone-title">
+            <div class="panel-heading">
+                <div class="panel-heading-text">
+                    <span class="eyebrow">ACCIONES IRREVERSIBLES</span>
 
+                    <h2 id="danger-zone-title" class="panel-title">
+                        Zona de peligro
+                    </h2>
+
+                    <p class="panel-description">
+                        Desde aquí puedes iniciar el proceso de eliminación
+                        de tu cuenta de cliente.
+                    </p>
+                </div>
+            </div>
+
+            <app-delete-account [role]="'CLIENT'" />
+        </section>
+        }
+
+        <!-- SEGURIDAD / AUTENTICACIÓN EN DOS FACTORES -->
+        @if (activeSection() === 'security') {
+        <section class="panel security-panel" aria-labelledby="security-title">
+
+            <div class="panel-heading">
+                <div class="panel-heading-text">
+                    <span class="eyebrow">PROTECCIÓN DE LA CUENTA</span>
+
+                    <h2 id="security-title" class="panel-title">Seguridad</h2>
+
+                    <p class="panel-description">
+                        Añade una segunda verificación al iniciar sesión
+                        con una aplicación autenticadora.
+                    </p>
+                </div>
+
+                <span class="security-status" [class.security-status-on]="twoFactorEnabled()">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    {{ twoFactorEnabled() ? '2FA activada' : '2FA desactivada' }}
+                </span>
+            </div>
+
+            @if (twoFactorSuccess(); as message) {
+            <output class="success-message security-message">
+                {{ message }}
+            </output>
+            }
+
+            @if (twoFactorError(); as error) {
+            <p class="form-error security-message" role="alert">
+                {{ error }}
+            </p>
+            }
+
+            @if (!twoFactorEnabled()) {
+            <p class="security-copy">
+                Protege tu cuenta solicitando un código temporal
+                de tu aplicación autenticadora.
+            </p>
+
+            @if (!twoFactorSetup()) {
+            <div class="security-actions">
+                <button type="button" class="primary-button" [disabled]="twoFactorBusy()"
+                    (click)="startTwoFactorSetup()">
+                    {{ twoFactorBusy() ? 'Preparando...' : 'Configurar autenticación en dos factores' }}
+                </button>
+            </div>
+            } @else {
+
+            <div class="setup-instructions">
+                <h3>1. Configura tu aplicación autenticadora</h3>
+
+                <p>
+                    Escanea el código QR con Google Authenticator, Microsoft
+                    Authenticator, Authy u otra aplicación compatible.
+                </p>
+
+                @if (qrImage(); as qr) {
+                <div class="qr-container">
+                    <img class="totp-qr" [src]="qr" alt="Código QR para configurar la autenticación en dos factores"
+                        width="240" height="240" />
+
+                    <p class="qr-caption">
+                        Escanea este código desde tu aplicación autenticadora.
+                    </p>
+                </div>
+                } @else if (qrGenerating()) {
+                <p class="qr-caption">Generando el código QR...</p>
+                }
+
+                <div class="manual-setup">
+                    <h4>¿Prefieres configurarlo manualmente?</h4>
+
+                    <p>
+                        En tu aplicación, elige añadir una cuenta mediante
+                        una clave de configuración e introduce este secreto.
+                    </p>
+
+                    <label class="security-label" for="totp-secret">
+                        Clave secreta
+                    </label>
+
+                    <code id="totp-secret" class="secret-value">
+                        {{ twoFactorSetup()?.secret }}
+                    </code>
+
+                    <button type="button" class="secondary-button copy-secret-button" (click)="copyTwoFactorSecret()">
+                        {{ copiedSecret() ? 'Clave copiada' : 'Copiar clave secreta' }}
+                    </button>
+
+                    <details class="otpauth-details">
+                        <summary>Ver URI de configuración</summary>
+                        <code class="uri-value">{{ twoFactorSetup()?.qrUri }}</code>
+                    </details>
+                </div>
+
+                <h3>2. Confirma la configuración</h3>
+
+                <p>
+                    Introduce el código actual de seis cifras que muestra
+                    tu aplicación autenticadora para activar la protección.
+                </p>
+
+                <div class="security-code-field">
+                    <label class="security-label" for="enableTotpCode">
+                        Código de verificación
+                    </label>
+
+                    <input id="enableTotpCode" name="enableTotpCode" type="text" inputmode="numeric"
+                        autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="123456"
+                        [ngModel]="twoFactorCode()" (ngModelChange)="twoFactorCode.set($event)"
+                        [disabled]="twoFactorBusy()" />
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="secondary-button" [disabled]="twoFactorBusy()"
+                        (click)="twoFactorSetup.set(null); qrImage.set(null); twoFactorCode.set(''); copiedSecret.set(false); clearTwoFactorMessages()">
+                        Cancelar
+                    </button>
+
+                    <button type="button" class="primary-button" [disabled]="twoFactorBusy()"
+                        (click)="enableTwoFactor()">
+                        {{ twoFactorBusy() ? 'Verificando...' : 'Activar 2FA' }}
+                    </button>
+                </div>
+            </div>
+            }
+
+            } @else {
+
+            <div class="security-enabled-note">
+                <strong>
+                    Tu cuenta tiene una capa adicional de protección.
+                </strong>
+
+                <p>
+                    Guarda los códigos de recuperación en un lugar seguro
+                    y no los compartas.
+                </p>
+            </div>
+
+            <div class="backup-codes-section">
+                <h3>Códigos de recuperación</h3>
+
+                <p>
+                    Puedes generar un nuevo conjunto de códigos. Los anteriores
+                    dejarán de ser válidos. Para hacerlo, introduce un código
+                    actual de tu aplicación.
+                </p>
+
+                <div class="security-code-field">
+                    <label class="security-label" for="recoveryTotpCode">
+                        Código actual de seis cifras
+                    </label>
+
+                    <input id="recoveryTotpCode" name="recoveryTotpCode" type="text" inputmode="numeric"
+                        autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="123456"
+                        [ngModel]="recoveryCode()" (ngModelChange)="recoveryCode.set($event)"
+                        [disabled]="twoFactorBusy()" />
+                </div>
+
+                <div class="security-actions">
+                    <button type="button" class="secondary-button" [disabled]="twoFactorBusy()"
+                        (click)="regenerateBackupCodes()">
+                        {{ twoFactorBusy() ? 'Procesando...' : 'Regenerar códigos de recuperación' }}
+                    </button>
+                </div>
+            </div>
+
+            <div class="disable-two-factor">
+                <h3>Desactivar autenticación en dos factores</h3>
+
+                <p>
+                    Para desactivar esta protección, confirma la acción
+                    con un código actual de tu aplicación autenticadora.
+                </p>
+
+                <div class="security-code-field">
+                    <label class="security-label" for="disableTotpCode">
+                        Código de verificación
+                    </label>
+
+                    <input id="disableTotpCode" name="disableTotpCode" type="text" inputmode="numeric"
+                        autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="123456"
+                        [ngModel]="twoFactorCode()" (ngModelChange)="twoFactorCode.set($event)"
+                        [disabled]="twoFactorBusy()" />
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="danger-button" [disabled]="twoFactorBusy()"
+                        (click)="disableTwoFactor()">
+                        {{ twoFactorBusy() ? 'Desactivando...' : 'Desactivar 2FA' }}
+                    </button>
+                </div>
+            </div>
+            }
+
+            @if (backupCodes().length > 0) {
+            <div class="backup-codes-result">
+                <h3>Guarda tus códigos de recuperación</h3>
+
+                <p class="backup-warning">
+                    Estos códigos solo se muestran ahora. Guárdalos
+                    en un lugar seguro y no los compartas.
+                </p>
+
+                <ul class="backup-code-list">
+                    @for (code of backupCodes(); track code) {
+                    <li><code>{{ code }}</code></li>
+                    }
+                </ul>
+
+                <button type="button" class="secondary-button download-codes-button" (click)="downloadBackupCodes()">
+                    Descargar códigos de recuperación
+                </button>
+
+                <button type="button" class="secondary-button" (click)="clearTwoFactorMessages()">
+                    He guardado los códigos
+                </button>
+            </div>
+            }
+
+        </section>
+        }
+
+        <!-- ACCIÓN PARA VOLVER -->
         <div class="profile-actions">
             <button type="button" class="back-button" (click)="goBack()">
                 ← Volver
             </button>
         </div>
-        }
 
+        }
     </main>
 </div>
