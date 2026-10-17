@@ -21,7 +21,6 @@ public class ShippingAddress {
     protected ShippingAddress() {
     }
 
-    @SuppressWarnings("java:S107")
     public ShippingAddress(String id, String recipientName, String street, String additionalInfo,
             String postalCode, String city, String province, String phone, boolean defaultAddress) {
         this.id = id;

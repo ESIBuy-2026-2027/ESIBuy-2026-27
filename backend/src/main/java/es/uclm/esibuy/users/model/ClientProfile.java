@@ -9,6 +9,7 @@ public class ClientProfile {
     private LocalDate birthDate;
     private CustomerType customerType = CustomerType.STANDARD;
     private List<ShippingAddress> addresses = new ArrayList<>();
+    private List<PaymentMethod> paymentMethods = new ArrayList<>();
 
     public ClientProfile() {
     }
@@ -40,5 +41,13 @@ public class ClientProfile {
 
     public void setAddresses(List<ShippingAddress> addresses) {
         this.addresses = addresses;
+    }
+
+    public List<PaymentMethod> getPaymentMethods() {
+        return paymentMethods == null ? new ArrayList<>() : paymentMethods;
+    }
+
+    public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
+        this.paymentMethods = paymentMethods;
     }
 }
