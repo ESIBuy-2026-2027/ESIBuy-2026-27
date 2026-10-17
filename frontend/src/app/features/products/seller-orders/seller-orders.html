@@ -1,0 +1,154 @@
+<div class="seller-layout" [class.sidebar-collapsed]="sidebarCollapsed()">
+  <aside class="sidebar" aria-label="Panel del vendedor">
+    <a class="brand" routerLink="/" aria-label="ESIBuy">
+      <span class="brand-mark" aria-hidden="true">E</span>
+      <span>ESI<span class="brand-accent">Buy</span></span>
+    </a>
+    <button type="button" class="sidebar-toggle" (click)="toggleSidebar()"
+      aria-label="Ocultar barra lateral" title="Ocultar barra lateral">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m15 18-6-6 6-6"/>
+      </svg>
+    </button>
+
+    <div class="sidebar-caption">GESTIÓN DE VENTA</div>
+    <nav class="seller-navigation" aria-label="Navegación del vendedor">
+      <a class="navigation-link" routerLink="/seller/catalog"
+        routerLinkActive="is-active" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          aria-hidden="true">
+          <rect width="7" height="7" x="3" y="3" rx="1"/>
+          <rect width="7" height="7" x="14" y="3" rx="1"/>
+          <rect width="7" height="7" x="3" y="14" rx="1"/>
+          <rect width="7" height="7" x="14" y="14" rx="1"/>
+        </svg>
+        <span>Mi catálogo</span>
+      </a>
+      <a class="navigation-link" routerLink="/seller/orders"
+          routerLinkActive="is-active" ariaCurrentWhenActive="page">
+          <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            aria-hidden="true">
+            <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
+          </svg>
+          <span>Mis pedidos</span>
+      </a>
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true"
+          title="Próximamente" tabindex="-1">
+          <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            aria-hidden="true">
+            <path d="M3 3v18h18"/>
+            <path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
+          </svg>
+          <span>Estadísticas</span>
+      </a>
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true"
+          title="Próximamente" tabindex="-1">
+          <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            aria-hidden="true">
+            <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/>
+          </svg>
+          <span>Valoraciones</span>
+      </a>
+    </nav>
+  </aside>
+
+  <div class="workspace">
+    @if (sidebarCollapsed()) {
+      <button type="button" class="sidebar-toggle sidebar-toggle-open" (click)="toggleSidebar()"
+        aria-label="Mostrar barra lateral" title="Mostrar barra lateral">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </button>
+    }
+    <main class="orders-content" aria-labelledby="orders-title">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">GESTIÓN DE VENTA</p>
+          <h1 id="orders-title">Gestión de pedidos</h1>
+        </div>
+        <div class="heading-actions">
+          <button type="button" class="secondary-button" disabled title="Próximamente">Filtrar</button>
+          <button type="button" class="primary-button" disabled title="Próximamente">Exportar CSV</button>
+        </div>
+      </div>
+
+      <section class="orders-card" aria-label="Pedidos de la tienda">
+        <div class="orders-toolbar">
+          <div class="tabs" role="tablist" aria-label="Filtrar pedidos por estado">
+            <button type="button" [class.is-selected]="selectedStatus() === 'Todos'"
+              (click)="selectedStatus.set('Todos')" role="tab"
+              [attr.aria-selected]="selectedStatus() === 'Todos'">Todos los pedidos</button>
+            <button type="button" [class.is-selected]="selectedStatus() === 'Pendiente'"
+              (click)="selectedStatus.set('Pendiente')" role="tab"
+              [attr.aria-selected]="selectedStatus() === 'Pendiente'">Pendientes</button>
+            <button type="button" [class.is-selected]="selectedStatus() === 'Enviado'"
+              (click)="selectedStatus.set('Enviado')" role="tab"
+              [attr.aria-selected]="selectedStatus() === 'Enviado'">Enviados</button>
+            <button type="button" [class.is-selected]="selectedStatus() === 'Entregado'"
+              (click)="selectedStatus.set('Entregado')" role="tab"
+              [attr.aria-selected]="selectedStatus() === 'Entregado'">Completados</button>
+          </div>
+          <span class="order-count">{{ visibleOrders().length }} pedidos</span>
+        </div>
+
+        @if (visibleOrders().length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">⌕</span>
+            <h3>No se encontraron pedidos</h3>
+            <p>Prueba a cambiar la búsqueda o el estado seleccionado.</p>
+          </div>
+        } @else {
+          <div class="table-scroll">
+            <table class="orders-table">
+              <caption class="visually-hidden">Pedidos recientes de mi tienda</caption>
+              <thead>
+                <tr>
+                  <th scope="col">ID pedido</th>
+                  <th scope="col">Artículo</th>
+                  <th scope="col">Comprador</th>
+                  <th scope="col">Fecha</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Total</th>
+                  <th scope="col" class="action-column"><span class="visually-hidden">Acciones</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (order of visibleOrders(); track order.id) {
+                  <tr>
+                    <td class="order-id">#{{ order.id }}</td>
+                    <td>
+                      <div class="product-summary">
+                        <span class="product-icon" aria-hidden="true">▦</span>
+                        <span>{{ order.products }}</span>
+                      </div>
+                    </td>
+                    <td>{{ order.customer }}</td>
+                    <td class="order-date">{{ order.date }}</td>
+                    <td>
+                      <span class="status-badge" [class]="statusClass(order.status)">
+                        <span class="status-dot" aria-hidden="true"></span>{{ order.status }}
+                      </span>
+                    </td>
+                    <td class="order-total">{{ formatPrice(order.total) }}</td>
+                    <td class="order-action">
+                      <button type="button" class="details-button" disabled
+                        [attr.aria-label]="'Gestionar el pedido ' + order.id"
+                        title="Próximamente">Gestionar</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    </main>
+  </div>
+</div>

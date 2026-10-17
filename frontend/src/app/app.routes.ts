@@ -11,6 +11,7 @@ import { SellerCatalog } from './features/products/seller-catalog/seller-catalog
 import { ClientDashboard } from './features/client/client-dashboard/client-dashboard';
 import { ClientProfile } from './features/client/client-profile/client-profile';
 import { SellerProfile } from './features/products/seller-profile/seller-profile';
+import { SellerOrders } from './features/products/seller-orders/seller-orders';
 import { AdminProfile } from './features/admin/admin-profile/admin-profile';
 
 export const routes: Routes = [
@@ -28,6 +29,7 @@ export const routes: Routes = [
   { path: 'admin/profile', component: AdminProfile, canActivate: [authGuard, roleGuard('ADMIN')] },
 
   { path: 'seller/catalog', component: SellerCatalog, canActivate: [authGuard, roleGuard('SELLER')] },
+  { path: 'seller/orders', component: SellerOrders, canActivate: [authGuard, roleGuard('SELLER')] },
   { path: 'products/new', component: ProductCreate, canActivate: [authGuard, roleGuard('SELLER')] },
   { path: 'products/:id/edit', component: ProductCreate, canActivate: [authGuard, roleGuard('SELLER')] },
   { path: 'seller/profile', component: SellerProfile, canActivate: [authGuard, roleGuard('SELLER')] },

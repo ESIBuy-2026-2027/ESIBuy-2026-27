@@ -173,6 +173,7 @@ h1 {
 }
 
 .section-info {
+  position: relative;
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -239,11 +240,13 @@ h1 {
   color: #52616c;
   font: inherit;
   font-size: 12px;
-  cursor: not-allowed;
+  cursor: pointer;
 }
 
-.catalog-filter-button:disabled {
-  opacity: 0.72;
+.catalog-filter-button.is-active {
+  border-color: #42d6b2;
+  background: #e9f8f4;
+  color: #173247;
 }
 
 .catalog-filter-button svg {
@@ -254,6 +257,65 @@ h1 {
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.filter-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #42d6b2;
+}
+
+.catalog-filter-panel {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  width: min(520px, 100%);
+  grid-template-columns: repeat(3, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px solid #dce6ea;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgb(23 50 71 / 12%);
+}
+
+.catalog-filter-panel label {
+  display: grid;
+  gap: 6px;
+  color: #52616c;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.catalog-filter-panel select {
+  min-height: 34px;
+  padding: 0 8px;
+  border: 1px solid #dce6ea;
+  border-radius: 7px;
+  background: #fff;
+  color: #203b4e;
+  font: inherit;
+  font-size: 11px;
+}
+
+.clear-filters-button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #4774a0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.clear-filters-button:hover {
+  background: #edf4ff;
 }
 
 .section-heading .eyebrow {
@@ -712,6 +774,11 @@ h2 {
   .catalog-controls {
     width: 100%;
     flex-wrap: wrap;
+  }
+
+  .catalog-filter-panel {
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
   }
 
   .product-count {

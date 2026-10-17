@@ -7,6 +7,8 @@ import { SellerCatalogService, SellerProduct } from './seller-catalog.service';
 
 const LOW_STOCK_THRESHOLD = 5;
 type InlineField = 'price' | 'stock';
+type VisibilityFilter = 'all' | 'published' | 'hidden';
+type StockFilter = 'all' | 'in-stock' | 'low-stock' | 'out-of-stock';
 
 @Component({
   selector: 'app-seller-catalog',
@@ -30,6 +32,10 @@ export class SellerCatalog implements OnInit {
   categoriesLoading = signal(true);
   categoriesError = signal(false);
   productSearch = signal('');
+  filtersOpen = signal(false);
+  visibilityFilter = signal<VisibilityFilter>('all');
+  stockFilter = signal<StockFilter>('all');
+  categoryFilter = signal('all');
   inlineEdit = signal<{ productId: string; field: InlineField } | null>(null);
   inlineValue = signal<number | null>(null);
   inlineSaving = signal(false);
@@ -38,11 +44,27 @@ export class SellerCatalog implements OnInit {
   visibilityError = signal<string | null>(null);
   visibleProducts = computed(() => {
     const query = this.productSearch().trim().toLocaleLowerCase();
-    if (!query) {
-      return this.products();
-    }
+    return this.products()
+      .filter((product) => product.name.toLocaleLowerCase().includes(query))
+      .filter((product) => {
+        const visibility = this.visibilityFilter();
+        const matchesVisibility = visibility === 'all'
+          || (visibility === 'published' && product.available)
+          || (visibility === 'hidden' && !product.available);
 
-    return this.products().filter((product) => product.name.toLocaleLowerCase().includes(query));
+        const stock = this.stockFilter();
+        const matchesStock = stock === 'all'
+          || (stock === 'in-stock' && product.stock !== null && product.stock > LOW_STOCK_THRESHOLD)
+          || (stock === 'low-stock' && product.stock !== null
+            && product.stock > 0 && product.stock <= LOW_STOCK_THRESHOLD)
+          || (stock === 'out-of-stock' && product.stock === 0);
+
+        const selectedCategory = this.categoryFilter();
+        const matchesCategory = selectedCategory === 'all'
+          || product.categoryIds.includes(selectedCategory);
+
+        return matchesVisibility && matchesStock && matchesCategory;
+      });
   });
 
   ngOnInit(): void {
@@ -85,6 +107,22 @@ export class SellerCatalog implements OnInit {
   categoryName(categoryId: string): string {
     return this.categories().find((category) => category.id === categoryId)?.name
       ?? 'Categoría no disponible';
+  }
+
+  toggleFilters(): void {
+    this.filtersOpen.update((isOpen) => !isOpen);
+  }
+
+  clearFilters(): void {
+    this.visibilityFilter.set('all');
+    this.stockFilter.set('all');
+    this.categoryFilter.set('all');
+  }
+
+  hasActiveFilters(): boolean {
+    return this.visibilityFilter() !== 'all'
+      || this.stockFilter() !== 'all'
+      || this.categoryFilter() !== 'all';
   }
 
   stockStatus(stock: number): string {
