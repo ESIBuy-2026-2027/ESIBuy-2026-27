@@ -1,3 +1,4 @@
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +12,7 @@ type InlineField = 'price' | 'stock';
 @Component({
   selector: 'app-seller-catalog',
   standalone: true,
-  imports: [FormsModule, RouterLink, RouterLinkActive],
+  imports: [FormsModule, RouterLink, AppSidebarComponent],
   templateUrl: './seller-catalog.html',
   styleUrl: './seller-catalog.css',
 })
@@ -180,10 +181,10 @@ export class SellerCatalog implements OnInit {
   }
 
   private toUpdateRequest(
-      product: SellerProduct,
-      field: InlineField | null,
-      value: number | null,
-      available: boolean): ProductCreateRequest {
+    product: SellerProduct,
+    field: InlineField | null,
+    value: number | null,
+    available: boolean): ProductCreateRequest {
     const request: ProductCreateRequest = {
       name: product.name,
       categoryIds: product.categoryIds,

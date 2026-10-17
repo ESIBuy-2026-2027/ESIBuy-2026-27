@@ -1,0 +1,56 @@
+<aside class="app-sidebar" [class.app-sidebar--admin]="variant === 'admin'" [class.app-sidebar--seller]="variant === 'seller'" [class.app-sidebar--seller-compact]="variant === 'seller-compact'" [class.app-sidebar--client]="variant === 'client'"
+  [attr.aria-label]="variant === 'admin' ? 'Panel de administración' : variant === 'client' ? 'Panel del cliente' : 'Panel del vendedor'">
+  <a routerLink="/" class="app-brand" aria-label="ESIBuy">
+    <span class="brand-mark" aria-hidden="true">E</span>
+    <span>ESI<span class="brand-accent">Buy</span></span>
+  </a>
+
+  <p class="sidebar-caption">{{ variant === 'admin' ? 'GESTIÓN DE ADMINISTRACIÓN' : variant === 'client' ? 'ÁREA DE CLIENTE' : 'GESTIÓN DE VENTA' }}</p>
+
+  @if (variant === 'admin') {
+    <nav class="app-navigation" aria-label="Navegación de administración">
+      <a class="navigation-link" routerLink="/admin/usuarios" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20"></path><circle cx="10" cy="7" r="3"></circle><path d="M16 11a3 3 0 1 0 0-6"></path><path d="M16 14h1a4 4 0 0 1 4 4v2"></path></svg>
+        <span>Usuarios</span>
+      </a>
+      <a class="navigation-link" routerLink="/admin/altas" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>
+        <span>Dar de alta Administrador</span>
+      </a>
+      <a class="navigation-link" routerLink="/admin/categorias" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13 11 22l-9-9V2h11l9 9a1.4 1.4 0 0 1-2 2Z"></path><circle cx="7" cy="7" r="1.2"></circle></svg>
+        <span>Categorías</span>
+      </a>
+    </nav>
+  } @else if (variant === 'client') {
+    <nav class="app-navigation" aria-label="Navegación del cliente">
+      <a class="navigation-link" routerLink="/client/dashboard" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg>
+        <span>Mi panel</span>
+      </a>
+      <a class="navigation-link" routerLink="/client/cart" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        <span>Mi carrito ({{ cartCount }})</span>
+      </a>
+      <a class="navigation-link" routerLink="/client/profile" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span>Mi perfil</span>
+      </a>
+    </nav>
+  } @else {
+    <nav class="app-navigation" aria-label="Navegación del vendedor">
+      <a class="navigation-link" routerLink="/seller/catalog" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <span class="navigation-icon text-icon" aria-hidden="true">▦</span><span>Mi catálogo</span>
+      </a>
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/></svg><span>Mis pedidos</span>
+      </a>
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg><span>Estadísticas</span>
+      </a>
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg><span>Valoraciones</span>
+      </a>
+    </nav>
+  }
+</aside>

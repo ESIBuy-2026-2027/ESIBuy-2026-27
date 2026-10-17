@@ -2,13 +2,14 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { CartService } from '../cart/cart.service';
 import { AvailableProduct, ProductsService } from '../../products/products.service';
 
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, AppSidebarComponent],
   templateUrl: './client-dashboard.html',
   styleUrl: './client-dashboard.css',
 })

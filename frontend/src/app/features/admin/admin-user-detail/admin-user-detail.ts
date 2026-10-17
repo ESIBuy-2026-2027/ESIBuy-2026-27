@@ -1,3 +1,4 @@
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -9,7 +10,7 @@ import { Category, ProductsService } from '../../products/products.service';
 @Component({
   selector: 'app-admin-user-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AppSidebarComponent],
   templateUrl: './admin-user-detail.html',
   styleUrl: './admin-user-detail.css'
 })

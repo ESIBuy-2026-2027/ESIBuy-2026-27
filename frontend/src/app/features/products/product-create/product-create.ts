@@ -1,3 +1,4 @@
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { DestroyRef, Component, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
@@ -42,7 +43,7 @@ const SERVER_FIELD_TO_FORM_FIELD: Readonly<Partial<Record<string, ProductFormFie
 @Component({
   selector: 'app-product-create',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, AppSidebarComponent],
   templateUrl: './product-create.html',
   styleUrl: './product-create.css',
 })
@@ -195,7 +196,6 @@ export class ProductCreate implements OnInit {
       .subscribe({
         next: () => {
           this.submitting.set(false);
-          this.submitSuccess.set(true);
           this.router.navigate(['/seller/catalog']);
         },
         error: (error: unknown) => {

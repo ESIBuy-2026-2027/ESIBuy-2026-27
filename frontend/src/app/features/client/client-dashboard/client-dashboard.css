@@ -10,99 +10,6 @@
   background: #e9eff8;
 }
 
-/* Barra lateral de navegación */
-.client-sidebar {
-  position: fixed;
-  inset: 0 auto 0 0;
-  z-index: 1;
-  display: flex;
-  width: 248px;
-  flex-direction: column;
-  box-sizing: border-box;
-  padding: 30px 18px 20px;
-  background: #102c40;
-  color: #edf5f8;
-}
-
-.client-brand {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  width: fit-content;
-  margin: 0 0 54px 8px;
-  color: #fff;
-  font-size: 21px;
-  font-weight: 750;
-  letter-spacing: -0.7px;
-  text-decoration: none;
-}
-
-.brand-mark {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border-radius: 11px;
-  background: #42d6b2;
-  color: #102c40;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.brand-accent {
-  color: #42d6b2;
-}
-
-.sidebar-caption,
-.eyebrow {
-  margin: 0;
-  color: #8396a4;
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 1.15px;
-}
-
-.sidebar-caption {
-  padding: 0 10px 13px;
-}
-
-.client-navigation {
-  display: grid;
-  gap: 7px;
-}
-
-.navigation-link {
-  display: flex;
-  min-height: 42px;
-  align-items: center;
-  gap: 12px;
-  padding: 0 12px;
-  border-radius: 8px;
-  color: #c1d0d8;
-  font-size: 13px;
-  font-weight: 550;
-  text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.navigation-link:hover,
-.navigation-link.is-active {
-  background: #1d4357;
-  color: #fff;
-}
-
-.navigation-link.is-active {
-  box-shadow: inset 3px 0 #42d6b2;
-}
-
-.navigation-icon {
-  display: block;
-  width: 19px;
-  height: 19px;
-  flex: 0 0 19px;
-  color: #42d6b2;
-}
-
 /* Área de contenido */
 .client-workspace {
   margin-left: 248px;
@@ -304,27 +211,6 @@
 
 /* Responsividad */
 @media (max-width: 760px) {
-  .client-sidebar {
-    position: static;
-    width: 100%;
-    min-height: auto;
-    padding: 16px 20px 14px;
-  }
-
-  .client-brand {
-    margin: 0 0 16px 2px;
-  }
-
-  .sidebar-caption {
-    display: none;
-  }
-
-  .client-navigation {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
   .client-workspace {
     margin-left: 0;
   }
