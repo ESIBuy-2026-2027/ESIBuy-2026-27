@@ -1,0 +1,316 @@
+<div class="profile-page">
+
+    <!-- BARRA LATERAL -->
+    <aside class="profile-card" aria-label="Menú de perfil">
+
+        <div class="sidebar-profile">
+            <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Perfil" />
+
+            <h2 class="sidebar-name">
+                {{ fullName() || 'Mi perfil' }}
+            </h2>
+
+            @if (isPremium()) {
+            <span class="role-badge premium-badge">
+                Cuenta premium
+            </span>
+            } @else {
+            <span class="role-badge">
+                Cuenta estándar
+            </span>
+            }
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Secciones del perfil">
+            @for (section of sections; track section.label) {
+            @if (section.label === 'Datos personales') {
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'personal'"
+                [attr.aria-current]="activeSection() === 'personal' ? 'page' : null"
+                (click)="selectSection('personal')">
+                {{ section.label }}
+            </button>
+            } @else if (section.label === 'Seguridad') {
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'security'"
+                [attr.aria-current]="activeSection() === 'security' ? 'page' : null"
+                (click)="selectSection('security')">
+                {{ section.label }}
+            </button>
+            } @else {
+            <a class="nav-item disabled" aria-disabled="true">
+                {{ section.label }}
+            </a>
+            }
+            }
+        </nav>
+
+
+        <div class="sidebar-footer">
+            @if (logoutError(); as error) {
+            <p class="form-error" role="alert">{{ error }}</p>
+            }
+            <button type="button" class="back-button" (click)="goBack()">
+                <span aria-hidden="true">←</span>
+                Volver
+            </button>
+
+            <button type="button" class="logout-button" (click)="logout()">
+                Cerrar sesión
+            </button>
+        </div>
+
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="profile-main">
+
+        @if (loading()) {
+        <section class="panel">
+            <output class="panel-description">
+                Cargando los datos de tu perfil...
+            </output>
+        </section>
+        } @else if (profileError(); as error) {
+        <section class="panel">
+            <h1 class="panel-title">Mi perfil</h1>
+
+            <p class="form-error" role="alert">{{ error }}</p>
+
+            <button type="button" class="primary-button" (click)="loadProfile()">
+                Reintentar
+            </button>
+        </section>
+        } @else if (profile(); as client) {
+
+        <!-- BANNER PREMIUM -->
+        @if (isPremium()) {
+        <section class="premium-banner">
+            <div>
+                <span class="premium-eyebrow">CUENTA PREMIUM</span>
+
+                <h2>Disfruta de ventajas exclusivas</h2>
+
+                <p>
+                    Tu cuenta Premium te permite disfrutar
+                    de las ventajas disponibles para suscriptores.
+                </p>
+            </div>
+        </section>
+        }
+
+        <!-- DATOS PERSONALES -->
+        @if (activeSection() === 'personal') {
+        <section class="panel">
+
+            <div class="panel-heading">
+                <div class="panel-heading-text">
+                    <span class="eyebrow">CUENTA DE CLIENTE</span>
+
+                    <h1 class="panel-title">Mi perfil</h1>
+
+                    <p class="panel-description">
+                        Consulta y actualiza tus datos personales.
+                    </p>
+                </div>
+
+                @if (!editing()) {
+                <button type="button" class="primary-button" (click)="startEditing()">
+                    Editar perfil
+                </button>
+                }
+            </div>
+
+            @if (editSuccess(); as message) {
+            <output class="success-message">
+                {{ message }}
+            </output>
+            }
+
+            @if (editError(); as error) {
+            <p class="form-error" role="alert">
+                {{ error }}
+            </p>
+            }
+
+            <form #clientForm="ngForm" (ngSubmit)="saveProfile()">
+
+                <h2 class="section-title">Datos personales</h2>
+
+                <div class="field-grid">
+
+                    <!-- NOMBRE -->
+                    <div class="field">
+                        <label for="firstName">
+                            Nombre <span>*</span>
+                        </label>
+
+                        @if (editing()) {
+                        <input id="firstName" name="firstName" type="text" [(ngModel)]="editForm.firstName" required
+                            minlength="2" maxlength="25" autocomplete="given-name" [disabled]="saving()" />
+                        } @else {
+                        <input id="firstName" type="text" [value]="client.firstName || ''" readonly />
+                        }
+                    </div>
+
+                    <!-- APELLIDOS -->
+                    <div class="field">
+                        <label for="lastName">
+                            Apellidos <span>*</span>
+                        </label>
+
+                        @if (editing()) {
+                        <input id="lastName" name="lastName" type="text" [(ngModel)]="editForm.lastName" required
+                            minlength="2" maxlength="50" autocomplete="family-name" [disabled]="saving()" />
+                        } @else {
+                        <input id="lastName" type="text" [value]="client.lastName || ''" readonly />
+                        }
+                    </div>
+
+                    <!-- EMAIL -->
+                    <div class="field">
+                        <label for="email">Correo electrónico</label>
+
+                        <input id="email" type="email" [value]="client.email || ''" readonly />
+
+                        <small>
+                            El correo electrónico no se puede modificar.
+                        </small>
+                    </div>
+
+                    <!-- TELÉFONO -->
+                    <div class="field">
+                        <label for="phone">Teléfono</label>
+
+                        @if (editing()) {
+                        <input id="phone" name="phone" type="tel" [(ngModel)]="editForm.phone" pattern="[0-9]{9}"
+                            maxlength="9" inputmode="numeric" autocomplete="tel" placeholder="Teléfono de 9 cifras"
+                            [disabled]="saving()" />
+
+                        <small>
+                            Campo opcional. Introduce 9 cifras si
+                            deseas indicar tu teléfono.
+                        </small>
+                        } @else {
+                        <input id="phone" type="text" [value]="client.phone || 'No indicado'" readonly />
+                        }
+                    </div>
+
+                    <!-- FECHA DE NACIMIENTO -->
+                    <div class="field">
+                        <label for="birthDate">
+                            Fecha de nacimiento <span>*</span>
+                        </label>
+
+                        @if (editing()) {
+                        <input id="birthDate" name="birthDate" type="date" [(ngModel)]="editForm.birthDate"
+                            [max]="maxBirthDate" required [disabled]="saving()" />
+                        } @else {
+                        <input id="birthDate" type="text" [value]="client.birthDate || 'No indicada'" readonly />
+                        }
+
+                        @if (editing()) {
+                        <small>Debes tener al menos 18 años.</small>
+                        }
+                    </div>
+
+                    <!-- DNI -->
+                    <div class="field">
+                        <label for="nationalId">DNI</label>
+
+                        @if (editing()) {
+                        <input id="nationalId" name="nationalId" type="text" [(ngModel)]="editForm.nationalId"
+                            maxlength="20" placeholder="Introduce un DNI nuevo" autocomplete="off"
+                            [disabled]="saving()" />
+
+                        <small>
+                            Déjalo vacío para mantener el DNI actual.
+                        </small>
+                        } @else {
+                        <input id="nationalId" type="text" [value]="client.maskedNationalId || 'No disponible'"
+                            readonly />
+                        }
+                    </div>
+
+                    <!-- TIPO DE CLIENTE -->
+                    <div class="field">
+                        <label for="customerType">Tipo de cliente</label>
+
+                        <input id="customerType" type="text" [value]="customerTypeLabel() || 'No disponible'"
+                            readonly />
+                    </div>
+
+                </div>
+
+                <!-- AVATARES: SOLO EN MODO EDICIÓN -->
+                @if (editing()) {
+                <div class="avatar-section">
+                    <h2 class="section-title">Imagen de perfil</h2>
+
+                    <p class="section-description">
+                        Selecciona uno de los avatares disponibles.
+                    </p>
+
+                    <fieldset class="avatar-selector-grid">
+                        <legend>Seleccionar avatar</legend>
+
+                        @for (avatar of clientAvatars; track avatar; let i = $index) {
+                        <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
+                            [attr.aria-pressed]="selectedAvatar() === avatar"
+                            [attr.aria-label]="'Seleccionar avatar ' + (i + 1)" [disabled]="saving()"
+                            (click)="selectAvatar(avatar)">
+
+                            <img [src]="avatar" [alt]="'Avatar ' + (i + 1)" />
+
+                            @if (selectedAvatar() === avatar) {
+                            <span class="avatar-check" aria-hidden="true">✓</span>
+                            }
+                        </button>
+                        }
+                    </fieldset>
+                </div>
+                }
+
+                <!-- ACCIONES DEL FORMULARIO -->
+                @if (editing()) {
+                <div class="form-actions">
+                    <button type="button" class="secondary-button" [disabled]="saving()" (click)="cancelEditing()">
+                        Cancelar
+                    </button>
+
+                    <button type="submit" class="primary-button" [disabled]="saving()">
+                        {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
+                    </button>
+                </div>
+                }
+
+            </form>
+        </section>
+
+        <!-- ZONA DE PELIGRO: SOLO EN DATOS PERSONALES -->
+        <section class="panel danger-zone" aria-labelledby="danger-zone-title">
+            <div class="panel-heading">
+                <div class="panel-heading-text">
+                    <span class="eyebrow">ACCIONES IRREVERSIBLES</span>
+
+                    <h2 id="danger-zone-title" class="panel-title">
+                        Zona de peligro
+                    </h2>
+
+                    <p class="panel-description">
+                        Desde aquí puedes iniciar el proceso de eliminación
+                        de tu cuenta de cliente.
+                    </p>
+                </div>
+            </div>
+
+            <app-delete-account [role]="'CLIENT'" />
+        </section>
+        }
+
+        <!-- SEGURIDAD / AUTENTICACIÓN EN DOS FACTORES -->
+        @if (activeSection() === 'security') {
+        <app-two-factor-settings [enabled]="twoFactorEnabled()"
+            (enabledChange)="onTwoFactorEnabledChange($any($event))" />
+        }
+        }
+    </main>
+</div>

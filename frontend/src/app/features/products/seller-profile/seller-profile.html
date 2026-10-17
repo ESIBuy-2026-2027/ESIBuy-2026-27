@@ -1,0 +1,313 @@
+<div class="profile-page">
+    <!-- BARRA LATERAL -->
+    <aside class="profile-card" aria-label="Menú de perfil">
+        <div class="sidebar-profile">
+            @if (displayAvatar()) {
+            <img class="avatar avatar-image" [src]="displayAvatar()" alt="Perfil del vendedor" />
+            } @else {
+            <div class="avatar" aria-hidden="true">
+                {{ initials() }}
+            </div>
+            }
+
+            <h2 class="sidebar-name">
+                {{ fullName() || 'Vendedor' }}
+            </h2>
+
+            <span class="role-badge">Vendedor</span>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Secciones del perfil">
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'personal'"
+                [attr.aria-current]="activeSection() === 'personal' ? 'page' : null"
+                (click)="selectSection('personal')">
+                Datos personales y negocio
+            </button>
+
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'security'"
+                [attr.aria-current]="activeSection() === 'security' ? 'page' : null"
+                (click)="selectSection('security')">
+                Seguridad
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            @if (logoutError(); as error) {
+            <p class="form-error" role="alert">{{ error }}</p>
+            }
+
+            <button type="button" class="back-button" (click)="goBack()">
+                <span aria-hidden="true">←</span>
+                Volver
+            </button>
+
+            <button type="button" class="logout-button" (click)="logout()">
+                Cerrar sesión
+            </button>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="profile-main">
+        @if (loading()) {
+        <section class="panel">
+            <output class="panel-description loading-message">
+                Cargando los datos de tu perfil...
+            </output>
+        </section>
+        } @else if (profileError(); as error) {
+        <section class="panel">
+            <h1 class="panel-title">Mi perfil de vendedor</h1>
+
+            <p class="form-error" role="alert">{{ error }}</p>
+
+            <button type="button" class="primary-button" (click)="loadProfile()">
+                Reintentar
+            </button>
+        </section>
+        } @else if (profile(); as seller) {
+        <!-- DATOS PERSONALES Y DEL NEGOCIO -->
+        @if (activeSection() === 'personal') {
+        <section class="panel">
+            <div class="panel-heading">
+                <div class="panel-heading-text">
+                    <span class="eyebrow">CUENTA DE VENDEDOR</span>
+
+                    <h1 class="panel-title">Mi perfil</h1>
+
+                    <p class="panel-description">
+                        Consulta y actualiza tus datos personales y la
+                        información de tu negocio en ESIBuy.
+                    </p>
+                </div>
+
+                @if (!editing()) {
+                <button type="button" class="primary-button" (click)="startEditing()">
+                    Editar perfil
+                </button>
+                }
+            </div>
+
+            @if (editSuccess(); as message) {
+            <output class="success-message">
+                {{ message }}
+            </output>
+            }
+
+            @if (editError(); as error) {
+            <p class="form-error" role="alert">{{ error }}</p>
+            }
+
+            <form #sellerForm="ngForm" (ngSubmit)="saveProfile()">
+                <!-- DATOS PERSONALES -->
+                <h2 class="section-title">Datos personales</h2>
+
+                <div class="field-grid">
+                    <div class="field">
+                        <label for="firstName">
+                            Nombre <span>*</span>
+                        </label>
+
+                        @if (editing()) {
+                        <input id="firstName" name="firstName" type="text" [(ngModel)]="editForm.firstName" required
+                            minlength="2" maxlength="25" autocomplete="given-name" [disabled]="saving()" />
+                        } @else {
+                        <input id="firstName" type="text" [value]="seller.firstName || ''" readonly />
+                        }
+                    </div>
+
+                    <div class="field">
+                        <label for="lastName">
+                            Apellidos <span>*</span>
+                        </label>
+
+                        @if (editing()) {
+                        <input id="lastName" name="lastName" type="text" [(ngModel)]="editForm.lastName" required
+                            minlength="2" maxlength="50" autocomplete="family-name" [disabled]="saving()" />
+                        } @else {
+                        <input id="lastName" type="text" [value]="seller.lastName || ''" readonly />
+                        }
+                    </div>
+
+                    <div class="field">
+                        <label for="email">Correo electrónico</label>
+
+                        <input id="email" type="email" [value]="seller.email || ''" readonly />
+
+                        <small>
+                            El correo electrónico no se puede modificar.
+                        </small>
+                    </div>
+
+                    <div class="field">
+                        <label for="phone">Teléfono</label>
+
+                        @if (editing()) {
+                        <input id="phone" name="phone" type="tel" [(ngModel)]="editForm.phone" pattern="[0-9]{9}"
+                            maxlength="9" inputmode="numeric" autocomplete="tel" placeholder="Teléfono de 9 cifras"
+                            [disabled]="saving()" />
+
+                        <small>
+                            Campo opcional. Introduce 9 cifras si
+                            deseas indicar tu teléfono.
+                        </small>
+                        } @else {
+                        <input id="phone" type="text" [value]="seller.phone || 'No indicado'" readonly /> }
+                    </div>
+
+                    <div class="field">
+                        <label for="nationalId">DNI/NIF</label>
+
+                        @if (editing()) {
+                        <input id="nationalId" name="nationalId" type="text" [(ngModel)]="editForm.nationalId"
+                            maxlength="20" autocomplete="off" placeholder="Nuevo DNI/NIF (opcional)"
+                            [disabled]="saving()" />
+
+                        <small>
+                            Déjalo vacío para conservar el documento
+                            actual.
+                        </small>
+                        } @else {
+                        <input id="nationalId" type="text" [value]="seller.maskedNationalId || 'No disponible'"
+                            readonly />
+                        }
+                    </div>
+                </div>
+
+                <!-- DATOS DEL NEGOCIO -->
+                <h2 class="section-title">Datos del negocio</h2>
+
+                <div class="field-grid">
+                    <div class="field">
+                        <label for="businessName">
+                            Nombre comercial <span>*</span>
+                        </label>
+
+                        @if (editing()) {
+                        <input id="businessName" name="businessName" type="text" [(ngModel)]="editForm.businessName"
+                            required minlength="2" maxlength="100" autocomplete="organization" [disabled]="saving()" />
+                        } @else {
+                        <input id="businessName" type="text" [value]="seller.businessName || 'No indicado'" readonly />
+                        }
+                    </div>
+
+                    <div class="field">
+                        <label for="defaultCategory">
+                            Categoría por defecto
+                            @if (editing()) {
+                            <span>*</span>
+                            }
+                        </label>
+
+                        @if (editing()) {
+                        <select id="defaultCategory" name="defaultCategory" [(ngModel)]="editForm.defaultCategory"
+                            required [disabled]="
+                                            saving() ||
+                                            categoriesLoading() ||
+                                            categoriesError() ||
+                                            categories().length === 0
+                                        ">
+                            <option value="" disabled>
+                                Selecciona una categoría
+                            </option>
+
+                            @for (category of categories(); track category.name) {
+                            <option [value]="category.name">
+                                {{ category.name }}
+                            </option>
+                            }
+                        </select>
+
+                        @if (categoriesLoading()) {
+                        <small>Cargando categorías...</small>
+                        }
+
+                        @if (categoriesError()) {
+                        <small class="field-error">
+                            No se pudieron cargar las categorías.
+                            Inténtalo de nuevo.
+                        </small>
+                        }
+
+                        @if (!categoriesLoading() && !categoriesError() && categories().length === 0) {
+                        <small class="field-error">
+                            No hay categorías disponibles.
+                        </small>
+                        }
+                        } @else {
+                        <input id="defaultCategory" type="text" [value]="seller.defaultCategory || 'No indicada'"
+                            readonly />
+                        }
+                    </div>
+                </div>
+
+                <!-- AVATARES: SOLO EN EDICIÓN -->
+                @if (editing()) {
+                <div class="avatar-section">
+                    <h2 class="section-title">Imagen de perfil</h2>
+
+                    <p class="section-description">
+                        Selecciona uno de los avatares disponibles.
+                    </p>
+
+                    <fieldset class="avatar-selector-grid">
+                        <legend>Seleccionar avatar</legend>
+
+                        @for (avatar of sellerAvatars; track avatar; let i = $index) {
+                        <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
+                            [attr.aria-pressed]="selectedAvatar() === avatar"
+                            [attr.aria-label]="'Seleccionar avatar ' + (i + 1)" [disabled]="saving()"
+                            (click)="selectAvatar(avatar)">
+                            <img [src]="avatar" [alt]="'Avatar de vendedor ' + (i + 1)" />
+
+                            @if (selectedAvatar() === avatar) {
+                            <span class="avatar-check" aria-hidden="true">
+                                ✓
+                            </span>
+                            }
+                        </button>
+                        }
+                    </fieldset>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="secondary-button" [disabled]="saving()" (click)="cancelEditing()">
+                        Cancelar
+                    </button>
+
+                    <button type="submit" class="primary-button" [disabled]="saving() || sellerForm.invalid">
+                        {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
+                    </button>
+                </div>
+                }
+            </form>
+        </section>
+
+        <!-- ZONA DE PELIGRO: SEPARADA DEL PERFIL -->
+        <section class="panel danger-zone" aria-labelledby="danger-zone-title">
+            <div class="panel-heading">
+                <div class="panel-heading-text">
+                    <span class="eyebrow">ACCIONES IRREVERSIBLES</span>
+
+                    <h2 id="danger-zone-title" class="panel-title">
+                        Zona de peligro
+                    </h2>
+
+                    <p class="panel-description">
+                        Desde aquí puedes iniciar el proceso de
+                        eliminación de tu cuenta de vendedor.
+                    </p>
+                </div>
+            </div>
+
+            <app-delete-account [role]="'SELLER'" />
+        </section>
+        }
+
+        <!-- SEGURIDAD: COMPONENTE REUTILIZADO -->
+        @if (activeSection() === 'security') {
+        <app-two-factor-settings [enabled]="twoFactorEnabled()" (enabledChange)="onTwoFactorEnabledChange($event)" />
+        }
+        }
+    </main>
+</div>

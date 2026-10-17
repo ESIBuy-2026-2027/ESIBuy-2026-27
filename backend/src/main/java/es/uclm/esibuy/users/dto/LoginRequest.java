@@ -14,6 +14,8 @@ public class LoginRequest {
     @Size(max = 128, message = "La contraseña no puede superar los 128 caracteres")
     private String password;
 
+    private String totpCode;
+
     public String getEmail() {
         return email;
     }
@@ -28,5 +30,13 @@ public class LoginRequest {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getTotpCode() {
+        return totpCode;
+    }
+
+    public void setTotpCode(String totpCode) {
+        this.totpCode = totpCode;
     }
 }

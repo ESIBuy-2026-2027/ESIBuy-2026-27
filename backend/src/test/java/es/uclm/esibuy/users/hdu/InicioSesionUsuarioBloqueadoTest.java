@@ -17,43 +17,45 @@ import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
 import es.uclm.esibuy.users.service.UserService;
 import es.uclm.esibuy.common.exception.InvalidCredentialsException;
+import es.uclm.esibuy.products.repository.ProductRepository;
 
 @ExtendWith(MockitoExtension.class)
 class InicioSesionUsuarioBloqueadoTest {
 
-    @Mock
-    private UserRepository userRepository;
+        @Mock
+        private UserRepository userRepository;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+        @Mock
+        private ProductRepository productRepository;
 
-    @Test
-    void unaCuentaBloqueadaNoPuedeIniciarSesion() {
-        // Arrange
-        User usuario = new User(
-                "usuario@test.com",
-                "Juan",
-                "Pérez",
-                UserRole.CLIENT
-        );
-        usuario.setActive(false);
-        usuario.setPasswordHash("hash");
+        @Mock
+        private PasswordEncoder passwordEncoder;
 
-        LoginRequest request = new LoginRequest();
-        request.setEmail("usuario@test.com");
-        request.setPassword("123456");
+        @Test
+        void unaCuentaBloqueadaNoPuedeIniciarSesion() {
+                // Arrange
+                User usuario = new User(
+                                "usuario@test.com",
+                                "Juan",
+                                "Pérez",
+                                UserRole.CLIENT);
+                usuario.setActive(false);
+                usuario.setPasswordHash("hash");
 
-        when(userRepository.findByEmailIgnoreCase("usuario@test.com"))
-                .thenReturn(Optional.of(usuario));
-        //when(passwordEncoder.matches("123456", "hash"))
-               // .thenReturn(true);
+                LoginRequest request = new LoginRequest();
+                request.setEmail("usuario@test.com");
+                request.setPassword("123456");
 
-        UserService userService = new UserService(userRepository, passwordEncoder);
+                when(userRepository.findByEmailIgnoreCase("usuario@test.com"))
+                                .thenReturn(Optional.of(usuario));
+                // when(passwordEncoder.matches("123456", "hash"))
+                // .thenReturn(true);
 
-        // Act + Assert
-        assertThrows(
-                InvalidCredentialsException.class,
-                () -> userService.login(request)
-        );
-    }
+                UserService userService = new UserService(userRepository, passwordEncoder, productRepository);
+
+                // Act + Assert
+                assertThrows(
+                                InvalidCredentialsException.class,
+                                () -> userService.login(request));
+        }
 }

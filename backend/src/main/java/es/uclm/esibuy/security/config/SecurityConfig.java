@@ -41,6 +41,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class SecurityConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
+    private static final String ROLE_CLIENT = "CLIENT";
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROLE_SELLER = "SELLER";
 
     @Bean
     SecurityContextRepository securityContextRepository() {
@@ -87,9 +90,15 @@ public class SecurityConfig {
                             .requestMatchers(
                                     "/", "/api/users/register/**", "/api/users/login", "/actuator/health")
                             .permitAll()
-                            .requestMatchers(HttpMethod.POST, "/api/users/admin").hasRole("ADMIN")
-                            .requestMatchers("/api/admin/**", "/api/v1/admin/**").hasRole("ADMIN")
-                            .requestMatchers("/api/products/**").hasRole("SELLER")
+                            .requestMatchers(HttpMethod.POST, "/api/users/admin").hasRole(ROLE_ADMIN)
+                            .requestMatchers("/api/admin/**", "/api/v1/admin/**").hasRole(ROLE_ADMIN)
+                            .requestMatchers("/api/products/**").hasRole(ROLE_SELLER)
+                            .requestMatchers(HttpMethod.GET, "/api/users/me/profile")
+                            .hasAnyRole(ROLE_CLIENT, ROLE_SELLER, ROLE_ADMIN)
+                            .requestMatchers(HttpMethod.DELETE, "/api/users/me")
+                            .hasAnyRole(ROLE_CLIENT, ROLE_SELLER)
+                            .requestMatchers(HttpMethod.PUT, "/api/users/me/profile")
+                            .hasAnyRole(ROLE_CLIENT, ROLE_SELLER, ROLE_ADMIN)
                             .anyRequest().authenticated())
                     .addFilterBefore(new CorrelationIdFilter(), UsernamePasswordAuthenticationFilter.class)
                     .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)
