@@ -389,3 +389,144 @@
     grid-column: auto;
   }
 }
+
+
+/* DIÁLOGOS DEL REGISTRO */
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgb(16 44 64 / 48%);
+}
+
+.register-dialog {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 440px;
+  padding: 28px;
+  border: 1px solid #e1e9ef;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 16px 48px rgb(16 44 64 / 20%);
+  text-align: center;
+}
+
+.dialog-icon {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.success-icon {
+  background: #edf9f2;
+  color: #17633c;
+}
+
+.warning-icon {
+  background: #fff5e5;
+  color: #946200;
+}
+
+.register-dialog h2 {
+  margin: 0 0 12px;
+  color: #173247;
+  font-size: 20px;
+  font-weight: 750;
+}
+
+.register-dialog p {
+  margin: 0;
+  color: #587388;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.dialog-primary-button,
+.dialog-secondary-button,
+.dialog-danger-button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color .2s ease, border-color .2s ease;
+}
+
+.dialog-primary-button {
+  border-color: #42d6b2;
+  background: #42d6b2;
+  color: #102c40;
+}
+
+.dialog-primary-button:hover {
+  border-color: #2bb79a;
+  background: #2bb79a;
+}
+
+.dialog-secondary-button {
+  border-color: #dce6ea;
+  background: #fff;
+  color: #355267;
+}
+
+.dialog-secondary-button:hover {
+  background: #f4f8f9;
+}
+
+.dialog-danger-button {
+  border-color: #f1aeb5;
+  background: #fff5f5;
+  color: #a33b3b;
+}
+
+.dialog-danger-button:hover {
+  border-color: #c0392b;
+  background: #ffe8e8;
+}
+
+.dialog-primary-button:focus-visible,
+.dialog-secondary-button:focus-visible,
+.dialog-danger-button:focus-visible {
+  outline: 3px solid rgb(66 214 178 / 35%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .register-dialog {
+    padding: 22px 18px;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+  }
+
+  .dialog-actions button {
+    width: 100%;
+  }
+}
