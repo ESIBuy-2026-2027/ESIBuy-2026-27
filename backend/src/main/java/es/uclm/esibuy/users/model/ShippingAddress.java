@@ -1,8 +1,10 @@
 package es.uclm.esibuy.users.model;
 
 /**
- * Dirección de envío. Se guarda embebida dentro de {@link ClientProfile}, no en una
- * colección aparte: son pocas, se leen siempre con el cliente y se borran con él.
+ * Dirección de envío. Se guarda embebida dentro de {@link ClientProfile}, no en
+ * una
+ * colección aparte: son pocas, se leen siempre con el cliente y se borran con
+ * él.
  */
 public class ShippingAddress {
 
@@ -67,6 +69,38 @@ public class ShippingAddress {
 
     public boolean isDefaultAddress() {
         return defaultAddress;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setRecipientName(String recipientName) {
+        this.recipientName = recipientName;
+    }
+
+    public void setStreet(String street) {
+        this.street = street;
+    }
+
+    public void setAdditionalInfo(String additionalInfo) {
+        this.additionalInfo = additionalInfo;
+    }
+
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public void setDefaultAddress(boolean defaultAddress) {

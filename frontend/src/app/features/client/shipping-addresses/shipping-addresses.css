@@ -10,6 +10,7 @@
 }
 
 .panel {
+  min-width: 0;
   padding: 26px 28px 30px;
   border: 1px solid #d9e3eb;
   border-radius: 16px;
@@ -55,8 +56,8 @@
 }
 
 .section-title {
-  margin: 0 0 14px;
-  padding-bottom: 10px;
+  margin: 0 0 18px;
+  padding-bottom: 12px;
   border-bottom: 1px solid #e7edf0;
   color: #173247;
   font-size: 15px;
@@ -91,9 +92,10 @@
 }
 
 .field label {
-  color: #72828e;
-  font-size: 11px;
+  color: #526b7c;
+  font-size: 12px;
   font-weight: 650;
+  line-height: 1.5;
 }
 
 .field label span,
@@ -101,10 +103,11 @@
   color: #c0392b;
 }
 
-.field input[type='text'],
-.field input[type='tel'] {
+.field input[type="text"],
+.field input[type="tel"] {
   display: block;
   width: 100%;
+  min-width: 0;
   min-height: 42px;
   padding: 10px 12px;
   border: 1px solid #9aafbf;
@@ -113,19 +116,23 @@
   color: #203b4e;
   font: inherit;
   font-size: 13px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .field input::placeholder {
-  color: #9aaab3;
+  color: #899ba7;
 }
 
-.field input:focus {
-  border-color: #42bfa3;
-  outline: 3px solid rgb(66 214 178 / 22%);
+.field input:focus-visible {
+  border-color: #239b83;
+  outline: 3px solid rgb(66 191 163 / 22%);
   outline-offset: 1px;
 }
 
-.field input[aria-invalid='true'] {
+.field input[aria-invalid="true"] {
   border-color: #c0392b;
   background: #fff8f8;
 }
@@ -144,7 +151,7 @@
 .checkbox-label {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   color: #3a5871 !important;
   font-size: 13px !important;
   font-weight: 600 !important;
@@ -154,13 +161,25 @@
 .checkbox-label input {
   width: 16px;
   height: 16px;
+  flex: 0 0 auto;
+  margin: 0;
   accent-color: #24b99b;
 }
 
+.checkbox-label input:focus-visible {
+  outline: 3px solid rgb(66 191 163 / 30%);
+  outline-offset: 3px;
+}
+
+.checkbox-label input:disabled {
+  cursor: not-allowed;
+}
+
 .required-note {
-  margin: 14px 0 0;
+  margin: 16px 0 0;
   color: #72828e;
   font-size: 11px;
+  line-height: 1.5;
 }
 
 .form-actions {
@@ -168,7 +187,7 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 20px;
+  margin-top: 22px;
 }
 
 /* BOTONES */
@@ -179,23 +198,31 @@
   min-height: 40px;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   padding: 9px 16px;
   border-radius: 8px;
   font: inherit;
   font-size: 13px;
   font-weight: 650;
+  line-height: 1.4;
+  text-align: center;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .primary-button {
   flex-shrink: 0;
-  border: 0;
+  border: 1px solid #102c40;
   background: #102c40;
   color: #fff;
 }
 
 .primary-button:hover:not(:disabled) {
+  border-color: #173f56;
   background: #173f56;
 }
 
@@ -218,7 +245,7 @@
 
 .primary-button:focus-visible,
 .secondary-button:focus-visible {
-  outline: 3px solid rgb(66 214 178 / 35%);
+  outline: 3px solid rgb(66 191 163 / 35%);
   outline-offset: 2px;
 }
 
@@ -251,17 +278,19 @@
   margin: 0 0 16px;
   color: #805b12;
   font-size: 12px;
+  line-height: 1.5;
 }
 
-/* LISTA DE DIRECCIONES */
+/* ESTADO VACÍO */
 
 .empty-state {
   padding: 28px 16px;
   border: 1px dashed #c9d6df;
   border-radius: 12px;
-  text-align: center;
   color: #587388;
   font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
 }
 
 .empty-state p {
@@ -269,39 +298,42 @@
 }
 
 .empty-hint {
-  margin-top: 4px !important;
+  margin-top: 5px !important;
   color: #72828e;
   font-size: 12px;
 }
 
+/* LISTA DE DIRECCIONES */
+
 .address-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  align-items: stretch;
+  gap: 16px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .address-card {
+  display: flex;
   min-width: 0;
-  padding: 16px 18px;
+  flex-direction: column;
+  padding: 18px;
   border: 1px solid #d9e3eb;
   border-radius: 12px;
   background: #fff;
   color: #3a5871;
   font-size: 13px;
-  line-height: 1.55;
-}
-
-.address-card p {
-  margin: 0;
-  overflow-wrap: anywhere;
+  line-height: 1.6;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .address-card.is-default {
-  border-color: #42d6b2;
-  box-shadow: 0 0 0 3px rgb(66 214 178 / 15%);
+  border-color: #42bfa3;
+  box-shadow: 0 0 0 2px rgb(66 191 163 / 13%);
 }
 
 .address-card-header {
@@ -310,32 +342,108 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
   color: #173247;
 }
 
+.recipient-name {
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
 .default-badge {
-  padding: 3px 10px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 4px 9px;
   border-radius: 999px;
-  background: #42d6b2;
-  color: #102c40;
+  background: #d9f5ed;
+  color: #145d4c;
   font-size: 10px;
   font-weight: 750;
+  line-height: 1.4;
+}
+
+.address-details {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.address-details p {
+  margin: 0 0 3px;
 }
 
 .address-phone {
-  margin-top: 6px !important;
+  margin-top: 8px !important;
   color: #72828e;
   font-size: 12px;
 }
 
+.address-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+/* RESPONSIVE */
+
 @media (max-width: 720px) {
-  .field-grid,
-  .address-list {
-    grid-template-columns: 1fr;
+  .panel {
+    padding: 22px 18px;
   }
 
   .panel-heading {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .panel-heading>.primary-button {
+    align-self: flex-start;
+  }
+
+  .field-grid,
+  .address-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .field-wide {
+    grid-column: auto;
+  }
+
+  .address-form {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .panel {
+    padding: 18px 14px;
+    border-radius: 12px;
+  }
+
+  .panel-title {
+    font-size: 19px;
+  }
+
+  .address-form {
+    padding: 13px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .primary-button,
+  .form-actions .secondary-button {
+    width: 100%;
+  }
+
+  .address-card {
+    padding: 15px;
   }
 }

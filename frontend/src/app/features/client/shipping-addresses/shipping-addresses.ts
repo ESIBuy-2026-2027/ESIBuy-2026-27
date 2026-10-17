@@ -94,6 +94,7 @@ export class ShippingAddresses implements OnInit {
 
   readonly addresses = signal<ShippingAddress[]>([]);
   readonly loading = signal(true);
+  editing = signal<ShippingAddress | null>(null);
   readonly loadError = signal<string | null>(null);
 
   readonly formOpen = signal(false);
@@ -139,16 +140,35 @@ export class ShippingAddresses implements OnInit {
     this.formError.set(null);
     this.successMessage.set(null);
     this.submitted.set(false);
+    this.editing.set(null);
     this.formOpen.set(true);
   }
 
   cancelForm(): void {
-    if (this.saving()) {
-      return;
-    }
+    if (this.saving()) return;
+    this.editing.set(null);   // ← añadir
     this.formOpen.set(false);
     this.fieldErrors.set({});
     this.formError.set(null);
+  }
+
+  openEdit(address: ShippingAddress): void {
+    this.editing.set(address);
+    this.form = {
+      recipientName: address.recipientName,
+      street: address.street,
+      additionalInfo: address.additionalInfo ?? '',
+      postalCode: address.postalCode,
+      city: address.city,
+      province: address.province,
+      phone: address.phone ?? '',
+      isDefault: address.isDefault,
+    };
+    this.formOpen.set(true);
+    this.submitted.set(false);
+    this.fieldErrors.set({});
+    this.formError.set(null);
+    this.successMessage.set(null);
   }
 
   /** Tras el primer intento de envío, los errores se actualizan mientras se escribe. */
@@ -184,22 +204,54 @@ export class ShippingAddresses implements OnInit {
     };
 
     this.saving.set(true);
-    this.addressService.add(request).subscribe({
-      next: (created) => {
-        // Solo puede haber una predeterminada: si la nueva lo es, se desmarca el resto.
-        this.addresses.update((current) => [
-          ...(created.isDefault ? current.map((a) => ({ ...a, isDefault: false })) : current),
-          created,
-        ]);
+    const editTarget = this.editing();
+    const request$ = editTarget
+      ? this.addressService.update(editTarget.id, request)
+      : this.addressService.add(request);
+
+    request$.subscribe({
+      next: (saved) => {
+        if (editTarget) {
+          this.addresses.update((current) =>
+            current.map((address) => {
+              if (address.id === saved.id) {
+                return saved;
+              }
+
+              if (saved.isDefault) {
+                return { ...address, isDefault: false };
+              }
+
+              return address;
+            }),
+          );
+
+          this.successMessage.set(
+            'La dirección se ha actualizado correctamente.',
+          );
+        } else {
+          this.addresses.update((current) => [
+            ...(saved.isDefault
+              ? current.map((address) => ({
+                ...address,
+                isDefault: false,
+              }))
+              : current),
+            saved,
+          ]);
+
+          this.successMessage.set(
+            'La dirección se ha añadido correctamente.',
+          );
+        }
+
+        this.editing.set(null);
         this.saving.set(false);
         this.formOpen.set(false);
-        this.successMessage.set('La dirección se ha añadido correctamente.');
       },
       error: (error: unknown) => {
         this.saving.set(false);
-        if (this.handleExpiredSession(error)) {
-          return;
-        }
+        if (this.handleExpiredSession(error)) return;
         this.applySaveError(error);
       },
     });

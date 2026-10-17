@@ -29,4 +29,10 @@ export class ShippingAddressService {
   add(request: ShippingAddressRequest): Observable<ShippingAddress> {
     return this.http.post<ShippingAddress>(this.url, request, { withCredentials: true });
   }
+
+  update(id: string, req: ShippingAddressRequest): Observable<ShippingAddress> {
+    return this.http.put<ShippingAddress>(
+      `/api/users/me/addresses/${id}`, req, { withCredentials: true }
+    );
+  }
 }

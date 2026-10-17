@@ -7,8 +7,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import es.uclm.esibuy.common.exception.AddressLimitExceededException;
+import es.uclm.esibuy.common.exception.AddressNotFoundException;
 import es.uclm.esibuy.common.exception.UserNotFoundException;
 import es.uclm.esibuy.users.dto.ShippingAddressRequest;
+import es.uclm.esibuy.users.dto.ShippingAddressResponse;
 import es.uclm.esibuy.users.model.ClientProfile;
 import es.uclm.esibuy.users.model.ShippingAddress;
 import es.uclm.esibuy.users.model.User;
@@ -67,6 +69,39 @@ public class ShippingAddressService {
         profile.setAddresses(addresses);
         userRepository.save(user);
         return created;
+    }
+
+    public ShippingAddressResponse update(String userId, String addressId, ShippingAddressRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+        ClientProfile profile = user.getClientProfile();
+        if (profile == null)
+            throw new AddressNotFoundException();
+
+        List<ShippingAddress> addresses = new ArrayList<>(profile.getAddresses());
+        ShippingAddress target = addresses.stream()
+                .filter(a -> a.getId().equals(addressId))
+                .findFirst()
+                .orElseThrow(AddressNotFoundException::new);
+
+        boolean makeDefault = request.defaultAddress() ||
+                addresses.stream().noneMatch(a -> a.isDefaultAddress() && !a.getId().equals(addressId));
+        if (makeDefault) {
+            addresses.forEach(a -> a.setDefaultAddress(false));
+        }
+
+        target.setRecipientName(request.recipientName().trim());
+        target.setStreet(request.street().trim());
+        target.setAdditionalInfo(blankToNull(request.additionalInfo()));
+        target.setPostalCode(request.postalCode().trim());
+        target.setCity(request.city().trim());
+        target.setProvince(request.province().trim());
+        target.setPhone(blankToNull(request.phone()));
+        target.setDefaultAddress(makeDefault);
+
+        profile.setAddresses(addresses);
+        userRepository.save(user);
+        return ShippingAddressResponse.from(target);
     }
 
     private User findUser(String userId) {
