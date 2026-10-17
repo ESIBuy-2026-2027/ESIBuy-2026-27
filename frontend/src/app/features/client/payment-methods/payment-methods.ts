@@ -175,6 +175,7 @@ export class PaymentMethods implements OnInit {
         });
     }
 
+
     private buildRequest(form: PaymentMethodForm): PaymentMethodRequest | null {
         const label = form.label.trim();
 
@@ -189,80 +190,101 @@ export class PaymentMethods implements OnInit {
             isDefault: form.defaultMethod,
         };
 
-        if (form.type === 'CARD') {
-            const cardholderName = form.cardholderName.trim();
-            const lastFourDigits = form.lastFourDigits.trim();
-            const expiration = this.parseExpiration(form.expiration);
+        switch (form.type) {
+            case 'CARD':
+                return this.addCardDetails(request, form);
 
-            if (!expiration) {
-                this.error.set('Introduce una fecha de caducidad válida.');
-                return null;
-            }
+            case 'PAYPAL':
+                return this.addPayPalDetails(request, form);
 
-            const month = expiration.month;
-            const year = expiration.year;
+            case 'BIZUM':
+                return this.addBizumDetails(request, form);
+        }
+    }
 
-            if (cardholderName.length < 2 || cardholderName.length > 80) {
-                this.error.set('Introduce el nombre del titular (entre 2 y 80 caracteres).');
-                return null;
-            }
+    private addCardDetails(
+        request: PaymentMethodRequest,
+        form: PaymentMethodForm,
+    ): PaymentMethodRequest | null {
+        const cardholderName = form.cardholderName.trim();
+        const lastFourDigits = form.lastFourDigits.trim();
+        const expiration = this.parseExpiration(form.expiration);
 
-            if (!/^\d{4}$/.test(lastFourDigits)) {
-                this.error.set('Introduce las cuatro últimas cifras de la tarjeta.');
-                return null;
-            }
-
-            if (
-                !Number.isInteger(month) || month < 1 || month > 12
-                || !Number.isInteger(year) || year < this.currentYear
-            ) {
-                this.error.set('Introduce una fecha de caducidad válida.');
-                return null;
-            }
-
-            const now = new Date();
-            if (
-                year === now.getFullYear()
-                && month < now.getMonth() + 1
-            ) {
-                this.error.set('La tarjeta está caducada.');
-                return null;
-            }
-
-            request.cardholderName = cardholderName;
-            request.cardBrand = form.cardBrand;
-            request.lastFourDigits = lastFourDigits;
-            request.expirationMonth = month;
-            request.expirationYear = year;
+        if (!expiration) {
+            this.error.set('Introduce una fecha de caducidad válida.');
+            return null;
         }
 
-        if (form.type === 'PAYPAL') {
-            const paypalEmail = form.paypalEmail.trim();
-
-            if (
-                paypalEmail.length > 254
-                || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypalEmail)
-            ) {
-                this.error.set('Introduce un correo electrónico válido para PayPal.');
-                return null;
-            }
-
-            request.paypalEmail = paypalEmail;
+        if (cardholderName.length < 2 || cardholderName.length > 80) {
+            this.error.set('Introduce el nombre del titular (entre 2 y 80 caracteres).');
+            return null;
         }
 
-        if (form.type === 'BIZUM') {
-            const bizumPhone = form.bizumPhone.trim();
-
-            if (!/^\d{9}$/.test(bizumPhone)) {
-                this.error.set('El teléfono de Bizum debe tener exactamente 9 cifras.');
-                return null;
-            }
-
-            request.bizumPhone = bizumPhone;
+        if (!/^\d{4}$/.test(lastFourDigits)) {
+            this.error.set('Introduce las cuatro últimas cifras de la tarjeta.');
+            return null;
         }
+
+        if (!this.isValidExpiration(expiration.month, expiration.year)) {
+            this.error.set('Introduce una fecha de caducidad válida.');
+            return null;
+        }
+
+        request.cardholderName = cardholderName;
+        request.cardBrand = form.cardBrand;
+        request.lastFourDigits = lastFourDigits;
+        request.expirationMonth = expiration.month;
+        request.expirationYear = expiration.year;
 
         return request;
     }
+
+    private isValidExpiration(month: number, year: number): boolean {
+        if (
+            !Number.isInteger(month) || month < 1 || month > 12
+            || !Number.isInteger(year) || year < this.currentYear
+        ) {
+            return false;
+        }
+
+        const now = new Date();
+
+        return year !== now.getFullYear() || month >= now.getMonth() + 1;
+    }
+
+    private addPayPalDetails(
+        request: PaymentMethodRequest,
+        form: PaymentMethodForm,
+    ): PaymentMethodRequest | null {
+        const paypalEmail = form.paypalEmail.trim();
+
+        if (
+            paypalEmail.length > 254
+            || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypalEmail)
+        ) {
+            this.error.set('Introduce un correo electrónico válido para PayPal.');
+            return null;
+        }
+
+        request.paypalEmail = paypalEmail;
+        return request;
+    }
+
+    private addBizumDetails(
+        request: PaymentMethodRequest,
+        form: PaymentMethodForm,
+    ): PaymentMethodRequest | null {
+        const bizumPhone = form.bizumPhone.trim();
+
+        if (!/^\d{9}$/.test(bizumPhone)) {
+            this.error.set('El teléfono de Bizum debe tener exactamente 9 cifras.');
+            return null;
+        }
+
+        request.bizumPhone = bizumPhone;
+        return request;
+    }
+
 
     setDefault(method: PaymentMethod): void {
         if (method.isDefault || this.actionId()) return;

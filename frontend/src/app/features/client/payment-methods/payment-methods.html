@@ -20,11 +20,11 @@
     }
 
     @if (success(); as message) {
-    <p class="success-message" role="status">{{ message }}</p>
+    <output class="success-message">{{ message }}</output>
     }
 
     @if (loading()) {
-    <p class="payment-empty" role="status">Cargando métodos de pago...</p>
+    <output class="payment-empty">Cargando métodos de pago...</output>
     } @else {
 
     @if (formVisible()) {
@@ -136,7 +136,14 @@
 
     @if (methods().length === 0 && !formVisible()) {
     <div class="payment-empty">
-        <span class="payment-empty-icon" aria-hidden="true">▤</span>
+        <span class="payment-empty-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="27" height="27" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="18" height="14" rx="2.5" />
+                <path d="M3 10h18" />
+                <path d="M7 15h3" />
+            </svg>
+        </span>
         <h2>Aún no tienes métodos de pago</h2>
         <p>Añade una tarjeta, una cuenta de PayPal o un teléfono de Bizum.</p>
         <button type="button" class="primary-button" (click)="openForm()">

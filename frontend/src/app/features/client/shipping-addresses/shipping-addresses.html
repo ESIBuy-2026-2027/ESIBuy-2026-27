@@ -211,11 +211,26 @@
   }
 
   @if (addresses().length === 0 && !formOpen()) {
-  <div class="empty-state">
-    <p>Todavía no has añadido ninguna dirección de envío.</p>
-    <p class="empty-hint">
-      Añade una para agilizar tus próximas compras.
+  <div class="address-empty">
+    <span class="address-empty-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="27" height="27" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" />
+        <circle cx="12" cy="10" r="2.5" />
+      </svg>
+    </span>
+
+    <h2>Aún no tienes direcciones de envío</h2>
+
+    <p>
+      Añade tu primera dirección para recibir tus pedidos de forma
+      más rápida y cómoda.
     </p>
+
+    <button type="button" class="primary-button" data-testid="add-first-address" [disabled]="limitReached() || saving()"
+      (click)="openForm()">
+      Añadir mi primera dirección
+    </button>
   </div>
   }
 

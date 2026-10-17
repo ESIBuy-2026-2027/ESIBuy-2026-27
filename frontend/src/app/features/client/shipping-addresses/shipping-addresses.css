@@ -295,27 +295,48 @@
   line-height: 1.5;
 }
 
-/* ESTADO VACÍO */
 
-.empty-state {
-  padding: 28px 16px;
-  border: 1px dashed #c9d6df;
+/* ESTADO VACÍO: MISMO DISEÑO QUE MÉTODOS DE PAGO */
+
+.address-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 36px 16px;
+  border: 1px dashed #cbd9e2;
   border-radius: 12px;
-  color: #587388;
-  font-size: 13px;
-  line-height: 1.6;
+  background: #f8fbfc;
   text-align: center;
 }
 
-.empty-state p {
-  margin: 0;
+.address-empty-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e4f4ef;
+  color: #16856e;
+  font-size: 29px;
+  line-height: 1;
 }
 
-.empty-hint {
-  margin-top: 5px !important;
-  color: #72828e;
-  font-size: 12px;
+.address-empty h2 {
+  margin: 4px 0 0;
+  color: #173247;
+  font-size: 16px;
+  font-weight: 750;
 }
+
+.address-empty p {
+  max-width: 360px;
+  margin: 0 0 8px;
+  color: #587388;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
 
 /* LISTA DE DIRECCIONES */
 
@@ -523,6 +544,55 @@
   }
 
   .dialog-actions button {
+    width: 100%;
+  }
+}
+
+.empty-state-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  margin-bottom: 4px;
+  color: var(--primary-color, #3157a4);
+  background: #eef3ff;
+  border-radius: 50%;
+}
+
+.empty-state-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.empty-state-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 6px;
+  padding: 12px 20px;
+}
+
+.empty-state-button span {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+@media (max-width: 480px) {
+  .empty-state {
+    margin-top: 20px;
+    padding: 30px 18px;
+  }
+
+  .empty-state-icon {
+    width: 66px;
+    height: 66px;
+  }
+
+  .empty-state-button {
     width: 100%;
   }
 }

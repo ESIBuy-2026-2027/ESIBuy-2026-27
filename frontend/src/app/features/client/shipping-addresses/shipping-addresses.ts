@@ -174,7 +174,6 @@ export class ShippingAddresses implements OnInit {
     this.successMessage.set(null);
   }
 
-  /** Tras el primer intento de envío, los errores se actualizan mientras se escribe. */
   onFieldChange(): void {
     if (this.submitted()) {
       this.fieldErrors.set(validateAddress(this.form));
