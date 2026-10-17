@@ -131,7 +131,9 @@ public class PaymentMethodService {
             boolean makeDefault) {
 
         String id = UUID.randomUUID().toString();
-        String label = request.label().trim();
+        String label = request.label() == null
+                ? ""
+                : request.label().trim();
 
         return switch (request.type()) {
             case CARD -> PaymentMethod.card(

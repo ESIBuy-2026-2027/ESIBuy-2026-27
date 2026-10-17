@@ -10,6 +10,7 @@ import QRCode from 'qrcode';
 import { TwoFactorService, TwoFactorSetupResponse, } from '../../../core/services/two-factor.service';
 import { TwoFactorSettingsComponent } from '../../../shared/two-factor-settings/two-factor-settings';
 import { ShippingAddresses } from '../shipping-addresses/shipping-addresses';
+import { PaymentMethods } from '../payment-methods/payment-methods';
 
 export interface ProfileSection {
     label: string;
@@ -40,7 +41,7 @@ interface UpdateClientProfileRequest {
 @Component({
     selector: 'app-client-profile',
     standalone: true,
-    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent, ShippingAddresses],
+    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent, ShippingAddresses, PaymentMethods],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     templateUrl: './client-profile.html',
     styleUrl: './client-profile.css',
@@ -150,7 +151,14 @@ export class ClientProfile implements OnInit {
     }
 
     selectSection(section: string): void {
-        if (section !== 'personal' && section !== 'security' && section != 'addresses') {
+        const availableSections = [
+            'personal',
+            'security',
+            'addresses',
+            'payments',
+        ];
+
+        if (!availableSections.includes(section)) {
             return;
         }
 
