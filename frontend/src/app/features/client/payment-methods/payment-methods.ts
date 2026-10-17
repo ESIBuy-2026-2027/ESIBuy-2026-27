@@ -151,6 +151,7 @@ export class PaymentMethods implements OnInit {
         this.form.update(current => ({ ...current, [field]: value }));
     }
 
+
     save(): void {
         if (this.saving()) return;
 
@@ -164,48 +165,63 @@ export class PaymentMethods implements OnInit {
 
         this.saving.set(true);
 
-        if (this.editingMethodId() !== null) {
-            this.error.set(
-                'La edición está pendiente de conectar con el servicio del servidor.',
-            );
-            return;
-        }
+        const editingId = this.editingMethodId();
 
-        this.paymentMethodService.add(request).subscribe({
+        const operation = editingId !== null
+            ? this.paymentMethodService.update(editingId, request)
+            : this.paymentMethodService.add(request);
+
+        operation.subscribe({
             next: method => {
                 this.methods.update(methods => {
-                    const withoutDuplicate = methods.filter(item => item.id !== method.id);
-                    return [...withoutDuplicate, method];
-                });
+                    const updatedMethods = editingId !== null
+                        ? methods.map(item =>
+                            item.id === method.id ? method : item,
+                        )
+                        : [...methods, method];
 
-                // Si el servidor establece un método predeterminado, reflejarlo en la lista.
-                if (method.isDefault) {
-                    this.methods.update(methods =>
-                        methods.map(item => ({
+                    // Si el método guardado es el predeterminado,
+                    // desmarcar los demás.
+                    if (method.isDefault) {
+                        return updatedMethods.map(item => ({
                             ...item,
                             isDefault: item.id === method.id,
-                        })),
-                    );
-                }
+                        }));
+                    }
+
+                    return updatedMethods;
+                });
 
                 this.saving.set(false);
                 this.formVisible.set(false);
+                this.editingMethodId.set(null);
                 this.form.set(this.emptyForm());
-                this.success.set('El método de pago se ha guardado correctamente.');
 
-                // Sincroniza el estado real que devuelve el backend.
+                this.success.set(
+                    editingId !== null
+                        ? 'El método de pago se ha actualizado correctamente.'
+                        : 'El método de pago se ha guardado correctamente.',
+                );
+
+                // Sincronizar con el estado definitivo del servidor.
                 this.loadMethods();
             },
             error: error => {
                 this.saving.set(false);
+
                 this.error.set(
                     error?.error?.detail
                     ?? error?.error?.message
-                    ?? 'No se ha podido guardar el método de pago. Revisa los datos e inténtalo de nuevo.',
+                    ?? (
+                        editingId !== null
+                            ? 'No se ha podido actualizar el método de pago. Revisa los datos e inténtalo de nuevo.'
+                            : 'No se ha podido guardar el método de pago. Revisa los datos e inténtalo de nuevo.'
+                    ),
                 );
             },
         });
     }
+
 
 
     private buildRequest(form: PaymentMethodForm): PaymentMethodRequest | null {
