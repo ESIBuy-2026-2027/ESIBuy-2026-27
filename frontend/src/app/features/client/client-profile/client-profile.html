@@ -35,6 +35,12 @@
                 (click)="selectSection('security')">
                 {{ section.label }}
             </button>
+            } @else if (section.label === 'Direcciones de envío') {
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'addresses'"
+                [attr.aria-current]="activeSection() === 'addresses' ? 'page' : null"
+                (click)="selectSection('addresses')">
+                {{ section.label }}
+            </button>
             } @else {
             <a class="nav-item disabled" aria-disabled="true">
                 {{ section.label }}
@@ -310,6 +316,9 @@
         @if (activeSection() === 'security') {
         <app-two-factor-settings [enabled]="twoFactorEnabled()"
             (enabledChange)="onTwoFactorEnabledChange($any($event))" />
+        }
+        @if (activeSection() === 'addresses') {
+        <app-shipping-addresses />
         }
         }
     </main>

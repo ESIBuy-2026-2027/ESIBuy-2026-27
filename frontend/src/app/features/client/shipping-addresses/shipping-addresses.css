@@ -1,0 +1,341 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  font-family: Inter, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.panel {
+  padding: 26px 28px 30px;
+  border: 1px solid #d9e3eb;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(16 44 64 / 5%);
+}
+
+.panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.panel-heading-text {
+  min-width: 0;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 7px;
+  color: #528477;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 1.1px;
+}
+
+.panel-title {
+  margin: 0 0 6px;
+  color: #173247;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+}
+
+.panel-description {
+  display: block;
+  margin: 0;
+  color: #587388;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.section-title {
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e7edf0;
+  color: #173247;
+  font-size: 15px;
+  font-weight: 750;
+}
+
+/* FORMULARIO */
+
+.address-form {
+  margin-bottom: 26px;
+  padding: 20px;
+  border: 1px solid #d9e3eb;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
+}
+
+.field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-wide {
+  grid-column: 1 / -1;
+}
+
+.field label {
+  color: #72828e;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.field label span,
+.required-note span {
+  color: #c0392b;
+}
+
+.field input[type='text'],
+.field input[type='tel'] {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #9aafbf;
+  border-radius: 8px;
+  background: #fff;
+  color: #203b4e;
+  font: inherit;
+  font-size: 13px;
+}
+
+.field input::placeholder {
+  color: #9aaab3;
+}
+
+.field input:focus {
+  border-color: #42bfa3;
+  outline: 3px solid rgb(66 214 178 / 22%);
+  outline-offset: 1px;
+}
+
+.field input[aria-invalid='true'] {
+  border-color: #c0392b;
+  background: #fff8f8;
+}
+
+.field input:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.field-error {
+  color: #a52828;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #3a5871 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+
+.checkbox-label input {
+  width: 16px;
+  height: 16px;
+  accent-color: #24b99b;
+}
+
+.required-note {
+  margin: 14px 0 0;
+  color: #72828e;
+  font-size: 11px;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* BOTONES */
+
+.primary-button,
+.secondary-button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.primary-button {
+  flex-shrink: 0;
+  border: 0;
+  background: #102c40;
+  color: #fff;
+}
+
+.primary-button:hover:not(:disabled) {
+  background: #173f56;
+}
+
+.secondary-button {
+  border: 1px solid #d9e3eb;
+  background: #fff;
+  color: #3a5871;
+}
+
+.secondary-button:hover:not(:disabled) {
+  border-color: #9aafbf;
+  background: #f4f8f9;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.primary-button:focus-visible,
+.secondary-button:focus-visible {
+  outline: 3px solid rgb(66 214 178 / 35%);
+  outline-offset: 2px;
+}
+
+/* MENSAJES */
+
+.success-message {
+  display: block;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 1px solid #a9ddc5;
+  border-radius: 8px;
+  background: #edf9f2;
+  color: #17633c;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.form-error {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 1px solid #f1aeb5;
+  border-radius: 8px;
+  background: #f8d7da;
+  color: #842029;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.limit-note {
+  margin: 0 0 16px;
+  color: #805b12;
+  font-size: 12px;
+}
+
+/* LISTA DE DIRECCIONES */
+
+.empty-state {
+  padding: 28px 16px;
+  border: 1px dashed #c9d6df;
+  border-radius: 12px;
+  text-align: center;
+  color: #587388;
+  font-size: 13px;
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+.empty-hint {
+  margin-top: 4px !important;
+  color: #72828e;
+  font-size: 12px;
+}
+
+.address-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.address-card {
+  min-width: 0;
+  padding: 16px 18px;
+  border: 1px solid #d9e3eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #3a5871;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.address-card p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.address-card.is-default {
+  border-color: #42d6b2;
+  box-shadow: 0 0 0 3px rgb(66 214 178 / 15%);
+}
+
+.address-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: #173247;
+}
+
+.default-badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #42d6b2;
+  color: #102c40;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.address-phone {
+  margin-top: 6px !important;
+  color: #72828e;
+  font-size: 12px;
+}
+
+@media (max-width: 720px) {
+  .field-grid,
+  .address-list {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-heading {
+    flex-direction: column;
+  }
+}
