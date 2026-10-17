@@ -1,242 +1,408 @@
-<section class="panel payment-panel">
-    <div class="panel-heading">
-        <div class="panel-heading-text">
-            <span class="eyebrow">PREFERENCIAS DE PAGO</span>
-            <h1 class="panel-title">Mis métodos de pago</h1>
-            <p class="panel-description">
+<section class="payment-page" aria-labelledby="payment-title">
+    <header class="page-heading">
+        <div class="heading-copy">
+            <p class="eyebrow">MI CUENTA</p>
+            <h1 id="payment-title">Mis métodos de pago</h1>
+            <p class="page-description">
                 Gestiona tus tarjetas y los métodos de pago guardados en tu cuenta.
             </p>
         </div>
 
         @if (!formVisible()) {
-        <button type="button" class="primary-button" (click)="openForm()" [disabled]="loading()">
-            + Añadir método
+        <button type="button" class="primary-action" (click)="openForm()" [disabled]="loading()">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 5v14M5 12h14"></path>
+            </svg>
+            Añadir método
         </button>
         }
-    </div>
-
-    @if (error(); as message) {
-    <p class="form-error" role="alert">{{ message }}</p>
-    }
+    </header>
 
     @if (success(); as message) {
-    <output class="success-message">{{ message }}</output>
+    <output class="success-message" aria-live="polite">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m5 12 4 4L19 6"></path>
+        </svg>
+        {{ message }}
+    </output>
     }
 
-    @if (loading()) {
-    <output class="payment-empty">Cargando métodos de pago...</output>
-    } @else {
+    @if (error(); as message) {
+    <div class="form-error" role="alert">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 8v5M12 16h.01"></path>
+        </svg>
+        <span>{{ message }}</span>
+    </div>
+    }
 
     @if (formVisible()) {
-    <form class="payment-form" (ngSubmit)="save()">
-        <h2 class="section-title">Añadir un método de pago</h2>
-
-        <div class="field-grid">
-            <div class="field">
-                <label for="paymentType">Tipo de método <span>*</span></label>
-                <select id="paymentType" name="paymentType" [ngModel]="selectedType()"
-                    (ngModelChange)="updateType($event)" [disabled]="saving()">
-                    <option value="CARD">Tarjeta</option>
-                    <option value="PAYPAL">PayPal</option>
-                    <option value="BIZUM">Bizum</option>
-                </select>
+    <section class="panel payment-form-panel" aria-labelledby="payment-form-title">
+        <div class="panel-heading">
+            <div class="panel-heading-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                    <rect x="3" y="5" width="18" height="14" rx="2.5"></rect>
+                    <path d="M3 10h18M7 15h3"></path>
+                </svg>
             </div>
 
-            <div class="field">
-                <label for="paymentLabel">Nombre identificativo</label>
-                <input id="paymentLabel" name="paymentLabel" type="text" maxlength="40"
-                    placeholder="Ej. Mi tarjeta personal" [ngModel]="form().label"
-                    (ngModelChange)="updateField('label', $event)" [disabled]="saving()" />
-                <small>Opcional. Te ayudará a reconocer el método.</small>
+            <div class="panel-heading-text">
+                <h2 id="payment-form-title">
+                    {{ editingMethodId() !== null
+                    ? 'Editar método de pago'
+                    : 'Nuevo método de pago' }}
+                </h2>
+                <p>
+                    {{ editingMethodId() !== null
+                    ? 'Modifica los datos del método de pago seleccionado.'
+                    : 'Introduce los datos del método que quieres guardar.' }}
+                </p>
             </div>
-
-            @if (selectedType() === 'CARD') {
-            <div class="field">
-                <label for="cardholderName">Titular de la tarjeta <span>*</span></label>
-                <input id="cardholderName" name="cardholderName" type="text" minlength="2" maxlength="80"
-                    autocomplete="cc-name" placeholder="Nombre que aparece en la tarjeta"
-                    [ngModel]="form().cardholderName" (ngModelChange)="updateField('cardholderName', $event)"
-                    [disabled]="saving()" required />
-            </div>
-
-            <div class="field">
-                <label for="cardBrand">Marca de la tarjeta <span>*</span></label>
-                <select id="cardBrand" name="cardBrand" [ngModel]="form().cardBrand"
-                    (ngModelChange)="updateField('cardBrand', $event)" [disabled]="saving()">
-                    <option value="VISA">Visa</option>
-                    <option value="MASTERCARD">Mastercard</option>
-                    <option value="AMEX">American Express</option>
-                    <option value="OTHER">Otra</option>
-                </select>
-            </div>
-
-            <div class="field">
-                <label for="lastFourDigits">Últimas cuatro cifras <span>*</span></label>
-                <input id="lastFourDigits" name="lastFourDigits" type="text" inputmode="numeric" autocomplete="off"
-                    maxlength="4" pattern="[0-9]{4}" placeholder="1234" [ngModel]="form().lastFourDigits"
-                    (ngModelChange)="updateField('lastFourDigits', $event)" [disabled]="saving()" required />
-                <small>Solo las cuatro últimas cifras, no el número completo.</small>
-            </div>
-
-
-            <div class="field">
-                <label for="expiration">Caducidad <span>*</span></label>
-
-                <input id="expiration" name="expiration" type="text" inputmode="numeric" autocomplete="cc-exp"
-                    placeholder="MM/AA" maxlength="5" pattern="(0[1-9]|1[0-2])/[0-9]{2}" [ngModel]="form().expiration"
-                    (ngModelChange)="updateField('expiration', formatExpiration($event))" [disabled]="saving()"
-                    required />
-
-                <small>Mes y año, como aparecen en tu tarjeta. Ejemplo: 11/30.</small>
-            </div>
-
-            }
-
-            @if (selectedType() === 'PAYPAL') {
-            <div class="field field-full">
-                <label for="paypalEmail">Correo de PayPal <span>*</span></label>
-                <input id="paypalEmail" name="paypalEmail" type="email" maxlength="254" autocomplete="email"
-                    placeholder="tu-correo@ejemplo.com" [ngModel]="form().paypalEmail"
-                    (ngModelChange)="updateField('paypalEmail', $event)" [disabled]="saving()" required />
-            </div>
-            }
-
-            @if (selectedType() === 'BIZUM') {
-            <div class="field field-full">
-                <label for="bizumPhone">Teléfono asociado a Bizum <span>*</span></label>
-                <input id="bizumPhone" name="bizumPhone" type="tel" inputmode="numeric" maxlength="9" pattern="[0-9]{9}"
-                    autocomplete="tel" placeholder="Teléfono de 9 cifras" [ngModel]="form().bizumPhone"
-                    (ngModelChange)="updateField('bizumPhone', $event)" [disabled]="saving()" required />
-            </div>
-            }
         </div>
 
-        <label class="default-option">
-            <input type="checkbox" name="defaultMethod" [ngModel]="form().defaultMethod"
-                (ngModelChange)="updateField('defaultMethod', $event)" [disabled]="saving()" />
-            <span>Establecer como método predeterminado</span>
-        </label>
+        <form class="payment-form" (ngSubmit)="save()" [attr.aria-label]="editingMethodId() !== null
+                ? 'Editar método de pago'
+                : 'Nuevo método de pago'">
 
-        <p class="payment-notice">
-            Esta sección guarda datos identificativos para la simulación de pagos.
-            No procesa cobros ni verifica cuentas externas.
-        </p>
+            <div class="field-grid">
+                <div class="form-field">
+                    <label for="paymentType">
+                        Tipo de método <span class="required-mark">*</span>
+                    </label>
+                    <select id="paymentType" name="paymentType" [ngModel]="selectedType()"
+                        (ngModelChange)="updateType($event)" [disabled]="saving()">
+                        <option value="CARD">Tarjeta</option>
+                        <option value="PAYPAL">PayPal</option>
+                        <option value="BIZUM">Bizum</option>
+                    </select>
+                </div>
 
-        <div class="form-actions">
-            <button type="button" class="secondary-button" (click)="cancelForm()" [disabled]="saving()">
-                Cancelar
-            </button>
+                <div class="form-field">
+                    <label for="paymentLabel">
+                        Nombre identificativo
+                    </label>
+                    <input id="paymentLabel" name="paymentLabel" type="text" maxlength="40"
+                        placeholder="Ej. Mi tarjeta personal" [ngModel]="form().label"
+                        (ngModelChange)="updateField('label', $event)" [disabled]="saving()" />
+                    <small>Te ayudará a reconocer el método guardado.</small>
+                </div>
 
-            <button type="submit" class="primary-button" [disabled]="saving()">
-                {{ saving() ? 'Guardando...' : 'Guardar método' }}
-            </button>
-        </div>
-    </form>
-    }
+                @if (selectedType() === 'CARD') {
+                <div class="form-field field-full">
+                    <label for="cardholderName">
+                        Titular de la tarjeta <span class="required-mark">*</span>
+                    </label>
+                    <input id="cardholderName" name="cardholderName" type="text" minlength="2" maxlength="80"
+                        autocomplete="cc-name" placeholder="Nombre que aparece en la tarjeta"
+                        [ngModel]="form().cardholderName" (ngModelChange)="updateField('cardholderName', $event)"
+                        [disabled]="saving()" required />
+                </div>
 
-    @if (methods().length === 0 && !formVisible()) {
-    <div class="payment-empty">
-        <span class="payment-empty-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="27" height="27" fill="none" stroke="currentColor" stroke-width="1.8"
-                stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="5" width="18" height="14" rx="2.5" />
-                <path d="M3 10h18" />
-                <path d="M7 15h3" />
-            </svg>
-        </span>
-        <h2>Aún no tienes métodos de pago</h2>
-        <p>Añade una tarjeta, una cuenta de PayPal o un teléfono de Bizum.</p>
-        <button type="button" class="primary-button" (click)="openForm()">
-            Añadir mi primer método
-        </button>
-    </div>
-    }
+                <div class="form-field">
+                    <label for="cardBrand">
+                        Marca de la tarjeta <span class="required-mark">*</span>
+                    </label>
+                    <select id="cardBrand" name="cardBrand" [ngModel]="form().cardBrand"
+                        (ngModelChange)="updateField('cardBrand', $event)" [disabled]="saving()">
+                        <option value="VISA">Visa</option>
+                        <option value="MASTERCARD">Mastercard</option>
+                        <option value="AMEX">American Express</option>
+                        <option value="OTHER">Otra</option>
+                    </select>
+                </div>
 
-    @if (cardMethods().length > 0) {
-    <h2 class="section-title">Tarjetas</h2>
+                <div class="form-field">
+                    <label for="lastFourDigits">
+                        Últimas cuatro cifras <span class="required-mark">*</span>
+                    </label>
+                    <input id="lastFourDigits" name="lastFourDigits" type="text" inputmode="numeric" autocomplete="off"
+                        maxlength="4" pattern="[0-9]{4}" placeholder="1234" [ngModel]="form().lastFourDigits"
+                        (ngModelChange)="updateField('lastFourDigits', $event)" [disabled]="saving()" required />
+                    <small>Introduce solo las cuatro últimas cifras.</small>
+                </div>
 
-    <div class="payment-list">
-        @for (method of cardMethods(); track method.id) {
-        <article class="payment-item">
-            <div class="payment-icon card-icon" aria-hidden="true">
-                <span>▰</span>
+                <div class="form-field">
+                    <label for="expiration">
+                        Caducidad <span class="required-mark">*</span>
+                    </label>
+                    <input id="expiration" name="expiration" type="text" inputmode="numeric" autocomplete="cc-exp"
+                        placeholder="MM/AA" maxlength="5" pattern="(0[1-9]|1[0-2])/[0-9]{2}"
+                        [ngModel]="form().expiration"
+                        (ngModelChange)="updateField('expiration', formatExpiration($event))" [disabled]="saving()"
+                        required />
+                    <small>Mes y año. Ejemplo: 11/30.</small>
+                </div>
+                }
+
+                @if (selectedType() === 'PAYPAL') {
+                <div class="form-field field-full">
+                    <label for="paypalEmail">
+                        Correo de PayPal <span class="required-mark">*</span>
+                    </label>
+                    <input id="paypalEmail" name="paypalEmail" type="email" maxlength="254" autocomplete="email"
+                        placeholder="tu-correo@ejemplo.com" [ngModel]="form().paypalEmail"
+                        (ngModelChange)="updateField('paypalEmail', $event)" [disabled]="saving()" required />
+                </div>
+                }
+
+                @if (selectedType() === 'BIZUM') {
+                <div class="form-field field-full">
+                    <label for="bizumPhone">
+                        Teléfono asociado a Bizum <span class="required-mark">*</span>
+                    </label>
+                    <input id="bizumPhone" name="bizumPhone" type="tel" inputmode="numeric" maxlength="9"
+                        pattern="[0-9]{9}" autocomplete="tel" placeholder="Teléfono de 9 cifras"
+                        [ngModel]="form().bizumPhone" (ngModelChange)="updateField('bizumPhone', $event)"
+                        [disabled]="saving()" required />
+                </div>
+                }
             </div>
 
-            <div class="payment-info">
-                <div class="payment-name-row">
-                    <h3>{{ method.label || methodTypeLabel(method.type) }}</h3>
+            <label class="default-option" for="defaultMethod">
+                <input id="defaultMethod" type="checkbox" name="defaultMethod" [ngModel]="form().defaultMethod"
+                    (ngModelChange)="updateField('defaultMethod', $event)" [disabled]="saving()" />
+
+                <span class="custom-checkbox" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="m5 12 4 4L19 6"></path>
+                    </svg>
+                </span>
+
+                <span class="default-option-copy">
+                    <strong>Usar como método predeterminado</strong>
+                    <small>Se Marcar como predeterminadaá inicialmente para tus próximos pagos.</small>
+                </span>
+            </label>
+
+            <div class="payment-notice">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M12 11v5M12 8h.01"></path>
+                </svg>
+                <p>
+                    Esta sección guarda datos identificativos para la simulación de pagos.
+                    No procesa cobros ni verifica cuentas externas.
+                </p>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="secondary-button" (click)="cancelForm()" [disabled]="saving()">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="primary-action" [disabled]="saving()">
+                    @if (saving()) {
+                    <span class="button-spinner" aria-hidden="true"></span>
+                    {{ editingMethodId() !== null ? 'Guardando...' : 'Añadiendo...' }}
+                    } @else {
+                    {{ editingMethodId() !== null ? 'Guardar cambios' : 'Guardar método' }}
+                    }
+                </button>
+            </div>
+        </form>
+    </section>
+    }
+
+    <section class="payment-section" aria-labelledby="saved-methods-title">
+        <div class="section-heading">
+            <div>
+                <h2 id="saved-methods-title">Métodos guardados</h2>
+                <p>Consulta y administra tus opciones de pago.</p>
+            </div>
+
+            <span class="method-count">
+                {{ methods().length }}
+                {{ methods().length === 1 ? 'método' : 'métodos' }}
+            </span>
+        </div>
+
+        @if (loading()) {
+        <div class="state-card" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <p>Cargando tus métodos de pago...</p>
+        </div>
+        } @else if (methods().length === 0 && !formVisible()) {
+        <div class="state-card empty-state">
+            <div class="empty-state-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                    <rect x="3" y="5" width="18" height="14" rx="2.5"></rect>
+                    <path d="M3 10h18M7 15h3"></path>
+                </svg>
+            </div>
+
+            <h3>Aún no tienes métodos de pago</h3>
+            <p>
+                Añade una tarjeta, una cuenta de PayPal o un teléfono de Bizum
+                para tener tus datos preparados.
+            </p>
+
+            <button type="button" class="primary-action" (click)="openForm()">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14"></path>
+                </svg>
+                Añadir mi primer método
+            </button>
+        </div>
+        } @else {
+        @if (cardMethods().length > 0) {
+        <h3 class="group-title">Tarjetas</h3>
+
+        <div class="payment-list">
+            @for (method of cardMethods(); track method.id) {
+            <article class="payment-card" [class.is-default]="method.isDefault">
+                <div class="payment-card-top">
+                    <div class="payment-identity">
+                        <div class="payment-icon card-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24">
+                                <rect x="3" y="5" width="18" height="14" rx="2.5"></rect>
+                                <path d="M3 10h18M7 15h3"></path>
+                            </svg>
+                        </div>
+
+                        <div class="payment-name">
+                            <h3>{{ method.label || methodTypeLabel(method.type) }}</h3>
+                            <p>
+                                {{ method.cardBrand || 'Tarjeta' }}
+                                ···· {{ method.lastFourDigits || '----' }}
+                            </p>
+                        </div>
+                    </div>
+
                     @if (method.isDefault) {
-                    <span class="default-badge">Predeterminado</span>
+                    <span class="default-badge">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="m5 12 4 4L19 6"></path>
+                        </svg>
+                        Predeterminado
+                    </span>
+                    } @else {
+                    <button type="button" class="set-default-button" (click)="setDefault(method)"
+                        [disabled]="actionId() !== null"
+                        [attr.aria-label]="'Establecer como predeterminada la tarjeta ' + (method.label || methodTypeLabel(method.type))">
+                        {{ actionId() === method.id ? 'Actualizando...' : 'Marcar como predeterminada' }}
+                    </button>
                     }
                 </div>
 
-                <p class="payment-detail">
-                    {{ method.cardBrand || 'Tarjeta' }} ···· {{ method.lastFourDigits || '----' }}
-                </p>
-                <p class="payment-detail">
-                    Titular: {{ method.cardholderName || 'No indicado' }}
-                </p>
-                @if (expirationLabel(method); as expiration) {
-                <p class="payment-detail">Caducidad: {{ expiration }}</p>
-                }
-            </div>
+                <div class="payment-details">
+                    <p class="detail-row">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4"></circle>
+                            <path d="M4 21a8 8 0 0 1 16 0"></path>
+                        </svg>
+                        <span>Titular: {{ method.cardholderName || 'No indicado' }}</span>
+                    </p>
 
-            <div class="payment-actions">
-                @if (!method.isDefault) {
-                <button type="button" class="text-button" (click)="setDefault(method)" [disabled]="actionId() !== null">
-                    {{ actionId() === method.id ? 'Actualizando...' : 'Predeterminar' }}
-                </button>
-                }
-                <button type="button" class="delete-button" (click)="deleteMethod(method)"
-                    [disabled]="actionId() !== null">
-                    Eliminar
-                </button>
-            </div>
-        </article>
-        }
-    </div>
-    }
-
-    @if (otherMethods().length > 0) {
-    <h2 class="section-title">Otros métodos</h2>
-
-    <div class="payment-list">
-        @for (method of otherMethods(); track method.id) {
-        <article class="payment-item">
-            <div class="payment-icon" [class.paypal-icon]="method.type === 'PAYPAL'"
-                [class.bizum-icon]="method.type === 'BIZUM'" aria-hidden="true">
-                {{ method.type === 'PAYPAL' ? 'P' : 'B' }}
-            </div>
-
-            <div class="payment-info">
-                <div class="payment-name-row">
-                    <h3>{{ method.label || methodTypeLabel(method.type) }}</h3>
-                    @if (method.isDefault) {
-                    <span class="default-badge">Predeterminado</span>
+                    @if (expirationLabel(method); as expiration) {
+                    <p class="detail-row">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                            <path d="M16 3v4M8 3v4M3 10h18"></path>
+                        </svg>
+                        <span>Caducidad: {{ expiration }}</span>
+                    </p>
                     }
                 </div>
 
-                @if (method.type === 'PAYPAL') {
-                <p class="payment-detail">{{ method.paypalEmail || 'Correo no indicado' }}</p>
-                } @else {
-                <p class="payment-detail">{{ method.bizumPhone || 'Teléfono no indicado' }}</p>
-                }
-            </div>
+                <div class="payment-card-footer">
+                    <div class="payment-actions">
+                        <button type="button" class="icon-action edit-button" (click)="openEdit(method)"
+                            [disabled]="actionId() !== null"
+                            [attr.aria-label]="'Editar método ' + (method.label || methodTypeLabel(method.type))">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                            </svg>
+                            <span>Editar</span>
+                        </button>
 
-            <div class="payment-actions">
-                @if (!method.isDefault) {
-                <button type="button" class="text-button" (click)="setDefault(method)" [disabled]="actionId() !== null">
-                    {{ actionId() === method.id ? 'Actualizando...' : 'Predeterminar' }}
-                </button>
-                }
-                <button type="button" class="delete-button" (click)="deleteMethod(method)"
-                    [disabled]="actionId() !== null">
-                    Eliminar
-                </button>
-            </div>
-        </article>
+                        <button type="button" class="icon-action delete-button" (click)="deleteMethod(method)"
+                            [disabled]="actionId() !== null"
+                            [attr.aria-label]="'Eliminar método ' + (method.label || methodTypeLabel(method.type))">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path>
+                                <path d="M10 11v5M14 11v5"></path>
+                            </svg>
+                            <span>Eliminar</span>
+                        </button>
+                    </div>
+                </div>
+            </article>
+            }
+        </div>
         }
-    </div>
-    }
-    }
+
+        @if (otherMethods().length > 0) {
+        <h3 class="group-title">Otros métodos</h3>
+
+        <div class="payment-list">
+            @for (method of otherMethods(); track method.id) {
+            <article class="payment-card" [class.is-default]="method.isDefault">
+                <div class="payment-card-top">
+                    <div class="payment-identity">
+                        <div class="payment-icon" [class.paypal-icon]="method.type === 'PAYPAL'"
+                            [class.bizum-icon]="method.type === 'BIZUM'" aria-hidden="true">
+                            @if (method.type === 'PAYPAL') {
+                            <span class="payment-letter">P</span>
+                            } @else {
+                            <span class="payment-letter">B</span>
+                            }
+                        </div>
+
+                        <div class="payment-name">
+                            <h3>{{ method.label || methodTypeLabel(method.type) }}</h3>
+                            @if (method.type === 'PAYPAL') {
+                            <p>{{ method.paypalEmail || 'Correo no indicado' }}</p>
+                            } @else {
+                            <p>{{ method.bizumPhone || 'Teléfono no indicado' }}</p>
+                            }
+                        </div>
+                    </div>
+
+                    @if (method.isDefault) {
+                    <span class="default-badge">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="m5 12 4 4L19 6"></path>
+                        </svg>
+                        Predeterminado
+                    </span>
+                    } @else {
+                    <button type="button" class="set-default-button" (click)="setDefault(method)"
+                        [disabled]="actionId() !== null"
+                        [attr.aria-label]="'Marcar como predeterminada ' + (method.label || methodTypeLabel(method.type))">
+                        {{ actionId() === method.id ? 'Actualizando...' : 'Marcar como predeterminada' }}
+                    </button>
+                    }
+                </div>
+
+                <div class="payment-card-footer">
+                    <div class="payment-actions">
+                        <button type="button" class="icon-action edit-button" (click)="openEdit(method)"
+                            [disabled]="actionId() !== null"
+                            [attr.aria-label]="'Editar método ' + (method.label || methodTypeLabel(method.type))">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                            </svg>
+                            <span>Editar</span>
+                        </button>
+
+                        <button type="button" class="icon-action delete-button" (click)="deleteMethod(method)"
+                            [disabled]="actionId() !== null"
+                            [attr.aria-label]="'Eliminar método ' + (method.label || methodTypeLabel(method.type))">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path>
+                                <path d="M10 11v5M14 11v5"></path>
+                            </svg>
+                            <span>Eliminar</span>
+                        </button>
+                    </div>
+                </div>
+            </article>
+            }
+        </div>
+        }
+        }
+    </section>
 </section>

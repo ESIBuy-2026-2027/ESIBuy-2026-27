@@ -27,6 +27,7 @@ export class PaymentMethods implements OnInit {
 
     readonly methods = signal<PaymentMethod[]>([]);
     readonly loading = signal(true);
+    readonly editingMethodId = signal<string | null>(null);
     readonly saving = signal(false);
     readonly actionId = signal<string | null>(null);
     readonly formVisible = signal(false);
@@ -84,6 +85,7 @@ export class PaymentMethods implements OnInit {
     }
 
     openForm(): void {
+        this.editingMethodId.set(null);
         this.form.set({
             ...this.emptyForm(),
             defaultMethod: this.methods().length === 0,
@@ -93,8 +95,31 @@ export class PaymentMethods implements OnInit {
         this.formVisible.set(true);
     }
 
+    openEdit(method: PaymentMethod): void {
+        this.editingMethodId.set(method.id);
+
+        this.form.set({
+            type: method.type,
+            label: method.label ?? '',
+            cardholderName: method.cardholderName ?? '',
+            cardBrand: method.cardBrand ?? 'VISA',
+            lastFourDigits: method.lastFourDigits ?? '',
+            expiration: method.expirationMonth && method.expirationYear
+                ? `${String(method.expirationMonth).padStart(2, '0')}/${String(method.expirationYear).slice(-2)}`
+                : '',
+            paypalEmail: method.paypalEmail ?? '',
+            bizumPhone: method.bizumPhone ?? '',
+            defaultMethod: method.isDefault,
+        });
+
+        this.error.set(null);
+        this.success.set(null);
+        this.formVisible.set(true);
+    }
+
     cancelForm(): void {
         this.formVisible.set(false);
+        this.editingMethodId.set(null);
         this.form.set(this.emptyForm());
         this.error.set(null);
     }
@@ -138,6 +163,13 @@ export class PaymentMethods implements OnInit {
         if (!request) return;
 
         this.saving.set(true);
+
+        if (this.editingMethodId() !== null) {
+            this.error.set(
+                'La edición está pendiente de conectar con el servicio del servidor.',
+            );
+            return;
+        }
 
         this.paymentMethodService.add(request).subscribe({
             next: method => {

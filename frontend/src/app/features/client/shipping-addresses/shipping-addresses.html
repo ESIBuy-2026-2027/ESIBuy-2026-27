@@ -1,315 +1,382 @@
-<section class="panel" aria-labelledby="addresses-title">
-  <div class="panel-heading">
-    <div class="panel-heading-text">
-      <span class="eyebrow">CUENTA DE CLIENTE</span>
-      <h1 id="addresses-title" class="panel-title">
-        Direcciones de envío
-      </h1>
-      <p class="panel-description">
-        Gestiona las direcciones donde quieres recibir tus pedidos.
+<section class="addresses-page" aria-labelledby="addresses-title">
+  <header class="page-heading">
+    <div class="heading-copy">
+      <p class="eyebrow">MI CUENTA</p>
+      <h1 id="addresses-title">Mis direcciones</h1>
+      <p class="page-description">
+        Gestiona tus direcciones de envío y elige dónde recibir tus pedidos.
       </p>
     </div>
 
-    @if (!formOpen() && !loading() && !loadError()) {
-    <button type="button" class="primary-button" data-testid="add-address" [disabled]="limitReached()"
-      (click)="openForm()">
-      + Añadir dirección
+    @if (!formOpen() && !limitReached()) {
+    <button type="button" class="primary-action" (click)="openForm()">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 5v14M5 12h14"></path>
+      </svg>
+      Añadir dirección
     </button>
     }
-    @if (deleteError(); as error) {
-    <p class="form-error" role="alert">
-      {{ error }}
-    </p>
-    }
-  </div>
+  </header>
 
-  @if (successMessage(); as message) {
+  @if (successMessage()) {
   <output class="success-message" aria-live="polite">
-    {{ message }}
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m5 12 4 4L19 6"></path>
+    </svg>
+    {{ successMessage() }}
   </output>
   }
 
-  @if (loading()) {
-  <output class="panel-description">
-    Cargando tus direcciones...
-  </output>
-  } @else if (loadError(); as error) {
-  <p class="form-error" role="alert">{{ error }}</p>
+  @if (loadError()) {
+  <div class="form-error" role="alert">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="9"></circle>
+      <path d="M12 8v5M12 16h.01"></path>
+    </svg>
+    <span>{{ loadError() }}</span>
+  </div>
+  }
 
-  <button type="button" class="primary-button" (click)="loadAddresses()">
-    Reintentar
-  </button>
-  } @else {
   @if (limitReached() && !formOpen()) {
-  <p class="limit-note">
-    Has alcanzado el máximo de {{ maxAddresses }} direcciones.
-  </p>
+  <div class="limit-notice">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"></path>
+      <path d="m3 7.5 9 4.5 9-4.5M12 12v9"></path>
+    </svg>
+    <p>Has alcanzado el límite de direcciones guardadas.</p>
+  </div>
   }
 
   @if (formOpen()) {
-  <form class="address-form" novalidate (ngSubmit)="save()"
-    [attr.aria-label]="editing() ? 'Editar dirección de envío' : 'Nueva dirección de envío'">
-
-    <h2 class="section-title">
-      {{ editing() ? 'Editar dirección' : 'Nueva dirección' }}
-    </h2>
-
-    @if (formError(); as error) {
-    <p class="form-error" role="alert">
-      {{ error }}
-    </p>
-    }
-
-    <div class="field-grid">
-      <div class="field field-wide">
-        <label for="recipientName">
-          Nombre del destinatario <span>*</span>
-        </label>
-
-        <input id="recipientName" name="recipientName" type="text" [(ngModel)]="form.recipientName"
-          (ngModelChange)="onFieldChange()" maxlength="80" autocomplete="name" [disabled]="saving()"
-          [attr.aria-invalid]="fieldErrors().recipientName ? 'true' : null"
-          [attr.aria-describedby]="fieldErrors().recipientName ? 'recipientName-error' : null" />
-
-        @if (fieldErrors().recipientName; as error) {
-        <small id="recipientName-error" class="field-error" role="alert">
-          {{ error }}
-        </small>
-        }
+  <section class="panel address-form-panel" aria-labelledby="address-form-title">
+    <div class="panel-heading">
+      <div class="panel-heading-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path>
+          <circle cx="12" cy="10" r="2.5"></circle>
+        </svg>
       </div>
 
-      <div class="field field-wide">
-        <label for="street">
-          Calle y número <span>*</span>
-        </label>
-
-        <input id="street" name="street" type="text" [(ngModel)]="form.street" (ngModelChange)="onFieldChange()"
-          maxlength="100" autocomplete="address-line1" placeholder="Calle Mayor, 12" [disabled]="saving()"
-          [attr.aria-invalid]="fieldErrors().street ? 'true' : null"
-          [attr.aria-describedby]="fieldErrors().street ? 'street-error' : null" />
-
-        @if (fieldErrors().street; as error) {
-        <small id="street-error" class="field-error" role="alert">
-          {{ error }}
-        </small>
-        }
-      </div>
-
-      <div class="field field-wide">
-        <label for="additionalInfo">
-          Piso, puerta, escalera...
-        </label>
-
-        <input id="additionalInfo" name="additionalInfo" type="text" [(ngModel)]="form.additionalInfo"
-          (ngModelChange)="onFieldChange()" maxlength="60" autocomplete="address-line2" placeholder="Opcional"
-          [disabled]="saving()" [attr.aria-invalid]="fieldErrors().additionalInfo ? 'true' : null"
-          [attr.aria-describedby]="fieldErrors().additionalInfo ? 'additionalInfo-error' : null" />
-
-        @if (fieldErrors().additionalInfo; as error) {
-        <small id="additionalInfo-error" class="field-error" role="alert">
-          {{ error }}
-        </small>
-        }
-      </div>
-
-      <div class="field">
-        <label for="postalCode">
-          Código postal <span>*</span>
-        </label>
-
-        <input id="postalCode" name="postalCode" type="text" [(ngModel)]="form.postalCode"
-          (ngModelChange)="onFieldChange()" maxlength="5" inputmode="numeric" autocomplete="postal-code"
-          placeholder="13071" [disabled]="saving()" [attr.aria-invalid]="fieldErrors().postalCode ? 'true' : null"
-          [attr.aria-describedby]="fieldErrors().postalCode ? 'postalCode-error' : null" />
-
-        @if (fieldErrors().postalCode; as error) {
-        <small id="postalCode-error" class="field-error" role="alert">
-          {{ error }}
-        </small>
-        }
-      </div>
-
-      <div class="field">
-        <label for="city">
-          Ciudad <span>*</span>
-        </label>
-
-        <input id="city" name="city" type="text" [(ngModel)]="form.city" (ngModelChange)="onFieldChange()"
-          maxlength="50" autocomplete="address-level2" [disabled]="saving()"
-          [attr.aria-invalid]="fieldErrors().city ? 'true' : null"
-          [attr.aria-describedby]="fieldErrors().city ? 'city-error' : null" />
-
-        @if (fieldErrors().city; as error) {
-        <small id="city-error" class="field-error" role="alert">
-          {{ error }}
-        </small>
-        }
-      </div>
-
-      <div class="field">
-        <label for="province">
-          Provincia <span>*</span>
-        </label>
-
-        <input id="province" name="province" type="text" [(ngModel)]="form.province" (ngModelChange)="onFieldChange()"
-          maxlength="50" autocomplete="address-level1" [disabled]="saving()"
-          [attr.aria-invalid]="fieldErrors().province ? 'true' : null"
-          [attr.aria-describedby]="fieldErrors().province ? 'province-error' : null" />
-
-        @if (fieldErrors().province; as error) {
-        <small id="province-error" class="field-error" role="alert">
-          {{ error }}
-        </small>
-        }
-      </div>
-
-      <div class="field">
-        <label for="phone">
-          Teléfono de contacto
-        </label>
-
-        <input id="phone" name="phone" type="tel" [(ngModel)]="form.phone" (ngModelChange)="onFieldChange()"
-          maxlength="9" inputmode="numeric" autocomplete="tel" placeholder="Opcional, 9 cifras" [disabled]="saving()"
-          [attr.aria-invalid]="fieldErrors().phone ? 'true' : null"
-          [attr.aria-describedby]="fieldErrors().phone ? 'phone-error' : null" />
-
-        @if (fieldErrors().phone; as error) {
-        <small id="phone-error" class="field-error" role="alert">
-          {{ error }}
-        </small>
-        }
-      </div>
-
-      <div class="field field-wide">
-        <label class="checkbox-label" for="isDefault">
-          <input id="isDefault" name="isDefault" type="checkbox" [(ngModel)]="form.isDefault" [disabled]="saving()" />
-          Usar como dirección predeterminada
-        </label>
+      <div class="panel-heading-text">
+        <h2 id="address-form-title">
+          {{ editing() ? 'Editar dirección' : 'Nueva dirección' }}
+        </h2>
+        <p>Introduce los datos necesarios para la entrega.</p>
       </div>
     </div>
 
-    <p class="required-note">
-      <span>*</span> Campos obligatorios. País: España.
-    </p>
-
-    <div class="form-actions">
-      <button type="button" class="secondary-button" [disabled]="saving()" (click)="cancelForm()">
-        Cancelar
-      </button>
-
-      <button type="submit" class="primary-button" [disabled]="saving()">
-        {{
-        saving()
-        ? 'Guardando...'
-        : editing()
-        ? 'Guardar cambios'
-        : 'Guardar dirección'
-        }}
-      </button>
-    </div>
-  </form>
-  }
-
-  @if (addresses().length === 0 && !formOpen()) {
-  <div class="address-empty">
-    <span class="address-empty-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="27" height="27" fill="none" stroke="currentColor" stroke-width="1.8"
-        stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" />
-        <circle cx="12" cy="10" r="2.5" />
+    @if (formError()) {
+    <div class="form-error" role="alert">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 8v5M12 16h.01"></path>
       </svg>
-    </span>
-
-    <h2>Aún no tienes direcciones de envío</h2>
-
-    <p>
-      Añade tu primera dirección para recibir tus pedidos de forma
-      más rápida y cómoda.
-    </p>
-
-    <button type="button" class="primary-button" data-testid="add-first-address" [disabled]="limitReached() || saving()"
-      (click)="openForm()">
-      Añadir mi primera dirección
-    </button>
-  </div>
-  }
-
-  @if (addresses().length > 0) {
-  <ul class="address-list" aria-label="Tus direcciones de envío">
-    @for (address of addresses(); track address.id) {
-    <li class="address-card" [class.is-default]="address.isDefault">
-
-      <div class="address-card-header">
-        <strong class="recipient-name">
-          {{ address.recipientName }}
-        </strong>
-
-        @if (address.isDefault) {
-        <span class="default-badge">
-          Predeterminada
-        </span>
-        }
-      </div>
-
-      <div class="address-details">
-        <p>
-          {{ address.street }}
-          @if (address.additionalInfo) {
-          <span>, {{ address.additionalInfo }}</span>
-          }
-        </p>
-
-        <p>
-          {{ address.postalCode }} {{ address.city }},
-          {{ address.province }}
-        </p>
-
-        <p>España</p>
-
-        @if (address.phone) {
-        <p class="address-phone">
-          Tel. {{ address.phone }}
-        </p>
-        }
-      </div>
-
-      <div class="address-actions">
-        <button type="button" class="secondary-button" [disabled]="saving() || deletingAddressId() !== null"
-          [attr.aria-label]="'Editar dirección de ' + address.recipientName" (click)="openEdit(address)">
-          Editar
-        </button>
-
-        <button type="button" class="delete-button" [disabled]="saving() || deletingAddressId() !== null"
-          [attr.aria-label]="'Eliminar dirección de ' + address.recipientName" (click)="confirmDeleteAddress(address)">
-          {{ deletingAddressId() === address.id ? 'Eliminando...' : 'Eliminar' }}
-        </button>
-      </div>
-    </li>
+      <span>{{ formError() }}</span>
+    </div>
     }
-  </ul>
-  }
-  }
-  @if (addressPendingDeletion(); as address) {
-  <div class="dialog-backdrop">
-    <section class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-dialog-title"
-      aria-describedby="delete-dialog-description">
 
-      <h2 id="delete-dialog-title">Eliminar dirección</h2>
+    <form class="address-form" (ngSubmit)="save()" novalidate>
+      <div class="field-grid">
+        <div class="form-field field-full">
+          <label for="recipientName">Nombre del destinatario <span class="required-mark">*</span></label>
+          <input id="recipientName" name="recipientName" type="text" [(ngModel)]="form.recipientName"
+            (ngModelChange)="onFieldChange()" autocomplete="name" placeholder="Nombre y apellidos"
+            [class.invalid]="submitted() && fieldErrors()['recipientName']"
+            [attr.aria-invalid]="submitted() && fieldErrors()['recipientName'] ? 'true' : null"
+            [attr.aria-describedby]="submitted() && fieldErrors()['recipientName'] ? 'recipientName-error' : null"
+            required>
+          @if (submitted() && fieldErrors()['recipientName']) {
+          <span class="field-error" id="recipientName-error">
+            {{ fieldErrors()['recipientName'] }}
+          </span>
+          }
+        </div>
 
-      <p id="delete-dialog-description">
-        ¿Seguro que quieres eliminar la dirección de
-        <strong>{{ address.recipientName }}</strong>?
-        Esta acción no se puede deshacer.
-      </p>
+        <div class="form-field field-full">
+          <label for="street">Dirección <span class="required-mark">*</span></label>
+          <input id="street" name="street" type="text" [(ngModel)]="form.street" (ngModelChange)="onFieldChange()"
+            autocomplete="address-line1" placeholder="Calle, número, piso y puerta"
+            [class.invalid]="submitted() && fieldErrors()['street']"
+            [attr.aria-invalid]="submitted() && fieldErrors()['street'] ? 'true' : null"
+            [attr.aria-describedby]="submitted() && fieldErrors()['street'] ? 'street-error' : null" required>
+          @if (submitted() && fieldErrors()['street']) {
+          <span class="field-error" id="street-error">
+            {{ fieldErrors()['street'] }}
+          </span>
+          }
+        </div>
 
-      <div class="dialog-actions">
-        <button type="button" class="secondary-button" [disabled]="deletingAddressId() !== null"
-          (click)="cancelDeleteAddress()">
+        <div class="form-field field-full">
+          <label for="additionalInfo">
+            Información adicional
+          </label>
+          <input id="additionalInfo" name="additionalInfo" type="text" [(ngModel)]="form.additionalInfo"
+            (ngModelChange)="onFieldChange()" autocomplete="address-line2"
+            placeholder="Bloque, escalera o indicaciones para la entrega">
+        </div>
+
+        <div class="form-field">
+          <label for="postalCode">Código postal <span class="required-mark">*</span></label>
+          <input id="postalCode" name="postalCode" type="text" [(ngModel)]="form.postalCode"
+            (ngModelChange)="onFieldChange()" autocomplete="postal-code" inputmode="numeric" placeholder="Ej. 13001"
+            [class.invalid]="submitted() && fieldErrors()['postalCode']"
+            [attr.aria-invalid]="submitted() && fieldErrors()['postalCode'] ? 'true' : null"
+            [attr.aria-describedby]="submitted() && fieldErrors()['postalCode'] ? 'postalCode-error' : null" required>
+          @if (submitted() && fieldErrors()['postalCode']) {
+          <span class="field-error" id="postalCode-error">
+            {{ fieldErrors()['postalCode'] }}
+          </span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="city">Localidad <span class="required-mark">*</span></label>
+          <input id="city" name="city" type="text" [(ngModel)]="form.city" (ngModelChange)="onFieldChange()"
+            autocomplete="address-level2" placeholder="Localidad" [class.invalid]="submitted() && fieldErrors()['city']"
+            [attr.aria-invalid]="submitted() && fieldErrors()['city'] ? 'true' : null"
+            [attr.aria-describedby]="submitted() && fieldErrors()['city'] ? 'city-error' : null" required>
+          @if (submitted() && fieldErrors()['city']) {
+          <span class="field-error" id="city-error">
+            {{ fieldErrors()['city'] }}
+          </span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="province">Provincia <span class="required-mark">*</span></label>
+          <input id="province" name="province" type="text" [(ngModel)]="form.province" (ngModelChange)="onFieldChange()"
+            autocomplete="address-level1" placeholder="Provincia"
+            [class.invalid]="submitted() && fieldErrors()['province']"
+            [attr.aria-invalid]="submitted() && fieldErrors()['province'] ? 'true' : null"
+            [attr.aria-describedby]="submitted() && fieldErrors()['province'] ? 'province-error' : null" required>
+          @if (submitted() && fieldErrors()['province']) {
+          <span class="field-error" id="province-error">
+            {{ fieldErrors()['province'] }}
+          </span>
+          }
+        </div>
+
+        <div class="form-field field-full">
+          <label for="phone">Teléfono de contacto</label>
+          <input id="phone" name="phone" type="tel" [(ngModel)]="form.phone" (ngModelChange)="onFieldChange()"
+            autocomplete="tel" inputmode="tel" placeholder="Teléfono para incidencias con la entrega"
+            [class.invalid]="submitted() && fieldErrors()['phone']"
+            [attr.aria-invalid]="submitted() && fieldErrors()['phone'] ? 'true' : null"
+            [attr.aria-describedby]="submitted() && fieldErrors()['phone'] ? 'phone-error' : null" required>
+          @if (submitted() && fieldErrors()['phone']) {
+          <span class="field-error" id="phone-error">
+            {{ fieldErrors()['phone'] }}
+          </span>
+          }
+        </div>
+      </div>
+
+      <label class="default-option" for="isDefault">
+        <input id="isDefault" name="isDefault" type="checkbox" [(ngModel)]="form.isDefault">
+        <span class="custom-checkbox" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="m5 12 4 4L19 6"></path>
+          </svg>
+        </span>
+        <span class="default-option-copy">
+          <strong>Usar como dirección predeterminada</strong>
+          <small>Se utilizará inicialmente para tus próximos pedidos.</small>
+        </span>
+      </label>
+
+      <div class="form-actions">
+        <button type="button" class="secondary-button" (click)="cancelForm()" [disabled]="saving()">
           Cancelar
         </button>
 
-        <button type="button" class="delete-button" [disabled]="deletingAddressId() !== null" (click)="deleteAddress()">
-          {{ deletingAddressId() !== null ? 'Eliminando...' : 'Sí, eliminar' }}
+        <button type="submit" class="primary-action" [disabled]="saving()">
+          @if (saving()) {
+          <span class="button-spinner" aria-hidden="true"></span>
+          {{ editing() ? 'Guardando...' : 'Añadiendo...' }}
+          } @else {
+          {{ editing() ? 'Guardar cambios' : 'Guardar dirección' }}
+          }
+        </button>
+      </div>
+    </form>
+  </section>
+  }
+
+  <section class="addresses-section" aria-labelledby="saved-addresses-title">
+    <div class="section-heading">
+      <div>
+        <h2 id="saved-addresses-title">Direcciones guardadas</h2>
+        <p>Consulta y administra los datos de entrega.</p>
+      </div>
+
+      <span class="address-count">
+        {{ addresses().length }}
+        {{ addresses().length === 1 ? 'dirección' : 'direcciones' }}
+      </span>
+    </div>
+
+    @if (loading()) {
+    <div class="state-card" aria-live="polite">
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <p>Cargando tus direcciones...</p>
+    </div>
+    } @else if (addresses().length === 0) {
+    <div class="state-card empty-state">
+      <div class="empty-state-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path>
+          <circle cx="12" cy="10" r="2.5"></circle>
+        </svg>
+      </div>
+
+      <h3>Aún no tienes direcciones</h3>
+      <p>Añade una dirección para tener tus datos de entrega preparados.</p>
+
+      @if (!formOpen() && !limitReached()) {
+      <button type="button" class="primary-action" (click)="openForm()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 5v14M5 12h14"></path>
+        </svg>
+        Añadir mi primera dirección
+      </button>
+      }
+    </div>
+    } @else {
+    <div class="address-list">
+      @for (address of addresses(); track address.id) {
+      <article class="address-card" [class.is-default]="address.isDefault">
+        <div class="address-card-top">
+          <div class="address-identity">
+            <div class="address-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path>
+                <circle cx="12" cy="10" r="2.5"></circle>
+              </svg>
+            </div>
+
+            <div class="address-recipient">
+              <h3>{{ address.recipientName }}</h3>
+              <p>{{ address.street }}</p>
+            </div>
+          </div>
+
+          @if (address.isDefault) {
+          <span class="default-badge">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m5 12 4 4L19 6"></path>
+            </svg>
+            Predeterminada
+          </span>
+          } @else {
+          <button type="button" class="set-default-button" (click)="setDefaultAddress(address)"
+            [disabled]="saving() || deletingAddressId() === address.id"
+            [attr.aria-label]="'Establecer como predeterminada la dirección de ' + address.recipientName"
+            title="Marcar como predeterminada">
+            Marcar como predeterminada
+          </button>
+          }
+        </div>
+
+        <div class="address-details">
+          @if (address.additionalInfo) {
+          <p class="detail-row">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 5h16M4 12h16M4 19h10"></path>
+            </svg>
+            <span>{{ address.additionalInfo }}</span>
+          </p>
+          }
+
+          <p class="detail-row">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"></path>
+              <circle cx="12" cy="9" r="2.5"></circle>
+            </svg>
+            <span>{{ address.postalCode }} · {{ address.city }}, {{ address.province }}</span>
+          </p>
+
+          <p class="detail-row">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M7.5 3.5h2l1.2 4.2-1.8 1.8a14.7 14.7 0 0 0 5.6 5.6l1.8-1.8 4.2 1.2v2c0 1.1-.9 2-2 2C11.6 18.5 5.5 12.4 5.5 5.5c0-1.1.9-2 2-2Z">
+              </path>
+            </svg>
+            <span>{{ address.phone }}</span>
+          </p>
+        </div>
+
+        @if (deleteError() && deletingAddressId() === address.id) {
+        <p class="form-error card-error" role="alert">
+          {{ deleteError() }}
+        </p>
+        }
+
+        <div class="address-card-footer">
+          <div class="address-actions">
+            <button type="button" class="icon-action edit-button" (click)="openEdit(address)"
+              [disabled]="saving() || deletingAddressId() === address.id"
+              [attr.aria-label]="'Editar dirección de ' + address.recipientName" title="Editar dirección">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+              </svg>
+              <span>Editar</span>
+            </button>
+
+            <button type="button" class="icon-action delete-button" (click)="confirmDeleteAddress(address)"
+              [disabled]="deletingAddressId() === address.id || saving()"
+              [attr.aria-label]="'Eliminar dirección de ' + address.recipientName" title="Eliminar dirección">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 6h18"></path>
+                <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path>
+                <path d="m19 6-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                <path d="M10 11v6M14 11v6"></path>
+              </svg>
+              <span>
+                {{ deletingAddressId() === address.id ? 'Eliminando...' : 'Eliminar' }}
+              </span>
+            </button>
+          </div>
+        </div>
+      </article>
+      }
+    </div>
+    }
+  </section>
+
+  @if (addressPendingDeletion(); as pendingAddress) {
+  <div class="dialog-backdrop">
+    <section class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-dialog-title"
+      aria-describedby="delete-dialog-description">
+      <div class="dialog-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 9v4M12 17h.01"></path>
+          <path d="M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3l-7.6-13.1a2 2 0 0 0-3.4 0Z"></path>
+        </svg>
+      </div>
+
+      <h2 id="delete-dialog-title">Eliminar dirección</h2>
+      <p id="delete-dialog-description">
+        ¿Quieres eliminar la dirección de
+        <strong>{{ pendingAddress.recipientName }}</strong>?
+      </p>
+      <p class="dialog-warning">
+        Esta acción no se puede deshacer.
+      </p>
+
+      @if (deleteError()) {
+      <p class="form-error" role="alert">{{ deleteError() }}</p>
+      }
+
+      <div class="dialog-actions">
+        <button type="button" class="secondary-button" (click)="cancelDeleteAddress()"
+          [disabled]="deletingAddressId() === pendingAddress.id">
+          Cancelar
+        </button>
+
+        <button type="button" class="danger-button" (click)="deleteAddress()"
+          [disabled]="deletingAddressId() === pendingAddress.id">
+          {{ deletingAddressId() === pendingAddress.id ? 'Eliminando...' : 'Sí, eliminar' }}
         </button>
       </div>
     </section>
