@@ -5,4 +5,8 @@ public class StockInsuficienteException extends IllegalStateException {
     public StockInsuficienteException() {
         super("No hay stock suficiente para la cantidad solicitada");
     }
+
+    public StockInsuficienteException(String message) {
+        super(message);
+    }
 }

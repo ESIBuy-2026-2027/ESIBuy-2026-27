@@ -134,6 +134,20 @@ public class ApiExceptionHandler {
                 CORRELATION_ID, correlationId(request)));
     }
 
+    @ExceptionHandler(PagoFallidoException.class)
+    public ResponseEntity<Map<String, String>> handlePaymentFailure(
+            PagoFallidoException exception, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(Map.of(
+                MESSAGE, exception.getMessage(), CORRELATION_ID, correlationId(request)));
+    }
+
+    @ExceptionHandler(RecursoCheckoutNoEncontradoException.class)
+    public ResponseEntity<Map<String, String>> handleCheckoutResourceNotFound(
+            RecursoCheckoutNoEncontradoException exception, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                MESSAGE, exception.getMessage(), CORRELATION_ID, correlationId(request)));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException exception,
             HttpServletRequest request) {
