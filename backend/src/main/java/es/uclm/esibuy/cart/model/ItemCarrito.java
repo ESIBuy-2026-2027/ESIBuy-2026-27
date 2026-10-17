@@ -45,7 +45,7 @@ public class ItemCarrito {
         setCantidad(Math.addExact(this.cantidad, cantidad));
     }
 
-    private void setCantidad(int cantidad) {
+    void setCantidad(int cantidad) {
         if (cantidad < 1) {
             throw new IllegalArgumentException("La cantidad debe ser como mínimo 1");
         }

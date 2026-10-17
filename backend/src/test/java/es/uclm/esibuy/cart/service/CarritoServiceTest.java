@@ -128,7 +128,8 @@ class CarritoServiceTest {
     void shouldIncreaseItemQuantityWhenStockIsSufficient() {
         Carrito existingCart = new Carrito(CLIENTE_ID);
         existingCart.addOrIncrementItem(PRODUCTO_ID, PRODUCTO_NOMBRE, PRECIO, 2);
-        when(productRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(availableProduct(5)));
+        Product product = productWithStock(5);
+        when(productRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(product));
         when(carritoRepository.findByClienteId(CLIENTE_ID)).thenReturn(Optional.of(existingCart));
         when(carritoRepository.save(any(Carrito.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -145,7 +146,8 @@ class CarritoServiceTest {
     void shouldRejectUpdatedQuantityThatExceedsAvailableStock() {
         Carrito existingCart = new Carrito(CLIENTE_ID);
         existingCart.addOrIncrementItem(PRODUCTO_ID, PRODUCTO_NOMBRE, PRECIO, 2);
-        when(productRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(availableProduct(4)));
+        Product product = productWithStock(4);
+        when(productRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(product));
         when(carritoRepository.findByClienteId(CLIENTE_ID)).thenReturn(Optional.of(existingCart));
 
         assertThrows(
@@ -159,7 +161,6 @@ class CarritoServiceTest {
         Carrito existingCart = new Carrito(CLIENTE_ID);
         existingCart.addOrIncrementItem(PRODUCTO_ID, PRODUCTO_NOMBRE, PRECIO, 3);
         existingCart.addOrIncrementItem("producto-2", "Teclado", new BigDecimal("30.00"), 1);
-        when(productRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(availableProduct(5)));
         when(carritoRepository.findByClienteId(CLIENTE_ID)).thenReturn(Optional.of(existingCart));
         when(carritoRepository.save(any(Carrito.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -218,6 +219,13 @@ class CarritoServiceTest {
         when(product.getId()).thenReturn(PRODUCTO_ID);
         when(product.getName()).thenReturn(PRODUCTO_NOMBRE);
         when(product.getPrice()).thenReturn(PRECIO);
+        when(product.getStock()).thenReturn(stock);
+        when(product.isAvailable()).thenReturn(true);
+        return product;
+    }
+
+    private Product productWithStock(int stock) {
+        Product product = mock(Product.class);
         when(product.getStock()).thenReturn(stock);
         when(product.isAvailable()).thenReturn(true);
         return product;
