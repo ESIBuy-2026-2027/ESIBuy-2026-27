@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -61,5 +62,20 @@ public class ShippingAddressController {
         if (principal == null)
             return ResponseEntity.status(401).build();
         return ResponseEntity.ok(shippingAddressService.update(principal.id(), addressId, request));
+    }
+
+    @DeleteMapping("/{addressId}")
+    public ResponseEntity<Void> delete(
+            Authentication authentication,
+            @PathVariable String addressId) {
+
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        shippingAddressService.delete(principal.id(), addressId);
+
+        return ResponseEntity.noContent().build();
     }
 }

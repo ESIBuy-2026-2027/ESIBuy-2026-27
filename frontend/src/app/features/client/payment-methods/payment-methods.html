@@ -1,0 +1,235 @@
+<section class="panel payment-panel">
+    <div class="panel-heading">
+        <div class="panel-heading-text">
+            <span class="eyebrow">PREFERENCIAS DE PAGO</span>
+            <h1 class="panel-title">Mis métodos de pago</h1>
+            <p class="panel-description">
+                Gestiona tus tarjetas y los métodos de pago guardados en tu cuenta.
+            </p>
+        </div>
+
+        @if (!formVisible()) {
+        <button type="button" class="primary-button" (click)="openForm()" [disabled]="loading()">
+            + Añadir método
+        </button>
+        }
+    </div>
+
+    @if (error(); as message) {
+    <p class="form-error" role="alert">{{ message }}</p>
+    }
+
+    @if (success(); as message) {
+    <p class="success-message" role="status">{{ message }}</p>
+    }
+
+    @if (loading()) {
+    <p class="payment-empty" role="status">Cargando métodos de pago...</p>
+    } @else {
+
+    @if (formVisible()) {
+    <form class="payment-form" (ngSubmit)="save()">
+        <h2 class="section-title">Añadir un método de pago</h2>
+
+        <div class="field-grid">
+            <div class="field">
+                <label for="paymentType">Tipo de método <span>*</span></label>
+                <select id="paymentType" name="paymentType" [ngModel]="selectedType()"
+                    (ngModelChange)="updateType($event)" [disabled]="saving()">
+                    <option value="CARD">Tarjeta</option>
+                    <option value="PAYPAL">PayPal</option>
+                    <option value="BIZUM">Bizum</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="paymentLabel">Nombre identificativo</label>
+                <input id="paymentLabel" name="paymentLabel" type="text" maxlength="40"
+                    placeholder="Ej. Mi tarjeta personal" [ngModel]="form().label"
+                    (ngModelChange)="updateField('label', $event)" [disabled]="saving()" />
+                <small>Opcional. Te ayudará a reconocer el método.</small>
+            </div>
+
+            @if (selectedType() === 'CARD') {
+            <div class="field">
+                <label for="cardholderName">Titular de la tarjeta <span>*</span></label>
+                <input id="cardholderName" name="cardholderName" type="text" minlength="2" maxlength="80"
+                    autocomplete="cc-name" placeholder="Nombre que aparece en la tarjeta"
+                    [ngModel]="form().cardholderName" (ngModelChange)="updateField('cardholderName', $event)"
+                    [disabled]="saving()" required />
+            </div>
+
+            <div class="field">
+                <label for="cardBrand">Marca de la tarjeta <span>*</span></label>
+                <select id="cardBrand" name="cardBrand" [ngModel]="form().cardBrand"
+                    (ngModelChange)="updateField('cardBrand', $event)" [disabled]="saving()">
+                    <option value="VISA">Visa</option>
+                    <option value="MASTERCARD">Mastercard</option>
+                    <option value="AMEX">American Express</option>
+                    <option value="OTHER">Otra</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="lastFourDigits">Últimas cuatro cifras <span>*</span></label>
+                <input id="lastFourDigits" name="lastFourDigits" type="text" inputmode="numeric" autocomplete="off"
+                    maxlength="4" pattern="[0-9]{4}" placeholder="1234" [ngModel]="form().lastFourDigits"
+                    (ngModelChange)="updateField('lastFourDigits', $event)" [disabled]="saving()" required />
+                <small>Solo las cuatro últimas cifras, no el número completo.</small>
+            </div>
+
+
+            <div class="field">
+                <label for="expiration">Caducidad <span>*</span></label>
+
+                <input id="expiration" name="expiration" type="text" inputmode="numeric" autocomplete="cc-exp"
+                    placeholder="MM/AA" maxlength="5" pattern="(0[1-9]|1[0-2])/[0-9]{2}" [ngModel]="form().expiration"
+                    (ngModelChange)="updateField('expiration', formatExpiration($event))" [disabled]="saving()"
+                    required />
+
+                <small>Mes y año, como aparecen en tu tarjeta. Ejemplo: 11/30.</small>
+            </div>
+
+            }
+
+            @if (selectedType() === 'PAYPAL') {
+            <div class="field field-full">
+                <label for="paypalEmail">Correo de PayPal <span>*</span></label>
+                <input id="paypalEmail" name="paypalEmail" type="email" maxlength="254" autocomplete="email"
+                    placeholder="tu-correo@ejemplo.com" [ngModel]="form().paypalEmail"
+                    (ngModelChange)="updateField('paypalEmail', $event)" [disabled]="saving()" required />
+            </div>
+            }
+
+            @if (selectedType() === 'BIZUM') {
+            <div class="field field-full">
+                <label for="bizumPhone">Teléfono asociado a Bizum <span>*</span></label>
+                <input id="bizumPhone" name="bizumPhone" type="tel" inputmode="numeric" maxlength="9" pattern="[0-9]{9}"
+                    autocomplete="tel" placeholder="Teléfono de 9 cifras" [ngModel]="form().bizumPhone"
+                    (ngModelChange)="updateField('bizumPhone', $event)" [disabled]="saving()" required />
+            </div>
+            }
+        </div>
+
+        <label class="default-option">
+            <input type="checkbox" name="defaultMethod" [ngModel]="form().defaultMethod"
+                (ngModelChange)="updateField('defaultMethod', $event)" [disabled]="saving()" />
+            <span>Establecer como método predeterminado</span>
+        </label>
+
+        <p class="payment-notice">
+            Esta sección guarda datos identificativos para la simulación de pagos.
+            No procesa cobros ni verifica cuentas externas.
+        </p>
+
+        <div class="form-actions">
+            <button type="button" class="secondary-button" (click)="cancelForm()" [disabled]="saving()">
+                Cancelar
+            </button>
+
+            <button type="submit" class="primary-button" [disabled]="saving()">
+                {{ saving() ? 'Guardando...' : 'Guardar método' }}
+            </button>
+        </div>
+    </form>
+    }
+
+    @if (methods().length === 0 && !formVisible()) {
+    <div class="payment-empty">
+        <span class="payment-empty-icon" aria-hidden="true">▤</span>
+        <h2>Aún no tienes métodos de pago</h2>
+        <p>Añade una tarjeta, una cuenta de PayPal o un teléfono de Bizum.</p>
+        <button type="button" class="primary-button" (click)="openForm()">
+            Añadir mi primer método
+        </button>
+    </div>
+    }
+
+    @if (cardMethods().length > 0) {
+    <h2 class="section-title">Tarjetas</h2>
+
+    <div class="payment-list">
+        @for (method of cardMethods(); track method.id) {
+        <article class="payment-item">
+            <div class="payment-icon card-icon" aria-hidden="true">
+                <span>▰</span>
+            </div>
+
+            <div class="payment-info">
+                <div class="payment-name-row">
+                    <h3>{{ method.label || methodTypeLabel(method.type) }}</h3>
+                    @if (method.isDefault) {
+                    <span class="default-badge">Predeterminado</span>
+                    }
+                </div>
+
+                <p class="payment-detail">
+                    {{ method.cardBrand || 'Tarjeta' }} ···· {{ method.lastFourDigits || '----' }}
+                </p>
+                <p class="payment-detail">
+                    Titular: {{ method.cardholderName || 'No indicado' }}
+                </p>
+                @if (expirationLabel(method); as expiration) {
+                <p class="payment-detail">Caducidad: {{ expiration }}</p>
+                }
+            </div>
+
+            <div class="payment-actions">
+                @if (!method.isDefault) {
+                <button type="button" class="text-button" (click)="setDefault(method)" [disabled]="actionId() !== null">
+                    {{ actionId() === method.id ? 'Actualizando...' : 'Predeterminar' }}
+                </button>
+                }
+                <button type="button" class="delete-button" (click)="deleteMethod(method)"
+                    [disabled]="actionId() !== null">
+                    Eliminar
+                </button>
+            </div>
+        </article>
+        }
+    </div>
+    }
+
+    @if (otherMethods().length > 0) {
+    <h2 class="section-title">Otros métodos</h2>
+
+    <div class="payment-list">
+        @for (method of otherMethods(); track method.id) {
+        <article class="payment-item">
+            <div class="payment-icon" [class.paypal-icon]="method.type === 'PAYPAL'"
+                [class.bizum-icon]="method.type === 'BIZUM'" aria-hidden="true">
+                {{ method.type === 'PAYPAL' ? 'P' : 'B' }}
+            </div>
+
+            <div class="payment-info">
+                <div class="payment-name-row">
+                    <h3>{{ method.label || methodTypeLabel(method.type) }}</h3>
+                    @if (method.isDefault) {
+                    <span class="default-badge">Predeterminado</span>
+                    }
+                </div>
+
+                @if (method.type === 'PAYPAL') {
+                <p class="payment-detail">{{ method.paypalEmail || 'Correo no indicado' }}</p>
+                } @else {
+                <p class="payment-detail">{{ method.bizumPhone || 'Teléfono no indicado' }}</p>
+                }
+            </div>
+
+            <div class="payment-actions">
+                @if (!method.isDefault) {
+                <button type="button" class="text-button" (click)="setDefault(method)" [disabled]="actionId() !== null">
+                    {{ actionId() === method.id ? 'Actualizando...' : 'Predeterminar' }}
+                </button>
+                }
+                <button type="button" class="delete-button" (click)="deleteMethod(method)"
+                    [disabled]="actionId() !== null">
+                    Eliminar
+                </button>
+            </div>
+        </article>
+        }
+    </div>
+    }
+    }
+</section>

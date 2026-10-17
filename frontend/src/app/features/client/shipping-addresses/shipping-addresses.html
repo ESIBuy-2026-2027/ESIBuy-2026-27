@@ -16,6 +16,11 @@
       + Añadir dirección
     </button>
     }
+    @if (deleteError(); as error) {
+    <p class="form-error" role="alert">
+      {{ error }}
+    </p>
+    }
   </div>
 
   @if (successMessage(); as message) {
@@ -25,9 +30,9 @@
   }
 
   @if (loading()) {
-  <p class="panel-description" role="status">
+  <output class="panel-description">
     Cargando tus direcciones...
-  </p>
+  </output>
   } @else if (loadError(); as error) {
   <p class="form-error" role="alert">{{ error }}</p>
 
@@ -254,14 +259,45 @@
       </div>
 
       <div class="address-actions">
-        <button type="button" class="secondary-button" [disabled]="saving()"
+        <button type="button" class="secondary-button" [disabled]="saving() || deletingAddressId() !== null"
           [attr.aria-label]="'Editar dirección de ' + address.recipientName" (click)="openEdit(address)">
           Editar
+        </button>
+
+        <button type="button" class="delete-button" [disabled]="saving() || deletingAddressId() !== null"
+          [attr.aria-label]="'Eliminar dirección de ' + address.recipientName" (click)="confirmDeleteAddress(address)">
+          {{ deletingAddressId() === address.id ? 'Eliminando...' : 'Eliminar' }}
         </button>
       </div>
     </li>
     }
   </ul>
   }
+  }
+  @if (addressPendingDeletion(); as address) {
+  <div class="dialog-backdrop">
+    <section class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-dialog-title"
+      aria-describedby="delete-dialog-description">
+
+      <h2 id="delete-dialog-title">Eliminar dirección</h2>
+
+      <p id="delete-dialog-description">
+        ¿Seguro que quieres eliminar la dirección de
+        <strong>{{ address.recipientName }}</strong>?
+        Esta acción no se puede deshacer.
+      </p>
+
+      <div class="dialog-actions">
+        <button type="button" class="secondary-button" [disabled]="deletingAddressId() !== null"
+          (click)="cancelDeleteAddress()">
+          Cancelar
+        </button>
+
+        <button type="button" class="delete-button" [disabled]="deletingAddressId() !== null" (click)="deleteAddress()">
+          {{ deletingAddressId() !== null ? 'Eliminando...' : 'Sí, eliminar' }}
+        </button>
+      </div>
+    </section>
+  </div>
   }
 </section>

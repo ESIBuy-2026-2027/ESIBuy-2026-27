@@ -45,7 +45,6 @@ class ShippingAddressServiceTest {
         service = new ShippingAddressService(userRepository);
         client = new User("ana@example.com", "Ana", "García", UserRole.CLIENT);
         client.setClientProfile(new ClientProfile());
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(client));
     }
 
     private ShippingAddressRequest request(boolean isDefault) {
@@ -59,6 +58,7 @@ class ShippingAddressServiceTest {
 
     @Test
     void shouldAddTheFirstAddressAsDefaultEvenIfNotRequested() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(client));
         ShippingAddress created = service.add(USER_ID, request(false));
 
         assertNotNull(created.getId());
@@ -68,6 +68,7 @@ class ShippingAddressServiceTest {
 
     @Test
     void shouldTrimDataAndConvertBlankOptionalFieldsToNull() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(client));
         ShippingAddress created = service.add(USER_ID, request(false));
 
         assertEquals("Ana García", created.getRecipientName());
@@ -78,6 +79,7 @@ class ShippingAddressServiceTest {
 
     @Test
     void shouldKeepTheCurrentDefaultWhenTheNewAddressIsNotDefault() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(client));
         client.getClientProfile().setAddresses(new ArrayList<>(List.of(existing("a1", true))));
 
         ShippingAddress created = service.add(USER_ID, request(false));
@@ -89,6 +91,7 @@ class ShippingAddressServiceTest {
 
     @Test
     void shouldReplaceTheCurrentDefaultWhenTheNewAddressIsDefault() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(client));
         client.getClientProfile().setAddresses(new ArrayList<>(List.of(existing("a1", true))));
 
         ShippingAddress created = service.add(USER_ID, request(true));
@@ -100,7 +103,7 @@ class ShippingAddressServiceTest {
     @Test
     void shouldCreateTheClientProfileWhenItDoesNotExist() {
         client.setClientProfile(null);
-
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(client));
         service.add(USER_ID, request(false));
 
         assertNotNull(client.getClientProfile());
@@ -109,6 +112,7 @@ class ShippingAddressServiceTest {
 
     @Test
     void shouldRejectTheAddressWhenTheLimitIsReached() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(client));
         List<ShippingAddress> full = new ArrayList<>();
         for (int i = 0; i < ShippingAddressService.MAX_ADDRESSES; i++) {
             full.add(existing("a" + i, i == 0));
@@ -123,12 +127,21 @@ class ShippingAddressServiceTest {
     void shouldFailWhenTheUserDoesNotExist() {
         when(userRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> service.add("missing", request(false)));
-        assertThrows(UserNotFoundException.class, () -> service.list("missing"));
+        assertThrows(
+                UserNotFoundException.class,
+                () -> service.add("missing", request(false)));
+
+        assertThrows(
+                UserNotFoundException.class,
+                () -> service.list("missing"));
+
+        verify(userRepository, org.mockito.Mockito.times(2))
+                .findById("missing");
     }
 
     @Test
     void shouldListAnEmptyCollectionWhenThereIsNoClientProfile() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(client));
         client.setClientProfile(null);
 
         assertTrue(service.list(USER_ID).isEmpty());
@@ -136,6 +149,7 @@ class ShippingAddressServiceTest {
 
     @Test
     void shouldListTheStoredAddresses() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(client));
         client.getClientProfile().setAddresses(new ArrayList<>(List.of(existing("a1", true))));
 
         assertEquals(1, service.list(USER_ID).size());
