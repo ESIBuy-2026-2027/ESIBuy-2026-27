@@ -6,8 +6,6 @@ import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { DeleteAccount } from '../../../shared/delete-account/delete-account';
-import QRCode from 'qrcode';
-import { TwoFactorService, TwoFactorSetupResponse, } from '../../../core/services/two-factor.service';
 import { TwoFactorSettingsComponent } from '../../../shared/two-factor-settings/two-factor-settings';
 import { ShippingAddresses } from '../shipping-addresses/shipping-addresses';
 import { PaymentMethods } from '../payment-methods/payment-methods';
@@ -52,10 +50,6 @@ export class ClientProfile implements OnInit {
     private readonly router = inject(Router);
     private readonly location = inject(Location);
     private readonly apiUrl = '/api/users/me/profile';
-    private readonly twoFactorService = inject(TwoFactorService);
-    readonly qrImage = signal<string | null>(null);
-    readonly qrGenerating = signal(false);
-    readonly copiedSecret = signal(false);
 
     readonly profile = signal<ClientProfileResponse | null>(null);
     readonly loading = signal(true);
@@ -67,15 +61,8 @@ export class ClientProfile implements OnInit {
     readonly editError = signal<string | null>(null);
     readonly editSuccess = signal<string | null>(null);
 
-    // Estado de autenticación en dos factores.
+    // El estado 2FA se sincroniza con el componente compartido.
     readonly twoFactorEnabled = signal(false);
-    readonly twoFactorSetup = signal<TwoFactorSetupResponse | null>(null);
-    readonly twoFactorCode = signal('');
-    readonly recoveryCode = signal('');
-    readonly backupCodes = signal<string[]>([]);
-    readonly twoFactorBusy = signal(false);
-    readonly twoFactorError = signal<string | null>(null);
-    readonly twoFactorSuccess = signal<string | null>(null);
 
     // Avatares locales predefinidos para clientes.
     readonly clientAvatars: string[] = [
@@ -377,245 +364,10 @@ export class ClientProfile implements OnInit {
         });
     }
 
-    // ---------------- 2FA ----------------
-
-    async startTwoFactorSetup(): Promise<void> {
-        if (this.twoFactorBusy() || this.twoFactorEnabled()) return;
-
-        this.clearTwoFactorMessages();
-        this.twoFactorSetup.set(null);
-        this.qrImage.set(null);
-        this.copiedSecret.set(false);
-        this.backupCodes.set([]);
-        this.twoFactorBusy.set(true);
-        this.qrGenerating.set(true);
-
-        this.twoFactorService.setup().subscribe({
-            next: result => {
-                // Conserva aquí el código actual que genera el QR.
-                this.twoFactorSetup.set(result);
-
-                void QRCode.toDataURL(result.qrUri, {
-                    errorCorrectionLevel: 'M',
-                    margin: 2,
-                    width: 240,
-                })
-                    .then(dataUrl => {
-                        this.qrImage.set(dataUrl);
-                    })
-                    .catch(() => {
-                        this.qrImage.set(null);
-                        this.twoFactorError.set(
-                            'No se ha podido generar el QR. Puedes configurar la aplicación introduciendo manualmente el secreto.',
-                        );
-                    })
-                    .finally(() => {
-                        this.qrGenerating.set(false);
-                        this.twoFactorBusy.set(false);
-
-                        if (!this.twoFactorError()) {
-                            this.twoFactorSuccess.set(
-                                'Escanea el QR con tu aplicación autenticadora o introduce manualmente el secreto. Después, confirma con el código de seis cifras.',
-                            );
-                        }
-                    });
-            },
-            error: error => {
-                this.qrGenerating.set(false);
-                this.twoFactorBusy.set(false);
-                this.twoFactorError.set(
-                    this.twoFactorService.getErrorMessage(
-                        error,
-                        'No se ha podido iniciar la configuración de la autenticación en dos factores.',
-                    ),
-                );
-            },
-        });
-    }
-
     onTwoFactorEnabledChange(enabled: boolean): void {
-        this.refreshTwoFactorStateInProfile(enabled);
-    }
+        this.twoFactorEnabled.set(enabled);
 
-    async copyTwoFactorSecret(): Promise<void> {
-        const secret = this.twoFactorSetup()?.secret;
-
-        if (!secret) return;
-
-        this.clearTwoFactorMessages();
-
-        try {
-            await navigator.clipboard.writeText(secret);
-            this.copiedSecret.set(true);
-            this.twoFactorSuccess.set('Secreto copiado al portapapeles.');
-        } catch {
-            this.copiedSecret.set(false);
-            this.twoFactorError.set(
-                'No se ha podido copiar automáticamente. Selecciona y copia el secreto manualmente.',
-            );
-        }
-    }
-
-    downloadBackupCodes(): void {
-        const codes = this.backupCodes();
-
-        if (!codes.length) return;
-
-        const content = [
-            'ESIBUY - Códigos de recuperación de autenticación en dos factores',
-            'Guarda este archivo en un lugar seguro.',
-            'Cada código debe tratarse como información confidencial.',
-            '',
-            ...codes,
-            '',
-        ].join('\n');
-
-        const blob = new Blob([content], {
-            type: 'text/plain;charset=utf-8',
-        });
-
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-
-        link.href = url;
-        link.download = 'esibuy-codigos-recuperacion.txt';
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
-    }
-
-    enableTwoFactor(): void {
-        const code = this.twoFactorCode().trim();
-
-        if (this.twoFactorBusy()) return;
-
-        if (!/^\d{6}$/.test(code)) {
-            this.twoFactorError.set(
-                'Introduce el código de seis cifras de tu aplicación autenticadora.',
-            );
-            return;
-        }
-
-        this.clearTwoFactorMessages();
-        this.twoFactorBusy.set(true);
-
-        this.twoFactorService.enable(code).subscribe({
-            next: result => {
-                this.twoFactorEnabled.set(true);
-                this.twoFactorSetup.set(null);
-                this.qrImage.set(null);
-                this.copiedSecret.set(false);
-                this.twoFactorCode.set('');
-                this.backupCodes.set(result.backupCodes ?? []);
-                this.twoFactorBusy.set(false);
-                this.twoFactorSuccess.set(
-                    result.message
-                    ?? 'La autenticación en dos factores se ha activado correctamente.',
-                );
-                this.refreshTwoFactorStateInProfile(true);
-            },
-            error: error => {
-                this.twoFactorBusy.set(false);
-                this.twoFactorError.set(
-                    this.twoFactorService.getErrorMessage(
-                        error,
-                        'No se ha podido activar la autenticación en dos factores. Comprueba el código e inténtalo de nuevo.',
-                    ),
-                );
-            },
-        });
-    }
-
-    regenerateBackupCodes(): void {
-        const code = this.recoveryCode().trim();
-
-        if (this.twoFactorBusy()) return;
-
-        if (!/^\d{6}$/.test(code)) {
-            this.twoFactorError.set(
-                'Introduce un código actual de seis cifras para regenerar los códigos de recuperación.',
-            );
-            return;
-        }
-
-        this.clearTwoFactorMessages();
-        this.twoFactorBusy.set(true);
-        this.backupCodes.set([]);
-
-        this.twoFactorService.regenerateBackupCodes(code).subscribe({
-            next: result => {
-                this.backupCodes.set(result.backupCodes ?? []);
-                this.recoveryCode.set('');
-                this.twoFactorBusy.set(false);
-                this.twoFactorSuccess.set(
-                    result.message
-                    ?? 'Se han generado nuevos códigos de recuperación. Los anteriores dejan de ser válidos.',
-                );
-            },
-            error: error => {
-                this.twoFactorBusy.set(false);
-                this.twoFactorError.set(
-                    this.twoFactorService.getErrorMessage(
-                        error,
-                        'No se han podido regenerar los códigos. Comprueba el código actual e inténtalo de nuevo.',
-                    ),
-                );
-            },
-        });
-    }
-
-    disableTwoFactor(): void {
-        const code = this.twoFactorCode().trim();
-
-        if (this.twoFactorBusy()) return;
-
-        if (!/^\d{6}$/.test(code)) {
-            this.twoFactorError.set(
-                'Introduce el código de seis cifras de tu aplicación autenticadora para desactivar 2FA.',
-            );
-            return;
-        }
-
-        this.clearTwoFactorMessages();
-        this.twoFactorBusy.set(true);
-
-        this.twoFactorService.disable(code).subscribe({
-            next: result => {
-                this.twoFactorEnabled.set(false);
-                this.twoFactorSetup.set(null);
-                this.qrImage.set(null);
-                this.copiedSecret.set(false);
-                this.twoFactorCode.set('');
-                this.recoveryCode.set('');
-                this.backupCodes.set([]);
-                this.twoFactorBusy.set(false);
-                this.twoFactorSuccess.set(
-                    result.message
-                    ?? 'La autenticación en dos factores se ha desactivado.',
-                );
-                this.refreshTwoFactorStateInProfile(false);
-            },
-            error: error => {
-                this.twoFactorBusy.set(false);
-                this.twoFactorError.set(
-                    this.twoFactorService.getErrorMessage(
-                        error,
-                        'No se ha podido desactivar la autenticación en dos factores. Comprueba el código e inténtalo de nuevo.',
-                    ),
-                );
-            },
-        });
-    }
-
-    clearTwoFactorMessages(): void {
-        this.twoFactorError.set(null);
-        this.twoFactorSuccess.set(null);
-    }
-
-    private refreshTwoFactorStateInProfile(enabled: boolean): void {
         const current = this.profile();
-
         if (current) {
             this.profile.set({ ...current, totpEnabled: enabled });
         }

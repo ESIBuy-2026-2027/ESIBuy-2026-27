@@ -1,0 +1,47 @@
+<aside class="profile-card" aria-label="Menú de perfil">
+    <div class="sidebar-profile">
+        @if (avatar) {
+        <img class="avatar avatar-image" [src]="avatar" [alt]="avatarAlt" />
+        } @else {
+        <div class="avatar" aria-hidden="true">{{ initials }}</div>
+        }
+
+        <h2 class="sidebar-name">{{ displayName || fallbackName }}</h2>
+
+        @if (badgeLabel) {
+        <span class="role-badge" [class.premium-badge]="premium">{{ badgeLabel }}</span>
+        }
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Secciones del perfil">
+        @for (section of sections; track section.key) {
+        @if (section.disabled) {
+        <span class="nav-item disabled" aria-disabled="true">{{ section.label }}</span>
+        } @else {
+        <button
+            type="button"
+            class="nav-item"
+            [class.active]="activeSection === section.key"
+            [attr.aria-current]="activeSection === section.key ? 'page' : null"
+            (click)="sectionChange.emit(section.key)">
+            {{ section.label }}
+        </button>
+        }
+        }
+    </nav>
+
+    <div class="sidebar-footer">
+        @if (logoutError; as error) {
+        <p class="form-error" role="alert">{{ error }}</p>
+        }
+
+        <button type="button" class="back-button" (click)="back.emit()">
+            <span aria-hidden="true">←</span>
+            Volver
+        </button>
+
+        <button type="button" class="logout-button" (click)="logout.emit()">
+            Cerrar sesión
+        </button>
+    </div>
+</aside>

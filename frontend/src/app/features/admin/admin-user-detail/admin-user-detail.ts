@@ -27,9 +27,9 @@ export class AdminUserDetail implements OnInit {
 
   readonly form = this.formBuilder.nonNullable.group({
     firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25),
-      Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
+    Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
     lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50),
-      Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
+    Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
     nationalId: ['', [Validators.required, Validators.maxLength(20)]],
     birthDate: ['', [isAdultValidator]],
     defaultCategory: ['Electrónica'],
@@ -105,7 +105,7 @@ export class AdminUserDetail implements OnInit {
     private readonly router: Router,
     private readonly authService: AuthService,
     private readonly productsService: ProductsService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.userId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -181,13 +181,15 @@ export class AdminUserDetail implements OnInit {
       this.isSeller() && !this.categoriesLoadError() && Boolean(savedCategory) && !categoryIsCurrent,
     );
 
+    const defaultCategory = this.isSeller() && categoryIsCurrent
+      ? savedCategory
+      : '';
+
     this.form.patchValue({
       firstName: data.firstName,
       lastName: data.lastName,
       birthDate: data.birthDate ? String(data.birthDate).slice(0, 10) : '',
-      defaultCategory: this.isSeller()
-        ? categoryIsCurrent ? savedCategory : ''
-        : '',
+      defaultCategory,
       businessName: data.businessName ?? '',
       nationalId: data.nationalId ?? '',
       phone: data.phone ?? '',

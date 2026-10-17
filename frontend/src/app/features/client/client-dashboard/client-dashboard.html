@@ -15,47 +15,45 @@
       </section>
 
       @if (notification(); as message) {
-        <p class="cart-notification" [class.is-error]="message.type === 'error'"
-          [class.is-success]="message.type === 'success'" role="status">
-          {{ message.text }}
-        </p>
+      <output class="cart-notification" [class.is-error]="message.type === 'error'"
+        [class.is-success]="message.type === 'success'">
+        {{ message.text }}
+      </output>
       }
 
       @if (productsLoading()) {
-        <p class="catalog-state" role="status">Cargando productos…</p>
+      <output class="catalog-state">Cargando productos…</output>
       } @else if (productsError(); as error) {
-        <p class="catalog-state is-error" role="alert">{{ error }}</p>
+      <output class="catalog-state is-error" role="alert">{{ error }}</output>
       } @else if (products().length === 0) {
-        <p class="catalog-state">No hay productos disponibles en este momento.</p>
+      <p class="catalog-state">No hay productos disponibles en este momento.</p>
       } @else {
-        <section class="product-grid" aria-label="Productos disponibles">
-          @for (product of products(); track product.id) {
-            <article class="product-card">
-              @if (product.imageUrl) {
-                <img class="product-image" [src]="product.imageUrl" [alt]="product.name">
-              } @else {
-                <div class="product-image-placeholder" aria-hidden="true">ESI</div>
-              }
-              <div class="product-details">
-                <h2>{{ product.name }}</h2>
-                @if (product.description) {
-                  <p class="product-description">{{ product.description }}</p>
-                }
-                <p class="product-stock">Disponible: {{ product.stock }}</p>
-                <p class="product-price">{{ formatPrice(product.price) }}</p>
-                <label [for]="'quantity-' + product.id">Cantidad</label>
-                <input [id]="'quantity-' + product.id" type="number" min="1" step="1"
-                  [max]="product.stock" [ngModel]="quantityFor(product.id)"
-                  (ngModelChange)="setQuantity(product.id, $event)">
-                <button class="primary-action add-to-cart" type="button"
-                  [disabled]="addingProductId() === product.id"
-                  (click)="addToCart(product)">
-                  {{ addingProductId() === product.id ? 'Añadiendo…' : 'Añadir al carrito' }}
-                </button>
-              </div>
-            </article>
+      <section class="product-grid" aria-label="Productos disponibles">
+        @for (product of products(); track product.id) {
+        <article class="product-card">
+          @if (product.imageUrl) {
+          <img class="product-image" [src]="product.imageUrl" [alt]="product.name">
+          } @else {
+          <div class="product-image-placeholder" aria-hidden="true">ESI</div>
           }
-        </section>
+          <div class="product-details">
+            <h2>{{ product.name }}</h2>
+            @if (product.description) {
+            <p class="product-description">{{ product.description }}</p>
+            }
+            <p class="product-stock">Disponible: {{ product.stock }}</p>
+            <p class="product-price">{{ formatPrice(product.price) }}</p>
+            <label [for]="'quantity-' + product.id">Cantidad</label>
+            <input [id]="'quantity-' + product.id" type="number" min="1" step="1" [max]="product.stock"
+              [ngModel]="quantityFor(product.id)" (ngModelChange)="setQuantity(product.id, $event)">
+            <button class="primary-action add-to-cart" type="button" [disabled]="addingProductId() === product.id"
+              (click)="addToCart(product)">
+              {{ addingProductId() === product.id ? 'Añadiendo…' : 'Añadir al carrito' }}
+            </button>
+          </div>
+        </article>
+        }
+      </section>
       }
     </main>
   </div>

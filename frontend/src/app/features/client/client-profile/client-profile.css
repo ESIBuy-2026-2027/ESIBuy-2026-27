@@ -588,3 +588,80 @@
 .danger-zone .panel-title {
     color: #a52828;
 }
+
+
+/* Acciones de la barra lateral: estilo común en todos los perfiles */
+.sidebar-footer .logout-button,
+.sidebar-footer .back-button {
+    display: flex;
+    width: 100%;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.25;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sidebar-footer .logout-button {
+    border-color: #f0d5d5;
+    background: #fff5f5;
+    color: #a33131;
+}
+
+.sidebar-footer .logout-button:hover {
+    border-color: #e9bebe;
+    background: #ffe9e9;
+    color: #8f2525;
+}
+
+.sidebar-footer .back-button:focus-visible {
+    outline: 3px solid rgb(66 214 178 / 55%);
+    outline-offset: 2px;
+}
+
+.sidebar-footer .logout-button:active,
+.sidebar-footer .back-button:active {
+    transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sidebar-footer .logout-button,
+    .sidebar-footer .back-button {
+        transition: none;
+    }
+}
+
+/* Estilos definitivos de los botones del perfil del cliente */
+.profile-card .sidebar-footer button.back-button {
+    background: #fff !important;
+    border: 1px solid #d9e3eb !important;
+    color: #31536b !important;
+}
+
+.profile-card .sidebar-footer button.back-button:hover {
+    background: #f4f8fa !important;
+    border-color: #c5d5e0 !important;
+    color: #102c40 !important;
+}
+
+.profile-card .sidebar-footer button.logout-button {
+    background: #fff5f5 !important;
+    border: 1px solid #f0d5d5 !important;
+    color: #a33131 !important;
+}
+
+.profile-card .sidebar-footer button.logout-button:hover {
+    background: #ffe9e9 !important;
+    border-color: #e9bebe !important;
+    color: #8f2525 !important;
+}

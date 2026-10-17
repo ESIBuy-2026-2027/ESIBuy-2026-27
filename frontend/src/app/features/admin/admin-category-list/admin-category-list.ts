@@ -2,7 +2,6 @@ import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { AdminCategoryService } from './admin-category.service';
 import { Category } from '../../products/products.service';
 

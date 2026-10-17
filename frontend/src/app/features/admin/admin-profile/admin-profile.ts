@@ -6,6 +6,9 @@ import { Location } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { DeleteAccount } from '../../../shared/delete-account/delete-account';
 import { TwoFactorSettingsComponent } from '../../../shared/two-factor-settings/two-factor-settings';
+import { ProfileShellComponent } from '../../../shared/profile-shell/profile-shell';
+import type { ProfileNavigationItem } from '../../../shared/profile-shell/profile-shell';
+import { ADMIN_AVATARS } from '../../../core/constants/avatars';
 
 interface AdminProfileResponse {
     firstName: string;
@@ -30,7 +33,7 @@ interface UpdateAdminProfileRequest {
 @Component({
     selector: 'app-admin-profile',
     standalone: true,
-    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent],
+    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent, ProfileShellComponent],
     templateUrl: './admin-profile.html',
     styleUrl: './admin-profile.css',
 })
@@ -41,19 +44,7 @@ export class AdminProfile implements OnInit {
     private readonly location = inject(Location);
     private readonly apiUrl = '/api/users/me/profile';
 
-    readonly adminAvatars: string[] = [
-        'assets/images/avatars/av_client_1.jpeg',
-        'assets/images/avatars/av_client_2.jpeg',
-        'assets/images/avatars/av_client_3.jpeg',
-        'assets/images/avatars/av_client_4.jpeg',
-        'assets/images/avatars/av_client_5.jpeg',
-        'assets/images/avatars/av_seller_1.jpeg',
-        'assets/images/avatars/av_seller_2.jpeg',
-        'assets/images/avatars/av_seller_3.jpeg',
-        'assets/images/avatars/av_seller_4.jpeg',
-        'assets/images/avatars/av_seller_5.jpeg',
-
-    ];
+    readonly adminAvatars: readonly string[] = ADMIN_AVATARS;
 
     readonly selectedAvatar = signal(this.adminAvatars[0]);
 
@@ -69,9 +60,9 @@ export class AdminProfile implements OnInit {
 
     readonly twoFactorEnabled = signal(false);
 
-    readonly sections = [
-        { label: 'Datos personales' },
-        { label: 'Seguridad' },
+    readonly shellSections: ProfileNavigationItem[] = [
+        { key: 'personal', label: 'Datos personales' },
+        { key: 'security', label: 'Seguridad' },
     ];
 
     readonly activeSection = signal<'personal' | 'security'>('personal');

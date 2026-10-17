@@ -2,7 +2,7 @@ import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { Category, ProductCreateRequest, ProductsService } from '../products.service';
 import { SellerCatalogService, SellerProduct } from './seller-catalog.service';
 
