@@ -1,0 +1,267 @@
+<section class="panel" aria-labelledby="addresses-title">
+  <div class="panel-heading">
+    <div class="panel-heading-text">
+      <span class="eyebrow">CUENTA DE CLIENTE</span>
+      <h1 id="addresses-title" class="panel-title">
+        Direcciones de envío
+      </h1>
+      <p class="panel-description">
+        Gestiona las direcciones donde quieres recibir tus pedidos.
+      </p>
+    </div>
+
+    @if (!formOpen() && !loading() && !loadError()) {
+    <button type="button" class="primary-button" data-testid="add-address" [disabled]="limitReached()"
+      (click)="openForm()">
+      + Añadir dirección
+    </button>
+    }
+  </div>
+
+  @if (successMessage(); as message) {
+  <output class="success-message" aria-live="polite">
+    {{ message }}
+  </output>
+  }
+
+  @if (loading()) {
+  <p class="panel-description" role="status">
+    Cargando tus direcciones...
+  </p>
+  } @else if (loadError(); as error) {
+  <p class="form-error" role="alert">{{ error }}</p>
+
+  <button type="button" class="primary-button" (click)="loadAddresses()">
+    Reintentar
+  </button>
+  } @else {
+  @if (limitReached() && !formOpen()) {
+  <p class="limit-note">
+    Has alcanzado el máximo de {{ maxAddresses }} direcciones.
+  </p>
+  }
+
+  @if (formOpen()) {
+  <form class="address-form" novalidate (ngSubmit)="save()"
+    [attr.aria-label]="editing() ? 'Editar dirección de envío' : 'Nueva dirección de envío'">
+
+    <h2 class="section-title">
+      {{ editing() ? 'Editar dirección' : 'Nueva dirección' }}
+    </h2>
+
+    @if (formError(); as error) {
+    <p class="form-error" role="alert">
+      {{ error }}
+    </p>
+    }
+
+    <div class="field-grid">
+      <div class="field field-wide">
+        <label for="recipientName">
+          Nombre del destinatario <span>*</span>
+        </label>
+
+        <input id="recipientName" name="recipientName" type="text" [(ngModel)]="form.recipientName"
+          (ngModelChange)="onFieldChange()" maxlength="80" autocomplete="name" [disabled]="saving()"
+          [attr.aria-invalid]="fieldErrors().recipientName ? 'true' : null"
+          [attr.aria-describedby]="fieldErrors().recipientName ? 'recipientName-error' : null" />
+
+        @if (fieldErrors().recipientName; as error) {
+        <small id="recipientName-error" class="field-error" role="alert">
+          {{ error }}
+        </small>
+        }
+      </div>
+
+      <div class="field field-wide">
+        <label for="street">
+          Calle y número <span>*</span>
+        </label>
+
+        <input id="street" name="street" type="text" [(ngModel)]="form.street" (ngModelChange)="onFieldChange()"
+          maxlength="100" autocomplete="address-line1" placeholder="Calle Mayor, 12" [disabled]="saving()"
+          [attr.aria-invalid]="fieldErrors().street ? 'true' : null"
+          [attr.aria-describedby]="fieldErrors().street ? 'street-error' : null" />
+
+        @if (fieldErrors().street; as error) {
+        <small id="street-error" class="field-error" role="alert">
+          {{ error }}
+        </small>
+        }
+      </div>
+
+      <div class="field field-wide">
+        <label for="additionalInfo">
+          Piso, puerta, escalera...
+        </label>
+
+        <input id="additionalInfo" name="additionalInfo" type="text" [(ngModel)]="form.additionalInfo"
+          (ngModelChange)="onFieldChange()" maxlength="60" autocomplete="address-line2" placeholder="Opcional"
+          [disabled]="saving()" [attr.aria-invalid]="fieldErrors().additionalInfo ? 'true' : null"
+          [attr.aria-describedby]="fieldErrors().additionalInfo ? 'additionalInfo-error' : null" />
+
+        @if (fieldErrors().additionalInfo; as error) {
+        <small id="additionalInfo-error" class="field-error" role="alert">
+          {{ error }}
+        </small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="postalCode">
+          Código postal <span>*</span>
+        </label>
+
+        <input id="postalCode" name="postalCode" type="text" [(ngModel)]="form.postalCode"
+          (ngModelChange)="onFieldChange()" maxlength="5" inputmode="numeric" autocomplete="postal-code"
+          placeholder="13071" [disabled]="saving()" [attr.aria-invalid]="fieldErrors().postalCode ? 'true' : null"
+          [attr.aria-describedby]="fieldErrors().postalCode ? 'postalCode-error' : null" />
+
+        @if (fieldErrors().postalCode; as error) {
+        <small id="postalCode-error" class="field-error" role="alert">
+          {{ error }}
+        </small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="city">
+          Ciudad <span>*</span>
+        </label>
+
+        <input id="city" name="city" type="text" [(ngModel)]="form.city" (ngModelChange)="onFieldChange()"
+          maxlength="50" autocomplete="address-level2" [disabled]="saving()"
+          [attr.aria-invalid]="fieldErrors().city ? 'true' : null"
+          [attr.aria-describedby]="fieldErrors().city ? 'city-error' : null" />
+
+        @if (fieldErrors().city; as error) {
+        <small id="city-error" class="field-error" role="alert">
+          {{ error }}
+        </small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="province">
+          Provincia <span>*</span>
+        </label>
+
+        <input id="province" name="province" type="text" [(ngModel)]="form.province" (ngModelChange)="onFieldChange()"
+          maxlength="50" autocomplete="address-level1" [disabled]="saving()"
+          [attr.aria-invalid]="fieldErrors().province ? 'true' : null"
+          [attr.aria-describedby]="fieldErrors().province ? 'province-error' : null" />
+
+        @if (fieldErrors().province; as error) {
+        <small id="province-error" class="field-error" role="alert">
+          {{ error }}
+        </small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="phone">
+          Teléfono de contacto
+        </label>
+
+        <input id="phone" name="phone" type="tel" [(ngModel)]="form.phone" (ngModelChange)="onFieldChange()"
+          maxlength="9" inputmode="numeric" autocomplete="tel" placeholder="Opcional, 9 cifras" [disabled]="saving()"
+          [attr.aria-invalid]="fieldErrors().phone ? 'true' : null"
+          [attr.aria-describedby]="fieldErrors().phone ? 'phone-error' : null" />
+
+        @if (fieldErrors().phone; as error) {
+        <small id="phone-error" class="field-error" role="alert">
+          {{ error }}
+        </small>
+        }
+      </div>
+
+      <div class="field field-wide">
+        <label class="checkbox-label" for="isDefault">
+          <input id="isDefault" name="isDefault" type="checkbox" [(ngModel)]="form.isDefault" [disabled]="saving()" />
+          Usar como dirección predeterminada
+        </label>
+      </div>
+    </div>
+
+    <p class="required-note">
+      <span>*</span> Campos obligatorios. País: España.
+    </p>
+
+    <div class="form-actions">
+      <button type="button" class="secondary-button" [disabled]="saving()" (click)="cancelForm()">
+        Cancelar
+      </button>
+
+      <button type="submit" class="primary-button" [disabled]="saving()">
+        {{
+        saving()
+        ? 'Guardando...'
+        : editing()
+        ? 'Guardar cambios'
+        : 'Guardar dirección'
+        }}
+      </button>
+    </div>
+  </form>
+  }
+
+  @if (addresses().length === 0 && !formOpen()) {
+  <div class="empty-state">
+    <p>Todavía no has añadido ninguna dirección de envío.</p>
+    <p class="empty-hint">
+      Añade una para agilizar tus próximas compras.
+    </p>
+  </div>
+  }
+
+  @if (addresses().length > 0) {
+  <ul class="address-list" aria-label="Tus direcciones de envío">
+    @for (address of addresses(); track address.id) {
+    <li class="address-card" [class.is-default]="address.isDefault">
+
+      <div class="address-card-header">
+        <strong class="recipient-name">
+          {{ address.recipientName }}
+        </strong>
+
+        @if (address.isDefault) {
+        <span class="default-badge">
+          Predeterminada
+        </span>
+        }
+      </div>
+
+      <div class="address-details">
+        <p>
+          {{ address.street }}
+          @if (address.additionalInfo) {
+          <span>, {{ address.additionalInfo }}</span>
+          }
+        </p>
+
+        <p>
+          {{ address.postalCode }} {{ address.city }},
+          {{ address.province }}
+        </p>
+
+        <p>España</p>
+
+        @if (address.phone) {
+        <p class="address-phone">
+          Tel. {{ address.phone }}
+        </p>
+        }
+      </div>
+
+      <div class="address-actions">
+        <button type="button" class="secondary-button" [disabled]="saving()"
+          [attr.aria-label]="'Editar dirección de ' + address.recipientName" (click)="openEdit(address)">
+          Editar
+        </button>
+      </div>
+    </li>
+    }
+  </ul>
+  }
+  }
+</section>

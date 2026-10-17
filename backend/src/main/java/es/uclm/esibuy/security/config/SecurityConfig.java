@@ -99,6 +99,7 @@ public class SecurityConfig {
                             .hasAnyRole(ROLE_CLIENT, ROLE_SELLER)
                             .requestMatchers(HttpMethod.PUT, "/api/users/me/profile")
                             .hasAnyRole(ROLE_CLIENT, ROLE_SELLER, ROLE_ADMIN)
+                            .requestMatchers("/api/users/me/addresses/**").hasRole(ROLE_CLIENT)
                             .anyRequest().authenticated())
                     .addFilterBefore(new CorrelationIdFilter(), UsernamePasswordAuthenticationFilter.class)
                     .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)

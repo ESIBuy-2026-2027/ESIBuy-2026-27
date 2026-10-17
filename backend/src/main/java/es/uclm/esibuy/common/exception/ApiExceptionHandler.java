@@ -108,7 +108,7 @@ public class ApiExceptionHandler {
             LOGGER.warn("Usuario solicitado no encontrado. correlationId={}", id);
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(MESSAGE, "Usuario no encontrado",
-            CORRELATION_ID, id));
+                CORRELATION_ID, id));
     }
 
     @ExceptionHandler(ProductNotFoundException.class)
@@ -128,7 +128,7 @@ public class ApiExceptionHandler {
             LOGGER.warn("Solicitud rechazada por estado no válido. correlationId={}", id);
         }
         return ResponseEntity.badRequest().body(Map.of(MESSAGE, exception.getMessage(),
-            CORRELATION_ID, id));
+                CORRELATION_ID, id));
     }
 
     @ExceptionHandler(Exception.class)
@@ -162,5 +162,12 @@ public class ApiExceptionHandler {
 
     private void addError(Map<String, String> errors, String field, String message) {
         errors.merge(field, message, (existing, next) -> existing.equals(next) ? existing : existing + "; " + next);
+    }
+
+    @ExceptionHandler(AddressLimitExceededException.class)
+    public ResponseEntity<Map<String, String>> handleAddressLimit(
+            AddressLimitExceededException exception, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                MESSAGE, exception.getMessage(), CORRELATION_ID, correlationId(request)));
     }
 }
