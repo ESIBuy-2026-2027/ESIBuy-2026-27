@@ -49,6 +49,17 @@ export class PaymentMethodService {
         });
     }
 
+    update(
+        id: string,
+        request: PaymentMethodRequest,
+    ): Observable<PaymentMethod> {
+        return this.http.put<PaymentMethod>(
+            `${this.url}/${encodeURIComponent(id)}`,
+            request,
+            { withCredentials: true },
+        );
+    }
+
     setDefault(id: string): Observable<PaymentMethod> {
         return this.http.put<PaymentMethod>(
             `${this.url}/${encodeURIComponent(id)}/default`,

@@ -27,6 +27,8 @@ export class PaymentMethods implements OnInit {
 
     readonly methods = signal<PaymentMethod[]>([]);
     readonly loading = signal(true);
+    readonly editingMethodId = signal<string | null>(null);
+    readonly methodToDelete = signal<PaymentMethod | null>(null);
     readonly saving = signal(false);
     readonly actionId = signal<string | null>(null);
     readonly formVisible = signal(false);
@@ -84,6 +86,7 @@ export class PaymentMethods implements OnInit {
     }
 
     openForm(): void {
+        this.editingMethodId.set(null);
         this.form.set({
             ...this.emptyForm(),
             defaultMethod: this.methods().length === 0,
@@ -93,8 +96,31 @@ export class PaymentMethods implements OnInit {
         this.formVisible.set(true);
     }
 
+    openEdit(method: PaymentMethod): void {
+        this.editingMethodId.set(method.id);
+
+        this.form.set({
+            type: method.type,
+            label: method.label ?? '',
+            cardholderName: method.cardholderName ?? '',
+            cardBrand: method.cardBrand ?? 'VISA',
+            lastFourDigits: method.lastFourDigits ?? '',
+            expiration: method.expirationMonth && method.expirationYear
+                ? `${String(method.expirationMonth).padStart(2, '0')}/${String(method.expirationYear).slice(-2)}`
+                : '',
+            paypalEmail: method.paypalEmail ?? '',
+            bizumPhone: method.bizumPhone ?? '',
+            defaultMethod: method.isDefault,
+        });
+
+        this.error.set(null);
+        this.success.set(null);
+        this.formVisible.set(true);
+    }
+
     cancelForm(): void {
         this.formVisible.set(false);
+        this.editingMethodId.set(null);
         this.form.set(this.emptyForm());
         this.error.set(null);
     }
@@ -126,6 +152,7 @@ export class PaymentMethods implements OnInit {
         this.form.update(current => ({ ...current, [field]: value }));
     }
 
+
     save(): void {
         if (this.saving()) return;
 
@@ -139,41 +166,64 @@ export class PaymentMethods implements OnInit {
 
         this.saving.set(true);
 
-        this.paymentMethodService.add(request).subscribe({
+        const editingId = this.editingMethodId();
+
+        const operation = editingId !== null
+            ? this.paymentMethodService.update(editingId, request)
+            : this.paymentMethodService.add(request);
+
+        operation.subscribe({
             next: method => {
                 this.methods.update(methods => {
-                    const withoutDuplicate = methods.filter(item => item.id !== method.id);
-                    return [...withoutDuplicate, method];
-                });
+                    const updatedMethods = editingId !== null
+                        ? methods.map(item =>
+                            item.id === method.id ? method : item,
+                        )
+                        : [...methods, method];
 
-                // Si el servidor establece un método predeterminado, reflejarlo en la lista.
-                if (method.isDefault) {
-                    this.methods.update(methods =>
-                        methods.map(item => ({
+                    // Si el método guardado es el predeterminado,
+                    // desmarcar los demás.
+                    if (method.isDefault) {
+                        return updatedMethods.map(item => ({
                             ...item,
                             isDefault: item.id === method.id,
-                        })),
-                    );
-                }
+                        }));
+                    }
+
+                    return updatedMethods;
+                });
 
                 this.saving.set(false);
                 this.formVisible.set(false);
+                this.editingMethodId.set(null);
                 this.form.set(this.emptyForm());
-                this.success.set('El método de pago se ha guardado correctamente.');
 
-                // Sincroniza el estado real que devuelve el backend.
+                this.success.set(
+                    editingId !== null
+                        ? 'El método de pago se ha actualizado correctamente.'
+                        : 'El método de pago se ha guardado correctamente.',
+                );
+
+                // Sincronizar con el estado definitivo del servidor.
                 this.loadMethods();
             },
             error: error => {
                 this.saving.set(false);
+
                 this.error.set(
                     error?.error?.detail
                     ?? error?.error?.message
-                    ?? 'No se ha podido guardar el método de pago. Revisa los datos e inténtalo de nuevo.',
+                    ?? (
+                        editingId !== null
+                            ? 'No se ha podido actualizar el método de pago. Revisa los datos e inténtalo de nuevo.'
+                            : 'No se ha podido guardar el método de pago. Revisa los datos e inténtalo de nuevo.'
+                    ),
                 );
             },
         });
     }
+
+
 
     private buildRequest(form: PaymentMethodForm): PaymentMethodRequest | null {
         const label = form.label.trim();
@@ -189,80 +239,101 @@ export class PaymentMethods implements OnInit {
             isDefault: form.defaultMethod,
         };
 
-        if (form.type === 'CARD') {
-            const cardholderName = form.cardholderName.trim();
-            const lastFourDigits = form.lastFourDigits.trim();
-            const expiration = this.parseExpiration(form.expiration);
+        switch (form.type) {
+            case 'CARD':
+                return this.addCardDetails(request, form);
 
-            if (!expiration) {
-                this.error.set('Introduce una fecha de caducidad válida.');
-                return null;
-            }
+            case 'PAYPAL':
+                return this.addPayPalDetails(request, form);
 
-            const month = expiration.month;
-            const year = expiration.year;
+            case 'BIZUM':
+                return this.addBizumDetails(request, form);
+        }
+    }
 
-            if (cardholderName.length < 2 || cardholderName.length > 80) {
-                this.error.set('Introduce el nombre del titular (entre 2 y 80 caracteres).');
-                return null;
-            }
+    private addCardDetails(
+        request: PaymentMethodRequest,
+        form: PaymentMethodForm,
+    ): PaymentMethodRequest | null {
+        const cardholderName = form.cardholderName.trim();
+        const lastFourDigits = form.lastFourDigits.trim();
+        const expiration = this.parseExpiration(form.expiration);
 
-            if (!/^\d{4}$/.test(lastFourDigits)) {
-                this.error.set('Introduce las cuatro últimas cifras de la tarjeta.');
-                return null;
-            }
-
-            if (
-                !Number.isInteger(month) || month < 1 || month > 12
-                || !Number.isInteger(year) || year < this.currentYear
-            ) {
-                this.error.set('Introduce una fecha de caducidad válida.');
-                return null;
-            }
-
-            const now = new Date();
-            if (
-                year === now.getFullYear()
-                && month < now.getMonth() + 1
-            ) {
-                this.error.set('La tarjeta está caducada.');
-                return null;
-            }
-
-            request.cardholderName = cardholderName;
-            request.cardBrand = form.cardBrand;
-            request.lastFourDigits = lastFourDigits;
-            request.expirationMonth = month;
-            request.expirationYear = year;
+        if (!expiration) {
+            this.error.set('Introduce una fecha de caducidad válida.');
+            return null;
         }
 
-        if (form.type === 'PAYPAL') {
-            const paypalEmail = form.paypalEmail.trim();
-
-            if (
-                paypalEmail.length > 254
-                || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypalEmail)
-            ) {
-                this.error.set('Introduce un correo electrónico válido para PayPal.');
-                return null;
-            }
-
-            request.paypalEmail = paypalEmail;
+        if (cardholderName.length < 2 || cardholderName.length > 80) {
+            this.error.set('Introduce el nombre del titular (entre 2 y 80 caracteres).');
+            return null;
         }
 
-        if (form.type === 'BIZUM') {
-            const bizumPhone = form.bizumPhone.trim();
-
-            if (!/^\d{9}$/.test(bizumPhone)) {
-                this.error.set('El teléfono de Bizum debe tener exactamente 9 cifras.');
-                return null;
-            }
-
-            request.bizumPhone = bizumPhone;
+        if (!/^\d{4}$/.test(lastFourDigits)) {
+            this.error.set('Introduce las cuatro últimas cifras de la tarjeta.');
+            return null;
         }
+
+        if (!this.isValidExpiration(expiration.month, expiration.year)) {
+            this.error.set('Introduce una fecha de caducidad válida.');
+            return null;
+        }
+
+        request.cardholderName = cardholderName;
+        request.cardBrand = form.cardBrand;
+        request.lastFourDigits = lastFourDigits;
+        request.expirationMonth = expiration.month;
+        request.expirationYear = expiration.year;
 
         return request;
     }
+
+    private isValidExpiration(month: number, year: number): boolean {
+        if (
+            !Number.isInteger(month) || month < 1 || month > 12
+            || !Number.isInteger(year) || year < this.currentYear
+        ) {
+            return false;
+        }
+
+        const now = new Date();
+
+        return year !== now.getFullYear() || month >= now.getMonth() + 1;
+    }
+
+    private addPayPalDetails(
+        request: PaymentMethodRequest,
+        form: PaymentMethodForm,
+    ): PaymentMethodRequest | null {
+        const paypalEmail = form.paypalEmail.trim();
+
+        if (
+            paypalEmail.length > 254
+            || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypalEmail)
+        ) {
+            this.error.set('Introduce un correo electrónico válido para PayPal.');
+            return null;
+        }
+
+        request.paypalEmail = paypalEmail;
+        return request;
+    }
+
+    private addBizumDetails(
+        request: PaymentMethodRequest,
+        form: PaymentMethodForm,
+    ): PaymentMethodRequest | null {
+        const bizumPhone = form.bizumPhone.trim();
+
+        if (!/^\d{9}$/.test(bizumPhone)) {
+            this.error.set('El teléfono de Bizum debe tener exactamente 9 cifras.');
+            return null;
+        }
+
+        request.bizumPhone = bizumPhone;
+        return request;
+    }
+
 
     setDefault(method: PaymentMethod): void {
         if (method.isDefault || this.actionId()) return;
@@ -289,13 +360,25 @@ export class PaymentMethods implements OnInit {
         });
     }
 
+
     deleteMethod(method: PaymentMethod): void {
         if (this.actionId()) return;
 
-        const description = this.methodDescription(method);
-        if (!confirm(`¿Quieres eliminar el método de pago «${description}»?`)) {
-            return;
-        }
+        this.error.set(null);
+        this.success.set(null);
+        this.methodToDelete.set(method);
+    }
+
+    cancelDelete(): void {
+        if (this.actionId()) return;
+
+        this.methodToDelete.set(null);
+    }
+
+    confirmDelete(): void {
+        const method = this.methodToDelete();
+
+        if (!method || this.actionId()) return;
 
         this.error.set(null);
         this.success.set(null);
@@ -306,7 +389,9 @@ export class PaymentMethods implements OnInit {
                 this.methods.update(methods =>
                     methods.filter(item => item.id !== method.id),
                 );
+
                 this.actionId.set(null);
+                this.methodToDelete.set(null);
                 this.success.set('El método de pago se ha eliminado.');
 
                 // El servidor puede asignar otro método como predeterminado.
@@ -314,10 +399,12 @@ export class PaymentMethods implements OnInit {
             },
             error: () => {
                 this.actionId.set(null);
+                this.methodToDelete.set(null);
                 this.error.set('No se ha podido eliminar el método de pago.');
             },
         });
     }
+
 
     methodDescription(method: PaymentMethod): string {
         switch (method.type) {

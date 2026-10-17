@@ -174,7 +174,6 @@ export class ShippingAddresses implements OnInit {
     this.successMessage.set(null);
   }
 
-  /** Tras el primer intento de envío, los errores se actualizan mientras se escribe. */
   onFieldChange(): void {
     if (this.submitted()) {
       this.fieldErrors.set(validateAddress(this.form));
@@ -246,6 +245,57 @@ export class ShippingAddresses implements OnInit {
     });
   }
 
+  setDefaultAddress(address: ShippingAddress): void {
+    if (
+      address.isDefault ||
+      this.saving() ||
+      this.deletingAddressId() !== null
+    ) {
+      return;
+    }
+
+    this.saving.set(true);
+    this.successMessage.set(null);
+    this.deleteError.set(null);
+
+    const request: ShippingAddressRequest = {
+      recipientName: address.recipientName,
+      street: address.street,
+      additionalInfo: address.additionalInfo ?? null,
+      postalCode: address.postalCode,
+      city: address.city,
+      province: address.province,
+      phone: address.phone ?? null,
+      isDefault: true,
+    };
+
+    this.addressService.update(address.id, request).subscribe({
+      next: (updatedAddress) => {
+        this.addresses.update((current) =>
+          current.map((item) => ({
+            ...item,
+            isDefault: item.id === updatedAddress.id,
+          })),
+        );
+
+        this.saving.set(false);
+        this.successMessage.set(
+          'La dirección predeterminada se ha actualizado correctamente.',
+        );
+      },
+      error: (error: unknown) => {
+        this.saving.set(false);
+
+        if (this.handleExpiredSession(error)) {
+          return;
+        }
+
+        this.formError.set(
+          'No se ha podido cambiar la dirección predeterminada. Inténtalo de nuevo.',
+        );
+      },
+    });
+  }
 
   save(): void {
     if (this.saving()) {

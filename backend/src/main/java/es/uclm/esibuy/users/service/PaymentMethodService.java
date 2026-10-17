@@ -98,6 +98,60 @@ public class PaymentMethodService {
         return PaymentMethodResponse.from(target);
     }
 
+    public PaymentMethodResponse update(
+            String userId,
+            String paymentMethodId,
+            PaymentMethodRequest request) {
+
+        User user = findClient(userId);
+        ClientProfile profile = user.getClientProfile();
+
+        if (profile == null) {
+            throw paymentMethodNotFound();
+        }
+
+        validateRequest(request);
+
+        List<PaymentMethod> methods = new ArrayList<>(profile.getPaymentMethods());
+
+        int targetIndex = -1;
+
+        for (int i = 0; i < methods.size(); i++) {
+            if (methods.get(i).getId().equals(paymentMethodId)) {
+                targetIndex = i;
+                break;
+            }
+        }
+
+        if (targetIndex == -1) {
+            throw paymentMethodNotFound();
+        }
+
+        PaymentMethod current = methods.get(targetIndex);
+
+        // Si ya era el método predeterminado, conservar ese estado.
+        boolean makeDefault = request.defaultMethod() || current.isDefaultMethod();
+
+        if (makeDefault) {
+            methods.forEach(method -> method.setDefaultMethod(false));
+        }
+
+        // Mantener el mismo ID para que siga siendo el mismo método.
+        PaymentMethod updated = createPaymentMethod(
+                current.getId(),
+                request,
+                makeDefault);
+
+        // createPaymentMethod genera un ID nuevo; restauramos el original.
+        // Para evitar esto, el método de creación debe aceptar el ID.
+        methods.set(targetIndex, updated);
+
+        profile.setPaymentMethods(methods);
+        userRepository.save(user);
+
+        return PaymentMethodResponse.from(updated);
+    }
+
     public void delete(String userId, String paymentMethodId) {
         User user = findClient(userId);
         ClientProfile profile = user.getClientProfile();
@@ -130,7 +184,17 @@ public class PaymentMethodService {
             PaymentMethodRequest request,
             boolean makeDefault) {
 
-        String id = UUID.randomUUID().toString();
+        return createPaymentMethod(
+                UUID.randomUUID().toString(),
+                request,
+                makeDefault);
+    }
+
+    private PaymentMethod createPaymentMethod(
+            String id,
+            PaymentMethodRequest request,
+            boolean makeDefault) {
+
         String label = request.label() == null
                 ? ""
                 : request.label().trim();

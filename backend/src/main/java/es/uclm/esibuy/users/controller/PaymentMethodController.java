@@ -71,6 +71,21 @@ public class PaymentMethodController {
                 paymentMethodService.setDefault(principal.id(), paymentMethodId));
     }
 
+    @PutMapping("/{paymentMethodId}")
+    public ResponseEntity<PaymentMethodResponse> update(
+            Authentication authentication,
+            @PathVariable String paymentMethodId,
+            @Valid @RequestBody PaymentMethodRequest request) {
+
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return ResponseEntity.ok(
+                paymentMethodService.update(principal.id(), paymentMethodId, request));
+    }
+
     @DeleteMapping("/{paymentMethodId}")
     public ResponseEntity<Void> delete(
             Authentication authentication,

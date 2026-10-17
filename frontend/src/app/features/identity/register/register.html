@@ -215,8 +215,8 @@
             Teléfono
           </label>
 
-          <input id="phone" type="text" formControlName="phone" placeholder="Ej: 600112233" autocomplete="tel" />
-
+          <input id="phone" type="tel" formControlName="phone" placeholder="Ej: 600112233" autocomplete="tel"
+            inputmode="numeric" maxlength="9" />
           <span class="error" *ngIf="form.get('phone')?.touched && form.get('phone')?.hasError('pattern')">
             El teléfono debe contener exactamente 9 dígitos numéricos
           </span>
@@ -394,7 +394,8 @@
             Teléfono
           </label>
 
-          <input id="sellerPhone" type="text" formControlName="phone" placeholder="Ej: 600112233" autocomplete="tel" />
+          <input id="sellerPhone" type="tel" formControlName="phone" placeholder="Ej: 600112233" autocomplete="tel"
+            inputmode="numeric" maxlength="9" />
 
           <span class="error" *ngIf="form.get('phone')?.touched && form.get('phone')?.hasError('pattern')">
             El teléfono debe contener exactamente 9 dígitos numéricos
