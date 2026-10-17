@@ -1,6 +1,7 @@
 package es.uclm.esibuy.cart.controller;
 
 import es.uclm.esibuy.cart.dto.AnadirItemCarritoDTO;
+import es.uclm.esibuy.cart.dto.ActualizarCantidadItemDTO;
 import es.uclm.esibuy.cart.dto.CarritoDTO;
 import es.uclm.esibuy.cart.service.CarritoService;
 import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
@@ -10,7 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,5 +47,26 @@ public class CarritoController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok(carritoService.getCarrito(principal.id()));
+    }
+
+    @PutMapping("/items/{productoId}")
+    public ResponseEntity<CarritoDTO> actualizarCantidadItem(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
+            @PathVariable String productoId,
+            @Valid @RequestBody ActualizarCantidadItemDTO request) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(carritoService.actualizarCantidadItem(principal.id(), productoId, request));
+    }
+
+    @DeleteMapping("/items/{productoId}")
+    public ResponseEntity<CarritoDTO> eliminarItem(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
+            @PathVariable String productoId) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(carritoService.eliminarItem(principal.id(), productoId));
     }
 }
