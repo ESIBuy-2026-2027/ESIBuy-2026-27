@@ -9,7 +9,6 @@ import { AdminUserList } from './features/admin/admin-user-list/admin-user-list'
 import { AdminUserDetail } from './features/admin/admin-user-detail/admin-user-detail';
 import { SellerCatalog } from './features/products/seller-catalog/seller-catalog';
 import { ClientDashboard } from './features/client/client-dashboard/client-dashboard';
-import { AdminCategoryList } from './features/admin/admin-category-list/admin-category-list';
 import { ClientProfile } from './features/client/client-profile/client-profile';
 import { SellerProfile } from './features/products/seller-profile/seller-profile';
 import { AdminProfile } from './features/admin/admin-profile/admin-profile';
@@ -22,7 +21,6 @@ export const routes: Routes = [
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
   { path: 'admin/usuarios', component: AdminUserList, canActivate: [ authGuard, roleGuard('ADMIN') ] },
   { path: 'admin/usuarios/:id/editar', component: AdminUserDetail, canActivate: [ authGuard, roleGuard('ADMIN') ] },
-  { path: 'admin/categorias', component: AdminCategoryList, canActivate: [ authGuard, roleGuard('ADMIN') ] },
 
   { path: 'admin', redirectTo: 'admin/usuarios', pathMatch: 'full' },
   { path: 'admin/users', redirectTo: 'admin/usuarios', pathMatch: 'full' },
