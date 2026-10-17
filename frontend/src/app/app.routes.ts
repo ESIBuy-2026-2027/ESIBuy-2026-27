@@ -20,8 +20,8 @@ export const routes: Routes = [
 
   { path: 'admin/users/new', component: AdminUserCreate, canActivate: [authGuard, roleGuard('ADMIN')] },
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
-  { path: 'admin/usuarios', component: AdminUserList, canActivate: [ authGuard, roleGuard('ADMIN') ] },
-  { path: 'admin/usuarios/:id/editar', component: AdminUserDetail, canActivate: [ authGuard, roleGuard('ADMIN') ] },
+  { path: 'admin/usuarios', component: AdminUserList, canActivate: [authGuard, roleGuard('ADMIN')] },
+  { path: 'admin/usuarios/:id/editar', component: AdminUserDetail, canActivate: [authGuard, roleGuard('ADMIN')] },
 
   { path: 'admin', redirectTo: 'admin/usuarios', pathMatch: 'full' },
   { path: 'admin/users', redirectTo: 'admin/usuarios', pathMatch: 'full' },

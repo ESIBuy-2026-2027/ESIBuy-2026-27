@@ -6,114 +6,123 @@
     </a>
 
     <div class="sidebar-caption">GESTIÓN DE VENTA</div>
-    <nav class="seller-navigation" aria-label="Navegación del vendedor">
-    <a class="navigation-link" routerLink="/seller/catalog"
-      routerLinkActive="is-active" ariaCurrentWhenActive="page">
-      <span class="navigation-icon" aria-hidden="true">▦</span>
-      <span>Mi catálogo</span>
-    </a>
 
-      <a class="navigation-link is-disabled" role="link" aria-disabled="true"
-        title="Próximamente" tabindex="-1">
-        <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
-          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-          <path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
+    <nav class="seller-navigation" aria-label="Navegación del vendedor">
+      <a class="navigation-link" routerLink="/seller/catalog" routerLinkActive="is-active" ariaCurrentWhenActive="page">
+        <span class="navigation-icon" aria-hidden="true">▦</span>
+        <span>Mi catálogo</span>
+      </a>
+
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          <path d="M12 11h4M12 16h4M8 11h.01M8 16h.01" />
         </svg>
         <span>Mis pedidos</span>
       </a>
 
-      <a class="navigation-link is-disabled" role="link" aria-disabled="true"
-        title="Próximamente" tabindex="-1">
-        <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3 3v18h18"/>
-          <path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 3v18h18" />
+          <path d="M18 17V9M13 17V5M8 17v-3" />
         </svg>
         <span>Estadísticas</span>
       </a>
 
-      <a class="navigation-link is-disabled" role="link" aria-disabled="true"
-        title="Próximamente" tabindex="-1">
-        <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/>
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />
         </svg>
         <span>Valoraciones</span>
       </a>
     </nav>
-
   </aside>
 
   <div class="workspace">
-
     <main class="catalog-content">
-      <section class="page-heading" aria-labelledby="catalog-title">
-        <div>
-          <h1 id="catalog-title">Mi catálogo</h1>
-          <p class="page-description">Organiza y amplía la oferta de tu tienda en ESIBuy.</p>
-        </div>
-        <a class="primary-action" routerLink="/products/new">
-          <span aria-hidden="true">＋</span>
-          Añadir producto
-        </a>
-      </section>
 
-      <section class="products-region" aria-label="Productos del catálogo">
-        <div class="section-heading">
-          <div class="section-info">
-            <h2>Mis productos</h2>
-            <div class="catalog-controls">
-              <label class="catalog-search">
-                <span class="visually-hidden">Buscar producto por nombre</span>
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="11" cy="11" r="6.5"></circle>
-                  <path d="m16 16 4.5 4.5"></path>
-                </svg>
-                <input type="search" [ngModel]="productSearch()" (ngModelChange)="productSearch.set($event)"
-                  placeholder="Buscar producto...">
-              </label>
-              <button type="button" class="catalog-filter-button" disabled aria-disabled="true"
-                title="Próximamente">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"></path>
-                </svg>
-                Filtrar
-              </button>
-              @if (!productsLoading() && !productsError()) {
-                <span class="product-count">{{ visibleProducts().length }} productos</span>
-              }
-            </div>
+      <div class="catalog-main-card">
+
+        <!-- Encabezado principal -->
+        <section class="page-heading" aria-labelledby="catalog-title">
+          <div class="page-heading-copy">
+            <p class="eyebrow">GESTIÓN DE VENTA</p>
+            <h1 id="catalog-title">Mi catálogo</h1>
+            <p class="page-description">
+              Organiza y amplía la oferta de tu tienda en ESIBuy.
+            </p>
           </div>
-        </div>
-        @if (productsLoading()) {
-        <output class="catalog-message">Cargando tus productos…</output>
-        } @else if (productsError()) {
-        <div class="catalog-error" role="alert">
-          <span>No se pudieron cargar tus productos. Inténtalo de nuevo.</span>
-          <button type="button" (click)="loadProducts()">Reintentar</button>
-        </div>
-        } @else if (products().length === 0) {
-        <div class="empty-state">
-          <span class="empty-icon" aria-hidden="true">▦</span>
-          <h3>Aún no tienes productos</h3>
-          <p>Añade tu primer producto para empezar a mostrar tu oferta en ESIBuy.</p>
-          <a class="secondary-action" routerLink="/products/new">Crear mi primer producto</a>
-        </div>
-        } @else if (visibleProducts().length === 0) {
-        <div class="empty-state">
-          <span class="empty-icon" aria-hidden="true">⌕</span>
-          <h3>No se encontraron productos</h3>
-          <p>Prueba a buscar con otro nombre.</p>
-        </div>
-        } @else {
+
+          <a class="primary-action" routerLink="/products/new">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            <span>Añadir producto</span>
+          </a>
+        </section>
+
+        <!-- Búsqueda y contador, sin el título redundante "Mis productos" -->
+        <section class="products-region" aria-label="Productos del catálogo">
+          <div class="catalog-toolbar">
+            <label class="catalog-search">
+              <span class="visually-hidden">Buscar producto por nombre</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="6.5"></circle>
+                <path d="m16 16 4.5 4.5"></path>
+              </svg>
+              <input type="search" [ngModel]="productSearch()" (ngModelChange)="productSearch.set($event)"
+                placeholder="Buscar producto..." aria-label="Buscar producto por nombre">
+            </label>
+
+            <button type="button" class="catalog-filter-button" disabled aria-disabled="true" title="Próximamente">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"></path>
+              </svg>
+              <span>Filtrar</span>
+            </button>
+
+            @if (!productsLoading() && !productsError()) {
+            <span class="product-count">
+              {{ visibleProducts().length }}
+              {{ visibleProducts().length === 1 ? 'producto' : 'productos' }}
+            </span>
+            }
+          </div>
+
+          @if (productsLoading()) {
+          <output class="catalog-message" aria-live="polite">
+            <span class="spinner" aria-hidden="true"></span>
+            <span>Cargando tus productos...</span>
+          </output>
+          } @else if (productsError()) {
+          <div class="catalog-error" role="alert">
+            <span>No se pudieron cargar tus productos. Inténtalo de nuevo.</span>
+            <button type="button" (click)="loadProducts()">Reintentar</button>
+          </div>
+          } @else if (products().length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">▦</span>
+            <h2>Aún no tienes productos</h2>
+            <p>Añade tu primer producto para empezar a mostrar tu oferta en ESIBuy.</p>
+            <a class="secondary-action" routerLink="/products/new">
+              Crear mi primer producto
+            </a>
+          </div>
+          } @else if (visibleProducts().length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">⌕</span>
+            <h2>No se encontraron productos</h2>
+            <p>Prueba a buscar con otro nombre.</p>
+          </div>
+          } @else {
           @if (categoriesError()) {
-            <div class="catalog-error category-error" role="alert">
-              <span>No se pudieron cargar los nombres de las categorías.</span>
-              <button type="button" (click)="loadCategories()">Reintentar</button>
-            </div>
+          <div class="catalog-error category-error" role="alert">
+            <span>No se pudieron cargar los nombres de las categorías.</span>
+            <button type="button" (click)="loadCategories()">Reintentar</button>
+          </div>
           }
+
           <div class="table-scroll">
             <table class="product-table">
               <caption class="visually-hidden">Productos de mi catálogo</caption>
@@ -124,142 +133,160 @@
                   <th scope="col">Precio</th>
                   <th scope="col">Stock</th>
                   <th scope="col">Visibilidad</th>
-                  <th scope="col" class="action-column"><span class="visually-hidden">Acciones</span></th>
+                  <th scope="col" class="action-column">
+                    <span class="visually-hidden">Acciones</span>
+                  </th>
                 </tr>
               </thead>
+
               <tbody>
                 @for (product of visibleProducts(); track product.id) {
-                  <tr>
-                    <td>
-                      <div class="product-cell">
-                        @if (product.imageUrl) {
-                          <img class="product-image" [src]="product.imageUrl" alt="">
-                        } @else {
-                          <span class="product-image-placeholder" aria-hidden="true">▦</span>
-                        }
-                        <div class="product-copy">
-                          <span class="product-name">{{ product.name }}</span>
-                          <span class="product-description">{{ product.description || 'Sin descripción' }}</span>
-                        </div>
+                <tr>
+                  <td>
+                    <div class="product-cell">
+                      @if (product.imageUrl) {
+                      <img class="product-image" [src]="product.imageUrl" alt="">
+                      } @else {
+                      <span class="product-image-placeholder" aria-hidden="true">▦</span>
+                      }
+
+                      <div class="product-copy">
+                        <span class="product-name">{{ product.name }}</span>
+                        <span class="product-description">
+                          {{ product.description || 'Sin descripción' }}
+                        </span>
                       </div>
-                    </td>
-                    <td>
-                      @if (categoriesLoading()) {
-                        <span class="category-empty">Cargando categorías…</span>
-                      } @else if (categoriesError()) {
-                        <span class="category-badge category-unavailable">No disponible</span>
-                      } @else if (product.categoryIds.length === 0) {
-                        <span class="category-empty">Sin categoría</span>
-                      } @else {
-                        <div class="category-list">
-                          @for (categoryId of product.categoryIds; track categoryId) {
-                            <span class="category-badge">{{ categoryName(categoryId) }}</span>
-                          }
-                        </div>
+                    </div>
+                  </td>
+
+                  <td>
+                    @if (categoriesLoading()) {
+                    <span class="category-empty">Cargando categorías...</span>
+                    } @else if (categoriesError()) {
+                    <span class="category-badge category-unavailable">No disponible</span>
+                    } @else if (product.categoryIds.length === 0) {
+                    <span class="category-empty">Sin categoría</span>
+                    } @else {
+                    <div class="category-list">
+                      @for (categoryId of product.categoryIds; track categoryId) {
+                      <span class="category-badge">
+                        {{ categoryName(categoryId) }}
+                      </span>
                       }
-                    </td>
-                    <td class="product-price">
-                      @if (isEditing(product.id, 'price')) {
-                        <div class="inline-editor">
-                          <label class="visually-hidden" [for]="'price-' + product.id">Precio de {{ product.name }}</label>
-                          <input class="inline-input price-input" [id]="'price-' + product.id" type="number"
-                            min="0.01" step="0.01" [ngModel]="inlineValue()"
-                            (ngModelChange)="inlineValue.set($event === '' ? null : +$event)"
-                            (keydown.enter)="saveInlineEdit(product)"
-                            (keydown.escape)="cancelInlineEdit()" [disabled]="inlineSaving()">
-                          <div class="inline-actions">
-                            <button type="button" class="inline-save" (click)="saveInlineEdit(product)"
-                              [disabled]="inlineSaving()" aria-label="Guardar precio">✓</button>
-                            <button type="button" class="inline-cancel" (click)="cancelInlineEdit()"
-                              [disabled]="inlineSaving()" aria-label="Cancelar edición del precio">×</button>
-                          </div>
-                        </div>
-                      } @else {
-                        <button type="button" class="editable-value price-value"
-                          (click)="startInlineEdit(product, 'price')"
-                          [attr.aria-label]="'Modificar precio de ' + product.name"
-                          title="Modificar precio">{{ formatPrice(product.price) }}</button>
-                      }
-                    </td>
-                    <td>
-                      @if (isEditing(product.id, 'stock')) {
-                        <div class="inline-editor">
-                          <label class="visually-hidden" [for]="'stock-' + product.id">Stock de {{ product.name }}</label>
-                          <input class="inline-input stock-input" [id]="'stock-' + product.id" type="number"
-                            min="0" step="1" [ngModel]="inlineValue()"
-                            (ngModelChange)="inlineValue.set($event === '' ? null : +$event)"
-                            (keydown.enter)="saveInlineEdit(product)"
-                            (keydown.escape)="cancelInlineEdit()" [disabled]="inlineSaving()">
-                          <div class="inline-actions">
-                            <button type="button" class="inline-save" (click)="saveInlineEdit(product)"
-                              [disabled]="inlineSaving()" aria-label="Guardar stock">✓</button>
-                            <button type="button" class="inline-cancel" (click)="cancelInlineEdit()"
-                              [disabled]="inlineSaving()" aria-label="Cancelar edición del stock">×</button>
-                          </div>
-                        </div>
-                      } @else {
-                        <button type="button" class="editable-value stock-badge"
-                          [class.stock-empty]="product.stock === 0"
-                          [class.stock-low]="stockStatus(product.stock) === 'Stock bajo'"
-                          (click)="startInlineEdit(product, 'stock')"
-                          [attr.aria-label]="'Modificar stock de ' + product.name"
-                          title="Modificar stock">
-                          @if (stockStatus(product.stock) !== 'En stock') {
-                            {{ stockStatus(product.stock) }} ·
-                          }
-                          {{ product.stock }}
-                        </button>
-                      }
-                    </td>
-                    <td>
-                      <button type="button" class="availability-badge editable-availability"
-                        [class.is-published]="product.available"
-                        [class.is-paused]="!product.available"
-                        (click)="toggleVisibility(product)"
-                        [disabled]="visibilitySaving() === product.id || inlineSaving()"
-                        [attr.aria-label]="product.available
-                          ? 'Ocultar ' + product.name
-                          : 'Mostrar ' + product.name"
-                        [title]="product.available ? 'Ocultar producto' : 'Mostrar producto'">
-                        @if (visibilitySaving() === product.id) {
-                          Guardando…
-                        } @else {
-                          {{ product.available ? 'Publicado' : 'Oculto' }}
-                        }
-                      </button>
-                    </td>
-                    <td class="action-column">
-                      <div class="action-buttons">
-                        <a class="icon-button edit-button" [routerLink]="['/products', product.id, 'edit']"
-                          [attr.aria-label]="'Editar ' + product.name"
-                          [title]="'Editar ' + product.name">
-                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M12 20h9"/>
-                            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>
-                          </svg>
-                        </a>
+                    </div>
+                    }
+                  </td>
+
+                  <td class="product-price">
+                    @if (isEditing(product.id, 'price')) {
+                    <div class="inline-editor">
+                      <label class="visually-hidden" [for]="'price-' + product.id">
+                        Precio de {{ product.name }}
+                      </label>
+                      <input class="inline-input price-input" [id]="'price-' + product.id" type="number" min="0.01"
+                        step="0.01" [ngModel]="inlineValue()"
+                        (ngModelChange)="inlineValue.set($event === '' ? null : +$event)"
+                        (keydown.enter)="saveInlineEdit(product)" (keydown.escape)="cancelInlineEdit()"
+                        [disabled]="inlineSaving()">
+
+                      <div class="inline-actions">
+                        <button type="button" class="inline-save" (click)="saveInlineEdit(product)"
+                          [disabled]="inlineSaving()" aria-label="Guardar precio">✓</button>
+                        <button type="button" class="inline-cancel" (click)="cancelInlineEdit()"
+                          [disabled]="inlineSaving()" aria-label="Cancelar edición del precio">×</button>
                       </div>
-                    </td>
-                  </tr>
-                  @if (isEditing(product.id, 'price') || isEditing(product.id, 'stock')
-                    || visibilityError()) {
-                    <tr class="inline-error-row">
-                      <td colspan="6">
-                        @if (inlineError(); as error) {
-                          <span role="alert">{{ error }}</span>
-                        } @else {
-                          <span>Pulsa ✓ para guardar o × para cancelar.</span>
-                        }
-                      </td>
-                    </tr>
-                  }
+                    </div>
+                    } @else {
+                    <button type="button" class="editable-value price-value" (click)="startInlineEdit(product, 'price')"
+                      [attr.aria-label]="'Modificar precio de ' + product.name" title="Modificar precio">
+                      {{ formatPrice(product.price) }}
+                    </button>
+                    }
+                  </td>
+
+                  <td>
+                    @if (isEditing(product.id, 'stock')) {
+                    <div class="inline-editor">
+                      <label class="visually-hidden" [for]="'stock-' + product.id">
+                        Stock de {{ product.name }}
+                      </label>
+                      <input class="inline-input stock-input" [id]="'stock-' + product.id" type="number" min="0"
+                        step="1" [ngModel]="inlineValue()"
+                        (ngModelChange)="inlineValue.set($event === '' ? null : +$event)"
+                        (keydown.enter)="saveInlineEdit(product)" (keydown.escape)="cancelInlineEdit()"
+                        [disabled]="inlineSaving()">
+
+                      <div class="inline-actions">
+                        <button type="button" class="inline-save" (click)="saveInlineEdit(product)"
+                          [disabled]="inlineSaving()" aria-label="Guardar stock">✓</button>
+                        <button type="button" class="inline-cancel" (click)="cancelInlineEdit()"
+                          [disabled]="inlineSaving()" aria-label="Cancelar edición del stock">×</button>
+                      </div>
+                    </div>
+                    } @else {
+                    <button type="button" class="editable-value stock-badge" [class.stock-empty]="product.stock === 0"
+                      [class.stock-low]="stockStatus(product.stock) === 'Stock bajo'"
+                      (click)="startInlineEdit(product, 'stock')"
+                      [attr.aria-label]="'Modificar stock de ' + product.name" title="Modificar stock">
+                      @if (stockStatus(product.stock) !== 'En stock') {
+                      {{ stockStatus(product.stock) }} ·
+                      }
+                      {{ product.stock }}
+                    </button>
+                    }
+                  </td>
+
+                  <td>
+                    <button type="button" class="availability-badge editable-availability"
+                      [class.is-published]="product.available" [class.is-paused]="!product.available"
+                      (click)="toggleVisibility(product)"
+                      [disabled]="visibilitySaving() === product.id || inlineSaving()" [attr.aria-label]="product.available
+                            ? 'Ocultar ' + product.name
+                            : 'Mostrar ' + product.name"
+                      [title]="product.available ? 'Ocultar producto' : 'Mostrar producto'">
+                      @if (visibilitySaving() === product.id) {
+                      Guardando...
+                      } @else {
+                      {{ product.available ? 'Publicado' : 'Oculto' }}
+                      }
+                    </button>
+                  </td>
+
+                  <td class="action-column">
+                    <div class="action-buttons">
+                      <a class="icon-button edit-button" [routerLink]="['/products', product.id, 'edit']"
+                        [attr.aria-label]="'Editar ' + product.name" [title]="'Editar ' + product.name">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M12 20h9" />
+                          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+                        </svg>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+
+                @if (
+                isEditing(product.id, 'price') ||
+                isEditing(product.id, 'stock') ||
+                visibilityError()
+                ) {
+                <tr class="inline-error-row">
+                  <td colspan="6">
+                    @if (inlineError(); as error) {
+                    <span role="alert">{{ error }}</span>
+                    } @else {
+                    <span>Pulsa ✓ para guardar o × para cancelar.</span>
+                    }
+                  </td>
+                </tr>
+                }
                 }
               </tbody>
             </table>
           </div>
-        }
-      </section>
+          }
+        </section>
+      </div>
     </main>
   </div>
 </div>

@@ -139,8 +139,8 @@
               <div class="form-group">
                 <label for="contrasena" class="form-label">Contraseña <span class="required">*</span></label>
                 <div class="password-wrapper">
-                  <input id="contrasena" type="password" [type]="showPassword ? 'text' : 'password'" class="form-control"
-                    formControlName="contrasena" placeholder="Mínimo 12 caracteres"
+                  <input id="contrasena" type="password" [type]="showPassword ? 'text' : 'password'"
+                    class="form-control" formControlName="contrasena" placeholder="Mínimo 12 caracteres"
                     [attr.autocomplete]="showPassword ? 'off' : 'new-password'" />
                   <button type="button" class="password-toggle" (click)="showPassword = !showPassword"
                     [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
@@ -170,18 +170,23 @@
                 </div>
                 <div *ngIf="fieldErrors['contrasena']" class="field-error">{{ fieldErrors['contrasena'] }}</div>
               </div>
-
               <div class="form-group">
-                <label for="repetirContrasena" class="form-label">Repetir contraseña <span
-                    class="required">*</span></label>
-                <input id="repetirContrasena" type="password" class="form-control"
-                  formControlName="repetirContrasena" placeholder="Repite la contraseña"
-                  autocomplete="new-password" />
+                <label for="repetirContrasena" class="form-label">
+                  Repetir contraseña <span class="required">*</span>
+                </label>
+
+                <div class="password-wrapper">
+                  <input id="repetirContrasena" [type]="showPassword ? 'text' : 'password'" class="form-control"
+                    formControlName="repetirContrasena" placeholder="Repite la contraseña"
+                    [attr.autocomplete]="showPassword ? 'off' : 'new-password'" />
+                </div>
+
                 <div
                   *ngIf="form.get('repetirContrasena')?.touched && form.get('repetirContrasena')?.hasError('required')"
                   class="field-error">
                   Debe repetir la contraseña.
                 </div>
+
                 <div
                   *ngIf="form.hasError('passwordsMismatch') && (form.get('repetirContrasena')?.touched || form.get('contrasena')?.touched)"
                   class="field-error">
