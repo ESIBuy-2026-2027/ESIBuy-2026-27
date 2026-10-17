@@ -1,7 +1,7 @@
 import { DestroyRef, Component, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Category, ProductCreateRequest, ProductsService } from '../products.service';
 
@@ -19,17 +19,25 @@ interface ProductFormControls {
 
 type ProductFormField = keyof ProductFormControls;
 
-const PRODUCT_FORM_FIELDS: readonly ProductFormField[] = [
-  'nombre',
-  'categoriaIds',
-  'stock',
-  'descripcion',
-  'precio',
-  'descuento',
-  'descuentoPremium',
-  'imagen',
-  'disponible',
-];
+const SERVER_FIELD_TO_FORM_FIELD: Readonly<Partial<Record<string, ProductFormField>>> = {
+  name: 'nombre',
+  nombre: 'nombre',
+  categoryIds: 'categoriaIds',
+  categoriaIds: 'categoriaIds',
+  stock: 'stock',
+  description: 'descripcion',
+  descripcion: 'descripcion',
+  price: 'precio',
+  precio: 'precio',
+  discount: 'descuento',
+  descuento: 'descuento',
+  premiumDiscount: 'descuentoPremium',
+  descuentoPremium: 'descuentoPremium',
+  imageUrl: 'imagen',
+  imagen: 'imagen',
+  available: 'disponible',
+  disponible: 'disponible',
+};
 
 @Component({
   selector: 'app-product-create',
@@ -41,6 +49,8 @@ const PRODUCT_FORM_FIELDS: readonly ProductFormField[] = [
 export class ProductCreate implements OnInit {
   private readonly productsService = inject(ProductsService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  readonly productId = this.route.snapshot.paramMap.get('id');
 
   readonly form = new FormGroup<ProductFormControls>({
     nombre: new FormControl('', { nonNullable: true, validators: [
@@ -88,6 +98,8 @@ export class ProductCreate implements OnInit {
   submitting = signal(false);
   submitSuccess = signal(false);
   submitError = signal<string | null>(null);
+  productLoading = signal(false);
+  productLoadError = signal<string | null>(null);
   serverFieldErrors: Partial<Record<ProductFormField, string>> = {};
 
   imageError = signal(false);
@@ -118,20 +130,56 @@ export class ProductCreate implements OnInit {
         this.categoriesLoading = false;
       },
     });
+
+    if (this.productId) {
+      this.loadProduct();
+    }
+  }
+
+  loadProduct(): void {
+    if (!this.productId) {
+      return;
+    }
+    this.productLoading.set(true);
+    this.productLoadError.set(null);
+    this.productsService.getProduct(this.productId).subscribe({
+      next: (product) => {
+        this.form.patchValue({
+          nombre: product.name,
+          categoriaIds: product.categoryIds,
+          stock: product.stock,
+          descripcion: product.description ?? '',
+          precio: product.price,
+          descuento: product.discount,
+          descuentoPremium: product.premiumDiscount,
+          imagen: product.imageUrl ?? '',
+          disponible: product.available,
+        });
+        this.productLoading.set(false);
+      },
+      error: (error: unknown) => {
+        this.productLoading.set(false);
+        this.productLoadError.set(this.getLoadErrorMessage(error));
+      },
+    });
   }
 
   onSubmit(): void {
     this.submitSuccess.set(false);
     this.submitError.set(null);
 
-    if (this.form.invalid || this.categoriesLoading || this.categoriesError
+    if (this.form.invalid || this.productLoading() || this.productLoadError()
+      || this.categoriesLoading || this.categoriesError
       || this.categories.length === 0 || this.submitting()) {
       this.form.markAllAsTouched();
       return;
     }
 
     this.submitting.set(true);
-    this.productsService.createProduct(this.toRequest()).subscribe({
+    const saveRequest = this.productId
+      ? this.productsService.updateProduct(this.productId, this.toRequest())
+      : this.productsService.createProduct(this.toRequest());
+    saveRequest.subscribe({
       next: () => {
         this.submitting.set(false);
         this.submitSuccess.set(true);
@@ -180,7 +228,7 @@ export class ProductCreate implements OnInit {
   }
 
   private assignFieldError(field: string, error: string, unrecognizedErrors: string[]): void {
-    const matchingField = PRODUCT_FORM_FIELDS.find((formField) => formField === field);
+    const matchingField = SERVER_FIELD_TO_FORM_FIELD[field];
     if (matchingField) {
       this.serverFieldErrors[matchingField] = error;
     } else {
@@ -218,12 +266,30 @@ export class ProductCreate implements OnInit {
       return 'Tu sesión ha caducado. Inicia sesión de nuevo para guardar el producto.';
     }
     if (status === 403) {
-      return 'No tienes permiso para crear productos.';
+      return 'No tienes permiso para guardar este producto.';
     }
     if (status >= 500) {
       return 'El servidor no pudo guardar el producto. Inténtalo de nuevo más tarde.';
     }
     return 'No se pudo guardar el producto. Inténtalo de nuevo.';
+  }
+
+  private getLoadErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 401) {
+        return 'Tu sesión ha caducado. Inicia sesión de nuevo para editar productos.';
+      }
+      if (error.status === 403) {
+        return 'No tienes permiso para editar productos.';
+      }
+      if (error.status === 404) {
+        return 'El producto ya no existe o no tienes permiso para editarlo.';
+      }
+      if (error.status === 0) {
+        return 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
+      }
+    }
+    return 'No se pudo cargar el producto. Inténtalo de nuevo.';
   }
 
   private isRecord(value: unknown): value is Record<string, unknown> {

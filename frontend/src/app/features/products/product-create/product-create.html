@@ -47,11 +47,21 @@
   </aside>
   <header class="page-header">
     <a class="back-link" routerLink="/seller/catalog">← Volver al catálogo</a>
-    <p class="eyebrow">REGISTRO DE PRODUCTOS DEL VENDEDOR</p>
-    <h1>Añadir producto</h1>
-    <p class="page-description">Completa los datos del producto que quieres ofrecer en ESIBuy.</p>
+    <p class="eyebrow">{{ productId ? 'EDICIÓN DE PRODUCTOS DEL VENDEDOR' : 'REGISTRO DE PRODUCTOS DEL VENDEDOR' }}</p>
+    <h1>{{ productId ? 'Editar producto' : 'Añadir producto' }}</h1>
+    <p class="page-description">
+      {{ productId ? 'Actualiza los datos del producto de tu tienda en ESIBuy.' : 'Completa los datos del producto que quieres ofrecer en ESIBuy.' }}
+    </p>
   </header>
 
+  @if (productLoading()) {
+    <output class="product-load-message">Cargando producto…</output>
+  } @else if (productLoadError(); as error) {
+    <div class="submit-error" role="alert">
+      <span>{{ error }}</span>
+      <button type="button" (click)="loadProduct()">Reintentar</button>
+    </div>
+  } @else {
   <form class="product-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
     <section class="form-section" aria-labelledby="product-information-heading">
       <div class="section-heading">
@@ -243,7 +253,9 @@
     </section>
 
     @if (submitSuccess()) {
-      <output class="submit-success">Producto registrado correctamente.</output>
+      <output class="submit-success">
+        {{ productId ? 'Producto actualizado correctamente.' : 'Producto registrado correctamente.' }}
+      </output>
     }
 
     @if (submitError(); as error) {
@@ -254,8 +266,9 @@
       <a class="cancel-action" routerLink="/seller/catalog">Cancelar</a>
       <button class="submit-action" type="submit"
         [disabled]="submitting() || categoriesLoading || categoriesError || categories.length === 0">
-        {{ submitting() ? 'Guardando…' : 'Guardar producto' }}
+        {{ submitting() ? 'Guardando…' : productId ? 'Guardar cambios' : 'Guardar producto' }}
       </button>
     </footer>
   </form>
+  }
 </main>

@@ -23,6 +23,20 @@ export interface CreatedProduct {
   id: string;
 }
 
+export interface ProductDetails {
+  id: string;
+  name: string;
+  categoryIds: string[];
+  stock: number;
+  description: string | null;
+  price: number;
+  discount: number | null;
+  premiumDiscount: number | null;
+  imageUrl: string | null;
+  available: boolean;
+  sellerId: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
   private readonly http = inject(HttpClient);
@@ -33,5 +47,13 @@ export class ProductsService {
 
   createProduct(request: ProductCreateRequest): Observable<CreatedProduct> {
     return this.http.post<CreatedProduct>('/api/products', request);
+  }
+
+  getProduct(id: string): Observable<ProductDetails> {
+    return this.http.get<ProductDetails>(`/api/products/${encodeURIComponent(id)}`);
+  }
+
+  updateProduct(id: string, request: ProductCreateRequest): Observable<ProductDetails> {
+    return this.http.put<ProductDetails>(`/api/products/${encodeURIComponent(id)}`, request);
   }
 }

@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface ProductRepository extends MongoRepository<Product, String> {
 
+    boolean existsByCategoryIdsContaining(String categoryId);
+
     List<Product> findAllBySellerId(String sellerId);
 
     long countBySellerId(String sellerId);

@@ -58,6 +58,29 @@ public class ApiExceptionHandler {
         return ResponseEntity.badRequest().body(Map.of(MESSAGE, exception.getMessage()));
     }
 
+    @ExceptionHandler(DuplicateCategoryException.class)
+    public ResponseEntity<Map<String, String>> handleDuplicateCategory(DuplicateCategoryException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MESSAGE, exception.getMessage(),
+                CORRELATION_ID, correlationId(request)));
+    }
+
+    @ExceptionHandler(CategoryInUseException.class)
+    public ResponseEntity<Map<String, String>> handleCategoryInUse(CategoryInUseException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MESSAGE, exception.getMessage(),
+                CORRELATION_ID, correlationId(request)));
+    }
+
+    @ExceptionHandler(CategoryIdNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleCategoryIdNotFound(CategoryIdNotFoundException exception,
+            HttpServletRequest request) {
+        String id = correlationId(request);
+        LOGGER.warn("Categoría solicitada no encontrada. correlationId={}", id);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(MESSAGE, exception.getMessage(),
+                CORRELATION_ID, id));
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, String>> handleAccessDenied(AccessDeniedException exception) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(MESSAGE, exception.getMessage()));
@@ -86,6 +109,15 @@ public class ApiExceptionHandler {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(MESSAGE, "Usuario no encontrado",
             CORRELATION_ID, id));
+    }
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleProductNotFound(ProductNotFoundException exception,
+            HttpServletRequest request) {
+        String id = correlationId(request);
+        LOGGER.warn("Producto solicitado no encontrado. correlationId={}", id);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(MESSAGE, exception.getMessage(),
+                CORRELATION_ID, id));
     }
 
     @ExceptionHandler(IllegalStateException.class)

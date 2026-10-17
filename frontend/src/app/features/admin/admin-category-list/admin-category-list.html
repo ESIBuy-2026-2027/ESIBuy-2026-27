@@ -1,5 +1,5 @@
 <div class="admin-layout">
-  <aside class="admin-sidebar" aria-label="Panel de administración">
+  <aside class="admin-sidebar admin-sidebar--shared" aria-label="Panel de administración">
     <a routerLink="/" class="admin-brand" aria-label="ESIBuy">
       <span class="brand-mark" aria-hidden="true">E</span>
       <span>ESI<span class="brand-accent">Buy</span></span>
@@ -15,19 +15,11 @@
         </svg>
         <span>Usuarios</span>
       </a>
-      <a class="navigation-link" routerLink="/admin/usuarios/alta">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="9" cy="7" r="3"></circle>
-          <path d="M3.5 20a5.5 5.5 0 0 1 11 0"></path>
-          <path d="M18 11v6m-3-3h6"></path>
-        </svg>
-        <span>Dar de alta usuario</span>
-      </a>
       <a class="navigation-link" routerLink="/admin/altas">
         <span class="navigation-icon text-icon" aria-hidden="true">＋</span>
         <span>Dar de alta Administrador</span>
       </a>
-      <a class="navigation-link is-active" routerLink="/admin/categorias" aria-current="page">
+      <a class="navigation-link" routerLink="/admin/categorias">
         <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M20 13 11 22l-9-9V2h11l9 9a1.4 1.4 0 0 1-2 2Z"></path>
           <circle cx="7" cy="7" r="1.2"></circle>
@@ -56,8 +48,11 @@
       </section>
 
 
-      @if (feedback()) {
-        <output class="feedback" aria-live="polite">{{ feedback() }}</output>
+      @if (mensajeExito()) {
+        <output class="success-alert" aria-live="polite">{{ mensajeExito() }}</output>
+      }
+      @if (mensajeError() && !loadError()) {
+        <div class="error-alert" role="alert">{{ mensajeError() }}</div>
       }
 
       <section class="category-panel" aria-labelledby="category-list-title">
@@ -77,10 +72,11 @@
         </label>
 
         @if (loading()) {
-          <output class="state-message"><span class="spinner" aria-hidden="true"></span>Cargando categorías...</output>
+          <div class="state-message" role="status"><span class="spinner" aria-hidden="true"></span>Cargando categorías...</div>
         } @else if (loadError()) {
           <div class="state-message state-message--error" role="alert">
-            No se pudieron cargar las categorías. Comprueba la conexión e inténtalo de nuevo.
+            <span>{{ mensajeError() }}</span>
+            <button type="button" class="secondary-action" (click)="loadCategories()">Reintentar</button>
           </div>
         } @else if (filteredCategories().length === 0) {
           <div class="empty-state">
@@ -101,15 +97,23 @@
                   <strong>{{ category.name }}</strong>
                 </div>
                 <div class="row-actions">
-                  <button type="button" class="icon-button" [attr.aria-label]="'Editar ' + category.name"
+                  <button type="button" class="btn-icon btn-edit" [attr.title]="'Modificar categoría ' + category.name"
+                    [attr.aria-label]="'Modificar categoría ' + category.name"
                     (click)="openEditDialog(category)">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5 4 4M4 20l4.5-.9L19 8.6a2.1 2.1 0 0 0-3-3L5.5 16.1 4 20Z"></path></svg>
-                    <span>Editar</span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+                    </svg>
                   </button>
-                  <button type="button" class="icon-button icon-button--danger" [attr.aria-label]="'Eliminar ' + category.name"
+                  <button type="button" class="btn-icon btn-delete" [attr.title]="'Eliminar categoría ' + category.name"
+                    [attr.aria-label]="'Eliminar categoría ' + category.name"
                     (click)="openDeleteDialog(category)">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M5 7l1 14h12l1-14M9 7V4h6v3"></path></svg>
-                    <span>Eliminar</span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M3 6h18" />
+                      <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                    </svg>
                   </button>
                 </div>
               </article>
@@ -123,35 +127,46 @@
 
 @if (dialogMode(); as mode) {
   <div class="dialog-backdrop" (click)="closeDialog()" (keydown.escape)="closeDialog()">
-    <dialog class="dialog" aria-modal="true"
+    <dialog class="dialog" open aria-modal="true"
       [attr.aria-labelledby]="mode === 'delete' ? 'delete-title' : 'edit-title'"
       (click)="$event.stopPropagation()"
       (keydown.escape)="closeDialog()">
       @if (mode === 'delete') {
         <span class="dialog-icon dialog-icon--danger" aria-hidden="true">!</span>
         <h2 id="delete-title">¿Eliminar categoría?</h2>
-        <p>Vas a quitar <strong>{{ selectedCategory()?.name }}</strong> de esta maqueta. En el sistema real, habría que revisar antes si está asociada a vendedores o productos.</p>
+        <p>Vas a eliminar <strong>{{ selectedCategory()?.name }}</strong>. No se podrá eliminar si está asociada a productos. Los perfiles de vendedor existentes guardan el nombre como texto y podrían requerir una actualización manual.</p>
         <div class="dialog-actions">
           <button type="button" class="secondary-action" (click)="closeDialog()">Cancelar</button>
-          <button type="button" class="danger-action" (click)="deleteCategory()">Eliminar</button>
+          <button type="button" class="danger-action" [disabled]="deleting()" (click)="deleteCategory()">
+            {{ deleting() ? 'Eliminando...' : 'Eliminar' }}
+          </button>
         </div>
       } @else {
         <span class="dialog-icon" aria-hidden="true">{{ mode === 'create' ? '+' : '✎' }}</span>
         <h2 id="edit-title">{{ mode === 'create' ? 'Nueva categoría' : 'Editar categoría' }}</h2>
-        <p>El nombre se mostrará en el catálogo compartido para vendedores y productos.</p>
+        <p>El nombre se mostrará en el catálogo de vendedores y productos. Renombrar no actualiza automáticamente el texto guardado en los perfiles de vendedor existentes.</p>
         <label class="field-label" for="category-name">Nombre de la categoría</label>
-        <input id="category-name" type="text" maxlength="80" [ngModel]="draftName()"
-          (ngModelChange)="draftName.set($event)" (keyup.enter)="saveCategory()"
-          placeholder="Ej.: Electrónica" autofocus>
-        @if (!draftName().trim()) {
-          <span class="field-hint">Escribe un nombre para continuar.</span>
+        <input id="category-name" type="text" maxlength="50" [ngModel]="draftName()"
+          (ngModelChange)="draftName.set($event); clearFieldError()" (keyup.enter)="saveCategory()"
+          placeholder="Ej.: Electrónica" autofocus required aria-describedby="category-name-error">
+        @if (serverFieldErrors().name) {
+          <span class="field-error" id="category-name-error" role="alert">{{ serverFieldErrors().name }}</span>
+        } @else if (!draftName().trim()) {
+          <span class="field-hint" id="category-name-error">Escribe un nombre para continuar.</span>
+        } @else if (draftName().trim().length < 2) {
+          <span class="field-error" id="category-name-error">El nombre debe tener al menos 2 caracteres.</span>
+        } @else if (draftName().trim().length > 50) {
+          <span class="field-error" id="category-name-error">El nombre no puede superar los 50 caracteres.</span>
         } @else if (hasDuplicateName()) {
-          <span class="field-error" role="alert">Ya existe una categoría con ese nombre.</span>
+          <span class="field-error" id="category-name-error" role="alert">Ya existe una categoría con ese nombre.</span>
         }
         <div class="dialog-actions">
           <button type="button" class="secondary-action" (click)="closeDialog()">Cancelar</button>
-          <button type="button" class="primary-action" [disabled]="!draftName().trim() || hasDuplicateName()"
-            (click)="saveCategory()">{{ mode === 'create' ? 'Añadir categoría' : 'Guardar cambios' }}</button>
+          <button type="button" class="primary-action"
+            [disabled]="!isValidName() || hasDuplicateName() || saving()"
+            (click)="saveCategory()">
+            {{ saving() ? 'Guardando...' : mode === 'create' ? 'Añadir categoría' : 'Guardar cambios' }}
+          </button>
         </div>
       }
     </dialog>

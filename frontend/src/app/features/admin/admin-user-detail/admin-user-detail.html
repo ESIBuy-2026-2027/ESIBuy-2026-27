@@ -144,11 +144,19 @@
                   <div class="form-group">
                     <label class="form-label" for="defaultCategory">Categoría por defecto <span class="required">*</span></label>
                     <select id="defaultCategory" formControlName="defaultCategory" class="form-control"
+                      (change)="categorySelectionUnavailable.set(false)"
                       [attr.aria-invalid]="form.controls.defaultCategory.invalid && form.controls.defaultCategory.touched">
                       @for (cat of categories; track cat) {
                         <option [value]="cat">{{ cat }}</option>
                       }
                     </select>
+                    @if (categoriesLoadError()) {
+                      <small class="field-error" role="alert">No se pudieron cargar las categorías actuales. Recarga la página para volver a intentarlo.</small>
+                    } @else if (categorySelectionUnavailable()) {
+                      <small class="field-error" role="alert">La categoría guardada ya no está disponible. Selecciona una de las categorías actuales.</small>
+                    } @else if (categories.length === 0) {
+                      <small class="field-error" role="alert">No hay categorías disponibles.</small>
+                    }
                     @if (form.controls.defaultCategory.touched && form.controls.defaultCategory.errors?.['required']) {
                       <small class="field-error">La categoría por defecto es obligatoria</small>
                     }

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import es.uclm.esibuy.categories.model.Category;
 import es.uclm.esibuy.categories.repository.CategoryRepository;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
+import es.uclm.esibuy.common.exception.ProductNotFoundException;
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
 import es.uclm.esibuy.products.dto.ProductResponse;
 import es.uclm.esibuy.products.dto.ProductSummaryResponse;
@@ -38,18 +39,7 @@ public class ProductService {
 
     public Product createProduct(ProductCreateRequest request, String authenticatedEmail) {
         User seller = findSeller(authenticatedEmail);
-
-        List<String> categoryIds = List.copyOf(request.getCategoryIds());
-        Set<String> existingCategoryIds = categoryRepository.findAllById(categoryIds).stream()
-                .map(Category::getId)
-                .collect(Collectors.toSet());
-        List<String> missingCategoryIds = categoryIds.stream()
-                .filter(categoryId -> !existingCategoryIds.contains(categoryId))
-                .distinct()
-                .toList();
-        if (!missingCategoryIds.isEmpty()) {
-            throw new CategoryNotFoundException(missingCategoryIds);
-        }
+        List<String> categoryIds = validateCategories(request);
 
         Product product = new Product(
                 request.getName().trim(),
@@ -80,6 +70,50 @@ public class ProductService {
         return productRepository.findAllBySellerId(sellerId).stream()
                 .map(ProductResponse::from)
                 .toList();
+    }
+
+    public Product getProduct(String id, String authenticatedEmail) {
+        User seller = findSeller(authenticatedEmail);
+        Product product = productRepository.findById(id).orElseThrow(ProductNotFoundException::new);
+        if (!seller.getId().equals(product.getSellerId())) {
+            throw new ProductNotFoundException();
+        }
+        return product;
+    }
+
+    public Product updateProduct(String id, ProductCreateRequest request, String authenticatedEmail) {
+        Product product = getProduct(id, authenticatedEmail);
+        List<String> categoryIds = validateCategories(request);
+        product.updateDetails(
+                request.getName().trim(),
+                categoryIds,
+                request.getStock() == null ? 0 : request.getStock(),
+                blankToNull(request.getDescription()),
+                request.getPrice(),
+                request.getDiscount(),
+                request.getPremiumDiscount(),
+                blankToNull(request.getImageUrl()),
+                Boolean.TRUE.equals(request.getAvailable()));
+        return productRepository.save(product);
+    }
+
+    private List<String> validateCategories(ProductCreateRequest request) {
+        List<String> categoryIds = List.copyOf(request.getCategoryIds());
+        Set<String> existingCategoryIds = categoryRepository.findAllById(categoryIds).stream()
+                .map(Category::getId)
+                .collect(Collectors.toSet());
+        List<String> missingCategoryIds = categoryIds.stream()
+                .filter(categoryId -> !existingCategoryIds.contains(categoryId))
+                .distinct()
+                .toList();
+        if (!missingCategoryIds.isEmpty()) {
+            throw new CategoryNotFoundException(missingCategoryIds);
+        }
+        return categoryIds;
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     private User findSeller(String authenticatedEmail) {
