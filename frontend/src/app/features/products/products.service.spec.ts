@@ -65,6 +65,28 @@ describe('ProductsService', () => {
     request.flush(product);
   });
 
+  it('should load available products for the authenticated client catalog', () => {
+    const products = [{
+      id: 'product-1',
+      name: 'Auriculares',
+      categoryIds: ['category-1'],
+      stock: 2,
+      description: null,
+      price: 19.99,
+      discount: null,
+      premiumDiscount: null,
+      imageUrl: null,
+      available: true,
+      sellerId: 'seller-1',
+    }];
+
+    service.getAvailableProducts().subscribe((result) => expect(result).toEqual(products));
+
+    const request = httpTesting.expectOne('/api/catalog/products');
+    expect(request.request.method).toBe('GET');
+    request.flush(products);
+  });
+
   it('should send product edits to the update endpoint', () => {
     const payload = {
       name: 'Auriculares nuevos',

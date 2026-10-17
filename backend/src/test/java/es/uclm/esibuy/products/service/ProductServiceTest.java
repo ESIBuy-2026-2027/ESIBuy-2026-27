@@ -76,6 +76,21 @@ class ProductServiceTest {
     }
 
     @Test
+    void shouldListOnlyAvailableProductsWithStockForCustomerCatalog() {
+        Product product = new Product(
+                PRODUCT_NAME, List.of(CATEGORY_ID), 3, null, new BigDecimal(PRODUCT_PRICE),
+                null, null, null, true, SELLER_ID);
+        when(productRepository.findAllByAvailableTrueAndStockGreaterThan(0)).thenReturn(List.of(product));
+
+        List<ProductResponse> result = productService.getAvailableProducts();
+
+        assertEquals(1, result.size());
+        assertEquals(PRODUCT_NAME, result.get(0).name());
+        assertEquals(3, result.get(0).stock());
+        verify(productRepository).findAllByAvailableTrueAndStockGreaterThan(0);
+    }
+
+    @Test
     void shouldPreserveProvidedStockAndDiscounts() {
         ProductCreateRequest request = validRequest();
         request.setStock(7);

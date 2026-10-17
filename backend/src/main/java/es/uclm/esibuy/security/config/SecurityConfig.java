@@ -92,6 +92,7 @@ public class SecurityConfig {
                             .permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/users/admin").hasRole(ROLE_ADMIN)
                             .requestMatchers("/api/admin/**", "/api/v1/admin/**").hasRole(ROLE_ADMIN)
+                            .requestMatchers("/api/catalog/**").hasRole(ROLE_CLIENT)
                             .requestMatchers("/api/products/**").hasRole(ROLE_SELLER)
                             .requestMatchers(HttpMethod.GET, "/api/users/me/profile")
                             .hasAnyRole(ROLE_CLIENT, ROLE_SELLER, ROLE_ADMIN)
