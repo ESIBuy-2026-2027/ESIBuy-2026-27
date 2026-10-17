@@ -56,6 +56,35 @@ public class Carrito {
         recalculateTotal();
     }
 
+    public boolean updateItemQuantity(String productoId, int cantidad) {
+        if (cantidad < 0) {
+            throw new IllegalArgumentException("La cantidad no puede ser negativa");
+        }
+        if (cantidad == 0) {
+            return removeItem(productoId);
+        }
+
+        ItemCarrito item = items.stream()
+                .filter(existingItem -> existingItem.getProductoId().equals(productoId))
+                .findFirst()
+                .orElse(null);
+        if (item == null) {
+            return false;
+        }
+
+        item.setCantidad(cantidad);
+        recalculateTotal();
+        return true;
+    }
+
+    public boolean removeItem(String productoId) {
+        boolean removed = items.removeIf(item -> item.getProductoId().equals(productoId));
+        if (removed) {
+            recalculateTotal();
+        }
+        return removed;
+    }
+
     private void recalculateTotal() {
         precioTotal = items.stream()
                 .map(ItemCarrito::getSubtotal)

@@ -120,10 +120,17 @@ public class ApiExceptionHandler {
                 CORRELATION_ID, id));
     }
 
-    @ExceptionHandler({ ProductoNoDisponibleException.class, StockInsuficienteException.class })
+    @ExceptionHandler(ProductoNoDisponibleException.class)
     public ResponseEntity<Map<String, String>> handleCartConflict(IllegalStateException exception,
             HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MESSAGE, exception.getMessage(),
+                CORRELATION_ID, correlationId(request)));
+    }
+
+    @ExceptionHandler(StockInsuficienteException.class)
+    public ResponseEntity<Map<String, String>> handleInsufficientStock(StockInsuficienteException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.badRequest().body(Map.of(MESSAGE, exception.getMessage(),
                 CORRELATION_ID, correlationId(request)));
     }
 

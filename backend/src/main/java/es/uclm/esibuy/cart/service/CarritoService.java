@@ -1,6 +1,7 @@
 package es.uclm.esibuy.cart.service;
 
 import es.uclm.esibuy.cart.dto.AnadirItemCarritoDTO;
+import es.uclm.esibuy.cart.dto.ActualizarCantidadItemDTO;
 import es.uclm.esibuy.cart.dto.CarritoDTO;
 import es.uclm.esibuy.cart.dto.ItemCarritoDTO;
 import es.uclm.esibuy.cart.model.Carrito;
@@ -46,6 +47,32 @@ public class CarritoService {
                 .orElseGet(() -> toDto(new Carrito(clienteId)));
     }
 
+    public CarritoDTO actualizarCantidadItem(
+            String clienteId, String productoId, ActualizarCantidadItemDTO request) {
+        validarSolicitudActualizacion(clienteId, productoId, request);
+        Carrito carrito = obtenerCarrito(clienteId);
+        ItemCarrito item = buscarItem(carrito, productoId);
+
+        if (request.cantidad() > item.getCantidad()) {
+            Product product = productRepository.findById(productoId)
+                    .orElseThrow(ProductNotFoundException::new);
+            validarProductoDisponible(product);
+            validarStock(product, request.cantidad());
+        }
+
+        carrito.updateItemQuantity(productoId, request.cantidad());
+        return toDto(carritoRepository.save(carrito));
+    }
+
+    public CarritoDTO eliminarItem(String clienteId, String productoId) {
+        validarClienteYProducto(clienteId, productoId);
+        Carrito carrito = obtenerCarrito(clienteId);
+        if (!carrito.removeItem(productoId)) {
+            throw new ProductNotFoundException();
+        }
+        return toDto(carritoRepository.save(carrito));
+    }
+
     private void validarSolicitud(String clienteId, AnadirItemCarritoDTO request) {
         if (clienteId == null || clienteId.isBlank()) {
             throw new IllegalArgumentException("El identificador del cliente es obligatorio");
@@ -56,6 +83,35 @@ public class CarritoService {
         if (request.cantidad() == null || request.cantidad() < 1) {
             throw new IllegalArgumentException("La cantidad debe ser como mínimo 1");
         }
+    }
+
+    private void validarSolicitudActualizacion(
+            String clienteId, String productoId, ActualizarCantidadItemDTO request) {
+        validarClienteYProducto(clienteId, productoId);
+        if (request == null || request.cantidad() == null || request.cantidad() < 0) {
+            throw new IllegalArgumentException("La cantidad debe ser como mínimo 0");
+        }
+    }
+
+    private void validarClienteYProducto(String clienteId, String productoId) {
+        if (clienteId == null || clienteId.isBlank()) {
+            throw new IllegalArgumentException("El identificador del cliente es obligatorio");
+        }
+        if (productoId == null || productoId.isBlank()) {
+            throw new IllegalArgumentException("El identificador del producto es obligatorio");
+        }
+    }
+
+    private Carrito obtenerCarrito(String clienteId) {
+        return carritoRepository.findByClienteId(clienteId)
+                .orElseThrow(ProductNotFoundException::new);
+    }
+
+    private ItemCarrito buscarItem(Carrito carrito, String productoId) {
+        return carrito.getItems().stream()
+                .filter(item -> item.getProductoId().equals(productoId))
+                .findFirst()
+                .orElseThrow(ProductNotFoundException::new);
     }
 
     private void validarProductoDisponible(Product product) {
@@ -70,7 +126,11 @@ public class CarritoService {
                 .mapToInt(ItemCarrito::getCantidad)
                 .findFirst()
                 .orElse(0);
-        if ((long) cantidadEnCarrito + cantidadSolicitada > product.getStock()) {
+        validarStock(product, (long) cantidadEnCarrito + cantidadSolicitada);
+    }
+
+    private void validarStock(Product product, long cantidadSolicitada) {
+        if (cantidadSolicitada > product.getStock()) {
             throw new StockInsuficienteException();
         }
     }

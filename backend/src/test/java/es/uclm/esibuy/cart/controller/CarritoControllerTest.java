@@ -25,14 +25,17 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -124,8 +127,105 @@ class CarritoControllerTest {
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(VALID_BODY))
-                .andExpect(status().isConflict())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("No hay stock suficiente para la cantidad solicitada"));
+    }
+
+    @Test
+    void shouldUpdateItemQuantityForTheAuthenticatedClient() throws Exception {
+        when(carritoService.actualizarCantidadItem(eq(CLIENTE_ID), eq(PRODUCTO_ID), any()))
+                .thenReturn(new CarritoDTO("carrito-1", CLIENTE_ID,
+                        List.of(new ItemCarritoDTO(PRODUCTO_ID, "Auriculares", PRECIO, 3,
+                                new BigDecimal("59.97"))),
+                        new BigDecimal("59.97")));
+
+        mockMvc.perform(put(API + "/items/" + PRODUCTO_ID)
+                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"cantidad":3}
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.clienteId").value(CLIENTE_ID))
+                .andExpect(jsonPath("$.items[0].cantidad").value(3))
+                .andExpect(jsonPath("$.precioTotal").value(59.97));
+
+        verify(carritoService).actualizarCantidadItem(
+                eq(CLIENTE_ID), eq(PRODUCTO_ID), argThat(request -> request.cantidad() == 3));
+    }
+
+    @Test
+    void shouldAllowZeroQuantityAndRejectNegativeQuantity() throws Exception {
+        when(carritoService.actualizarCantidadItem(eq(CLIENTE_ID), eq(PRODUCTO_ID), any()))
+                .thenReturn(new CarritoDTO("carrito-1", CLIENTE_ID, List.of(), BigDecimal.ZERO));
+
+        mockMvc.perform(put(API + "/items/" + PRODUCTO_ID)
+                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"cantidad":0}
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items").isEmpty())
+                .andExpect(jsonPath("$.precioTotal").value(0));
+
+        mockMvc.perform(put(API + "/items/" + PRODUCTO_ID)
+                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"cantidad":-1}
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.cantidad").isNotEmpty());
+
+        verify(carritoService, never()).actualizarCantidadItem(
+                eq(CLIENTE_ID), eq(PRODUCTO_ID), argThat(request ->
+                        request != null && request.cantidad() < 0));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenUpdatedQuantityExceedsStock() throws Exception {
+        when(carritoService.actualizarCantidadItem(eq(CLIENTE_ID), eq(PRODUCTO_ID), any()))
+                .thenThrow(new StockInsuficienteException());
+
+        mockMvc.perform(put(API + "/items/" + PRODUCTO_ID)
+                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"cantidad":5}
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("No hay stock suficiente para la cantidad solicitada"));
+    }
+
+    @Test
+    void shouldDeleteItemAndReturnUpdatedCart() throws Exception {
+        when(carritoService.eliminarItem(CLIENTE_ID, PRODUCTO_ID))
+                .thenReturn(new CarritoDTO("carrito-1", CLIENTE_ID, List.of(), BigDecimal.ZERO));
+
+        mockMvc.perform(delete(API + "/items/" + PRODUCTO_ID)
+                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items").isEmpty())
+                .andExpect(jsonPath("$.precioTotal").value(0));
+
+        verify(carritoService).eliminarItem(CLIENTE_ID, PRODUCTO_ID);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenDeletingItemNotInCart() throws Exception {
+        when(carritoService.eliminarItem(CLIENTE_ID, PRODUCTO_ID))
+                .thenThrow(new ProductNotFoundException());
+
+        mockMvc.perform(delete(API + "/items/" + PRODUCTO_ID)
+                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                .with(csrf()))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -174,7 +274,33 @@ class CarritoControllerTest {
         mockMvc.perform(get(API))
                 .andExpect(status().isUnauthorized());
 
+        mockMvc.perform(put(API + "/items/" + PRODUCTO_ID)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"cantidad":1}
+                        """))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(delete(API + "/items/" + PRODUCTO_ID)
+                .with(csrf()))
+                .andExpect(status().isUnauthorized());
+
         mockMvc.perform(get(API).with(authentication(authenticationFor(UserRole.SELLER))))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(put(API + "/items/" + PRODUCTO_ID)
+                .with(authentication(authenticationFor(UserRole.SELLER)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"cantidad":1}
+                        """))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(delete(API + "/items/" + PRODUCTO_ID)
+                .with(authentication(authenticationFor(UserRole.SELLER)))
+                .with(csrf()))
                 .andExpect(status().isForbidden());
     }
 }

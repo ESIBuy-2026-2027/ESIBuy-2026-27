@@ -51,6 +51,19 @@ export class CartService {
     );
   }
 
+  updateItemQuantity(productoId: string, cantidad: number): Observable<CartResponse> {
+    return this.http.put<CartResponse>(
+      `/api/carrito/items/${encodeURIComponent(productoId)}`,
+      { cantidad },
+    ).pipe(tap((cart) => this.cart.set(cart)));
+  }
+
+  removeItem(productoId: string): Observable<CartResponse> {
+    return this.http.delete<CartResponse>(
+      `/api/carrito/items/${encodeURIComponent(productoId)}`,
+    ).pipe(tap((cart) => this.cart.set(cart)));
+  }
+
   clear(): void {
     this.cart.set(null);
     this.loading.set(false);

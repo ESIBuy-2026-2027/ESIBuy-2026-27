@@ -14,6 +14,9 @@
     <p class="cart-state is-error" role="alert">{{ error }}</p>
     <button class="secondary-action" type="button" (click)="cartService.load()">Reintentar</button>
   } @else if (cartService.cart(); as cart) {
+    @if (actionError(); as error) {
+      <p class="cart-state is-error" role="alert">{{ error }}</p>
+    }
     @if (cart.items.length === 0) {
       <section class="empty-cart">
         <h2>Tu carrito está vacío</h2>
@@ -28,7 +31,35 @@
               <div class="item-information">
                 <h2>{{ item.nombre }}</h2>
                 <p>{{ formatPrice(item.precioUnitario) }} por unidad</p>
-                <p>Cantidad: {{ item.cantidad }}</p>
+                <div class="quantity-controls" [attr.aria-busy]="busyItemIds().has(item.productoId)">
+                  <button
+                    class="quantity-action"
+                    type="button"
+                    [disabled]="busyItemIds().has(item.productoId)"
+                    [attr.aria-label]="'Reducir cantidad de ' + item.nombre"
+                    (click)="changeQuantity(item.productoId, item.cantidad - 1)"
+                  >−</button>
+                  <span class="quantity-value" [attr.aria-label]="'Cantidad: ' + item.cantidad">
+                    {{ item.cantidad }}
+                  </span>
+                  <button
+                    class="quantity-action"
+                    type="button"
+                    [disabled]="busyItemIds().has(item.productoId)"
+                    [attr.aria-label]="'Aumentar cantidad de ' + item.nombre"
+                    (click)="changeQuantity(item.productoId, item.cantidad + 1)"
+                  >+</button>
+                  <button
+                    class="remove-action"
+                    type="button"
+                    [disabled]="busyItemIds().has(item.productoId)"
+                    [attr.aria-label]="'Eliminar ' + item.nombre + ' del carrito'"
+                    (click)="removeItem(item.productoId)"
+                  >Eliminar</button>
+                  @if (busyItemIds().has(item.productoId)) {
+                    <span class="cart-state" role="status">Actualizando…</span>
+                  }
+                </div>
               </div>
               <p class="item-subtotal">{{ formatPrice(item.subtotal) }}</p>
             </article>

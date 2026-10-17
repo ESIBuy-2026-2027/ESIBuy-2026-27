@@ -68,6 +68,35 @@ describe('CartService', () => {
     expect(service.cart()).toEqual(cart);
   });
 
+  it('should update item quantity and replace the cart from the response', () => {
+    let result: unknown;
+
+    service.updateItemQuantity('product-1', 3).subscribe((response) => result = response);
+
+    const request = httpTesting.expectOne('/api/carrito/items/product-1');
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual({ cantidad: 3 });
+    request.flush({ ...cart, items: [{ ...cart.items[0], cantidad: 3, subtotal: 59.97 }], precioTotal: 59.97 });
+
+    expect(result).toEqual(service.cart());
+    expect(service.cart()?.precioTotal).toBe(59.97);
+    expect(service.itemCount()).toBe(3);
+  });
+
+  it('should remove an item and replace the cart from the response', () => {
+    let result: unknown;
+
+    service.removeItem('product-1').subscribe((response) => result = response);
+
+    const request = httpTesting.expectOne('/api/carrito/items/product-1');
+    expect(request.request.method).toBe('DELETE');
+    request.flush({ id: 'cart-1', clienteId: 'client-1', items: [], precioTotal: 0 });
+
+    expect(result).toEqual(service.cart());
+    expect(service.cart()?.items).toEqual([]);
+    expect(service.itemCount()).toBe(0);
+  });
+
   it('should reset cart state when cleared', () => {
     service.cart.set(cart);
 
