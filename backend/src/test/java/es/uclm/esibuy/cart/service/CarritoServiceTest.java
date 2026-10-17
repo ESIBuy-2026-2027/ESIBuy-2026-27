@@ -3,12 +3,14 @@ package es.uclm.esibuy.cart.service;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import es.uclm.esibuy.cart.dto.ActualizarCantidadItemDTO;
 import es.uclm.esibuy.cart.dto.AnadirItemCarritoDTO;
 import es.uclm.esibuy.cart.dto.CarritoDTO;
 import es.uclm.esibuy.cart.model.Carrito;
 import es.uclm.esibuy.cart.model.ItemCarrito;
 import es.uclm.esibuy.cart.repository.CarritoRepository;
 import es.uclm.esibuy.common.exception.ProductNotFoundException;
+import es.uclm.esibuy.common.exception.StockInsuficienteException;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -120,6 +122,95 @@ class CarritoServiceTest {
         assertThrows(
                 IllegalStateException.class,
                 () -> carritoService.anadirItem(CLIENTE_ID, new AnadirItemCarritoDTO(PRODUCTO_ID, 1)));
+    }
+
+    @Test
+    void shouldIncreaseItemQuantityWhenStockIsSufficient() {
+        Carrito existingCart = new Carrito(CLIENTE_ID);
+        existingCart.addOrIncrementItem(PRODUCTO_ID, PRODUCTO_NOMBRE, PRECIO, 2);
+        when(productRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(availableProduct(5)));
+        when(carritoRepository.findByClienteId(CLIENTE_ID)).thenReturn(Optional.of(existingCart));
+        when(carritoRepository.save(any(Carrito.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        CarritoDTO result = carritoService.actualizarCantidadItem(
+                CLIENTE_ID, PRODUCTO_ID, new ActualizarCantidadItemDTO(4));
+
+        assertEquals(4, result.items().get(0).cantidad());
+        assertEquals(new BigDecimal("79.96"), result.items().get(0).subtotal());
+        assertEquals(new BigDecimal("79.96"), result.precioTotal());
+        verify(carritoRepository).save(existingCart);
+    }
+
+    @Test
+    void shouldRejectUpdatedQuantityThatExceedsAvailableStock() {
+        Carrito existingCart = new Carrito(CLIENTE_ID);
+        existingCart.addOrIncrementItem(PRODUCTO_ID, PRODUCTO_NOMBRE, PRECIO, 2);
+        when(productRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(availableProduct(4)));
+        when(carritoRepository.findByClienteId(CLIENTE_ID)).thenReturn(Optional.of(existingCart));
+
+        assertThrows(
+                StockInsuficienteException.class,
+                () -> carritoService.actualizarCantidadItem(
+                        CLIENTE_ID, PRODUCTO_ID, new ActualizarCantidadItemDTO(5)));
+    }
+
+    @Test
+    void shouldReduceItemQuantityAndRecalculateCartTotal() {
+        Carrito existingCart = new Carrito(CLIENTE_ID);
+        existingCart.addOrIncrementItem(PRODUCTO_ID, PRODUCTO_NOMBRE, PRECIO, 3);
+        existingCart.addOrIncrementItem("producto-2", "Teclado", new BigDecimal("30.00"), 1);
+        when(productRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(availableProduct(5)));
+        when(carritoRepository.findByClienteId(CLIENTE_ID)).thenReturn(Optional.of(existingCart));
+        when(carritoRepository.save(any(Carrito.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        CarritoDTO result = carritoService.actualizarCantidadItem(
+                CLIENTE_ID, PRODUCTO_ID, new ActualizarCantidadItemDTO(1));
+
+        assertEquals(1, result.items().get(0).cantidad());
+        assertEquals(new BigDecimal("19.99"), result.items().get(0).subtotal());
+        assertEquals(new BigDecimal("49.99"), result.precioTotal());
+    }
+
+    @Test
+    void shouldRemoveItemAndSetTotalToZeroWhenQuantityIsZero() {
+        Carrito existingCart = new Carrito(CLIENTE_ID);
+        existingCart.addOrIncrementItem(PRODUCTO_ID, PRODUCTO_NOMBRE, PRECIO, 2);
+        when(carritoRepository.findByClienteId(CLIENTE_ID)).thenReturn(Optional.of(existingCart));
+        when(carritoRepository.save(any(Carrito.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        CarritoDTO result = carritoService.actualizarCantidadItem(
+                CLIENTE_ID, PRODUCTO_ID, new ActualizarCantidadItemDTO(0));
+
+        assertEquals(0, result.items().size());
+        assertEquals(BigDecimal.ZERO, result.precioTotal());
+        verify(carritoRepository).save(existingCart);
+    }
+
+    @Test
+    void shouldDeleteExistingItemAndRecalculateCartTotal() {
+        Carrito existingCart = new Carrito(CLIENTE_ID);
+        existingCart.addOrIncrementItem(PRODUCTO_ID, PRODUCTO_NOMBRE, PRECIO, 2);
+        existingCart.addOrIncrementItem("producto-2", "Teclado", new BigDecimal("30.00"), 1);
+        when(carritoRepository.findByClienteId(CLIENTE_ID)).thenReturn(Optional.of(existingCart));
+        when(carritoRepository.save(any(Carrito.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        CarritoDTO result = carritoService.eliminarItem(CLIENTE_ID, PRODUCTO_ID);
+
+        assertEquals(1, result.items().size());
+        assertEquals("producto-2", result.items().get(0).productoId());
+        assertEquals(new BigDecimal("30.00"), result.items().get(0).subtotal());
+        assertEquals(new BigDecimal("30.00"), result.precioTotal());
+    }
+
+    @Test
+    void shouldRejectDeletingItemThatIsNotInCart() {
+        Carrito existingCart = new Carrito(CLIENTE_ID);
+        existingCart.addOrIncrementItem("producto-2", "Teclado", new BigDecimal("30.00"), 1);
+        when(carritoRepository.findByClienteId(CLIENTE_ID)).thenReturn(Optional.of(existingCart));
+
+        assertThrows(
+                ProductNotFoundException.class,
+                () -> carritoService.eliminarItem(CLIENTE_ID, PRODUCTO_ID));
     }
 
     private Product availableProduct(int stock) {
