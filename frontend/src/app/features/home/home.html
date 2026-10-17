@@ -32,20 +32,37 @@
   <section class="auth-panel" aria-labelledby="login-title">
     <div class="auth-content">
       @if (!isAuthenticated()) {
+      <div class="auth-heading">
+        <span class="auth-eyebrow">BIENVENIDO A ESIBUY</span>
         <h2 id="login-title">Iniciar sesión</h2>
-        <p class="auth-subtitle">Introduce tus credenciales de ESIBuy</p>
-      }
-
-      <app-login [embedded]="true"></app-login>
-
-      @if (!isAuthenticated()) {
-        <p class="register-prompt">
-          ¿Todavía no tienes una cuenta?
-          <a routerLink="/register">Regístrate</a>
+        <p class="auth-subtitle">
+          Introduce tus credenciales para acceder a tu cuenta.
         </p>
-
-        <p class="security-note">Tus datos están protegidos con cifrado seguro</p>
+      </div>
       }
+
+      <div class="login-box">
+        <app-login [embedded]="true"></app-login>
+
+        @if (!isAuthenticated()) {
+        <div class="login-footer">
+          <p class="register-prompt">
+            ¿Todavía no tienes una cuenta?
+            <a routerLink="/register">Regístrate</a>
+          </p>
+
+          <div class="security-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <rect x="4" y="10" width="16" height="11" rx="2"></rect>
+              <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+            </svg>
+            <span>Tus datos están protegidos con cifrado seguro</span>
+          </div>
+        </div>
+        }
+      </div>
     </div>
+
   </section>
 </div>

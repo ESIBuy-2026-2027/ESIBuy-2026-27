@@ -1,237 +1,300 @@
 :host {
   display: block;
   min-height: 100vh;
-  color: #172b3a;
-  font-family: Inter, "Segoe UI", sans-serif;
+  color: #192338;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
+
+/* ========================================
+   CONTENEDOR Y TARJETA PRINCIPAL
+   ======================================== */
 
 .register-container {
   box-sizing: border-box;
   min-height: 100vh;
-  padding: 42px 24px 64px;
-  background: #e9eff8;
+  padding: 40px 24px 64px;
+  background: #f4f7fb;
 }
 
 .register-card {
   box-sizing: border-box;
   width: min(760px, 100%);
   margin: 0 auto;
-  padding: 30px 36px 36px;
-  background: #fff;
-  border: 1px solid #e1e9ef;
-  border-radius: 16px;
-  box-shadow: 0 14px 34px rgb(16 44 64 / 9%);
+  padding: 32px 36px 36px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgb(16 44 64 / 7%);
 }
+
+/* ========================================
+   BOTÓN VOLVER
+   ======================================== */
 
 .register-back-button {
   display: inline-flex;
-  min-height: 34px;
+  min-height: 38px;
   align-items: center;
   gap: 8px;
-  margin: 0 0 26px;
-  padding: 0 11px;
-  border: 1px solid #dce6ea;
-  border-radius: 8px;
-  background: #f7fafb;
-  color: #527080;
+  margin: 0 0 28px;
+  padding: 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #f8fafc;
+  color: #52677a;
   cursor: pointer;
   font: inherit;
-  font-size: 12px;
+  font-size: 0.82rem;
   font-weight: 650;
-  transition: border-color .2s ease, background-color .2s ease, color .2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.register-back-button span {
+  font-size: 1.1rem;
+  line-height: 1;
 }
 
 .register-back-button:hover {
-  border-color: #42d6b2;
-  background: #eefbf8;
-  color: #146b69;
+  border-color: #8ddfd2;
+  background: #eafaf6;
+  color: #0a5c58;
 }
 
-.register-back-button:focus-visible,
-.role-selector button:focus-visible,
-.password-toggle:focus-visible,
-.avatar-item:focus-visible,
-.btn-submit:focus-visible {
-  outline: 3px solid rgb(66 214 178 / 28%);
-  outline-offset: 2px;
+.register-back-button:active {
+  transform: translateY(1px);
 }
+
+/* ========================================
+   CABECERA
+   ======================================== */
 
 .register-header {
   margin-bottom: 30px;
 }
 
 .brand-name {
-  margin-bottom: 8px;
-  color: #42bfa6;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 1.3px;
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 12px;
+  color: #0a5c58;
+  font-size: 0.82rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .register-header h1 {
   margin: 0;
-  color: #173247;
-  font-size: clamp(26px, 4vw, 34px);
-  letter-spacing: -1px;
+  color: #102c40;
+  font-size: clamp(1.8rem, 4vw, 2.25rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.2;
 }
 
 .register-header p {
   max-width: 520px;
-  margin: 9px 0 0;
-  color: #72828e;
-  font-size: 13px;
-  line-height: 1.5;
+  margin: 10px 0 0;
+  color: #64748b;
+  font-size: 0.92rem;
+  line-height: 1.6;
 }
+
+/* ========================================
+   SELECTOR DE ROL
+   ======================================== */
 
 .role-selector {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0 0 28px;
+  gap: 12px;
+  margin: 0 0 30px;
   padding: 0;
   border: 0;
+  min-inline-size: 0;
 }
 
 .role-selector legend {
-  grid-column: 1 / -1;
-  margin-bottom: 1px;
-  color: #527080;
-  font-size: 11px;
+  margin-bottom: 12px;
+  color: #334e62;
+  font-size: 0.8rem;
   font-weight: 750;
-  letter-spacing: .8px;
-  text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
 
 .role-selector button {
   display: flex;
-  min-height: 72px;
+  min-width: 0;
+  min-height: 86px;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 5px;
-  padding: 12px 15px;
-  border: 1px solid #dce6ea;
-  border-radius: 10px;
-  background: #fbfcfd;
-  color: #527080;
+  gap: 6px;
+  padding: 15px 17px;
+  border: 1px solid #dce5ed;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #334e62;
   cursor: pointer;
   font: inherit;
   text-align: left;
-  transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .role-selector button:hover {
-  border-color: #9edfd0;
-  background: #f2fbf8;
+  border-color: #9bded3;
+  background: #f7fdfb;
 }
 
 .role-selector button.active {
-  border-color: #42d6b2;
-  background: #edf9f6;
-  box-shadow: 0 0 0 3px rgb(66 214 178 / 12%);
-  color: #146b69;
+  border-color: #43c9b4;
+  background: #edfaf7;
+  box-shadow: 0 0 0 3px rgb(92 207 192 / 14%);
 }
 
 .role-title {
-  color: #203b4e;
-  font-size: 13px;
+  color: #102c40;
+  font-size: 0.95rem;
   font-weight: 750;
 }
 
 .role-selector button.active .role-title {
-  color: #146b69;
+  color: #0a5c58;
 }
 
 .role-description {
-  color: #72828e;
-  font-size: 11px;
-  line-height: 1.35;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.5;
 }
+
+/* ========================================
+   ERROR DEL SERVIDOR
+   ======================================== */
 
 .server-error-banner {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 22px;
-  padding: 12px 14px;
-  border: 1px solid #f3caca;
-  border-radius: 9px;
-  background: #fff5f5;
-  color: #a33b3b;
-  font-size: 12px;
-  line-height: 1.4;
+  gap: 5px;
+  margin-bottom: 24px;
+  padding: 14px 16px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .server-error-banner strong {
-  font-size: 12px;
+  font-size: 0.86rem;
+  font-weight: 750;
 }
 
+/* ========================================
+   SECCIONES DEL FORMULARIO
+   ======================================== */
+
 .section-title {
-  margin: 0 0 18px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #e8eef1;
+  margin: 0 0 22px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid #e8eef3;
 }
 
 .section-title h2 {
   margin: 0;
-  color: #203b4e;
-  font-size: 16px;
-  letter-spacing: -.2px;
+  color: #102c40;
+  font-size: 1.08rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
 }
 
 .section-title p {
-  margin: 5px 0 0;
-  color: #72828e;
-  font-size: 12px;
-  line-height: 1.45;
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 0.83rem;
+  line-height: 1.55;
 }
 
 .form-section {
-  margin-top: 30px;
+  min-width: 0;
+  margin-top: 32px;
 }
+
+/* ========================================
+   CAMPOS
+   ======================================== */
 
 .form-group {
   display: flex;
+  min-width: 0;
   flex-direction: column;
-  margin-bottom: 17px;
+  margin-bottom: 20px;
 }
 
 .form-group label {
-  margin-bottom: 6px;
-  color: #355267;
-  font-size: 12px;
+  margin-bottom: 7px;
+  color: #334e62;
+  font-size: 0.84rem;
   font-weight: 700;
+  line-height: 1.45;
 }
 
 .required {
-  color: #c25d5d;
+  color: #dc5555;
 }
 
 .form-group input,
 .form-group select {
+  display: block;
   box-sizing: border-box;
   width: 100%;
-  min-height: 40px;
-  padding: 0 12px;
-  border: 1px solid #d4e1e6;
-  border-radius: 8px;
-  background: #fff;
-  color: #203b4e;
-  font: inherit;
-  font-size: 13px;
-  transition: border-color .2s ease, box-shadow .2s ease;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #1e293b;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 .form-group input::placeholder {
-  color: #9aaab3;
+  color: #94a3b8;
+}
+
+.form-group input:hover:not(:disabled),
+.form-group select:hover:not(:disabled) {
+  border-color: #94a3b8;
 }
 
 .form-group input:focus,
 .form-group select:focus {
-  border-color: #42d6b2;
-  outline: none;
-  box-shadow: 0 0 0 3px rgb(66 214 178 / 15%);
+  border-color: #0a8278;
+  box-shadow: 0 0 0 3px rgb(92 207 192 / 19%);
+}
+
+.form-group input:disabled,
+.form-group select:disabled {
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: not-allowed;
 }
 
 .form-group select {
@@ -239,45 +302,59 @@
 }
 
 .form-group select option {
-  color: #203b4e;
-  background: #fff;
+  background: #ffffff;
+  color: #1e293b;
 }
 
+/* ========================================
+   ERRORES DE VALIDACIÓN
+   ======================================== */
+
 .error {
-  margin-top: 5px;
-  color: #b34b4b;
-  font-size: 11px;
-  line-height: 1.4;
+  display: block;
+  margin-top: 6px;
+  color: #c24141;
+  font-size: 0.78rem;
+  line-height: 1.5;
 }
+
+/* ========================================
+   SELECCIÓN DE AVATAR
+   ======================================== */
 
 .avatar-selector-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 4px;
+  gap: 14px;
+  margin-top: 6px;
 }
 
 .avatar-item {
   position: relative;
-  width: 66px;
-  height: 66px;
+  display: block;
+  box-sizing: border-box;
+  width: 70px;
+  height: 70px;
   padding: 0;
   overflow: hidden;
-  border: 3px solid #dce6ea;
+  border: 2px solid #dce5ed;
   border-radius: 50%;
-  background: #f3f7f8;
+  background: #f1f5f9;
   cursor: pointer;
-  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .avatar-item:hover {
-  border-color: #9edfd0;
+  border-color: #8ddfd2;
   transform: translateY(-2px);
 }
 
 .avatar-item.selected {
-  border-color: #42d6b2;
-  box-shadow: 0 0 0 3px rgb(66 214 178 / 18%);
+  border-color: #0a8278;
+  box-shadow: 0 0 0 4px rgb(92 207 192 / 20%);
 }
 
 .avatar-item img {
@@ -289,109 +366,128 @@
 
 .avatar-check {
   position: absolute;
-  right: 1px;
-  bottom: 1px;
+  right: 0;
+  bottom: 0;
   display: flex;
-  width: 18px;
-  height: 18px;
+  width: 21px;
+  height: 21px;
   align-items: center;
   justify-content: center;
-  border: 2px solid #fff;
+  border: 2px solid #ffffff;
   border-radius: 50%;
-  background: #42d6b2;
+  background: #5ccfc0;
   color: #102c40;
-  font-size: 10px;
-  font-weight: 800;
+  font-size: 0.75rem;
+  font-weight: 850;
 }
+
+/* ========================================
+   CAMPOS DE CONTRASEÑA
+   ======================================== */
 
 .password-wrapper {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
+  min-width: 0;
 }
 
 .password-wrapper input {
-  padding-right: 44px;
+  padding-right: 48px;
 }
 
 .password-toggle {
   position: absolute;
   top: 50%;
-  right: 4px;
+  right: 5px;
   display: flex;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   align-items: center;
   justify-content: center;
   padding: 0;
   transform: translateY(-50%);
   border: 0;
+  border-radius: 7px;
   background: transparent;
-  color: #72828e;
+  color: #64748b;
   cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .password-toggle:hover {
-  color: #146b69;
+  background: #f1f5f9;
+  color: #0a5c58;
 }
 
 .password-toggle svg {
-  width: 18px;
-  height: 18px;
+  display: block;
+  width: 20px;
+  height: 20px;
 }
 
+/* ========================================
+   BOTÓN DE REGISTRO
+   ======================================== */
+
 .btn-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   width: 100%;
-  min-height: 43px;
-  margin-top: 10px;
-  padding: 0 18px;
-  border: 1px solid #42d6b2;
-  border-radius: 8px;
-  background: #42d6b2;
+  min-height: 46px;
+  margin-top: 12px;
+  padding: 12px 18px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: #5ccfc0;
   color: #102c40;
   cursor: pointer;
-  font: inherit;
-  font-size: 13px;
+  font-family: inherit;
+  font-size: 0.92rem;
   font-weight: 750;
-  transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+  line-height: 1.4;
+  text-align: center;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .btn-submit:hover:not(:disabled) {
-  border-color: #2bb79a;
-  background: #2bb79a;
+  background: #102c40;
+  color: #ffffff;
+  box-shadow: 0 5px 12px rgb(16 44 64 / 16%);
   transform: translateY(-1px);
 }
 
+.btn-submit:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
 .btn-submit:disabled {
+  background: #cbd5e1;
+  color: #64748b;
   cursor: not-allowed;
-  opacity: .62;
+  opacity: 0.8;
 }
 
-@media (max-width: 640px) {
-  .register-container {
-    padding: 18px 12px 36px;
-  }
-
-  .register-card {
-    padding: 22px 18px 26px;
-    border-radius: 13px;
-  }
-
-  .register-header h1 {
-    font-size: 27px;
-  }
-
-  .role-selector {
-    grid-template-columns: 1fr;
-  }
-
-  .role-selector legend {
-    grid-column: auto;
-  }
+.register-back-button:focus-visible,
+.role-selector button:focus-visible,
+.password-toggle:focus-visible,
+.avatar-item:focus-visible,
+.btn-submit:focus-visible {
+  outline: 3px solid rgb(10 130 120 / 30%);
+  outline-offset: 3px;
 }
 
-
-/* DIÁLOGOS DEL REGISTRO */
+/* ========================================
+   DIÁLOGOS
+   ======================================== */
 
 .dialog-backdrop {
   position: fixed;
@@ -400,55 +496,60 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   padding: 20px;
   background: rgb(16 44 64 / 48%);
+  backdrop-filter: blur(3px);
 }
 
 .register-dialog {
   box-sizing: border-box;
   width: 100%;
   max-width: 440px;
-  padding: 28px;
-  border: 1px solid #e1e9ef;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 16px 48px rgb(16 44 64 / 20%);
+  max-height: calc(100dvh - 40px);
+  padding: 30px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 17px;
+  background: #ffffff;
+  box-shadow: 0 18px 55px rgb(16 44 64 / 22%);
   text-align: center;
 }
 
 .dialog-icon {
   display: flex;
-  width: 48px;
-  height: 48px;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 16px;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 17px;
   border-radius: 50%;
-  font-size: 24px;
-  font-weight: 800;
+  font-size: 1.5rem;
+  font-weight: 850;
 }
 
 .success-icon {
-  background: #edf9f2;
-  color: #17633c;
+  background: #eafaf4;
+  color: #14734f;
 }
 
 .warning-icon {
-  background: #fff5e5;
+  background: #fff6e5;
   color: #946200;
 }
 
 .register-dialog h2 {
   margin: 0 0 12px;
-  color: #173247;
-  font-size: 20px;
-  font-weight: 750;
+  color: #102c40;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
 }
 
 .register-dialog p {
   margin: 0;
-  color: #587388;
-  font-size: 13px;
+  color: #64748b;
+  font-size: 0.88rem;
   line-height: 1.7;
   overflow-wrap: anywhere;
 }
@@ -458,68 +559,123 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  margin-top: 24px;
+  margin-top: 25px;
 }
 
 .dialog-primary-button,
 .dialog-secondary-button,
 .dialog-danger-button {
   display: inline-flex;
-  min-height: 42px;
   align-items: center;
   justify-content: center;
+  min-height: 42px;
   padding: 10px 16px;
   border: 1px solid transparent;
-  border-radius: 8px;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 700;
+  border-radius: 9px;
   cursor: pointer;
-  transition: background-color .2s ease, border-color .2s ease;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 750;
+  line-height: 1.4;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .dialog-primary-button {
-  border-color: #42d6b2;
-  background: #42d6b2;
+  border-color: #5ccfc0;
+  background: #5ccfc0;
   color: #102c40;
 }
 
 .dialog-primary-button:hover {
-  border-color: #2bb79a;
-  background: #2bb79a;
+  border-color: #102c40;
+  background: #102c40;
+  color: #ffffff;
 }
 
 .dialog-secondary-button {
-  border-color: #dce6ea;
-  background: #fff;
-  color: #355267;
+  border-color: #dce5ed;
+  background: #ffffff;
+  color: #334e62;
 }
 
 .dialog-secondary-button:hover {
-  background: #f4f8f9;
+  background: #f1f5f9;
+  border-color: #cbd5e1;
 }
 
 .dialog-danger-button {
-  border-color: #f1aeb5;
-  background: #fff5f5;
-  color: #a33b3b;
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
 }
 
 .dialog-danger-button:hover {
-  border-color: #c0392b;
-  background: #ffe8e8;
+  border-color: #fca5a5;
+  background: #fee2e2;
 }
 
 .dialog-primary-button:focus-visible,
 .dialog-secondary-button:focus-visible,
 .dialog-danger-button:focus-visible {
-  outline: 3px solid rgb(66 214 178 / 35%);
-  outline-offset: 2px;
+  outline: 3px solid rgb(10 130 120 / 30%);
+  outline-offset: 3px;
 }
 
-@media (max-width: 480px) {
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 640px) {
+  .register-container {
+    padding: 20px 12px 36px;
+  }
+
+  .register-card {
+    padding: 24px 20px 28px;
+    border-radius: 14px;
+  }
+
+  .register-back-button {
+    margin-bottom: 23px;
+  }
+
+  .register-header {
+    margin-bottom: 25px;
+  }
+
+  .register-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .role-selector {
+    gap: 9px;
+    margin-bottom: 25px;
+  }
+
+  .role-selector button {
+    min-height: 78px;
+    padding: 12px;
+  }
+
+  .form-section {
+    margin-top: 27px;
+  }
+
+  .avatar-selector-grid {
+    gap: 12px;
+  }
+
+  .avatar-item {
+    width: 62px;
+    height: 62px;
+  }
+
   .register-dialog {
-    padding: 22px 18px;
+    padding: 24px 20px;
+    border-radius: 14px;
   }
 
   .dialog-actions {
@@ -528,5 +684,52 @@
 
   .dialog-actions button {
     width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .register-container {
+    padding: 12px 8px 24px;
+  }
+
+  .register-card {
+    padding: 20px 14px 24px;
+  }
+
+  .register-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .role-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .role-selector button {
+    min-height: 68px;
+  }
+
+  .form-group input,
+  .form-group select {
+    font-size: 0.85rem;
+  }
+
+  .avatar-selector-grid {
+    gap: 10px;
+  }
+
+  .avatar-item {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

@@ -10,9 +10,15 @@
   display: grid;
   box-sizing: border-box;
   height: 100%;
+  min-height: 0;
   grid-template-columns: 1fr 1fr;
-  background: #fff;
+  background: #f5f9ff;
 }
+
+/* ========================================
+   PANEL IZQUIERDO
+   Se conserva el diseño original
+   ======================================== */
 
 .welcome-panel {
   position: relative;
@@ -21,7 +27,7 @@
   justify-content: space-between;
   overflow: hidden;
   padding: 3.5rem 10%;
-  background: linear-gradient(140deg, #edf4ff 0%, #f5f9ff 55%, #edf8f5 100%);
+  background: #f5f9ff;
 }
 
 .welcome-panel::before,
@@ -99,6 +105,8 @@
   line-height: 1.65;
 }
 
+/* Ilustraciones de pedidos y pagos */
+
 .shopping-illustration {
   position: relative;
   min-height: 12rem;
@@ -167,76 +175,154 @@
   font-size: 0.65rem;
 }
 
+/* ========================================
+   PANEL DERECHO
+   Fondo coordinado con el panel izquierdo
+   ======================================== */
+
 .auth-panel {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3rem 2rem;
-  background: #fff;
+  min-width: 0;
+  padding: 3rem clamp(1.5rem, 4vw, 4rem);
+  box-sizing: border-box;
+  background: #f5f9ff;
 }
 
 .auth-content {
   width: 100%;
-  max-width: 28rem;
+  max-width: 29rem;
+  min-width: 0;
+}
+
+/* Cabecera */
+
+.auth-heading {
+  margin-bottom: 1.5rem;
+}
+
+.auth-eyebrow {
+  display: inline-block;
+  margin-bottom: 0.7rem;
+  color: #0a5c58;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
 }
 
 .auth-content h2 {
   margin: 0;
-  font-size: 1.8rem;
-  font-weight: 750;
-  letter-spacing: -0.035em;
+  color: #102c40;
+  font-size: clamp(1.8rem, 2.4vw, 2.15rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
 }
 
 .auth-subtitle {
-  margin: 0.55rem 0 2rem;
-  color: #7b879b;
-  font-size: 0.9rem;
+  margin: 0.65rem 0 0;
+  color: #64748b;
+  font-size: 0.92rem;
+  line-height: 1.6;
 }
 
-.auth-placeholder {
-  min-height: 10rem;
-  padding: 1.25rem;
-  border: 1px dashed #cbd5e1;
-  border-radius: 0.75rem;
-  color: #64728a;
-  font-size: 0.9rem;
-  line-height: 1.5;
+/* Tarjeta blanca que contiene el formulario */
+
+.login-box {
+  width: 100%;
+  padding: 2rem;
+  box-sizing: border-box;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgb(16 44 64 / 7%);
 }
 
-.login-link,
-.register-prompt a {
-  color: #0A2C3A;
-  font-weight: 700;
-  text-decoration: none;
-}
+/* Pie de la tarjeta */
 
-.login-link:hover,
-.register-prompt a:hover {
-  text-decoration: underline;
+.login-footer {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #edf1f6;
 }
 
 .register-prompt {
-  margin: 1.5rem 0 0;
-  color: #7b879b;
-  font-size: 0.85rem;
+  margin: 0;
+  color: #64748b;
+  font-size: 0.87rem;
+  line-height: 1.6;
   text-align: center;
 }
 
+.register-prompt a {
+  color: #0a5c58;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.register-prompt a:hover {
+  color: #102c40;
+  text-decoration: underline;
+}
+
+/* Aviso de seguridad */
+
 .security-note {
-  margin: 3rem 0 0;
-  color: #94a0b2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin: 1.25rem 0 0;
+  color: #8290a3;
   font-size: 0.75rem;
+  line-height: 1.5;
   text-align: center;
+}
+
+.security-note svg {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  color: #0a5c58;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 1000px) and (min-width: 761px) {
+  .welcome-panel {
+    padding: 3rem 8%;
+  }
+
+  .auth-panel {
+    padding: 2rem 1.5rem;
+  }
+
+  .login-box {
+    padding: 1.6rem;
+  }
+
+  .order-card {
+    left: 2%;
+  }
+
+  .payment-card {
+    right: 2%;
+  }
 }
 
 @media (max-width: 760px) {
   :host {
     height: auto;
+    min-height: calc(100vh - var(--app-header-height));
+    min-height: calc(100dvh - var(--app-header-height));
   }
 
   .home-layout {
     height: auto;
     min-height: calc(100vh - var(--app-header-height));
+    min-height: calc(100dvh - var(--app-header-height));
     grid-template-columns: 1fr;
   }
 
@@ -259,14 +345,40 @@
   }
 
   .auth-panel {
-    padding: 3rem 1.5rem;
+    align-items: flex-start;
+    padding: 2.5rem 1.5rem;
+  }
+
+  .auth-content {
+    max-width: 30rem;
+    margin: 0 auto;
+  }
+
+  .auth-heading {
+    margin-bottom: 1.25rem;
   }
 
   .auth-content h2 {
-    font-size: 1.6rem;
+    font-size: 1.75rem;
+  }
+
+  .login-box {
+    padding: 1.5rem;
+    border-radius: 15px;
   }
 
   .security-note {
-    margin-top: 2rem;
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .auth-panel {
+    padding-right: 0.85rem;
+    padding-left: 0.85rem;
+  }
+
+  .login-box {
+    padding: 1.2rem 1rem;
   }
 }

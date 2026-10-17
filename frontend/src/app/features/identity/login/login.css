@@ -1,16 +1,22 @@
 :host {
   display: block;
-  min-height: 100%;
+  width: 100%;
+  min-width: 0;
 }
 
+/* ========================================
+   CONTENEDOR
+   ======================================== */
+
 .login-container {
-  min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding: 3rem 1.5rem;
+  align-items: stretch;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
   box-sizing: border-box;
-  background: #f8fafc;
+  background: transparent;
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -23,14 +29,16 @@
 
 .login-card {
   width: 100%;
-  max-width: 520px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 2.5rem;
+  max-width: none;
+  padding: 0;
   box-sizing: border-box;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
+
+/* Modo integrado en otra pantalla */
 
 .login-container--embedded {
   min-height: 0;
@@ -48,13 +56,14 @@
   box-shadow: none;
 }
 
-/* =========================
+/* ========================================
    CABECERA
-   ========================= */
+   Se utiliza cuando el login no está integrado
+   ======================================== */
 
 .login-header {
-  text-align: center;
   margin-bottom: 2rem;
+  text-align: center;
 }
 
 .brand {
@@ -66,7 +75,7 @@
 }
 
 .brand-name {
-  color: #0A2C3A;
+  color: #102c40;
   font-size: 1.8rem;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -77,16 +86,17 @@
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
   background: #eff6ff;
-  color: #0A2C3A;
+  color: #102c40;
   font-size: 0.8rem;
   font-weight: 600;
 }
 
 .login-header h1 {
   margin: 0;
-  color: #0f172a;
+  color: #102c40;
   font-size: 1.8rem;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: -0.035em;
 }
 
 .login-subtitle {
@@ -96,55 +106,53 @@
   line-height: 1.5;
 }
 
-/* =========================
-   ERROR SERVIDOR
-   ========================= */
+/* ========================================
+   MENSAJES DEL SERVIDOR
+   ======================================== */
+
+.server-error-banner,
+.server-success-banner {
+  display: block;
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
 
 .server-error-banner {
-  margin-bottom: 1.5rem;
-  padding: 0.85rem 1rem;
-
   background: #fef2f2;
   color: #b91c1c;
   border: 1px solid #fecaca;
-  border-radius: 8px;
-
-  font-size: 0.9rem;
-  font-weight: 600;
-  line-height: 1.4;
 }
 
 .server-success-banner {
-  margin-bottom: 1.5rem;
-  padding: 0.85rem 1rem;
   background: #f0fdf4;
   color: #166534;
   border: 1px solid #bbf7d0;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  line-height: 1.4;
 }
 
-/* =========================
+/* ========================================
    FORMULARIO
-   ========================= */
+   ======================================== */
 
 .login-form {
   width: 100%;
+  min-width: 0;
 }
 
 .form-section {
-  margin-bottom: 1.5rem;
+  min-width: 0;
+  margin: 0 0 1.5rem;
   padding: 0;
   border: 0;
-  min-inline-size: 0;
 }
 
 .form-section h2 {
   margin: 0 0 1.25rem;
-
-  color: #0f172a;
+  color: #102c40;
   font-size: 1.1rem;
   font-weight: 700;
 }
@@ -152,6 +160,7 @@
 .form-group {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   margin-bottom: 1.25rem;
 }
 
@@ -161,245 +170,258 @@
 
 .form-group label {
   margin-bottom: 0.45rem;
-
   color: #1e293b;
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 650;
 }
 
 .form-group label span {
-  color: #0A2C3A;
+  color: #0a5c58;
 }
 
 .form-group input {
+  display: block;
   width: 100%;
+  min-width: 0;
+  min-height: 2.9rem;
   padding: 0.75rem 0.85rem;
   box-sizing: border-box;
-
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #cbd5e1;
-  border-radius: 8px;
-
+  border-radius: 9px;
   color: #1e293b;
   font-family: inherit;
   font-size: 0.95rem;
-
   outline: none;
   transition:
     border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 .form-group input::placeholder {
   color: #94a3b8;
 }
 
-.form-group input:focus {
-  border-color: #0A2C3A;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+.form-group input:hover:not(:disabled) {
+  border-color: #94a3b8;
 }
 
-/* =========================
+.form-group input:focus {
+  border-color: #0a5c58;
+  box-shadow: 0 0 0 3px rgb(92 207 192 / 20%);
+}
+
+.form-group input:disabled {
+  background: #f8fafc;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+/* ========================================
    CONTRASEÑA
-   ========================= */
+   ======================================== */
 
 .password-wrapper {
   position: relative;
   width: 100%;
+  min-width: 0;
 }
 
 .password-wrapper input {
-  padding-right: 5.5rem;
+  padding-right: 3.25rem;
 }
 
 .password-toggle {
   position: absolute;
   top: 50%;
   right: 0.75rem;
-  width: 1.5rem;
-  height: 1.5rem;
-  transform: translateY(-50%);
-
   display: flex;
   align-items: center;
   justify-content: center;
-
+  width: 1.75rem;
+  height: 1.75rem;
   padding: 0;
-  border: none;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 5px;
   background: transparent;
-
   color: #64748b;
-
   cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
 }
 
 .password-toggle:hover {
-  color: #0A2C3A;
+  background: #f1f5f9;
+  color: #0a5c58;
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid #0a5c58;
+  outline-offset: 2px;
 }
 
 .password-toggle svg {
+  display: block;
   width: 1.25rem;
   height: 1.25rem;
 }
 
-/* =========================
-   ERRORES
-   ========================= */
+/* ========================================
+   ERRORES DE VALIDACIÓN
+   ======================================== */
 
 .error {
-  margin-top: 0.35rem;
-
+  display: block;
+  margin-top: 0.4rem;
   color: #dc2626;
   font-size: 0.8rem;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
-/* =========================
-   BOTÓN
-   ========================= */
+/* ========================================
+   BOTÓN PRINCIPAL
+   ======================================== */
 
 .btn-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  padding: 0.8rem 1rem;
-
+  min-height: 2.9rem;
+  padding: 0.85rem 1rem;
   background: #5ccfc0;
-  color: #0A2C3A;
-
-  border: none;
-  border-radius: 8px;
-
+  color: #102c40;
+  border: 1px solid transparent;
+  border-radius: 9px;
   font-family: inherit;
   font-size: 0.95rem;
-  font-weight: 700;
-
+  font-weight: 750;
+  line-height: 1.4;
+  text-align: center;
   cursor: pointer;
-
   transition:
     background 0.2s ease,
+    color 0.2s ease,
     transform 0.2s ease,
     box-shadow 0.2s ease;
 }
 
 .btn-submit:hover:not(:disabled) {
-  background: #0A2C3A;
-  color: white;
+  background: #102c40;
+  color: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 5px 12px rgb(16 44 64 / 16%);
 }
 
 .btn-submit:active:not(:disabled) {
   transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-submit:focus-visible {
+  outline: 3px solid rgb(10 92 88 / 35%);
+  outline-offset: 3px;
 }
 
 .btn-submit:disabled {
-  background: #94a3b8;
+  background: #cbd5e1;
+  color: #64748b;
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
-/* =========================
-   ENLACE REGISTRO
-   ========================= */
+/* ========================================
+   ENLACES DE AUTENTICACIÓN
+   ======================================== */
 
 .auth-links {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 0.35rem;
-
   margin-top: 1.5rem;
-
   color: #64748b;
   font-size: 0.9rem;
   text-align: center;
 }
 
 .auth-link {
-  color: #0A2C3A;
-  font-weight: 600;
+  color: #0a5c58;
+  font-weight: 700;
   text-decoration: none;
 }
 
 .auth-link:hover {
-  color: #0A2C3A;
+  color: #102c40;
   text-decoration: underline;
 }
 
-/* =========================
-   RESPONSIVE
-   ========================= */
-
-@media (max-width: 640px) {
-  .login-container {
-    padding: 1.5rem 1rem;
-  }
-
-  .login-card {
-    padding: 1.75rem 1.25rem;
-    border-radius: 12px;
-  }
-
-  .brand-name {
-    font-size: 1.6rem;
-  }
-
-  .login-header h1 {
-    font-size: 1.5rem;
-  }
-
-  .auth-links {
-    flex-direction: column;
-    gap: 0.2rem;
-  }
-}
+/* ========================================
+   RECUPERAR CONTRASEÑA
+   ======================================== */
 
 .forgot-password {
-  text-align: center;
   margin-top: 1.25rem;
+  text-align: center;
 }
 
 .forgot-password-link {
   padding: 0;
-  border: none;
+  border: 0;
   background: transparent;
-
-  color: #0A2C3A;
+  color: #0a5c58;
   font-family: inherit;
   font-size: 0.85rem;
-  font-weight: 600;
-
+  font-weight: 650;
   cursor: pointer;
 }
 
 .forgot-password-link:hover {
-  color: #0A2C3A;
+  color: #102c40;
   text-decoration: underline;
 }
 
+.forgot-password-link:focus-visible {
+  outline: 2px solid #0a5c58;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
 .forgot-password-message {
+  display: block;
   margin: 0.75rem 0 0;
   color: #64748b;
   font-size: 0.85rem;
+  line-height: 1.5;
 }
 
-/* =========================
+/* ========================================
    SESIÓN ACTIVA
-   ========================= */
+   ======================================== */
 
 .active-session-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  padding: 2.5rem 1.75rem;
-  border-radius: 16px;
-  background: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 2rem 1.5rem;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(16 44 64 / 6%);
+  text-align: center;
 }
 
 .login-card--embedded .active-session-card {
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 8px 24px rgba(10, 44, 58, 0.06);
+  border: 0;
+  border-radius: 0;
+  padding: 0.5rem 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .active-session-icon-wrapper {
@@ -408,10 +430,10 @@
   justify-content: center;
   width: 58px;
   height: 58px;
+  margin-bottom: 1rem;
   border-radius: 50%;
   background: #eafcf8;
   color: #0c5d4d;
-  margin-bottom: 1rem;
 }
 
 .active-session-icon {
@@ -421,6 +443,7 @@
 
 .active-session-badge {
   display: inline-block;
+  margin-bottom: 0.75rem;
   padding: 0.3rem 0.85rem;
   border-radius: 999px;
   background: #eafcf8;
@@ -429,12 +452,11 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  margin-bottom: 0.75rem;
 }
 
 .active-session-title {
   margin: 0 0 0.5rem;
-  color: #0f172a;
+  color: #102c40;
   font-size: 1.5rem;
   font-weight: 750;
   letter-spacing: -0.03em;
@@ -444,22 +466,27 @@
   margin: 0 0 1.25rem;
   color: #64748b;
   font-size: 0.95rem;
-  line-height: 1.5;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 .active-session-greeting strong {
-  color: #0A2C3A;
+  color: #0a5c58;
 }
 
 .active-session-info {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 0.65rem;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  background: #f8fafc;
+  max-width: 100%;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0.85rem;
+  box-sizing: border-box;
   border: 1px solid #e2e8f0;
-  margin-bottom: 1.75rem;
+  border-radius: 9px;
+  background: #f8fafc;
 }
 
 .role-pill {
@@ -467,7 +494,7 @@
   padding: 0.2rem 0.55rem;
   border-radius: 6px;
   background: #102c40;
-  color: #42d6b2;
+  color: #5ccfc0;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -477,6 +504,7 @@
   color: #334155;
   font-size: 0.85rem;
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .active-session-actions {
@@ -492,24 +520,35 @@
   justify-content: center;
   gap: 0.5rem;
   width: 100%;
-  box-sizing: border-box;
+  min-height: 2.9rem;
   padding: 0.85rem 1.25rem;
-  border-radius: 8px;
+  box-sizing: border-box;
+  border-radius: 9px;
   background: #5ccfc0;
-  color: #0A2C3A;
+  color: #102c40;
   font-family: inherit;
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 750;
+  line-height: 1.4;
   text-decoration: none;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-dashboard:hover {
-  background: #0A2C3A;
-  color: #ffffff;
+  background: #102c40;
+  color: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(10, 44, 58, 0.2);
+  box-shadow: 0 5px 12px rgb(16 44 64 / 16%);
+}
+
+.btn-dashboard:focus-visible {
+  outline: 3px solid rgb(10 92 88 / 35%);
+  outline-offset: 3px;
 }
 
 .btn-logout-session {
@@ -518,20 +557,77 @@
   justify-content: center;
   gap: 0.5rem;
   width: 100%;
-  box-sizing: border-box;
+  min-height: 2.8rem;
   padding: 0.75rem 1.25rem;
-  border-radius: 8px;
-  background: transparent;
-  color: #b91c1c;
+  box-sizing: border-box;
   border: 1px solid #fecaca;
+  border-radius: 9px;
+  background: #fff;
+  color: #b91c1c;
   font-family: inherit;
   font-size: 0.9rem;
   font-weight: 650;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .btn-logout-session:hover {
   background: #fff1f2;
   color: #991b1b;
+  border-color: #fda4af;
+}
+
+.btn-logout-session:focus-visible {
+  outline: 2px solid #b91c1c;
+  outline-offset: 3px;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 640px) {
+  .login-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .brand-name {
+    font-size: 1.6rem;
+  }
+
+  .login-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .login-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .auth-links {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .active-session-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .active-session-title {
+    font-size: 1.35rem;
+  }
+
+  .active-session-info {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
