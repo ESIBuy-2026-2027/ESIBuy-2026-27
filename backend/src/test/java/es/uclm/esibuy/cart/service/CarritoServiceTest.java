@@ -1,7 +1,6 @@
 package es.uclm.esibuy.cart.service;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Optional;
 
 import es.uclm.esibuy.cart.dto.AnadirItemCarritoDTO;
@@ -57,8 +56,8 @@ class CarritoServiceTest {
 
         assertEquals(CLIENTE_ID, result.clienteId());
         assertEquals(1, result.items().size());
-        assertEquals(2, result.items().getFirst().cantidad());
-        assertEquals(new BigDecimal("39.98"), result.items().getFirst().subtotal());
+        assertEquals(2, result.items().get(0).cantidad());
+        assertEquals(new BigDecimal("39.98"), result.items().get(0).subtotal());
         assertEquals(new BigDecimal("39.98"), result.precioTotal());
         verify(carritoRepository).save(any(Carrito.class));
     }
@@ -66,28 +65,30 @@ class CarritoServiceTest {
     @Test
     void shouldAccumulateQuantityForProductAlreadyInCart() {
         Product product = availableProduct(5);
-        Carrito existingCart = mock(Carrito.class);
-        ItemCarrito existingItem = new ItemCarrito(PRODUCTO_ID, PRODUCTO_NOMBRE, PRECIO, 2);
+        Carrito existingCart = new Carrito(CLIENTE_ID);
+        existingCart.addOrIncrementItem(PRODUCTO_ID, PRODUCTO_NOMBRE, PRECIO, 2);
         when(productRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(product));
         when(carritoRepository.findByClienteId(CLIENTE_ID)).thenReturn(Optional.of(existingCart));
-        when(existingCart.getItems()).thenReturn(List.of(existingItem));
         when(carritoRepository.save(any(Carrito.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         CarritoDTO result = carritoService.anadirItem(CLIENTE_ID, new AnadirItemCarritoDTO(PRODUCTO_ID, 3));
 
         assertEquals(1, result.items().size());
-        assertEquals(5, result.items().getFirst().cantidad());
-        assertEquals(new BigDecimal("99.95"), result.items().getFirst().subtotal());
+        assertEquals(5, result.items().get(0).cantidad());
+        assertEquals(new BigDecimal("99.95"), result.items().get(0).subtotal());
         assertEquals(new BigDecimal("99.95"), result.precioTotal());
     }
 
     @Test
     void shouldRejectAccumulatedQuantityThatExceedsAvailableStock() {
-        Carrito existingCart = mock(Carrito.class);
-        ItemCarrito existingItem = new ItemCarrito(PRODUCTO_ID, PRODUCTO_NOMBRE, PRECIO, 3);
-        when(productRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(availableProduct(5)));
+        Carrito existingCart = new Carrito(CLIENTE_ID);
+        existingCart.addOrIncrementItem(PRODUCTO_ID, PRODUCTO_NOMBRE, PRECIO, 3);
+        Product product = mock(Product.class);
+        when(product.getId()).thenReturn(PRODUCTO_ID);
+        when(product.getStock()).thenReturn(5);
+        when(product.isAvailable()).thenReturn(true);
+        when(productRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(product));
         when(carritoRepository.findByClienteId(CLIENTE_ID)).thenReturn(Optional.of(existingCart));
-        when(existingCart.getItems()).thenReturn(List.of(existingItem));
 
         assertThrows(
                 IllegalStateException.class,
@@ -113,7 +114,6 @@ class CarritoServiceTest {
     @Test
     void shouldRejectInactiveProduct() {
         Product product = mock(Product.class);
-        when(product.getId()).thenReturn(PRODUCTO_ID);
         when(product.isAvailable()).thenReturn(false);
         when(productRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(product));
 
