@@ -77,7 +77,8 @@ describe('ShippingAddresses', () => {
     await render();
 
     expect(el.querySelectorAll('.address-card').length).toBe(1);
-    expect(el.querySelector('.address-card')?.textContent).toContain('Calle Mayor, 12, 2º B');
+    expect(el.querySelector('.address-card')?.textContent).toContain('Calle Mayor, 12');
+    expect(el.querySelector('.address-card')?.textContent).toContain('2º B');
     expect(el.querySelector('.default-badge')?.textContent).toContain('Predeterminada');
   });
 
@@ -95,7 +96,7 @@ describe('ShippingAddresses', () => {
     expect(el.querySelector('[role="alert"]')?.textContent).toContain('No se pudieron cargar');
 
     list.mockReturnValueOnce(of([home]));
-    await click('.primary-button');
+    await click('.form-error button');
 
     expect(el.querySelector('[role="alert"]')).toBeNull();
     expect(el.querySelectorAll('.address-card').length).toBe(1);
@@ -113,7 +114,7 @@ describe('ShippingAddresses', () => {
   it('propone la primera dirección como predeterminada', async () => {
     list.mockReturnValue(of([]));
     await render();
-    await click('[data-testid="add-address"]');
+    await click('.primary-action');
 
     expect((el.querySelector('#isDefault') as HTMLInputElement).checked).toBe(true);
   });
@@ -121,7 +122,7 @@ describe('ShippingAddresses', () => {
   it('no propone como predeterminada una dirección posterior', async () => {
     list.mockReturnValue(of([home]));
     await render();
-    await click('[data-testid="add-address"]');
+    await click('.primary-action');
 
     expect((el.querySelector('#isDefault') as HTMLInputElement).checked).toBe(false);
   });
@@ -129,7 +130,7 @@ describe('ShippingAddresses', () => {
   it('valida los campos obligatorios sin llamar al servidor', async () => {
     list.mockReturnValue(of([]));
     await render();
-    await click('[data-testid="add-address"]');
+    await click('.primary-action');
     await submit();
 
     expect(add).not.toHaveBeenCalled();
@@ -140,7 +141,7 @@ describe('ShippingAddresses', () => {
   it('valida el formato del código postal y del teléfono', async () => {
     list.mockReturnValue(of([]));
     await render();
-    await click('[data-testid="add-address"]');
+    await click('.primary-action');
     await fillValidForm();
     await type('postalCode', '1234');
     await type('phone', '12345');
@@ -155,7 +156,7 @@ describe('ShippingAddresses', () => {
     list.mockReturnValue(of([]));
     add.mockImplementation((request) => of({ ...request, id: 'new' }));
     await render();
-    await click('[data-testid="add-address"]');
+    await click('.primary-action');
     await fillValidForm();
     await submit();
 
@@ -178,7 +179,7 @@ describe('ShippingAddresses', () => {
     list.mockReturnValue(of([home]));
     add.mockImplementation((request) => of({ ...request, id: 'new' }));
     await render();
-    await click('[data-testid="add-address"]');
+    await click('.primary-action');
     await fillValidForm();
     await click('#isDefault');
     await submit();
@@ -195,7 +196,7 @@ describe('ShippingAddresses', () => {
       ),
     );
     await render();
-    await click('[data-testid="add-address"]');
+    await click('.primary-action');
     await fillValidForm();
     await submit();
 
@@ -209,22 +210,22 @@ describe('ShippingAddresses', () => {
       throwError(() => new HttpErrorResponse({ status: 409, error: { message: 'Límite alcanzado' } })),
     );
     await render();
-    await click('[data-testid="add-address"]');
+    await click('.primary-action');
     await fillValidForm();
     await submit();
 
-    expect(el.querySelector('form [role="alert"]')?.textContent).toContain('Límite alcanzado');
+    expect(el.querySelector('.address-form-panel [role="alert"]')?.textContent).toContain('Límite alcanzado');
   });
 
   it('muestra un mensaje de permisos ante un 403 al guardar', async () => {
     list.mockReturnValue(of([]));
     add.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 403 })));
     await render();
-    await click('[data-testid="add-address"]');
+    await click('.primary-action');
     await fillValidForm();
     await submit();
 
-    expect(el.querySelector('form [role="alert"]')?.textContent).toContain('No tienes permisos');
+    expect(el.querySelector('.address-form-panel [role="alert"]')?.textContent).toContain('No tienes permisos');
   });
 
   it('cierra la sesión si caduca al guardar (401)', async () => {
@@ -232,7 +233,7 @@ describe('ShippingAddresses', () => {
     add.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 401 })));
     const navigate = vi.spyOn(Router.prototype, 'navigate').mockResolvedValue(true);
     await render();
-    await click('[data-testid="add-address"]');
+    await click('.primary-action');
     await fillValidForm();
     await submit();
 
@@ -245,14 +246,14 @@ describe('ShippingAddresses', () => {
     list.mockReturnValue(of(many));
     await render();
 
-    expect((el.querySelector('[data-testid="add-address"]') as HTMLButtonElement).disabled).toBe(true);
-    expect(el.querySelector('.limit-note')).not.toBeNull();
+    expect(el.querySelector('.primary-action')).toBeNull();
+    expect(el.querySelector('.limit-notice')).not.toBeNull();
   });
 
   it('cancela el formulario sin guardar', async () => {
     list.mockReturnValue(of([]));
     await render();
-    await click('[data-testid="add-address"]');
+    await click('.primary-action');
     await click('.secondary-button');
 
     expect(el.querySelector('form')).toBeNull();

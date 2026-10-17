@@ -76,12 +76,24 @@ describe('App', () => {
 
     const menu = (fixture.nativeElement as HTMLElement).querySelector('#profile-menu');
     const menuButtons = Array.from(menu?.querySelectorAll<HTMLButtonElement>('button') ?? []);
-    const profileOption = menuButtons.find((button) => button.textContent?.trim() === 'Perfil');
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const profileOption = menuButtons.find((button) => button.textContent?.trim() === 'Mi perfil');
     const logoutOption = menuButtons.find((button) => button.textContent?.trim() === 'Cerrar sesión');
 
-    expect(profileOption?.disabled).toBe(true);
-    expect(logoutOption).toBeDefined();
-    logoutOption?.click();
+    expect(profileOption).toBeDefined();
+    profileOption?.click();
+    fixture.detectChanges();
+    expect(navigate).toHaveBeenCalledWith(['/client/profile']);
+
+    profileButton?.click();
+    fixture.detectChanges();
+
+    const reopenedMenu = (fixture.nativeElement as HTMLElement).querySelector('#profile-menu');
+    const freshLogoutOption = Array.from(reopenedMenu?.querySelectorAll<HTMLButtonElement>('button') ?? [])
+      .find((button) => button.textContent?.trim() === 'Cerrar sesión');
+
+    expect(freshLogoutOption).toBeDefined();
+    freshLogoutOption?.click();
     fixture.detectChanges();
     expect(logout).toHaveBeenCalledOnce();
     expect((fixture.nativeElement as HTMLElement).querySelector('#profile-menu')).toBeNull();

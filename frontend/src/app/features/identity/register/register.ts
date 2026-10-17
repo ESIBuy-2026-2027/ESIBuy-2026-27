@@ -398,14 +398,17 @@ export class Register {
     }
 
     this.showCancelConfirmation = true;
+    this.changeDetector.markForCheck();
   }
 
   dismissCancelConfirmation(): void {
     this.showCancelConfirmation = false;
+    this.changeDetector.markForCheck();
   }
 
   confirmCancelRegistration(): void {
     this.showCancelConfirmation = false;
+    this.changeDetector.markForCheck();
     void this.router.navigate(['/']);
   }
 
@@ -415,6 +418,11 @@ export class Register {
 
   private getRegistrationErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
+      const serverMessage = this.getServerMessage(error.error);
+      if (serverMessage) {
+        return serverMessage;
+      }
+
       if (error.status === 409) {
         return 'No se ha podido completar el registro. Comprueba los datos introducidos e inténtalo de nuevo.';
       }

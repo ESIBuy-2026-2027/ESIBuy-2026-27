@@ -39,22 +39,36 @@ describe('Register', () => {
         expect(component).toBeTruthy();
     });
 
-    it('asks for confirmation before cancelling registration and returning home', () => {
-        const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
-
+    it('asks for confirmation before cancelling registration and returning home', async () => {
         component.cancelRegistration();
+        fixture.detectChanges();
+        await fixture.whenStable();
 
-        expect(confirm).toHaveBeenCalledWith(
-            '¿Seguro que quieres cancelar el registro? Se perderán los datos introducidos.'
-        );
+        expect(component.showCancelConfirmation).toBe(true);
+        const dialog = fixture.nativeElement.querySelector('.register-dialog');
+        expect(dialog).not.toBeNull();
+        expect(dialog.textContent).toContain('¿Cancelar el registro?');
+
+        component.confirmCancelRegistration();
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        expect(component.showCancelConfirmation).toBe(false);
         expect(navigate).toHaveBeenCalledWith(['/']);
     });
 
-    it('stays on the registration page when cancellation is declined', () => {
-        vi.spyOn(window, 'confirm').mockReturnValue(false);
-
+    it('stays on the registration page when cancellation is declined', async () => {
         component.cancelRegistration();
+        fixture.detectChanges();
+        await fixture.whenStable();
 
+        expect(component.showCancelConfirmation).toBe(true);
+
+        component.dismissCancelConfirmation();
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        expect(component.showCancelConfirmation).toBe(false);
         expect(navigate).not.toHaveBeenCalled();
     });
 
