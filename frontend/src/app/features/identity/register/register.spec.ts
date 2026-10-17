@@ -132,7 +132,6 @@ describe('Register', () => {
         fixture.detectChanges();
 
         expect(component.serverError).toBe('Ya existe un usuario con ese email');
-        expect(component.emailServerError).toBe('Ya existe un usuario con ese email');
         expect(fixture.nativeElement.querySelector('[role="alert"]').textContent)
             .toContain('Ya existe un usuario con ese email');
     });

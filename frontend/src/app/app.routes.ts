@@ -12,6 +12,7 @@ import { ClientDashboard } from './features/client/client-dashboard/client-dashb
 import { ClientProfile } from './features/client/client-profile/client-profile';
 import { SellerProfile } from './features/products/seller-profile/seller-profile';
 import { AdminProfile } from './features/admin/admin-profile/admin-profile';
+import { ClientCart } from './features/client/cart/cart';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -33,6 +34,7 @@ export const routes: Routes = [
   { path: 'seller/profile', component: SellerProfile, canActivate: [authGuard, roleGuard('SELLER')] },
 
   { path: 'client/dashboard', component: ClientDashboard, canActivate: [authGuard, roleGuard('CLIENT')] },
+  { path: 'client/cart', component: ClientCart, canActivate: [authGuard, roleGuard('CLIENT')] },
   { path: 'client/profile', component: ClientProfile, canActivate: [authGuard, roleGuard('CLIENT')] },
 
   { path: '**', redirectTo: '' }

@@ -57,6 +57,39 @@
   color: #dfeff5;
 }
 
+.header-cart {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  gap: 0.45rem;
+  color: #dfeff5;
+  font-size: 0.9rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.header-cart svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.header-cart-count {
+  display: inline-grid;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  place-items: center;
+  border-radius: 999px;
+  background: #5ccfc0;
+  color: #0a2c3a;
+  font-size: 0.75rem;
+}
+
+.header-cart:focus-visible {
+  border-radius: 0.35rem;
+  outline: 2px solid #5ccfc0;
+  outline-offset: 3px;
+}
+
 .go-profile > .profile-button {
   display: inline-flex;
   box-sizing: border-box;
