@@ -95,6 +95,9 @@ export class ShippingAddresses implements OnInit {
   readonly addresses = signal<ShippingAddress[]>([]);
   readonly loading = signal(true);
   editing = signal<ShippingAddress | null>(null);
+  readonly deletingAddressId = signal<string | null>(null);
+  readonly addressPendingDeletion = signal<ShippingAddress | null>(null);
+  readonly deleteError = signal<string | null>(null);
   readonly loadError = signal<string | null>(null);
 
   readonly formOpen = signal(false);
@@ -177,6 +180,72 @@ export class ShippingAddresses implements OnInit {
       this.fieldErrors.set(validateAddress(this.form));
     }
   }
+
+
+  confirmDeleteAddress(address: ShippingAddress): void {
+    if (this.saving() || this.deletingAddressId() !== null) {
+      return;
+    }
+
+    this.deleteError.set(null);
+    this.addressPendingDeletion.set(address);
+  }
+
+  cancelDeleteAddress(): void {
+    if (this.deletingAddressId() !== null) {
+      return;
+    }
+
+    this.addressPendingDeletion.set(null);
+  }
+
+  deleteAddress(): void {
+    const address = this.addressPendingDeletion();
+
+    if (!address || this.saving() || this.deletingAddressId() !== null) {
+      return;
+    }
+
+    this.deletingAddressId.set(address.id);
+    this.deleteError.set(null);
+    this.successMessage.set(null);
+
+    this.addressService.delete(address.id).subscribe({
+      next: () => {
+        this.addresses.update((current) => {
+          const remaining = current.filter(
+            (item) => item.id !== address.id,
+          );
+
+          if (!address.isDefault || remaining.length === 0) {
+            return remaining;
+          }
+
+          return remaining.map((item, index) => ({
+            ...item,
+            isDefault: index === 0,
+          }));
+        });
+
+        this.addressPendingDeletion.set(null);
+        this.deletingAddressId.set(null);
+        this.successMessage.set(
+          'La dirección se ha eliminado correctamente.',
+        );
+      },
+      error: (error: unknown) => {
+        this.deletingAddressId.set(null);
+
+        if (this.handleExpiredSession(error)) {
+          return;
+        }
+
+        this.deleteError.set(this.deleteErrorMessage(error));
+        this.addressPendingDeletion.set(null);
+      },
+    });
+  }
+
 
   save(): void {
     if (this.saving()) {
@@ -311,6 +380,23 @@ export class ShippingAddresses implements OnInit {
       }
     }
     return 'No se pudieron cargar tus direcciones. Inténtalo de nuevo más tarde.';
+  }
+
+  private deleteErrorMessage(error: unknown): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return 'No se ha podido eliminar la dirección. Inténtalo de nuevo.';
+    }
+
+    switch (error.status) {
+      case 0:
+        return 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
+      case 403:
+        return 'No tienes permisos para eliminar direcciones de envío.';
+      case 404:
+        return 'No hemos encontrado esa dirección. Actualiza la lista e inténtalo de nuevo.';
+      default:
+        return 'No se ha podido eliminar la dirección. Inténtalo de nuevo más tarde.';
+    }
   }
 
   private handleExpiredSession(error: unknown): boolean {

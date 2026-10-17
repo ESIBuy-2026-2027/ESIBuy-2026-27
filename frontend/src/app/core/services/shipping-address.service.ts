@@ -35,4 +35,10 @@ export class ShippingAddressService {
       `/api/users/me/addresses/${id}`, req, { withCredentials: true }
     );
   }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.url}/${id}`, { withCredentials: true },
+    );
+  }
 }

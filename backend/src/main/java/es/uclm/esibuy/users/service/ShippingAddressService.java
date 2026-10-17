@@ -104,6 +104,34 @@ public class ShippingAddressService {
         return ShippingAddressResponse.from(target);
     }
 
+    public void delete(String userId, String addressId) {
+        User user = findUser(userId);
+        ClientProfile profile = user.getClientProfile();
+
+        if (profile == null) {
+            throw new AddressNotFoundException();
+        }
+
+        List<ShippingAddress> addresses = new ArrayList<>(profile.getAddresses());
+
+        ShippingAddress target = addresses.stream()
+                .filter(address -> address.getId().equals(addressId))
+                .findFirst()
+                .orElseThrow(AddressNotFoundException::new);
+
+        boolean wasDefault = target.isDefaultAddress();
+
+        addresses.remove(target);
+
+        if (wasDefault && !addresses.isEmpty()) {
+            addresses.forEach(address -> address.setDefaultAddress(false));
+            addresses.get(0).setDefaultAddress(true);
+        }
+
+        profile.setAddresses(addresses);
+        userRepository.save(user);
+    }
+
     private User findUser(String userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
