@@ -112,26 +112,27 @@
                     </select>
                 </div>
 
-                <div class="form-field">
-                    <label for="lastFourDigits">
-                        Últimas cuatro cifras <span class="required-mark">*</span>
-                    </label>
-                    <input id="lastFourDigits" name="lastFourDigits" type="text" inputmode="numeric" autocomplete="off"
-                        maxlength="4" pattern="[0-9]{4}" placeholder="1234" [ngModel]="form().lastFourDigits"
-                        (ngModelChange)="updateField('lastFourDigits', $event)" [disabled]="saving()" required />
-                    <small>Introduce solo las cuatro últimas cifras.</small>
-                </div>
+                <div class="form-field-group">
+                    <div class="form-field">
+                        <label for="lastFourDigits">
+                            Últimas 4 cifras <span class="required-mark">*</span>
+                        </label>
+                        <input id="lastFourDigits" name="lastFourDigits" type="text" inputmode="numeric"
+                            autocomplete="off" maxlength="4" pattern="[0-9]{4}" placeholder="1234"
+                            [ngModel]="form().lastFourDigits" (ngModelChange)="updateField('lastFourDigits', $event)"
+                            [disabled]="saving()" required />
+                    </div>
 
-                <div class="form-field">
-                    <label for="expiration">
-                        Caducidad <span class="required-mark">*</span>
-                    </label>
-                    <input id="expiration" name="expiration" type="text" inputmode="numeric" autocomplete="cc-exp"
-                        placeholder="MM/AA" maxlength="5" pattern="(0[1-9]|1[0-2])/[0-9]{2}"
-                        [ngModel]="form().expiration"
-                        (ngModelChange)="updateField('expiration', formatExpiration($event))" [disabled]="saving()"
-                        required />
-                    <small>Mes y año. Ejemplo: 11/30.</small>
+                    <div class="form-field">
+                        <label for="expiration">
+                            Caducidad <span class="required-mark">*</span>
+                        </label>
+                        <input id="expiration" name="expiration" type="text" inputmode="numeric" autocomplete="cc-exp"
+                            placeholder="MM/AA" maxlength="5" pattern="(0[1-9]|1[0-2])/[0-9]{2}"
+                            [ngModel]="form().expiration"
+                            (ngModelChange)="updateField('expiration', formatExpiration($event))" [disabled]="saving()"
+                            required />
+                    </div>
                 </div>
                 }
 
@@ -147,14 +148,13 @@
                 }
 
                 @if (selectedType() === 'BIZUM') {
-                <div class="form-field field-full">
+                <div class="form-field">
                     <label for="bizumPhone">
                         Teléfono asociado a Bizum <span class="required-mark">*</span>
                     </label>
                     <input id="bizumPhone" name="bizumPhone" type="tel" inputmode="numeric" maxlength="9"
-                        pattern="[0-9]{9}" autocomplete="tel" placeholder="Teléfono de 9 cifras"
-                        [ngModel]="form().bizumPhone" (ngModelChange)="updateField('bizumPhone', $event)"
-                        [disabled]="saving()" required />
+                        pattern="[0-9]{9}" autocomplete="tel" placeholder="Ej. 600000000" [ngModel]="form().bizumPhone"
+                        (ngModelChange)="updateField('bizumPhone', $event)" [disabled]="saving()" required />
                 </div>
                 }
             </div>
@@ -171,7 +171,7 @@
 
                 <span class="default-option-copy">
                     <strong>Usar como método predeterminado</strong>
-                    <small>Se Marcar como predeterminadaá inicialmente para tus próximos pagos.</small>
+                    <small>Se utilizará como opción predeterminada para tus próximos pagos.</small>
                 </span>
             </label>
 
@@ -237,11 +237,11 @@
                 para tener tus datos preparados.
             </p>
 
-            <button type="button" class="primary-action" (click)="openForm()">
+            <button type="button" class="primary-action" (click)="openForm()" [disabled]="loading()">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M12 5v14M5 12h14"></path>
                 </svg>
-                Añadir mi primer método
+                Añadir método
             </button>
         </div>
         } @else {
@@ -280,7 +280,7 @@
                     <button type="button" class="set-default-button" (click)="setDefault(method)"
                         [disabled]="actionId() !== null"
                         [attr.aria-label]="'Establecer como predeterminada la tarjeta ' + (method.label || methodTypeLabel(method.type))">
-                        {{ actionId() === method.id ? 'Actualizando...' : 'Marcar como predeterminada' }}
+                        {{ actionId() === method.id ? 'Actualizando...' : 'Hacer predeterminada' }}
                     </button>
                     }
                 </div>
@@ -344,9 +344,12 @@
                         <div class="payment-icon" [class.paypal-icon]="method.type === 'PAYPAL'"
                             [class.bizum-icon]="method.type === 'BIZUM'" aria-hidden="true">
                             @if (method.type === 'PAYPAL') {
-                            <span class="payment-letter">P</span>
+                            <img class="payment-logo paypal-logo"
+                                src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg"
+                                alt="" />
                             } @else {
-                            <span class="payment-letter">B</span>
+                            <img class="payment-logo bizum-logo"
+                                src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Bizum.svg" alt="" />
                             }
                         </div>
 
@@ -370,8 +373,8 @@
                     } @else {
                     <button type="button" class="set-default-button" (click)="setDefault(method)"
                         [disabled]="actionId() !== null"
-                        [attr.aria-label]="'Marcar como predeterminada ' + (method.label || methodTypeLabel(method.type))">
-                        {{ actionId() === method.id ? 'Actualizando...' : 'Marcar como predeterminada' }}
+                        [attr.aria-label]="'Marcar como predeterminado ' + (method.label || methodTypeLabel(method.type))">
+                        {{ actionId() === method.id ? 'Actualizando...' : 'Marcar como predeterminado' }}
                     </button>
                     }
                 </div>

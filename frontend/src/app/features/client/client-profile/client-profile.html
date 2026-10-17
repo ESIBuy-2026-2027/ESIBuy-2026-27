@@ -95,7 +95,7 @@
         } @else if (profile(); as client) {
 
         <!-- BANNER PREMIUM -->
-        @if (isPremium()) {
+        @if (activeSection() === 'personal' && isPremium()) {
         <section class="premium-banner">
             <div>
                 <span class="premium-eyebrow">CUENTA PREMIUM</span>

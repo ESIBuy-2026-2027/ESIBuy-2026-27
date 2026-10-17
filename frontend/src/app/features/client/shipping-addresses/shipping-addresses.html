@@ -295,6 +295,8 @@
             <span>{{ address.postalCode }} · {{ address.city }}, {{ address.province }}</span>
           </p>
 
+
+          @if (address.phone?.trim()) {
           <p class="detail-row">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path
@@ -303,6 +305,8 @@
             </svg>
             <span>{{ address.phone }}</span>
           </p>
+          }
+
         </div>
 
         @if (deleteError() && deletingAddressId() === address.id) {
