@@ -1,11 +1,14 @@
 package es.uclm.esibuy.users.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClientProfile {
 
     private LocalDate birthDate;
     private CustomerType customerType = CustomerType.STANDARD;
+    private List<ShippingAddress> addresses = new ArrayList<>();
 
     public ClientProfile() {
     }
@@ -29,5 +32,13 @@ public class ClientProfile {
 
     public void setCustomerType(CustomerType customerType) {
         this.customerType = customerType;
+    }
+
+    public List<ShippingAddress> getAddresses() {
+        return addresses == null ? new ArrayList<>() : addresses;
+    }
+
+    public void setAddresses(List<ShippingAddress> addresses) {
+        this.addresses = addresses;
     }
 }
