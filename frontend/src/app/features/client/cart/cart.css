@@ -82,6 +82,52 @@
   font-size: 0.875rem;
 }
 
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.quantity-action,
+.remove-action {
+  min-height: 36px;
+  border: 1px solid #cbd9e2;
+  border-radius: 7px;
+  background: #fff;
+  color: #173247;
+  font: inherit;
+  cursor: pointer;
+}
+
+.quantity-action {
+  width: 36px;
+  font-size: 1.1rem;
+}
+
+.remove-action {
+  padding: 0 0.75rem;
+  color: #a61b1b;
+}
+
+.quantity-action:disabled,
+.remove-action:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.quantity-action:focus-visible,
+.remove-action:focus-visible {
+  outline: 3px solid #147c73;
+  outline-offset: 2px;
+}
+
+.quantity-value {
+  min-width: 1.5rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
 .item-subtotal {
   flex: 0 0 auto;
   font-weight: 700;
