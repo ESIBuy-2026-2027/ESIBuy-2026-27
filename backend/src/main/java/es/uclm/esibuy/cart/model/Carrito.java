@@ -85,6 +85,11 @@ public class Carrito {
         return removed;
     }
 
+    public void vaciar() {
+        items.clear();
+        recalculateTotal();
+    }
+
     private void recalculateTotal() {
         precioTotal = items.stream()
                 .map(ItemCarrito::getSubtotal)
