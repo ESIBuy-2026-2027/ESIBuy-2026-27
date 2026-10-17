@@ -20,6 +20,46 @@
   padding: 30px 18px 20px;
   background: #102c40;
   color: #edf5f8;
+  transition: transform 0.25s ease;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 30px;
+  right: 12px;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: #1d4357;
+  color: #edf5f8;
+  cursor: pointer;
+}
+
+.sidebar-toggle svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+}
+
+.sidebar-toggle:hover {
+  background: #28546a;
+}
+
+.sidebar-toggle-open {
+  position: fixed;
+  top: 74px;
+  left: 14px;
+  z-index: 2;
+  background: #102c40;
+  color: #edf5f8;
 }
 
 .brand {
@@ -94,6 +134,15 @@
 
 .workspace {
   margin-left: 248px;
+  transition: margin-left 0.25s ease;
+}
+
+.sidebar-collapsed .sidebar {
+  transform: translateX(-100%);
+}
+
+.sidebar-collapsed .workspace {
+  margin-left: 0;
 }
 
 .topbar {
@@ -268,18 +317,44 @@ h1 {
 
 .catalog-filter-panel {
   position: absolute;
+  top: 28px;
+  left: 272px;
   z-index: 2;
   display: grid;
-  width: min(520px, 100%);
+  box-sizing: border-box;
+  width: min(520px, calc(100vw - 360px));
   grid-template-columns: repeat(3, 1fr) auto;
   align-items: end;
   gap: 12px;
-  margin-top: 10px;
   padding: 14px;
   border: 1px solid #dce6ea;
   border-radius: 10px;
   background: #fff;
   box-shadow: 0 8px 20px rgb(23 50 71 / 12%);
+}
+
+.close-filters-button {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #52616c;
+  cursor: pointer;
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.close-filters-button:hover {
+  background: #edf4ff;
+  color: #203b4e;
 }
 
 .catalog-filter-panel label {
@@ -716,10 +791,16 @@ h2 {
 }
 
 @media (max-width: 760px) {
+  .topbar {
+    min-height: 52px;
+    padding: 0 20px;
+  }
+
   .sidebar {
     position: static;
     width: 100%;
     padding: 14px 18px 12px;
+    transition: none;
   }
 
   .brand {
@@ -743,11 +824,15 @@ h2 {
 
   .workspace {
     margin-left: 0;
+    transition: none;
   }
 
-  .topbar {
-    min-height: 52px;
-    padding: 0 20px;
+  .sidebar-collapsed .sidebar {
+    display: none;
+  }
+
+  .seller-layout:not(.sidebar-collapsed) .workspace {
+    margin-left: 0;
   }
 
   .catalog-content {
@@ -777,7 +862,9 @@ h2 {
   }
 
   .catalog-filter-panel {
-    width: 100%;
+    top: 28px;
+    left: 0;
+    width: min(100%, 520px);
     grid-template-columns: 1fr 1fr;
   }
 

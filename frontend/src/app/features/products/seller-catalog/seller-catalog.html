@@ -1,10 +1,15 @@
-<div class="seller-layout">
-  <div class="seller-layout">
+<div class="seller-layout" [class.sidebar-collapsed]="sidebarCollapsed()">
   <aside class="sidebar" aria-label="Panel del vendedor">
     <a class="brand" routerLink="/" aria-label="ESIBuy">
       <span class="brand-mark" aria-hidden="true">E</span>
       <span>ESI<span class="brand-accent">Buy</span></span>
     </a>
+    <button type="button" class="sidebar-toggle" (click)="toggleSidebar()"
+      aria-label="Ocultar barra lateral" title="Ocultar barra lateral">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m15 18-6-6 6-6"/>
+      </svg>
+    </button>
 
     <div class="sidebar-caption">GESTIÓN DE VENTA</div>
     <nav class="seller-navigation" aria-label="Navegación del vendedor">
@@ -54,6 +59,14 @@
   </aside>
 
   <div class="workspace">
+    @if (sidebarCollapsed()) {
+      <button type="button" class="sidebar-toggle sidebar-toggle-open" (click)="toggleSidebar()"
+        aria-label="Mostrar barra lateral" title="Mostrar barra lateral">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </button>
+    }
 
     <main class="catalog-content">
       <section class="page-heading" aria-labelledby="catalog-title">
@@ -98,6 +111,8 @@
             </div>
             @if (filtersOpen()) {
               <div class="catalog-filter-panel" id="catalog-filter-panel">
+                <button type="button" class="close-filters-button" aria-label="Cerrar panel de filtros"
+                  title="Cerrar" (click)="toggleFilters()">×</button>
                 <label>
                   <span>Visibilidad</span>
                   <select [ngModel]="visibilityFilter()" (ngModelChange)="visibilityFilter.set($event)">

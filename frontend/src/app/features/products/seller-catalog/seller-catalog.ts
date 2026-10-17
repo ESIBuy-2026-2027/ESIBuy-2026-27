@@ -1,5 +1,6 @@
+import { isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Category, ProductCreateRequest, ProductsService } from '../products.service';
@@ -18,6 +19,7 @@ type StockFilter = 'all' | 'in-stock' | 'low-stock' | 'out-of-stock';
   styleUrl: './seller-catalog.css',
 })
 export class SellerCatalog implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly catalogService = inject(SellerCatalogService);
   private readonly productsService = inject(ProductsService);
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
@@ -42,6 +44,7 @@ export class SellerCatalog implements OnInit {
   inlineError = signal<string | null>(null);
   visibilitySaving = signal<string | null>(null);
   visibilityError = signal<string | null>(null);
+  sidebarCollapsed = signal(this.readSidebarPreference());
   visibleProducts = computed(() => {
     const query = this.productSearch().trim().toLocaleLowerCase();
     return this.products()
@@ -119,10 +122,27 @@ export class SellerCatalog implements OnInit {
     this.categoryFilter.set('all');
   }
 
+  toggleSidebar(): void {
+    const collapsed = !this.sidebarCollapsed();
+    this.sidebarCollapsed.set(collapsed);
+
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('seller-sidebar-collapsed', String(collapsed));
+    }
+  }
+
   hasActiveFilters(): boolean {
     return this.visibilityFilter() !== 'all'
       || this.stockFilter() !== 'all'
       || this.categoryFilter() !== 'all';
+  }
+
+  private readSidebarPreference(): boolean {
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+
+    return localStorage.getItem('seller-sidebar-collapsed') === 'true';
   }
 
   stockStatus(stock: number): string {
