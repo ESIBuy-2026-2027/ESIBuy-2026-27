@@ -28,6 +28,7 @@ export class PaymentMethods implements OnInit {
     readonly methods = signal<PaymentMethod[]>([]);
     readonly loading = signal(true);
     readonly editingMethodId = signal<string | null>(null);
+    readonly methodToDelete = signal<PaymentMethod | null>(null);
     readonly saving = signal(false);
     readonly actionId = signal<string | null>(null);
     readonly formVisible = signal(false);
@@ -359,13 +360,25 @@ export class PaymentMethods implements OnInit {
         });
     }
 
+
     deleteMethod(method: PaymentMethod): void {
         if (this.actionId()) return;
 
-        const description = this.methodDescription(method);
-        if (!confirm(`¿Quieres eliminar el método de pago «${description}»?`)) {
-            return;
-        }
+        this.error.set(null);
+        this.success.set(null);
+        this.methodToDelete.set(method);
+    }
+
+    cancelDelete(): void {
+        if (this.actionId()) return;
+
+        this.methodToDelete.set(null);
+    }
+
+    confirmDelete(): void {
+        const method = this.methodToDelete();
+
+        if (!method || this.actionId()) return;
 
         this.error.set(null);
         this.success.set(null);
@@ -376,7 +389,9 @@ export class PaymentMethods implements OnInit {
                 this.methods.update(methods =>
                     methods.filter(item => item.id !== method.id),
                 );
+
                 this.actionId.set(null);
+                this.methodToDelete.set(null);
                 this.success.set('El método de pago se ha eliminado.');
 
                 // El servidor puede asignar otro método como predeterminado.
@@ -384,10 +399,12 @@ export class PaymentMethods implements OnInit {
             },
             error: () => {
                 this.actionId.set(null);
+                this.methodToDelete.set(null);
                 this.error.set('No se ha podido eliminar el método de pago.');
             },
         });
     }
+
 
     methodDescription(method: PaymentMethod): string {
         switch (method.type) {

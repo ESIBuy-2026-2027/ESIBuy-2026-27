@@ -406,6 +406,54 @@
             }
         </div>
         }
+
         }
+
     </section>
+    @if (methodToDelete(); as method) {
+    <div class="modal-backdrop" (click)="cancelDelete()" (keydown.escape)="cancelDelete()">
+        <section class="confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="delete-modal-title"
+            aria-describedby="delete-modal-description">
+
+            <div class="confirm-modal-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path>
+                    <path d="M10 11v5M14 11v5"></path>
+                </svg>
+            </div>
+
+            <h2 id="delete-modal-title">
+                Eliminar método de pago
+            </h2>
+
+            <p id="delete-modal-description">
+                ¿Seguro que quieres eliminar
+                <strong>{{ method.label || methodTypeLabel(method.type) }}</strong>?
+                Esta acción no se puede deshacer.
+            </p>
+
+            <div class="confirm-modal-actions">
+                <button type="button" class="secondary-button" (click)="cancelDelete()"
+                    [disabled]="actionId() !== null">
+                    Cancelar
+                </button>
+
+                <button type="button" class="confirm-delete-button" (click)="confirmDelete()"
+                    [disabled]="actionId() !== null">
+
+                    @if (actionId() === method.id) {
+                    <span class="button-spinner" aria-hidden="true"></span>
+                    Eliminando...
+                    } @else {
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path>
+                        <path d="M10 11v5M14 11v5"></path>
+                    </svg>
+                    Eliminar método
+                    }
+                </button>
+            </div>
+        </section>
+    </div>
+    }
 </section>

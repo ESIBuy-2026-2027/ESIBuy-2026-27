@@ -1043,3 +1043,146 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+
+
+/* MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgb(16 44 64 / 55%);
+    backdrop-filter: blur(3px);
+}
+
+.confirm-modal {
+    width: min(100%, 440px);
+    padding: 28px;
+    border: 1px solid #d9e3eb;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 20px 60px rgb(16 44 64 / 22%);
+    animation: modal-appear 0.18s ease-out;
+}
+
+.confirm-modal-icon {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    place-items: center;
+    margin-bottom: 18px;
+    border: 1px solid #f1d2d5;
+    border-radius: 13px;
+    background: #fff1f2;
+    color: #a12632;
+}
+
+.confirm-modal-icon svg {
+    width: 23px;
+    height: 23px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.confirm-modal h2 {
+    margin: 0 0 10px;
+    color: #173247;
+    font-size: 19px;
+    font-weight: 750;
+    letter-spacing: -0.3px;
+}
+
+.confirm-modal p {
+    margin: 0;
+    color: #587388;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.confirm-modal p strong {
+    color: #173247;
+    font-weight: 750;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1px solid #e7edf0;
+}
+
+.confirm-delete-button {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 15px;
+    border: 1px solid #a12632;
+    border-radius: 8px;
+    background: #a12632;
+    color: #fff;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.confirm-delete-button:hover:not(:disabled) {
+    border-color: #842029;
+    background: #842029;
+}
+
+.confirm-delete-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.confirm-modal-actions button:focus-visible {
+    outline: 3px solid rgb(66 191 163 / 35%);
+    outline-offset: 3px;
+}
+
+@keyframes modal-appear {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 480px) {
+    .confirm-modal {
+        padding: 22px;
+    }
+
+    .confirm-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .confirm-modal-actions button {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .confirm-modal {
+        animation: none;
+    }
+}
