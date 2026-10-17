@@ -158,8 +158,9 @@
 
         <div class="form-field field-full">
           <label for="phone">Teléfono de contacto</label>
-          <input id="phone" name="phone" type="tel" [(ngModel)]="form.phone" (ngModelChange)="onFieldChange()"
-            autocomplete="tel" inputmode="tel" placeholder="Teléfono para incidencias con la entrega"
+          <input id="phone" name="phone" type="tel" inputmode="numeric" maxlength="9" autocomplete="tel"
+            [(ngModel)]="form.phone" (ngModelChange)="onFieldChange()" autocomplete="tel" inputmode="tel"
+            placeholder="Teléfono para incidencias con la entrega"
             [class.invalid]="submitted() && fieldErrors()['phone']"
             [attr.aria-invalid]="submitted() && fieldErrors()['phone'] ? 'true' : null"
             [attr.aria-describedby]="submitted() && fieldErrors()['phone'] ? 'phone-error' : null" required>
