@@ -7,7 +7,6 @@ import { AdminUserCreate } from './features/admin/admin-user-create/admin-user-c
 import { ProductCreate } from './features/products/product-create/product-create';
 import { AdminUserList } from './features/admin/admin-user-list/admin-user-list';
 import { AdminUserDetail } from './features/admin/admin-user-detail/admin-user-detail';
-import { AdminCategoryManagement } from './features/admin/admin-category-management/admin-category-management';
 import { SellerCatalog } from './features/products/seller-catalog/seller-catalog';
 import { ClientDashboard } from './features/client/client-dashboard/client-dashboard';
 import { AdminCategoryList } from './features/admin/admin-category-list/admin-category-list';
