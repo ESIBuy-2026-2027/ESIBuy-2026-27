@@ -5,7 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Category, ProductCreateRequest, ProductsService } from '../products.service';
+import { Category, ProductCreateRequest, ProductsService } from '../../../core/services/products.service';
 
 interface ProductFormControls {
   nombre: FormControl<string>;
@@ -197,7 +197,8 @@ export class ProductCreate implements OnInit {
       .subscribe({
         next: () => {
           this.submitting.set(false);
-          this.router.navigate(['/seller/catalog']);
+          this.submitSuccess.set(true);
+          this.submitError.set(null);
         },
         error: (error: unknown) => {
           this.submitting.set(false);

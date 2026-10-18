@@ -5,7 +5,7 @@ import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { DeleteAccount } from '../../../shared/delete-account/delete-account';
-import { Category, ProductsService } from '../../products/products.service';
+import { Category, ProductsService } from '../../../core/services/products.service';
 import { TwoFactorSettingsComponent } from '../../../shared/two-factor-settings/two-factor-settings';
 import { ProfileShellComponent } from '../../../shared/profile-shell/profile-shell';
 import type { ProfileNavigationItem } from '../../../shared/profile-shell/profile-shell';

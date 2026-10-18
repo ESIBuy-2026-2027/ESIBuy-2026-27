@@ -4,8 +4,8 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
-import { CartResponse, CartService } from './cart.service';
-import { CheckoutSummary, ConfirmedOrder, PedidoService } from './pedido.service';
+import { CartResponse, CartService } from '../../../core/services/cart.service';
+import { CheckoutSummary, ConfirmedOrder, PedidoService } from '../../../core/services/pedido.service';
 
 @Component({
   selector: 'app-client-cart',
@@ -57,13 +57,13 @@ export class ClientCart {
         this.checkoutSummary.set(summary);
         this.selectedAddressId.set(
           summary.direcciones.find((address) => address.isDefault)?.id
-            ?? summary.direcciones[0]?.id
-            ?? '',
+          ?? summary.direcciones[0]?.id
+          ?? '',
         );
         this.selectedPaymentMethodId.set(
           summary.metodosPago.find((method) => method.defaultMethod)?.id
-            ?? summary.metodosPago[0]?.id
-            ?? '',
+          ?? summary.metodosPago[0]?.id
+          ?? '',
         );
         this.checkoutOpen.set(true);
         this.checkoutLoading.set(false);

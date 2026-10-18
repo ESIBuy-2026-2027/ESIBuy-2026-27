@@ -51,7 +51,7 @@ class AdminUserServiceTest {
         when(userRepository.findById("user-1")).thenReturn(Optional.of(existing));
         when(userRepository.save(any(User.class))).thenAnswer(call -> call.getArgument(0));
 
-        User result = service.actualizar("user-1", request);
+        User result = service.update("user-1", request);
 
         assertEquals("New", result.getFirstName());
         assertEquals("Name", result.getLastName());
@@ -74,7 +74,7 @@ class AdminUserServiceTest {
         when(userRepository.findById("admin-1")).thenReturn(Optional.of(admin));
         when(userRepository.save(any(User.class))).thenAnswer(call -> call.getArgument(0));
 
-        User result = service.actualizar("admin-1", request);
+        User result = service.update("admin-1", request);
 
         assertEquals("12345678Z", result.getNationalId());
         assertEquals("Ciudad Real", result.getAdminProfile().getHeadquarters());
@@ -93,7 +93,7 @@ class AdminUserServiceTest {
         when(userRepository.existsBySellerProfileBusinessNameIgnoreCase("Mi Tienda Nueva")).thenReturn(false);
         when(userRepository.save(any(User.class))).thenAnswer(call -> call.getArgument(0));
 
-        User result = service.actualizar("seller-1", request);
+        User result = service.update("seller-1", request);
 
         assertEquals("87654321X", result.getNationalId());
         assertEquals("Mi Tienda Nueva", result.getSellerProfile().getBusinessName());
@@ -110,7 +110,7 @@ class AdminUserServiceTest {
         when(userRepository.findById("client-1")).thenReturn(Optional.of(client));
         when(userRepository.save(any(User.class))).thenAnswer(call -> call.getArgument(0));
 
-        User result = service.actualizar("client-1", request);
+        User result = service.update("client-1", request);
 
         assertEquals(LocalDate.of(1995, 5, 20), result.getClientProfile().getBirthDate());
     }
@@ -125,7 +125,7 @@ class AdminUserServiceTest {
         when(userRepository.findById("admin-1")).thenReturn(Optional.of(admin));
         when(userRepository.save(any(User.class))).thenAnswer(call -> call.getArgument(0));
 
-        User result = service.actualizar("admin-1", request);
+        User result = service.update("admin-1", request);
 
         assertNull(result.getPhone());
     }
@@ -134,7 +134,7 @@ class AdminUserServiceTest {
     void failsWhenUserDoesNotExist() {
         when(userRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> service.obtenerPorId("missing"));
+        assertThrows(UserNotFoundException.class, () -> service.findById("missing"));
     }
 
     @Test
@@ -143,14 +143,14 @@ class AdminUserServiceTest {
         User user = new User("admin@example.com", "Ana", "López", UserRole.ADMIN);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        service.eliminar(userId, "507f1f77bcf86cd799439012");
+        service.delete(userId, "507f1f77bcf86cd799439012");
 
         verify(userRepository).delete(user);
     }
 
     @Test
     void rejectsMalformedIdWithoutAccessingRepository() {
-        assertThrows(IllegalStateException.class, () -> service.eliminar("not-an-object-id", "admin-id"));
+        assertThrows(IllegalStateException.class, () -> service.delete("not-an-object-id", "admin-id"));
 
         verify(userRepository, never()).findById("not-an-object-id");
     }
@@ -161,7 +161,7 @@ class AdminUserServiceTest {
         String alternateCaseAdminId = adminId.toUpperCase(Locale.ROOT);
 
         assertThrows(IllegalStateException.class,
-                () -> service.eliminar(alternateCaseAdminId, adminId));
+                () -> service.delete(alternateCaseAdminId, adminId));
 
         verify(userRepository, never()).delete(any(User.class));
     }
@@ -172,7 +172,7 @@ class AdminUserServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class,
-                () -> service.eliminar(userId, "507f1f77bcf86cd799439012"));
+                () -> service.delete(userId, "507f1f77bcf86cd799439012"));
 
         verify(userRepository, never()).delete(any(User.class));
     }
@@ -184,7 +184,7 @@ class AdminUserServiceTest {
         when(userRepository.findById(clientId)).thenReturn(Optional.of(client));
 
         assertThrows(UserDeletionConflictException.class,
-                () -> service.eliminar(clientId, "507f1f77bcf86cd799439012"));
+                () -> service.delete(clientId, "507f1f77bcf86cd799439012"));
 
         verify(userRepository, never()).delete(any(User.class));
     }
@@ -196,7 +196,7 @@ class AdminUserServiceTest {
         when(userRepository.findById(sellerId)).thenReturn(Optional.of(seller));
 
         assertThrows(UserDeletionConflictException.class,
-                () -> service.eliminar(sellerId, "507f1f77bcf86cd799439012"));
+                () -> service.delete(sellerId, "507f1f77bcf86cd799439012"));
 
         verify(userRepository, never()).delete(any(User.class));
     }

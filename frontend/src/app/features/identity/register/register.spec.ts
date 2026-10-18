@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { AuthService } from '../../../core/services/auth.service';
-import { ProductsService } from '../../products/products.service';
+import { ProductsService } from '../../../core/services/products.service';
 import { Register } from './register';
 
 describe('Register', () => {

@@ -6,7 +6,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService, UpdateUserRequest, UserResponse } from '../../../core/services/auth.service';
 import { isAdultValidator } from '../../identity/register/register';
-import { Category, ProductsService } from '../../products/products.service';
+import { Category, ProductsService } from '../../../core/services/products.service';
 
 @Component({
   selector: 'app-admin-user-detail',
@@ -116,7 +116,7 @@ export class AdminUserDetail implements OnInit {
       return;
     }
 
-    this.authService.obtenerUsuarioAdmin(this.userId).subscribe({
+    this.authService.getAdminUser(this.userId).subscribe({
       next: ({ data }) => {
         this.email = data.email;
         this.role = data.role;
@@ -249,7 +249,7 @@ export class AdminUserDetail implements OnInit {
       request.phone = this.form.controls.phone.value.trim();
     }
 
-    this.authService.actualizarUsuarioAdmin(this.userId, request).subscribe({
+    this.authService.updateAdminUser(this.userId, request).subscribe({
       next: () => {
         this.guardando.set(false);
         this.router.navigate(['/admin/usuarios'], {

@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
-import { ProductDetails, ProductsService } from '../products.service';
-import { SellerCatalogService, SellerProduct } from './seller-catalog.service';
+import { ProductDetails, ProductsService } from '../../../core/services/products.service';
+import { SellerCatalogService, SellerProduct } from '../../../core/services/seller-catalog.service';
 import { SellerCatalog } from './seller-catalog';
 
 describe('SellerCatalog', () => {
@@ -72,9 +72,17 @@ describe('SellerCatalog', () => {
 
     expect(element.querySelector('h1')?.textContent?.trim()).toBe('Mi catálogo');
     expect(element.querySelector('[aria-label="Productos del catálogo"]')).not.toBeNull();
-    expect(Array.from(element.querySelectorAll('.seller-navigation .navigation-link'), (link) =>
-      link.querySelector('span:last-child')?.textContent?.trim()))
-      .toEqual(['Mi catálogo', 'Mis pedidos', 'Estadísticas', 'Valoraciones']);
+    expect(
+      Array.from(
+        element.querySelectorAll('.app-navigation .navigation-link'),
+        (link) => link.querySelector('span:last-child')?.textContent?.trim(),
+      ),
+    ).toEqual([
+      'Mi catálogo',
+      'Mis pedidos',
+      'Estadísticas',
+      'Valoraciones',
+    ]);
     expect(element.textContent).toContain('Auriculares');
     expect(element.querySelector('.stock-badge')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Stock bajo · 3');
     expect(element.textContent).toContain('Publicado');
@@ -83,7 +91,7 @@ describe('SellerCatalog', () => {
     expect(element.textContent).not.toContain('INVENTARIO');
     expect(element.querySelector('.product-table caption')?.textContent).toContain('Productos de mi catálogo');
     expect(element.querySelector('.catalog-controls .catalog-search')).not.toBeNull();
-    expect(element.querySelector('.catalog-controls .product-count')?.textContent).toContain('1 productos');
+    expect(element.querySelector('.catalog-controls .product-count')?.textContent).toContain('1 producto');
     const filterButton = element.querySelector<HTMLButtonElement>('.catalog-filter-button');
     expect(filterButton?.textContent).toContain('Filtrar');
     expect(filterButton?.disabled).toBe(true);

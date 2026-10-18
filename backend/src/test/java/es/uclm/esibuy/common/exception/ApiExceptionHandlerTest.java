@@ -21,11 +21,11 @@ class ApiExceptionHandlerTest {
     void addressNotFoundReturnsNotFound() {
         MockHttpServletRequest request = requestWithCorrelationId("test-address-404");
 
-        ResponseEntity<Map<String, String>> response =
-                handler.handleAddressNotFound(new AddressNotFoundException(), request);
+        ResponseEntity<Map<String, String>> response = handler.handleAddressNotFound(new AddressNotFoundException(),
+                request);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals("Address not found", response.getBody().get("message"));
+        assertEquals("Dirección no encontrada", response.getBody().get("message"));
         assertEquals("test-address-404", response.getBody().get("correlationId"));
     }
 

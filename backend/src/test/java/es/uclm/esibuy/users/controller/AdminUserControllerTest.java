@@ -64,7 +64,7 @@ class AdminUserControllerTest {
                 updated.setPhone("600111222");
                 updated.setNationalId("12345678A");
                 updated.setProfileImage("assets/images/avatars/av_client_1.jpeg");
-                when(adminUserService.actualizar(eq(UPDATE_USER_ID), any(UpdateUserRequestDTO.class)))
+                when(adminUserService.update(eq(UPDATE_USER_ID), any(UpdateUserRequestDTO.class)))
                                 .thenReturn(updated);
 
                 mockMvc.perform(put(UPDATE_USER_API)
@@ -86,7 +86,7 @@ class AdminUserControllerTest {
                                                 .value("assets/images/avatars/av_client_1.jpeg"))
                                 .andExpect(jsonPath("$.data.password").doesNotExist());
 
-                verify(adminUserService).actualizar(eq(UPDATE_USER_ID), any(UpdateUserRequestDTO.class));
+                verify(adminUserService).update(eq(UPDATE_USER_ID), any(UpdateUserRequestDTO.class));
         }
 
         @Test
@@ -172,7 +172,7 @@ class AdminUserControllerTest {
                                 .andExpect(jsonPath(SUCCESS_JSON_PATH).value(true))
                                 .andExpect(jsonPath(MESSAGE_JSON_PATH).value(USER_DELETED_MESSAGE));
 
-                verify(adminUserService).eliminar(USER_ID, ADMIN_ID);
+                verify(adminUserService).delete(USER_ID, ADMIN_ID);
         }
 
         @Test
@@ -185,7 +185,7 @@ class AdminUserControllerTest {
                                 .andExpect(jsonPath(SUCCESS_JSON_PATH).value(true))
                                 .andExpect(jsonPath(MESSAGE_JSON_PATH).value(USER_DELETED_MESSAGE));
 
-                verify(adminUserService).eliminar(USER_ID, ADMIN_ID);
+                verify(adminUserService).delete(USER_ID, ADMIN_ID);
         }
 
         @Test
@@ -209,7 +209,7 @@ class AdminUserControllerTest {
         @Test
         void invalidDeleteRequestReturnsGenericBadRequestWithCorrelationId() throws Exception {
                 doThrow(new IllegalStateException("El identificador del usuario no es válido"))
-                                .when(adminUserService).eliminar(USER_ID, ADMIN_ID);
+                                .when(adminUserService).delete(USER_ID, ADMIN_ID);
 
                 mockMvc.perform(delete("/api/v1/admin/users/{id}", USER_ID)
                                 .with(authentication(adminAuthentication()))
@@ -221,7 +221,7 @@ class AdminUserControllerTest {
 
         @Test
         void missingUserReturnsNotFoundWithCorrelationId() throws Exception {
-                doThrow(new UserNotFoundException()).when(adminUserService).eliminar(USER_ID, ADMIN_ID);
+                doThrow(new UserNotFoundException()).when(adminUserService).delete(USER_ID, ADMIN_ID);
 
                 mockMvc.perform(delete("/api/v1/admin/users/{id}", USER_ID)
                                 .with(authentication(adminAuthentication()))
@@ -234,7 +234,7 @@ class AdminUserControllerTest {
 
         @Test
         void nonAdministratorAccountGetsConflictResponse() throws Exception {
-                doThrow(new UserDeletionConflictException()).when(adminUserService).eliminar(USER_ID, ADMIN_ID);
+                doThrow(new UserDeletionConflictException()).when(adminUserService).delete(USER_ID, ADMIN_ID);
 
                 mockMvc.perform(delete("/api/v1/admin/users/{id}", USER_ID)
                                 .with(authentication(adminAuthentication()))

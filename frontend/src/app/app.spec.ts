@@ -4,7 +4,7 @@ import { signal, WritableSignal } from '@angular/core';
 import { of } from 'rxjs';
 import { AuthService, AuthenticatedUser } from './core/services/auth.service';
 import { App } from './app';
-import { CartService } from './features/client/cart/cart.service';
+import { CartService } from './core/services/cart.service';
 
 describe('App', () => {
   let currentUser: WritableSignal<AuthenticatedUser | null>;
@@ -50,7 +50,7 @@ describe('App', () => {
     expect(cartLink?.textContent).toContain('3');
   });
 
-    it('should render the router outlet', async () => {
+  it('should render the router outlet', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;

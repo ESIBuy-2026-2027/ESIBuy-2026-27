@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Category } from '../../products/products.service';
+import { Category } from './products.service';
 
 @Injectable({ providedIn: 'root' })
 export class AdminCategoryService {

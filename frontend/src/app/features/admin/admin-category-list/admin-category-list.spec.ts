@@ -3,8 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Category } from '../../products/products.service';
-import { AdminCategoryService } from './admin-category.service';
+import { Category } from '../../../core/services/products.service';
+import { AdminCategoryService } from '../../../core/services/admin-category.service';
 import { AdminCategoryList } from './admin-category-list';
 
 describe('AdminCategoryList', () => {

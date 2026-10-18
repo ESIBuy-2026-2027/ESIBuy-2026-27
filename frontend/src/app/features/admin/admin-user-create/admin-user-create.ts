@@ -1,4 +1,3 @@
-import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -10,15 +9,23 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../../core/services/auth.service';
 
-export function passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
-  const contrasena = control.get('contrasena')?.value;
-  const repetirContrasena = control.get('repetirContrasena')?.value;
-  if (!contrasena || !repetirContrasena) {
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
+import { AuthService, CreateAdminRequest } from '../../../core/services/auth.service';
+
+export function passwordsMatchValidator(
+  control: AbstractControl,
+): ValidationErrors | null {
+  const password = control.get('password')?.value;
+  const confirmPassword = control.get('confirmPassword')?.value;
+
+  if (!password || !confirmPassword) {
     return null;
   }
-  return contrasena === repetirContrasena ? null : { passwordsMismatch: true };
+
+  return password === confirmPassword
+    ? null
+    : { passwordsMismatch: true };
 }
 
 @Component({
@@ -29,7 +36,7 @@ export function passwordsMatchValidator(control: AbstractControl): ValidationErr
   styleUrls: ['./admin-user-create.css'],
 })
 export class AdminUserCreate {
-  private readonly fb = inject(FormBuilder);
+  private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
@@ -39,7 +46,7 @@ export class AdminUserCreate {
   successMessage = '';
   fieldErrors: Record<string, string> = {};
 
-  readonly fechaCreacion = new Intl.DateTimeFormat('es-ES', {
+  readonly creationDate = new Intl.DateTimeFormat('es-ES', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -58,13 +65,10 @@ export class AdminUserCreate {
     'assets/images/avatars/av_seller_5.jpeg',
   ];
 
-  readonly form: FormGroup = this.fb.group(
+  readonly form: FormGroup = this.formBuilder.group(
     {
-      dni: [
-        '',
-        [Validators.required],
-      ],
-      nombre: [
+      nationalId: ['', [Validators.required]],
+      firstName: [
         '',
         [
           Validators.required,
@@ -72,7 +76,7 @@ export class AdminUserCreate {
           Validators.maxLength(25),
         ],
       ],
-      apellidos: [
+      lastName: [
         '',
         [
           Validators.required,
@@ -88,31 +92,33 @@ export class AdminUserCreate {
           Validators.maxLength(120),
         ],
       ],
-      contrasena: [
+      password: [
         '',
         [
           Validators.required,
           Validators.minLength(12),
           Validators.maxLength(128),
-          Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S+$/),
+          Validators.pattern(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S+$/,
+          ),
         ],
       ],
-      repetirContrasena: ['', [Validators.required]],
-      sede: ['', [Validators.maxLength(100)]],
-      imagenPerfil: ['', [Validators.maxLength(500)]],
+      confirmPassword: ['', [Validators.required]],
+      headquarters: ['', [Validators.maxLength(100)]],
+      profileImage: ['', [Validators.maxLength(500)]],
     },
     { validators: passwordsMatchValidator },
   );
 
   selectAvatar(url: string): void {
-    if (this.form.get('imagenPerfil')?.value === url) {
-      this.form.patchValue({ imagenPerfil: '' });
+    if (this.form.get('profileImage')?.value === url) {
+      this.form.patchValue({ profileImage: '' });
     } else {
-      this.form.patchValue({ imagenPerfil: url });
+      this.form.patchValue({ profileImage: url });
     }
   }
 
-  cancelar(): void {
+  cancel(): void {
     this.router.navigate(['/admin/usuarios']);
   }
 
@@ -127,32 +133,45 @@ export class AdminUserCreate {
     this.fieldErrors = {};
     this.successMessage = '';
 
-    const payload = {
-      dni: this.form.value.dni?.trim(),
-      nombre: this.form.value.nombre?.trim(),
-      apellidos: this.form.value.apellidos?.trim(),
-      email: this.form.value.email?.trim(),
-      contrasena: this.form.value.contrasena,
-      repetirContrasena: this.form.value.repetirContrasena,
-      sede: this.form.value.sede?.trim() || null,
-      imagenPerfil: this.form.value.imagenPerfil?.trim() || null,
+    const formValue = this.form.getRawValue();
+
+    const payload: CreateAdminRequest = {
+      nationalId: formValue.nationalId.trim(),
+      firstName: formValue.firstName.trim(),
+      lastName: formValue.lastName.trim(),
+      email: formValue.email.trim(),
+      password: formValue.password,
+      confirmPassword: formValue.confirmPassword,
+      headquarters: formValue.headquarters.trim() || null,
+      profileImage: formValue.profileImage.trim() || null,
     };
 
-    this.authService.crearAdministrador(payload).subscribe({
+    this.authService.createAdmin(payload).subscribe({
       next: () => {
         this.submitting = false;
         this.successMessage = 'Administrador creado con éxito';
+
         setTimeout(() => {
           this.router.navigate(['/admin/usuarios']);
         }, 1200);
       },
-      error: (error: any) => {
+      error: (error: unknown) => {
         this.submitting = false;
-        if (error?.error?.errors) {
-          this.fieldErrors = error.error.errors;
+
+        const response = error as {
+          error?: {
+            errors?: Record<string, string>;
+            message?: string;
+          };
+        };
+
+        if (response.error?.errors) {
+          this.fieldErrors = response.error.errors;
         }
+
         this.errorMessage =
-          error?.error?.message || 'Ha ocurrido un error al crear el administrador';
+          response.error?.message ??
+          'Ha ocurrido un error al crear el administrador';
       },
     });
   }

@@ -59,7 +59,7 @@ class UserSessionAuthenticationTest {
         void adminLoginCreatesSessionAcceptedByAdminEndpoint() throws Exception {
                 User admin = user("admin-1", UserRole.ADMIN);
                 when(userService.login(any(LoginRequest.class))).thenReturn(admin);
-                when(adminUserService.obtenerPorId("admin-1")).thenReturn(admin);
+                when(adminUserService.findById("admin-1")).thenReturn(admin);
 
                 MvcResult loginResult = mockMvc.perform(post("/api/users/login")
                                 .with(csrf())

@@ -4,8 +4,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Category, ProductCreateRequest, ProductsService } from '../products.service';
-import { SellerCatalogService, SellerProduct } from './seller-catalog.service';
+import { Category, ProductCreateRequest, ProductsService } from '../../../core/services/products.service';
+import { SellerCatalogService, SellerProduct } from '../../../core/services/seller-catalog.service';
 
 const LOW_STOCK_THRESHOLD = 5;
 type InlineField = 'price' | 'stock';

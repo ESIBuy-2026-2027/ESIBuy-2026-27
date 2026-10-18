@@ -2,8 +2,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { CartService } from '../cart/cart.service';
-import { ProductsService } from '../../products/products.service';
+import { CartService } from '../../../core/services/cart.service';
+import { ProductsService } from '../../../core/services/products.service';
 import { ClientDashboard } from './client-dashboard';
 
 describe('ClientDashboard', () => {

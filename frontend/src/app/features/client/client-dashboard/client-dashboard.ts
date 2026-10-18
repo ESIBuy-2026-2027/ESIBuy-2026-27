@@ -4,8 +4,8 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
-import { CartService } from '../cart/cart.service';
-import { AvailableProduct, ProductsService } from '../../products/products.service';
+import { CartService } from '../../../core/services/cart.service';
+import { AvailableProduct, ProductsService } from '../../../core/services/products.service';
 
 @Component({
   selector: 'app-client-dashboard',

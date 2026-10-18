@@ -12,7 +12,7 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { Category, ProductsService } from '../../products/products.service';
+import { Category, ProductsService } from '../../../core/services/products.service';
 
 export function isAdultValidator(control: AbstractControl): ValidationErrors | null {
   if (!control.value) return null;
