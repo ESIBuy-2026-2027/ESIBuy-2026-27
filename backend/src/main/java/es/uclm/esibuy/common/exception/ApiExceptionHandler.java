@@ -18,6 +18,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -164,6 +165,28 @@ public class ApiExceptionHandler {
         }
         return ResponseEntity.badRequest().body(Map.of(MESSAGE, exception.getMessage(),
                 CORRELATION_ID, id));
+    }
+
+    @ExceptionHandler(AddressNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleAddressNotFound(
+            AddressNotFoundException exception, HttpServletRequest request) {
+        String id = correlationId(request);
+        LOGGER.warn("Dirección solicitada no encontrada. correlationId={}", id);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                MESSAGE, exception.getMessage(), CORRELATION_ID, id));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> handleResponseStatusException(
+            ResponseStatusException exception, HttpServletRequest request) {
+        String id = correlationId(request);
+        HttpStatus status = HttpStatus.resolve(exception.getStatusCode().value());
+        String message = exception.getReason();
+        if (message == null || message.isBlank()) {
+            message = status == null ? "La solicitud no se ha podido procesar" : status.getReasonPhrase();
+        }
+        return ResponseEntity.status(exception.getStatusCode()).body(Map.of(
+                MESSAGE, message, CORRELATION_ID, id));
     }
 
     @ExceptionHandler(Exception.class)
