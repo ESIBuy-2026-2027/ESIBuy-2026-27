@@ -13,6 +13,7 @@ import { ClientProfile } from './features/client/client-profile/client-profile';
 import { SellerProfile } from './features/products/seller-profile/seller-profile';
 import { SellerOrders } from './features/products/seller-orders/seller-orders';
 import { AdminProfile } from './features/admin/admin-profile/admin-profile';
+import { AdminCategoryList } from './features/admin/admin-category-list/admin-category-list';
 import { ClientCart } from './features/client/cart/cart';
 
 export const routes: Routes = [
@@ -23,6 +24,7 @@ export const routes: Routes = [
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
   { path: 'admin/usuarios', component: AdminUserList, canActivate: [authGuard, roleGuard('ADMIN')] },
   { path: 'admin/usuarios/:id/editar', component: AdminUserDetail, canActivate: [authGuard, roleGuard('ADMIN')] },
+  { path: 'admin/categorias', component: AdminCategoryList, canActivate: [authGuard, roleGuard('ADMIN')] },
 
   { path: 'admin', redirectTo: 'admin/usuarios', pathMatch: 'full' },
   { path: 'admin/users', redirectTo: 'admin/usuarios', pathMatch: 'full' },
