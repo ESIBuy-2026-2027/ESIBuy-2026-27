@@ -67,28 +67,36 @@
         </svg>
       </button>
     }
+
+
     <main class="orders-content" aria-labelledby="orders-title">
-      <div class="page-heading">
-        <div>
-          <p class="eyebrow">GESTIÓN DE VENTA</p>
-          <h1 id="orders-title">Gestión de pedidos</h1>
+
+      <div class="seller-main-card">
+        <!--Encabezado principal-->
+        <section class = "page-heading" aria-labelledby="orders-title">
+           <div class="page-heading-copy">
+            <p class="eyebrow">GESTIÓN DE VENTA</p>
+            <h1 id="orders-title">Gestión de pedidos</h1>
+            <p class="page-description">
+              Gestiona y organiza tus pedidos en un vistazo
+            </p>
+          </div>
+        </section>
+
+
+        <div class="status-summary" aria-label="Resumen de pedidos por estado">
+          @for (summary of statusSummary(); track summary.status) {
+            <button type="button" class="status-summary-card"
+              [class.is-selected]="selectedStatus() === summary.status"
+              [class]="statusClass(summary.status)"
+              [attr.aria-pressed]="selectedStatus() === summary.status"
+              (click)="selectStatus(summary.status)">
+              <span>{{ summary.label }}</span>
+              <strong>{{ summary.count }}</strong>
+            </button>
+          }
         </div>
-      </div>
 
-      <div class="status-summary" aria-label="Resumen de pedidos por estado">
-        @for (summary of statusSummary(); track summary.status) {
-          <button type="button" class="status-summary-card"
-            [class.is-selected]="selectedStatus() === summary.status"
-            [class]="statusClass(summary.status)"
-            [attr.aria-pressed]="selectedStatus() === summary.status"
-            (click)="selectStatus(summary.status)">
-            <span>{{ summary.label }}</span>
-            <strong>{{ summary.count }}</strong>
-          </button>
-        }
-      </div>
-
-      <section class="orders-card" aria-label="Pedidos de la tienda">
         <div class="orders-toolbar">
           <label class="orders-search">
             <span class="visually-hidden">Buscar pedidos</span>
@@ -147,6 +155,7 @@
           <span class="order-count">{{ visibleOrders().length }} pedidos</span>
         </div>
 
+        <section aria-label="Pedidos de la tienda">
         @if (visibleOrders().length === 0) {
           <div class="empty-state">
             <span class="empty-icon" aria-hidden="true">⌕</span>
@@ -155,7 +164,7 @@
           </div>
         } @else {
           <div class="table-scroll">
-            <table class="orders-table">
+            <table class="seller-data-table">
               <caption class="visually-hidden">Pedidos recientes de mi tienda</caption>
               <thead>
                 <tr>
@@ -202,7 +211,8 @@
             </table>
           </div>
         }
-      </section>
+        </section>
+      </div>
     </main>
   </div>
 </div>
