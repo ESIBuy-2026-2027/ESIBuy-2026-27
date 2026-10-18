@@ -31,12 +31,12 @@
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
-  z-index: 20;
+  z-index: 1;
   display: flex;
-  width: 260px;
+  width: 248px;
   flex-direction: column;
-  padding: 32px 20px 24px;
-  overflow-y: auto;
+  padding: 30px 18px 20px;
+  background: #102c40;
   color: #edf5f8;
   transition: transform 0.25s ease;
 }
