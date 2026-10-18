@@ -46,11 +46,7 @@ export class AdminUserCreate {
   successMessage = '';
   fieldErrors: Record<string, string> = {};
 
-  readonly creationDate = new Intl.DateTimeFormat('es-ES', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(new Date());
+  readonly creationDate = new Date();
 
   readonly avatars = [
     'assets/images/avatars/av_client_1.jpeg',

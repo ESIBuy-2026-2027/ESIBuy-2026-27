@@ -55,8 +55,12 @@ public class AltaAdminDTO {
     }
 
     @AssertTrue(message = "Las contraseñas no coinciden")
-    public boolean isContrasenasCoincidentes() {
-        return password != null && password.equals(confirmPassword);
+    public boolean isPasswordsMatch() {
+        if (password == null || confirmPassword == null) {
+            return true;
+        }
+
+        return password.equals(confirmPassword);
     }
 
     public String getNationalId() {
@@ -119,7 +123,7 @@ public class AltaAdminDTO {
         return profileImage;
     }
 
-    public void setProfileImage(String imagenPerfil) {
-        this.profileImage = imagenPerfil;
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
     }
 }

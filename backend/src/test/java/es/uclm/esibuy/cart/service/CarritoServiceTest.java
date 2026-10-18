@@ -7,7 +7,6 @@ import es.uclm.esibuy.cart.dto.ActualizarCantidadItemDTO;
 import es.uclm.esibuy.cart.dto.AnadirItemCarritoDTO;
 import es.uclm.esibuy.cart.dto.CarritoDTO;
 import es.uclm.esibuy.cart.model.Carrito;
-import es.uclm.esibuy.cart.model.ItemCarrito;
 import es.uclm.esibuy.cart.repository.CarritoRepository;
 import es.uclm.esibuy.common.exception.ProductNotFoundException;
 import es.uclm.esibuy.common.exception.StockInsuficienteException;
