@@ -50,6 +50,8 @@ public class PedidoService {
     private final MongoTemplate mongoTemplate;
     private final PasarelaPago pasarelaPago;
 
+    private static final String STOCK_STRING = "stock";
+
     public PedidoService(
             UserRepository userRepository,
             CarritoRepository carritoRepository,
@@ -180,11 +182,11 @@ public class PedidoService {
         try {
             for (PedidoItem item : items) {
                 Query query = Query.query(Criteria.where("_id").is(item.productoId())
-                        .and("stock").gte(item.cantidad())
+                        .and(STOCK_STRING).gte(item.cantidad())
                         .and("available").is(true));
                 Product actualizado = mongoTemplate.findAndModify(
                         query,
-                        new Update().inc("stock", -item.cantidad()),
+                        new Update().inc(STOCK_STRING, -item.cantidad()),
                         FindAndModifyOptions.options().returnNew(true),
                         Product.class);
                 if (actualizado == null) {
@@ -204,7 +206,7 @@ public class PedidoService {
             try {
                 Query query = Query.query(Criteria.where("_id").is(item.productoId()));
                 UpdateResult resultado = mongoTemplate.updateFirst(
-                        query, new Update().inc("stock", item.cantidad()), Product.class);
+                        query, new Update().inc(STOCK_STRING, item.cantidad()), Product.class);
                 if (resultado == null || !resultado.wasAcknowledged() || resultado.getMatchedCount() == 0) {
                     throw new IllegalStateException("No se pudo liberar una reserva de stock");
                 }

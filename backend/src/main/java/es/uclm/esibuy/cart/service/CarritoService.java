@@ -20,6 +20,9 @@ public class CarritoService {
     private final ProductRepository productRepository;
     private final CarritoRepository carritoRepository;
 
+    private static final String CLIENTE_ID_OBLIGATORIO = "El identificador del cliente es obligatorio";
+    private static final String PRODUCTO_ID_OBLIGATORIO = "El identificador del producto es obligatorio";
+
     public CarritoService(ProductRepository productRepository, CarritoRepository carritoRepository) {
         this.productRepository = productRepository;
         this.carritoRepository = carritoRepository;
@@ -40,7 +43,7 @@ public class CarritoService {
 
     public CarritoDTO getCarrito(String clienteId) {
         if (clienteId == null || clienteId.isBlank()) {
-            throw new IllegalArgumentException("El identificador del cliente es obligatorio");
+            throw new IllegalArgumentException(CLIENTE_ID_OBLIGATORIO);
         }
         return carritoRepository.findByClienteId(clienteId)
                 .map(this::toDto)
@@ -75,10 +78,10 @@ public class CarritoService {
 
     private void validarSolicitud(String clienteId, AnadirItemCarritoDTO request) {
         if (clienteId == null || clienteId.isBlank()) {
-            throw new IllegalArgumentException("El identificador del cliente es obligatorio");
+            throw new IllegalArgumentException(CLIENTE_ID_OBLIGATORIO);
         }
         if (request == null || request.productoId() == null || request.productoId().isBlank()) {
-            throw new IllegalArgumentException("El identificador del producto es obligatorio");
+            throw new IllegalArgumentException(PRODUCTO_ID_OBLIGATORIO);
         }
         if (request.cantidad() == null || request.cantidad() < 1) {
             throw new IllegalArgumentException("La cantidad debe ser como mínimo 1");
@@ -95,10 +98,10 @@ public class CarritoService {
 
     private void validarClienteYProducto(String clienteId, String productoId) {
         if (clienteId == null || clienteId.isBlank()) {
-            throw new IllegalArgumentException("El identificador del cliente es obligatorio");
+            throw new IllegalArgumentException(CLIENTE_ID_OBLIGATORIO);
         }
         if (productoId == null || productoId.isBlank()) {
-            throw new IllegalArgumentException("El identificador del producto es obligatorio");
+            throw new IllegalArgumentException(PRODUCTO_ID_OBLIGATORIO);
         }
     }
 
