@@ -1,5 +1,7 @@
-<div class="client-layout">
-  <aside class="client-sidebar" aria-label="Panel del cliente">
+<div class="client-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
+  <aside class="client-sidebar app-sidebar" aria-label="Panel del cliente">
+    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()"
+      aria-label="Ocultar barra lateral"><span aria-hidden="true">‹</span></button>
     <a routerLink="/" class="client-brand" aria-label="ESIBuy">
       <span class="brand-mark" aria-hidden="true">E</span>
       <span>ESI<span class="brand-accent">Buy</span></span>
@@ -40,7 +42,9 @@
     </nav>
   </aside>
 
-  <div class="client-workspace">
+  <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()"
+    aria-label="Mostrar barra lateral" [hidden]="!sidebarCollapsed()"><span aria-hidden="true">›</span></button>
+  <div class="client-workspace app-workspace">
     <main class="client-content">
       <section class="page-heading" aria-labelledby="client-title">
         <div>

@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AdminCategoryService } from './admin-category.service';
 import { Category } from '../../products/products.service';
 
@@ -10,11 +10,12 @@ type CategoryDialogMode = 'create' | 'edit' | 'delete' | null;
 @Component({
   selector: 'app-admin-category-list',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, RouterLinkActive],
   templateUrl: './admin-category-list.html',
   styleUrl: './admin-category-list.css',
 })
 export class AdminCategoryList {
+  readonly sidebarCollapsed = signal(false);
   private readonly categoryService = inject(AdminCategoryService);
   readonly categories = signal<Category[]>([]);
   readonly loading = signal(true);
@@ -34,6 +35,10 @@ export class AdminCategoryList {
       .filter((category) => category.name.toLocaleLowerCase().includes(query))
       .sort((first, second) => first.name.localeCompare(second.name, 'es'));
   });
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update((collapsed) => !collapsed);
+  }
 
   constructor() {
     this.loadCategories();

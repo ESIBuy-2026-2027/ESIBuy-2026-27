@@ -1,5 +1,7 @@
-<main class="product-create-page">
-  <aside class="sidebar" aria-label="Panel del vendedor">
+<main class="product-create-page seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
+  <aside class="sidebar app-sidebar" aria-label="Panel del vendedor">
+    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()"
+      aria-label="Ocultar barra lateral"><span aria-hidden="true">‹</span></button>
     <a class="brand" routerLink="/" aria-label="ESIBuy">
       <span class="brand-mark" aria-hidden="true">E</span>
       <span>ESI<span class="brand-accent">Buy</span></span>
@@ -13,7 +15,8 @@
         <span>Mi catálogo</span>
       </a>
 
-      <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
+      <a class="navigation-link" routerLink="/seller/orders"
+        routerLinkActive="is-active" ariaCurrentWhenActive="page">
         <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
@@ -47,7 +50,9 @@
     </nav>
   </aside>
 
-  <div class="product-create-content">
+  <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()"
+    aria-label="Mostrar barra lateral" [hidden]="!sidebarCollapsed()"><span aria-hidden="true">›</span></button>
+  <div class="product-create-content app-workspace">
     <section class="product-create-card" aria-labelledby="product-page-title">
       <header class="page-header">
         <a class="back-link" routerLink="/seller/catalog">

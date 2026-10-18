@@ -1,48 +1,77 @@
-<div class="seller-layout">
+<div class="seller-layout" [class.sidebar-collapsed]="sidebarCollapsed()">
   <aside class="sidebar" aria-label="Panel del vendedor">
     <a class="brand" routerLink="/" aria-label="ESIBuy">
       <span class="brand-mark" aria-hidden="true">E</span>
       <span>ESI<span class="brand-accent">Buy</span></span>
     </a>
+    <button type="button" class="sidebar-toggle" (click)="toggleSidebar()"
+      aria-label="Ocultar barra lateral" title="Ocultar barra lateral">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m15 18-6-6 6-6"/>
+      </svg>
+    </button>
 
     <div class="sidebar-caption">GESTIÓN DE VENTA</div>
 
     <nav class="seller-navigation" aria-label="Navegación del vendedor">
-      <a class="navigation-link" routerLink="/seller/catalog" routerLinkActive="is-active" ariaCurrentWhenActive="page">
-        <span class="navigation-icon" aria-hidden="true">▦</span>
+      <a class="navigation-link" routerLink="/seller/catalog"
+        routerLinkActive="is-active" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          aria-hidden="true">
+          <rect width="7" height="7" x="3" y="3" rx="1"/>
+          <rect width="7" height="7" x="14" y="3" rx="1"/>
+          <rect width="7" height="7" x="3" y="14" rx="1"/>
+          <rect width="7" height="7" x="14" y="14" rx="1"/>
+        </svg>
         <span>Mi catálogo</span>
       </a>
-
-      <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-          <path d="M12 11h4M12 16h4M8 11h.01M8 16h.01" />
-        </svg>
-        <span>Mis pedidos</span>
+      <a class="navigation-link" routerLink="/seller/orders"
+          routerLinkActive="is-active" ariaCurrentWhenActive="page">
+          <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            aria-hidden="true">
+            <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
+          </svg>
+          <span>Mis pedidos</span>
       </a>
-
-      <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3 3v18h18" />
-          <path d="M18 17V9M13 17V5M8 17v-3" />
-        </svg>
-        <span>Estadísticas</span>
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true"
+          title="Próximamente" tabindex="-1">
+          <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            aria-hidden="true">
+            <path d="M3 3v18h18"/>
+            <path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
+          </svg>
+          <span>Estadísticas</span>
       </a>
-
-      <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />
-        </svg>
-        <span>Valoraciones</span>
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true"
+          title="Próximamente" tabindex="-1">
+          <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            aria-hidden="true">
+            <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/>
+          </svg>
+          <span>Valoraciones</span>
       </a>
     </nav>
   </aside>
 
   <div class="workspace">
+    @if (sidebarCollapsed()) {
+      <button type="button" class="sidebar-toggle sidebar-toggle-open" (click)="toggleSidebar()"
+        aria-label="Mostrar barra lateral" title="Mostrar barra lateral">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </button>
+    }
+
     <main class="catalog-content">
 
-      <div class="catalog-main-card">
+      <div class="seller-main-card">
 
         <!-- Encabezado principal -->
         <section class="page-heading" aria-labelledby="catalog-title">
@@ -62,33 +91,71 @@
           </a>
         </section>
 
-        <!-- Búsqueda y contador, sin el título redundante "Mis productos" -->
-        <section class="products-region" aria-label="Productos del catálogo">
-          <div class="catalog-toolbar">
-            <label class="catalog-search">
-              <span class="visually-hidden">Buscar producto por nombre</span>
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="11" cy="11" r="6.5"></circle>
-                <path d="m16 16 4.5 4.5"></path>
-              </svg>
-              <input type="search" [ngModel]="productSearch()" (ngModelChange)="productSearch.set($event)"
-                placeholder="Buscar producto..." aria-label="Buscar producto por nombre">
-            </label>
-
-            <button type="button" class="catalog-filter-button" disabled aria-disabled="true" title="Próximamente">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"></path>
-              </svg>
-              <span>Filtrar</span>
-            </button>
-
-            @if (!productsLoading() && !productsError()) {
-            <span class="product-count">
-              {{ visibleProducts().length }}
-              {{ visibleProducts().length === 1 ? 'producto' : 'productos' }}
-            </span>
+      <section class="products-region" aria-label="Productos del catálogo">
+        <div class="section-heading">
+          <div class="section-info">
+            <div class="catalog-controls">
+              <label class="catalog-search">
+                <span class="visually-hidden">Buscar producto por nombre</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="11" cy="11" r="6.5"></circle>
+                  <path d="m16 16 4.5 4.5"></path>
+                </svg>
+                <input type="search" [ngModel]="productSearch()" (ngModelChange)="productSearch.set($event)"
+                  placeholder="Buscar producto...">
+              </label>
+              <button type="button" class="catalog-filter-button" [class.is-active]="hasActiveFilters()"
+                [attr.aria-expanded]="filtersOpen()" aria-controls="catalog-filter-panel"
+                (click)="toggleFilters()">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"></path>
+                </svg>
+                Filtrar
+                @if (hasActiveFilters()) {
+                  <span class="filter-indicator" aria-label="Filtros activos"></span>
+                }
+              </button>
+              @if (!productsLoading() && !productsError()) {
+                <span class="product-count">{{ visibleProducts().length }} productos</span>
+              }
+            </div>
+            @if (filtersOpen()) {
+              <div class="catalog-filter-panel" id="catalog-filter-panel">
+                <button type="button" class="close-filters-button" aria-label="Cerrar panel de filtros"
+                  title="Cerrar" (click)="toggleFilters()">×</button>
+                <label>
+                  <span>Visibilidad</span>
+                  <select [ngModel]="visibilityFilter()" (ngModelChange)="visibilityFilter.set($event)">
+                    <option value="all">Todos</option>
+                    <option value="published">Publicados</option>
+                    <option value="hidden">Ocultos</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Stock</span>
+                  <select [ngModel]="stockFilter()" (ngModelChange)="stockFilter.set($event)">
+                    <option value="all">Cualquier stock</option>
+                    <option value="in-stock">En stock</option>
+                    <option value="low-stock">Stock bajo</option>
+                    <option value="out-of-stock">Sin stock</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Categoría</span>
+                  <select [ngModel]="categoryFilter()" (ngModelChange)="categoryFilter.set($event)">
+                    <option value="all">Todas las categorías</option>
+                    @for (category of categories(); track category.id) {
+                      <option [value]="category.id">{{ category.name }}</option>
+                    }
+                  </select>
+                </label>
+                <button type="button" class="clear-filters-button" (click)="clearFilters()">
+                  Limpiar filtros
+                </button>
+              </div>
             }
           </div>
+        </div>
 
           @if (productsLoading()) {
           <output class="catalog-message" aria-live="polite">
@@ -124,7 +191,7 @@
           }
 
           <div class="table-scroll">
-            <table class="product-table">
+            <table class="seller-data-table product-table">
               <caption class="visually-hidden">Productos de mi catálogo</caption>
               <thead>
                 <tr>
@@ -285,7 +352,7 @@
             </table>
           </div>
           }
-        </section>
+      </section>
       </div>
     </main>
   </div>

@@ -26,6 +26,11 @@ export class ClientDashboard implements OnInit {
   readonly quantities = signal<Record<string, number>>({});
   readonly addingProductId = signal<string | null>(null);
   readonly notification = signal<{ type: 'success' | 'error'; text: string } | null>(null);
+  readonly sidebarCollapsed = signal(false);
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update((collapsed) => !collapsed);
+  }
 
   ngOnInit(): void {
     this.productsService.getAvailableProducts().subscribe({

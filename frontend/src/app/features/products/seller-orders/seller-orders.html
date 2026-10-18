@@ -1,0 +1,275 @@
+<div class="seller-layout" [class.sidebar-collapsed]="sidebarCollapsed()">
+  <aside class="sidebar" aria-label="Panel del vendedor">
+    <a class="brand" routerLink="/" aria-label="ESIBuy">
+      <span class="brand-mark" aria-hidden="true">E</span>
+      <span>ESI<span class="brand-accent">Buy</span></span>
+    </a>
+    <button type="button" class="sidebar-toggle" (click)="toggleSidebar()"
+      aria-label="Ocultar barra lateral" title="Ocultar barra lateral">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m15 18-6-6 6-6"/>
+      </svg>
+    </button>
+
+    <div class="sidebar-caption">GESTIÓN DE VENTA</div>
+    <nav class="seller-navigation" aria-label="Navegación del vendedor">
+      <a class="navigation-link" routerLink="/seller/catalog"
+        routerLinkActive="is-active" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          aria-hidden="true">
+          <rect width="7" height="7" x="3" y="3" rx="1"/>
+          <rect width="7" height="7" x="14" y="3" rx="1"/>
+          <rect width="7" height="7" x="3" y="14" rx="1"/>
+          <rect width="7" height="7" x="14" y="14" rx="1"/>
+        </svg>
+        <span>Mi catálogo</span>
+      </a>
+      <a class="navigation-link" routerLink="/seller/orders"
+          routerLinkActive="is-active" ariaCurrentWhenActive="page">
+          <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            aria-hidden="true">
+            <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
+          </svg>
+          <span>Mis pedidos</span>
+      </a>
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true"
+          title="Próximamente" tabindex="-1">
+          <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            aria-hidden="true">
+            <path d="M3 3v18h18"/>
+            <path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
+          </svg>
+          <span>Estadísticas</span>
+      </a>
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true"
+          title="Próximamente" tabindex="-1">
+          <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            aria-hidden="true">
+            <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/>
+          </svg>
+          <span>Valoraciones</span>
+      </a>
+    </nav>
+  </aside>
+
+  <div class="workspace">
+    @if (sidebarCollapsed()) {
+      <button type="button" class="sidebar-toggle sidebar-toggle-open" (click)="toggleSidebar()"
+        aria-label="Mostrar barra lateral" title="Mostrar barra lateral">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </button>
+    }
+
+
+    <main class="orders-content" aria-labelledby="orders-title">
+
+      <div class="seller-main-card">
+        <!--Encabezado principal-->
+        <section class = "page-heading" aria-labelledby="orders-title">
+           <div class="page-heading-copy">
+            <p class="eyebrow">GESTIÓN DE VENTA</p>
+            <h1 id="orders-title">Gestión de pedidos</h1>
+            <p class="page-description">
+              Gestiona y organiza tus pedidos en un vistazo
+            </p>
+          </div>
+        </section>
+
+
+        <div class="status-summary" aria-label="Resumen de pedidos por estado">
+          @for (summary of statusSummary(); track summary.status) {
+            <button type="button" class="status-summary-card"
+              [class.is-selected]="selectedStatus() === summary.status"
+              [class]="statusClass(summary.status)"
+              [attr.aria-pressed]="selectedStatus() === summary.status"
+              (click)="selectStatus(summary.status)">
+              <span>{{ summary.label }}</span>
+              <strong>{{ summary.count }}</strong>
+            </button>
+          }
+        </div>
+
+        <div class="orders-toolbar">
+          <label class="orders-search">
+            <span class="visually-hidden">Buscar pedidos</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5"></circle>
+              <path d="m16 16 4.5 4.5"></path>
+            </svg>
+            <input type="search" [ngModel]="orderSearch()"
+              (ngModelChange)="orderSearch.set($event)"
+              placeholder="Buscar pedido, cliente o producto...">
+          </label>
+          <div class="orders-filter">
+            <button type="button" class="secondary-button"
+              [class.is-active]="selectedStatus() !== 'Todos' || dateFrom() || dateTo()"
+              [attr.aria-expanded]="filtersOpen()" aria-controls="orders-filter-panel"
+              (click)="toggleFilters()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"></path>
+              </svg>
+              Filtrar
+              @if (selectedStatus() !== 'Todos' || dateFrom() || dateTo()) {
+                <span class="filter-indicator" aria-label="Filtro activo"></span>
+              }
+            </button>
+            @if (filtersOpen()) {
+              <div class="orders-filter-panel" id="orders-filter-panel">
+                <button type="button" class="close-orders-filter" aria-label="Cerrar panel de filtros"
+                  title="Cerrar" (click)="toggleFilters()">×</button>
+                <label for="order-status-filter">Estado del pedido</label>
+                <select id="order-status-filter" [ngModel]="selectedStatus()"
+                  (ngModelChange)="selectedStatus.set($event)">
+                  <option value="Todos">Todos los estados</option>
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="En preparación">En preparación</option>
+                  <option value="Enviado">Enviado</option>
+                  <option value="Entregado">Entregado</option>
+                  <option value="Cancelado">Cancelado</option>
+                </select>
+                <div class="date-filter-group">
+                  <span>Fecha del pedido</span>
+                  <div class="date-filter-fields">
+                    <label for="order-date-from">Desde</label>
+                    <input id="order-date-from" type="date" [ngModel]="dateFrom()"
+                      (ngModelChange)="dateFrom.set($event)">
+                    <label for="order-date-to">Hasta</label>
+                    <input id="order-date-to" type="date" [ngModel]="dateTo()"
+                      (ngModelChange)="dateTo.set($event)">
+                  </div>
+                </div>
+                <button type="button" class="clear-order-filter" (click)="clearFilters()">
+                  Limpiar filtro
+                </button>
+              </div>
+            }
+          </div>
+          <span class="order-count">{{ visibleOrders().length }} pedidos</span>
+        </div>
+
+        <section aria-label="Pedidos de la tienda">
+        @if (visibleOrders().length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">⌕</span>
+            <h3>No se encontraron pedidos</h3>
+            <p>Prueba a cambiar la búsqueda o los filtros seleccionados.</p>
+          </div>
+        } @else {
+          <div class="table-scroll">
+            <table class="seller-data-table">
+              <caption class="visually-hidden">Pedidos recientes de mi tienda</caption>
+              <thead>
+                <tr>
+                  <th scope="col">ID pedido</th>
+                  <th scope="col">Artículo</th>
+                  <th scope="col">Comprador</th>
+                  <th scope="col">Fecha</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Total</th>
+                  <th scope="col" class="action-column"><span class="visually-hidden">Acciones</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (order of visibleOrders(); track order.id) {
+                  <tr>
+                    <td class="order-id">#{{ order.id }}</td>
+                    <td>
+                      <div class="product-summary">
+                        <span class="product-icon" aria-hidden="true">▦</span>
+                        <span>{{ order.products }}</span>
+                      </div>
+                    </td>
+                    <td>{{ order.customer }}</td>
+                    <td class="order-date">{{ order.date }}</td>
+                    <td>
+                      <span class="status-badge" [class]="statusClass(order.status)">
+                        <span class="status-dot" aria-hidden="true"></span>{{ order.status }}
+                      </span>
+                    </td>
+                    <td class="order-total">{{ formatPrice(order.total) }}</td>
+                    <td class="order-action">
+                      <button type="button" class="details-button"
+                        [class.action-button]="order.status === 'Pendiente'
+                          || order.status === 'En preparación'"
+                        (click)="openOrderDetails(order)"
+                        [attr.aria-label]="orderActionLabel(order.status) + ' el pedido ' + order.id"
+                        [title]="orderActionLabel(order.status)">
+                        {{ orderActionLabel(order.status) }}
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+@if (selectedOrder(); as order) {
+  <div class="order-detail-backdrop" (click)="closeOrderDetails()">
+    <section class="order-detail-panel" role="dialog" aria-modal="true"
+      aria-labelledby="order-detail-title" (click)="$event.stopPropagation()">
+      <div class="order-detail-header">
+        <div>
+          <p class="eyebrow">DETALLE DEL PEDIDO</p>
+          <h2 id="order-detail-title">#{{ order.id }}</h2>
+          <span class="order-detail-date">{{ order.date }}</span>
+        </div>
+        <button type="button" class="close-detail-button" aria-label="Cerrar detalle del pedido"
+          title="Cerrar" (click)="closeOrderDetails()">×</button>
+      </div>
+
+      <div class="order-detail-body">
+        <section class="detail-section" aria-labelledby="detail-products-title">
+          <h3 id="detail-products-title">Mis artículos</h3>
+          @for (item of order.items; track item.name) {
+            <div class="detail-product">
+              <img [src]="item.imageUrl" [alt]="item.name">
+              <div>
+                <strong>{{ item.name }}</strong>
+                <span>{{ item.quantity }} ud. · {{ formatPrice(item.price) }}</span>
+              </div>
+              <b>{{ formatPrice(item.price * item.quantity) }}</b>
+            </div>
+          }
+          <div class="detail-total">
+            <span>Subtotal</span>
+            <strong>{{ formatPrice(order.total) }}</strong>
+          </div>
+        </section>
+
+        <section class="detail-section" aria-labelledby="detail-status-title">
+          <h3 id="detail-status-title">Estado del subpedido</h3>
+          <label class="detail-status-field" for="detail-order-status">Actualizar estado</label>
+          <select id="detail-order-status" [ngModel]="order.status"
+            (ngModelChange)="updateOrderStatus($event)">
+            <option value="Pendiente">Pendiente</option>
+            <option value="En preparación">En preparación</option>
+            <option value="Enviado">Enviado</option>
+            <option value="Entregado">Entregado</option>
+            <option value="Cancelado">Cancelado</option>
+          </select>
+        </section>
+
+        <section class="detail-section detail-customer" aria-labelledby="detail-customer-title">
+          <h3 id="detail-customer-title">Comprador y envío</h3>
+          <strong>{{ order.customer }}</strong>
+          <span>{{ order.customerEmail }}</span>
+          <address>{{ order.shippingAddress }}</address>
+        </section>
+      </div>
+    </section>
+  </div>
+}
