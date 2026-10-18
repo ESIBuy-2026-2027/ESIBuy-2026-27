@@ -106,6 +106,11 @@ export class ProductCreate implements OnInit {
   serverFieldErrors: Partial<Record<ProductFormField, string>> = {};
 
   imageError = signal(false);
+  readonly sidebarCollapsed = signal(false);
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update((collapsed) => !collapsed);
+  }
 
   get previewUrl(): string {
     const control = this.form.controls.imagen;

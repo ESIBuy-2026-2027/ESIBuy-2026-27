@@ -1,12 +1,15 @@
-<div class="admin-layout">
-  <aside class="admin-sidebar admin-sidebar--shared" aria-label="Panel de administración">
+<div class="admin-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
+  <aside class="admin-sidebar admin-sidebar--shared app-sidebar" aria-label="Panel de administración">
+    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()"
+      aria-label="Ocultar barra lateral"><span aria-hidden="true">‹</span></button>
     <a routerLink="/" class="admin-brand" aria-label="ESIBuy">
       <span class="brand-mark" aria-hidden="true">E</span>
       <span>ESI<span class="brand-accent">Buy</span></span>
     </a>
     <p class="sidebar-caption">GESTIÓN DE ADMINISTRACIÓN</p>
     <nav class="admin-navigation" aria-label="Navegación de administración">
-      <a class="navigation-link" routerLink="/admin/usuarios">
+      <a class="navigation-link" routerLink="/admin/usuarios" routerLinkActive="is-active"
+        ariaCurrentWhenActive="page">
         <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20"></path>
           <circle cx="10" cy="7" r="3"></circle>
@@ -15,11 +18,13 @@
         </svg>
         <span>Usuarios</span>
       </a>
-      <a class="navigation-link is-active" routerLink="/admin/altas" aria-current="page">
+      <a class="navigation-link" routerLink="/admin/altas" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
         <span class="navigation-icon text-icon" aria-hidden="true">＋</span>
         <span>Dar de alta Administrador</span>
       </a>
-      <a class="navigation-link" routerLink="/admin/categorias">
+      <a class="navigation-link" routerLink="/admin/categorias" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
         <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M20 13 11 22l-9-9V2h11l9 9a1.4 1.4 0 0 1-2 2Z"></path>
           <circle cx="7" cy="7" r="1.2"></circle>
@@ -29,7 +34,9 @@
     </nav>
   </aside>
 
-  <div class="admin-workspace">
+  <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()"
+    aria-label="Mostrar barra lateral" [hidden]="!sidebarCollapsed()"><span aria-hidden="true">›</span></button>
+  <div class="admin-workspace app-workspace">
     <main class="admin-create-container edit-page">
       <div class="main-container">
         <div *ngIf="errorMessage" class="alert-box alert-danger" role="alert">

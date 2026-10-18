@@ -13,6 +13,169 @@
   -webkit-font-smoothing: antialiased;
 }
 
+.seller-shell {
+  --seller-sidebar-width: 248px;
+  position: relative;
+}
+
+.seller-shell .app-sidebar {
+  box-sizing: border-box;
+  width: var(--seller-sidebar-width);
+  background: #102c40;
+  color: #edf5f8;
+  transition: transform 0.25s ease;
+}
+
+.seller-shell .app-workspace {
+  margin-left: var(--seller-sidebar-width);
+}
+
+.seller-shell.product-create-page {
+  padding: 36px 36px 56px calc(var(--seller-sidebar-width) + 36px);
+}
+
+.seller-shell .app-sidebar-toggle {
+  position: absolute;
+  top: 30px;
+  right: 12px;
+  z-index: 2;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: #1d4357;
+  color: #edf5f8;
+  cursor: pointer;
+}
+
+.seller-shell .app-sidebar-toggle svg,
+.seller-shell .app-sidebar-toggle-open svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+}
+
+.seller-shell .app-sidebar-toggle:hover {
+  background: #28546a;
+}
+
+.seller-shell .app-sidebar-toggle-open {
+  position: fixed;
+  top: 74px;
+  left: 14px;
+  z-index: 3;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: #102c40;
+  color: #edf5f8;
+  cursor: pointer;
+}
+
+.seller-shell .app-sidebar-toggle-open[hidden] {
+  display: none;
+}
+
+.seller-shell .app-sidebar .admin-brand,
+.seller-shell .app-sidebar .client-brand,
+.seller-shell .app-sidebar .brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: fit-content;
+  margin: 0 0 54px 8px;
+  color: #fff;
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -0.7px;
+  text-decoration: none;
+}
+
+.seller-shell .app-sidebar .brand-mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 11px;
+  background: #42d6b2;
+  color: #102c40;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.seller-shell .app-sidebar .brand-accent {
+  color: #42d6b2;
+}
+
+.seller-shell .app-sidebar .sidebar-caption {
+  margin: 0;
+  padding: 0 10px 13px;
+  color: #8396a4;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 1.15px;
+}
+
+.seller-shell .app-sidebar .admin-navigation,
+.seller-shell .app-sidebar .client-navigation,
+.seller-shell .app-sidebar .seller-navigation {
+  display: grid;
+  gap: 0;
+}
+
+.seller-shell .app-sidebar .navigation-link {
+  box-sizing: border-box;
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  border-left: 3px solid transparent;
+  border-radius: 8px;
+  color: #c1d0d8;
+  font-size: 13px;
+  font-weight: 550;
+  text-decoration: none;
+}
+
+.seller-shell .app-sidebar .navigation-link:hover,
+.seller-shell .app-sidebar .navigation-link.is-active {
+  background: #1d4357;
+  color: #fff;
+}
+
+.seller-shell .app-sidebar .navigation-link.is-active {
+  border-left-color: #42d6b2;
+  box-shadow: none;
+}
+
+.seller-shell .app-sidebar .navigation-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  color: currentColor;
+}
+
+.seller-shell.app-sidebar-collapsed .app-sidebar {
+  transform: translateX(-100%);
+}
+
+.seller-shell.app-sidebar-collapsed .app-workspace {
+  margin-left: 0;
+}
+
 .seller-layout *,
 .seller-layout *::before,
 .seller-layout *::after {
@@ -345,6 +508,54 @@
     width: 100%;
     padding: 14px 18px 12px;
     transition: none;
+  }
+
+  .seller-shell .app-sidebar {
+    position: static;
+    width: 100%;
+    padding: 14px 18px 12px;
+    transition: none;
+  }
+
+  .seller-shell .app-sidebar-toggle {
+    top: 14px;
+    right: 18px;
+  }
+
+  .seller-shell .app-sidebar-toggle-open {
+    top: 14px;
+  }
+
+  .seller-shell .app-sidebar .admin-navigation,
+  .seller-shell .app-sidebar .client-navigation,
+  .seller-shell .app-sidebar .seller-navigation {
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 3px;
+  }
+
+  .seller-shell .app-sidebar .navigation-link {
+    min-height: 42px;
+    flex: 0 0 auto;
+    padding: 0 11px;
+    font-size: 12px;
+  }
+
+  .seller-shell.app-sidebar-collapsed .app-sidebar {
+    display: none;
+  }
+
+  .seller-shell:not(.app-sidebar-collapsed) .app-workspace {
+    margin-left: 0;
+  }
+
+  .seller-shell.product-create-page {
+    padding: 36px 20px 56px;
+  }
+
+  .seller-shell.product-create-page.app-sidebar-collapsed {
+    padding-left: 20px;
   }
 
   .seller-layout .brand {
