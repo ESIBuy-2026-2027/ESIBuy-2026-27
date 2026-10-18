@@ -1,3 +1,4 @@
+import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -406,7 +407,7 @@ export class ShippingAddresses implements OnInit {
   private saveErrorMessage(error: HttpErrorResponse, serverMessage?: string): string {
     switch (error.status) {
       case 0:
-        return 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
+        return httpErrorMessage(error) ?? 'No se ha podido guardar la dirección. Inténtalo de nuevo más tarde.';
       case 400:
         return 'Revisa los datos introducidos e inténtalo de nuevo.';
       case 403:
@@ -423,7 +424,7 @@ export class ShippingAddresses implements OnInit {
   private loadErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 0) {
-        return 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
+        return httpErrorMessage(error) ?? 'No se pudieron cargar tus direcciones. Inténtalo de nuevo más tarde.';
       }
       if (error.status === 403) {
         return 'No tienes permisos para consultar tus direcciones.';
@@ -439,7 +440,7 @@ export class ShippingAddresses implements OnInit {
 
     switch (error.status) {
       case 0:
-        return 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
+        return httpErrorMessage(error) ?? 'No se ha podido eliminar la dirección. Inténtalo de nuevo más tarde.';
       case 403:
         return 'No tienes permisos para eliminar direcciones de envío.';
       case 404:

@@ -1,3 +1,4 @@
+import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
@@ -212,7 +213,7 @@ export class SellerCatalog implements OnInit {
   private getInlineErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 401) {
-        return 'Tu sesión ha caducado. Inicia sesión de nuevo.';
+        return httpErrorMessage(error) ?? 'No se pudo guardar el cambio. Inténtalo de nuevo.';
       }
       if (error.status === 403) {
         return 'No tienes permiso para modificar este producto.';
@@ -221,7 +222,7 @@ export class SellerCatalog implements OnInit {
         return 'El producto ya no existe o no tienes permiso para modificarlo.';
       }
       if (error.status === 0) {
-        return 'No se pudo conectar con el servidor.';
+        return httpErrorMessage(error) ?? 'No se pudo guardar el cambio. Inténtalo de nuevo.';
       }
       if (typeof error.error?.message === 'string') {
         return error.error.message;

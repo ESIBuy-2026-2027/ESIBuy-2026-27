@@ -105,14 +105,14 @@
 
 .modal h2 {
     margin: 0 0 14px;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 20px;
     letter-spacing: -0.4px;
 }
 
 .modal p {
     margin: 0 0 10px;
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 14px;
     line-height: 1.5;
 }

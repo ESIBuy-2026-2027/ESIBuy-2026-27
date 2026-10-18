@@ -7,7 +7,7 @@
   box-sizing: border-box;
 }.admin-layout {
   min-height: 100vh;
-  background: #e9eff8;
+  background: var(--color-page-background);
 }.eyebrow {
   margin: 0;
   color: #8396a4;
@@ -39,7 +39,7 @@
   transition: all 0.2s ease;
 }.back-link:hover {
   background: #cbdce6;
-  color: #102c40;
+  color: var(--color-brand-dark);
 }.card {
   margin: 0 0 24px;
   border: 1px solid #dce5ee;
@@ -56,7 +56,7 @@
   align-items: center;
   gap: 10px;
   margin: 0;
-  color: #173247;
+  color: var(--color-text-primary);
   font-size: 22px;
   font-weight: 750;
   letter-spacing: -.5px;
@@ -75,7 +75,7 @@
   padding-bottom: 20px;
 }.section-title {
   margin: 0 0 16px;
-  color: #173247;
+  color: var(--color-text-primary);
   font-size: 1.05rem;
   font-weight: 700;
 }.form-row {
@@ -162,7 +162,7 @@
   font-size: 0.95rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }.form-control:focus {
-  border-color: #42d6b2;
+  border-color: var(--color-brand-accent);
   outline: none;
   box-shadow: 0 0 0 3px rgb(66 214 178 / 16%);
 }.form-control.readonly-control,
@@ -252,4 +252,3 @@
     box-sizing: border-box;
   }
 }
-

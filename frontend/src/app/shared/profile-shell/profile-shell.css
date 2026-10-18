@@ -36,8 +36,8 @@
     place-items: center;
     overflow: hidden;
     border-radius: 50%;
-    background: #102c40;
-    color: #42d6b2;
+    background: var(--color-brand-dark);
+    color: var(--color-brand-accent);
     font-size: 26px;
     font-weight: 750;
 }
@@ -52,7 +52,7 @@
 
 .sidebar-name {
     margin: 14px 0 8px;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 15px;
     font-weight: 750;
     text-align: center;
@@ -72,8 +72,8 @@
 }
 
 .premium-badge {
-    background: #42d6b2;
-    color: #102c40;
+    background: var(--color-brand-accent);
+    color: var(--color-brand-dark);
 }
 
 .sidebar-nav {
@@ -101,7 +101,7 @@
 
 .sidebar-nav .nav-item.active {
     background: #dde8f0;
-    color: #102c40;
+    color: var(--color-brand-dark);
     font-weight: 700;
 }
 
@@ -116,7 +116,7 @@
 .sidebar-nav .nav-item:focus-visible,
 .sidebar-footer .logout-button:focus-visible,
 .sidebar-footer .back-button:focus-visible {
-    outline: 3px solid #42d6b2;
+    outline: 3px solid var(--color-brand-accent);
     outline-offset: 2px;
 }
 

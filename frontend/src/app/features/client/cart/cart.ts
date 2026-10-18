@@ -1,3 +1,4 @@
+import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -116,7 +117,7 @@ export class ClientCart {
         return error.error.message;
       }
       if (error.status === 0) {
-        return 'No se pudo conectar con el servidor. Inténtalo de nuevo.';
+        return httpErrorMessage(error) ?? 'No se pudo completar el pedido. Inténtalo de nuevo.';
       }
     }
     return 'No se pudo completar el pedido. Inténtalo de nuevo.';

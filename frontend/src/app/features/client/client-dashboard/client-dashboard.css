@@ -7,7 +7,7 @@
 
 .client-layout {
   min-height: 100vh;
-  background: #e9eff8;
+  background: var(--color-page-background);
 }
 
 /* Área de contenido */
@@ -33,14 +33,14 @@
 
 .page-heading h1 {
   margin: 6px 0 8px;
-  color: #173247;
+  color: var(--color-text-primary);
   font-size: clamp(24px, 3vw, 30px);
   letter-spacing: -0.8px;
 }
 
 .page-description {
   margin: 0;
-  color: #587388;
+  color: var(--color-text-secondary);
   font-size: 14px;
   line-height: 1.5;
 }
@@ -51,7 +51,7 @@
   height: 1.5rem;
   place-items: center;
   border-radius: 999px;
-  background: #102c40;
+  background: var(--color-brand-dark);
   color: #fff;
   font-size: 0.8rem;
 }
@@ -78,7 +78,7 @@
   place-items: center;
   object-fit: cover;
   background: #eaf3f5;
-  color: #147c73;
+  color: var(--color-focus);
   font-size: 2rem;
   font-weight: 800;
 }
@@ -92,14 +92,14 @@
 
 .product-details h2 {
   margin: 0;
-  color: #173247;
+  color: var(--color-text-primary);
   font-size: 1.05rem;
 }
 
 .product-description {
   min-height: 2.7em;
   margin: 0.5rem 0;
-  color: #587388;
+  color: var(--color-text-secondary);
   font-size: 0.875rem;
   line-height: 1.4;
 }
@@ -112,7 +112,7 @@
 
 .product-price {
   margin: 0.5rem 0 0.85rem;
-  color: #173247;
+  color: var(--color-text-primary);
   font-size: 1.15rem;
   font-weight: 750;
 }
@@ -136,7 +136,7 @@
 }
 
 .product-details input:focus-visible {
-  outline: 3px solid #147c73;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 
@@ -148,15 +148,15 @@
   padding: 0 1rem;
   border: 0;
   border-radius: 8px;
-  background: #42d6b2;
-  color: #102c40;
+  background: var(--color-brand-accent);
+  color: var(--color-brand-dark);
   font: inherit;
   font-weight: 650;
   cursor: pointer;
 }
 
 .add-to-cart:hover:not(:disabled) {
-  background: #35c4a1;
+  background: var(--color-brand-accent-hover);
 }
 
 .add-to-cart:disabled {
@@ -166,7 +166,7 @@
 
 .add-to-cart:focus-visible,
 .primary-action:focus-visible {
-  outline: 3px solid #147c73;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 
@@ -198,15 +198,15 @@
   gap: 0.5rem;
   padding: 0 1rem;
   border-radius: 8px;
-  background: #42d6b2;
-  color: #102c40;
+  background: var(--color-brand-accent);
+  color: var(--color-brand-dark);
   font-size: 0.875rem;
   font-weight: 650;
   text-decoration: none;
 }
 
 .primary-action:hover {
-  background: #35c4a1;
+  background: var(--color-brand-accent-hover);
 }
 
 /* Responsividad */

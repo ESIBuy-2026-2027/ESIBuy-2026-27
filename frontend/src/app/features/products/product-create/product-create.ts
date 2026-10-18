@@ -1,3 +1,4 @@
+import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { DestroyRef, Component, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -273,12 +274,10 @@ export class ProductCreate implements OnInit {
   }
 
   private getFallbackError(status: number): string {
-    if (status === 0) {
-      return 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
-    }
-    if (status === 401) {
-      return 'Tu sesión ha caducado. Inicia sesión de nuevo para guardar el producto.';
-    }
+    const sharedMessage = httpErrorMessage(status, {
+      401: 'Tu sesión ha caducado. Inicia sesión de nuevo para guardar el producto.',
+    });
+    if (sharedMessage) return sharedMessage;
     if (status === 403) {
       return 'No tienes permiso para guardar este producto.';
     }
@@ -291,7 +290,9 @@ export class ProductCreate implements OnInit {
   private getLoadErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 401) {
-        return 'Tu sesión ha caducado. Inicia sesión de nuevo para editar productos.';
+        return httpErrorMessage(error, {
+          401: 'Tu sesión ha caducado. Inicia sesión de nuevo para editar productos.',
+        }) ?? 'No se pudo cargar el producto. Inténtalo de nuevo.';
       }
       if (error.status === 403) {
         return 'No tienes permiso para editar productos.';
@@ -300,7 +301,7 @@ export class ProductCreate implements OnInit {
         return 'El producto ya no existe o no tienes permiso para editarlo.';
       }
       if (error.status === 0) {
-        return 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
+        return httpErrorMessage(error) ?? 'No se pudo cargar el producto. Inténtalo de nuevo.';
       }
     }
     return 'No se pudo cargar el producto. Inténtalo de nuevo.';

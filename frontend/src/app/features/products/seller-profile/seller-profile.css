@@ -1,7 +1,7 @@
 :host {
     display: block;
     min-height: calc(100vh - var(--app-header-height, 56px));
-    background: #e9eff8;
+    background: var(--color-page-background);
     color: #172b3a;
     font-family: Inter, "Segoe UI", sans-serif;
 }
@@ -56,8 +56,8 @@
     place-items: center;
     overflow: hidden;
     border-radius: 50%;
-    background: #102c40;
-    color: #42d6b2;
+    background: var(--color-brand-dark);
+    color: var(--color-brand-accent);
     font-size: 26px;
     font-weight: 750;
 }
@@ -73,7 +73,7 @@
 .sidebar-name {
     max-width: 100%;
     margin: 14px 0 8px;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 15px;
     font-weight: 750;
     line-height: 1.4;
@@ -126,13 +126,13 @@
 
 .sidebar-nav .nav-item.active {
     background: #dde8f0;
-    color: #102c40;
+    color: var(--color-brand-dark);
     font-weight: 700;
 }
 
 .sidebar-nav .nav-item:hover {
     background: #edf3f7;
-    color: #102c40;
+    color: var(--color-brand-dark);
 }
 
 .sidebar-nav .nav-item.active:hover {
@@ -183,7 +183,7 @@
 }
 
 .logout-button {
-    color: #587388;
+    color: var(--color-text-secondary);
 }
 
 .logout-button:hover {
@@ -197,7 +197,7 @@
 
 .sidebar-footer .back-button:hover {
     background: #dde8f0;
-    color: #102c40;
+    color: var(--color-brand-dark);
 }
 
 .sidebar-footer .logout-button:focus-visible,
@@ -267,7 +267,7 @@ app-delete-account {
 
 .panel-title {
     margin: 0 0 6px;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 20px;
     font-weight: 750;
     letter-spacing: -0.4px;
@@ -276,7 +276,7 @@ app-delete-account {
 
 .panel-description {
     margin: 0;
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 13px;
     line-height: 1.6;
 }
@@ -294,7 +294,7 @@ app-delete-account {
     margin: 26px 0 14px;
     padding-bottom: 10px;
     border-bottom: 1px solid #e7edf0;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 15px;
     font-weight: 750;
 }
@@ -404,7 +404,7 @@ app-delete-account {
 
 .section-description {
     margin: 0 0 14px;
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 12px;
     line-height: 1.6;
 }
@@ -514,7 +514,7 @@ app-delete-account {
 
 .primary-button {
     border: 0;
-    background: #102c40;
+    background: var(--color-brand-dark);
     color: #fff;
 }
 

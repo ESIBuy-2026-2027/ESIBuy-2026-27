@@ -1,3 +1,4 @@
+import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -263,7 +264,11 @@ export class AdminUserDetail implements OnInit {
   }
 
   private errorMessageFor(error: any): string {
-    if (error.status === 401) return 'La sesión ha caducado. Inicie sesión como administrador y vuelva a intentarlo.';
+    if (error.status === 401) {
+      return httpErrorMessage(error, {
+        401: 'La sesión ha caducado. Inicie sesión como administrador y vuelva a intentarlo.',
+      }) ?? 'No se pudo completar la operación. Compruebe los datos e inténtelo de nuevo.';
+    }
     if (error.status === 403) return 'No tiene permisos para modificar usuarios.';
     if (error.status === 404) return 'El usuario solicitado ya no existe.';
     if (error.status === 409) return error.error?.message || 'Ya existe un usuario o comercio con esos datos.';

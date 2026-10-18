@@ -1,3 +1,4 @@
+import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
@@ -185,12 +186,8 @@ export class AdminCategoryList {
     if (!(error instanceof HttpErrorResponse)) {
       return 'No se pudo conectar con el servidor. Inténtalo de nuevo.';
     }
-    if (error.status === 0) {
-      return 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
-    }
-    if (error.status === 401) {
-      return 'Tu sesión ha caducado. Inicia sesión de nuevo.';
-    }
+    const sharedMessage = httpErrorMessage(error);
+    if (sharedMessage) return sharedMessage;
     if (error.status === 403) {
       return 'No tienes permisos para gestionar las categorías.';
     }

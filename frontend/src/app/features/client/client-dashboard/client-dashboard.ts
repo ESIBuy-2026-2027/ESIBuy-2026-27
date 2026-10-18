@@ -1,3 +1,4 @@
+import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -83,7 +84,7 @@ export class ClientDashboard implements OnInit {
         return 'El producto ya no está disponible.';
       }
       if (error.status === 0) {
-        return 'No se pudo conectar con el servidor.';
+        return httpErrorMessage(error) ?? 'No se pudo añadir el producto. Inténtalo de nuevo.';
       }
     }
     return 'No se pudo añadir el producto. Inténtalo de nuevo.';

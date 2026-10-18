@@ -1,7 +1,7 @@
 :host {
   display: block;
   min-height: 100vh;
-  color: #173247;
+  color: var(--color-text-primary);
   font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
@@ -14,10 +14,10 @@
 }
 
 .seller-layout {
-  --navy: #102c40;
-  --teal: #42d6b2;
+  --navy: var(--color-brand-dark);
+  --teal: var(--color-brand-accent);
   --teal-dark: #168c75;
-  --ink: #173247;
+  --ink: var(--color-text-primary);
   --muted: #718694;
   --line: #dfe8ed;
 
@@ -105,7 +105,7 @@
   padding: 0 18px;
   border: 1px solid var(--teal);
   border-radius: 9px;
-  color: #102c40;
+  color: var(--color-brand-dark);
   background: var(--teal);
   font-size: 13px;
   font-weight: 750;
@@ -329,7 +329,7 @@
 .product-name {
   display: block;
   overflow: hidden;
-  color: #173247;
+  color: var(--color-text-primary);
   font-size: 13px;
   font-weight: 750;
   text-overflow: ellipsis;
@@ -347,7 +347,7 @@
 }
 
 .product-price {
-  color: #173247 !important;
+  color: var(--color-text-primary) !important;
   font-weight: 750;
   white-space: nowrap;
 }
@@ -402,7 +402,7 @@
 }
 
 .price-value {
-  color: #173247;
+  color: var(--color-text-primary);
   background: transparent;
   font-size: 13px;
   font-weight: 750;
@@ -478,7 +478,7 @@
   padding: 5px 8px;
   border: 1px solid #8bcfc0;
   border-radius: 7px;
-  color: #173247;
+  color: var(--color-text-primary);
   background: #fff;
   font: inherit;
   font-size: 12px;
@@ -676,7 +676,7 @@
 
 .empty-state h2 {
   margin: 0 0 8px;
-  color: #173247;
+  color: var(--color-text-primary);
   font-size: 18px;
   font-weight: 750;
 }

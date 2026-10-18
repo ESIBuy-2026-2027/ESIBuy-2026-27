@@ -1,8 +1,8 @@
 :host {
   display: block;
   min-height: 100vh;
-  background: #e9eff8;
-  color: #173247;
+  background: var(--color-page-background);
+  color: var(--color-text-primary);
   font-family: Inter, "Segoe UI", sans-serif;
 }
 
@@ -88,7 +88,7 @@ p {
 
 .page-header h1 {
   margin-bottom: 9px;
-  color: #102c40;
+  color: var(--color-brand-dark);
   font-size: clamp(25px, 3vw, 32px);
   font-weight: 750;
   letter-spacing: -1px;
@@ -147,7 +147,7 @@ p {
 
 .section-heading h2 {
   margin: 1px 0 5px;
-  color: #173247;
+  color: var(--color-text-primary);
   font-size: 16px;
   font-weight: 750;
   letter-spacing: -0.2px;
@@ -230,7 +230,7 @@ p {
 
 .form-field select[multiple] option:checked {
   background: #dffaf4;
-  color: #173247;
+  color: var(--color-text-primary);
 }
 
 .form-field input:hover,
@@ -495,7 +495,7 @@ p {
 .cancel-action:hover {
   border-color: #bdcfd9;
   background: #f7fafc;
-  color: #173247;
+  color: var(--color-text-primary);
 }
 
 .submit-action {
@@ -504,10 +504,10 @@ p {
   align-items: center;
   justify-content: center;
   padding: 0 20px;
-  border: 1px solid #42d6b2;
+  border: 1px solid var(--color-brand-accent);
   border-radius: 9px;
-  background: #42d6b2;
-  color: #102c40;
+  background: var(--color-brand-accent);
+  color: var(--color-brand-dark);
   cursor: pointer;
   font-family: inherit;
   font-size: 12px;
@@ -599,7 +599,7 @@ textarea:focus-visible {
   }
 
   .navigation-link.is-active {
-    box-shadow: inset 3px 0 #42d6b2;
+    box-shadow: inset 3px 0 var(--color-brand-accent);
   }
 
   .product-create-page {
