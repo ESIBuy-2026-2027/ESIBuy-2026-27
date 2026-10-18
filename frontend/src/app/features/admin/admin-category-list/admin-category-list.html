@@ -1,15 +1,14 @@
 <div class="admin-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
   <aside class="admin-sidebar admin-sidebar--shared app-sidebar" aria-label="Panel de administración">
-    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()"
-      aria-label="Ocultar barra lateral"><span aria-hidden="true">‹</span></button>
+    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral"><span
+        aria-hidden="true">‹</span></button>
     <a routerLink="/" class="admin-brand" aria-label="ESIBuy">
       <span class="brand-mark" aria-hidden="true">E</span>
       <span>ESI<span class="brand-accent">Buy</span></span>
     </a>
     <p class="sidebar-caption">GESTIÓN DE ADMINISTRACIÓN</p>
     <nav class="admin-navigation" aria-label="Navegación de administración">
-      <a class="navigation-link" routerLink="/admin/usuarios" routerLinkActive="is-active"
-        ariaCurrentWhenActive="page">
+      <a class="navigation-link" routerLink="/admin/usuarios" routerLinkActive="is-active" ariaCurrentWhenActive="page">
         <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20"></path>
           <circle cx="10" cy="7" r="3"></circle>
@@ -18,7 +17,7 @@
         </svg>
         <span>Usuarios</span>
       </a>
-      <a class="navigation-link" routerLink="/admin/altas" routerLinkActive="is-active"
+      <a class="navigation-link" routerLink="/admin/users/new" routerLinkActive="is-active"
         [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
         <span class="navigation-icon text-icon" aria-hidden="true">＋</span>
         <span>Dar de alta Administrador</span>
@@ -34,8 +33,8 @@
     </nav>
   </aside>
 
-  <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()"
-    aria-label="Mostrar barra lateral" [hidden]="!sidebarCollapsed()"><span aria-hidden="true">›</span></button>
+  <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()" aria-label="Mostrar barra lateral"
+    [hidden]="!sidebarCollapsed()"><span aria-hidden="true">›</span></button>
   <div class="admin-workspace app-workspace">
     <main class="admin-content">
       <div class="topbar">

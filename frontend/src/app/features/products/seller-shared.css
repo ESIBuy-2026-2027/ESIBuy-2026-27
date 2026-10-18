@@ -112,6 +112,7 @@
   color: #102c40;
   font-size: 18px;
   font-weight: 800;
+  box-shadow: 0 4px 12px rgb(25 157 130 / 20%);
 }
 
 .seller-shell .app-sidebar .brand-accent {
@@ -256,6 +257,7 @@
   background: var(--teal);
   color: var(--navy);
   font-size: 18px;
+  box-shadow: 0 4px 12px rgb(25 157 130 / 20%);
 }
 
 .seller-layout .brand-accent {
