@@ -72,6 +72,12 @@ public class ProductService {
                 .toList();
     }
 
+    public List<ProductResponse> getAvailableProducts() {
+        return productRepository.findAllByAvailableTrueAndStockGreaterThan(0).stream()
+                .map(ProductResponse::from)
+                .toList();
+    }
+
     public Product getProduct(String id, String authenticatedEmail) {
         User seller = findSeller(authenticatedEmail);
         Product product = productRepository.findById(id).orElseThrow(ProductNotFoundException::new);

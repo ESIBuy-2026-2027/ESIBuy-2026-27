@@ -1,0 +1,161 @@
+<main class="cart-page">
+  <header class="cart-heading">
+    <div>
+      <p class="eyebrow">ÁREA DE CLIENTE</p>
+      <h1>Mi carrito</h1>
+      <p>Revisa los artículos y el importe de tu compra.</p>
+    </div>
+    <a routerLink="/client/dashboard" class="secondary-action">Seguir comprando</a>
+  </header>
+
+  @if (cartService.loading()) {
+    <p class="cart-state" role="status">Cargando carrito…</p>
+  } @else if (cartService.loadError(); as error) {
+    <p class="cart-state is-error" role="alert">{{ error }}</p>
+    <button class="secondary-action" type="button" (click)="cartService.load()">Reintentar</button>
+  } @else if (orderConfirmation(); as order) {
+    <section class="order-confirmation" aria-labelledby="order-confirmation-title">
+      <p class="eyebrow">COMPRA COMPLETADA</p>
+      <h2 id="order-confirmation-title">¡Gracias por tu pedido!</h2>
+      <p>Tu pedido se ha confirmado correctamente.</p>
+      <p class="order-number">Identificador de pedido: <strong>{{ order.pedidoId }}</strong></p>
+      <p class="order-total">Total pagado: <strong>{{ formatPrice(order.precioTotal) }}</strong></p>
+      <a routerLink="/client/dashboard" class="primary-action">Volver al catálogo</a>
+    </section>
+  } @else if (cartService.cart(); as cart) {
+    @if (actionError(); as error) {
+      <p class="cart-state is-error" role="alert">{{ error }}</p>
+    }
+    @if (checkoutLoading()) {
+      <p class="cart-state" role="status">Cargando opciones de pago…</p>
+    } @else if (checkoutOpen(); as isOpen) {
+      @if (checkoutSummary(); as summary) {
+        <section class="checkout-panel" aria-labelledby="checkout-title">
+          <h2 id="checkout-title">Confirmación del pedido</h2>
+          @if (summary.direcciones.length === 0 || summary.metodosPago.length === 0) {
+            <p class="checkout-notice" role="status">
+              Guarda una dirección de envío y un método de pago en tu perfil para continuar.
+            </p>
+            <a routerLink="/client/profile" class="secondary-action">Ir a mi perfil</a>
+          } @else {
+            <div class="checkout-fields">
+              <label for="shipping-address">Dirección de envío</label>
+              <select id="shipping-address" name="shippingAddress" [ngModel]="selectedAddressId()"
+                (ngModelChange)="selectedAddressId.set($event)">
+                @for (address of summary.direcciones; track address.id) {
+                  <option [value]="address.id">
+                    {{ address.recipientName }} — {{ address.street }}, {{ address.postalCode }} {{ address.city }}
+                  </option>
+                }
+              </select>
+
+              <label for="payment-method">Método de pago</label>
+              <select id="payment-method" name="paymentMethod" [ngModel]="selectedPaymentMethodId()"
+                (ngModelChange)="selectedPaymentMethodId.set($event)">
+                @for (method of summary.metodosPago; track method.id) {
+                  <option [value]="method.id">
+                    {{ method.cardBrand || method.type }}{{ method.lastFourDigits ? ' ···· ' + method.lastFourDigits : '' }}
+                  </option>
+                }
+              </select>
+            </div>
+
+            <div class="checkout-items">
+              <h3>Resumen de compra</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Producto</th>
+                    <th scope="col">Cantidad</th>
+                    <th scope="col">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of summary.items; track item.productoId) {
+                    <tr>
+                      <th scope="row">{{ item.nombre }}</th>
+                      <td>{{ item.cantidad }}</td>
+                      <td>{{ formatPrice(item.subtotal) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+              <p class="checkout-total">Total <strong>{{ formatPrice(summary.precioTotal) }}</strong></p>
+            </div>
+          }
+
+          <div class="checkout-actions">
+            <button class="secondary-action" type="button" [disabled]="processingOrder()"
+              (click)="cancelarCheckout()">Volver al carrito</button>
+            @if (summary.direcciones.length > 0 && summary.metodosPago.length > 0) {
+              <button class="primary-action" type="button"
+                [disabled]="processingOrder() || !selectedAddressId() || !selectedPaymentMethodId()"
+                (click)="confirmarPedido()">
+                {{ processingOrder() ? 'Procesando pedido y pago…' : 'Confirmar y pagar' }}
+              </button>
+            }
+          </div>
+        </section>
+      }
+    } @else if (cart.items.length === 0) {
+      <section class="empty-cart">
+        <h2>Tu carrito está vacío</h2>
+        <p>Explora el catálogo para encontrar algo que te guste.</p>
+        <a routerLink="/client/dashboard" class="primary-action">Ver productos</a>
+      </section>
+    } @else {
+      <section class="cart-content" aria-label="Contenido del carrito">
+        <div class="cart-items">
+          @for (item of cart.items; track item.productoId) {
+            <article class="cart-item">
+              <div class="item-information">
+                <h2>{{ item.nombre }}</h2>
+                <p>{{ formatPrice(item.precioUnitario) }} por unidad</p>
+                <div class="quantity-controls" [attr.aria-busy]="busyItemIds().has(item.productoId)">
+                  <button
+                    class="quantity-action"
+                    type="button"
+                    [disabled]="busyItemIds().has(item.productoId)"
+                    [attr.aria-label]="'Reducir cantidad de ' + item.nombre"
+                    (click)="changeQuantity(item.productoId, item.cantidad - 1)"
+                  >−</button>
+                  <span class="quantity-value" [attr.aria-label]="'Cantidad: ' + item.cantidad">
+                    {{ item.cantidad }}
+                  </span>
+                  <button
+                    class="quantity-action"
+                    type="button"
+                    [disabled]="busyItemIds().has(item.productoId)"
+                    [attr.aria-label]="'Aumentar cantidad de ' + item.nombre"
+                    (click)="changeQuantity(item.productoId, item.cantidad + 1)"
+                  >+</button>
+                  <button
+                    class="remove-action"
+                    type="button"
+                    [disabled]="busyItemIds().has(item.productoId)"
+                    [attr.aria-label]="'Eliminar ' + item.nombre + ' del carrito'"
+                    (click)="removeItem(item.productoId)"
+                  >Eliminar</button>
+                  @if (busyItemIds().has(item.productoId)) {
+                    <span class="cart-state" role="status">Actualizando…</span>
+                  }
+                </div>
+              </div>
+              <p class="item-subtotal">{{ formatPrice(item.subtotal) }}</p>
+            </article>
+          }
+        </div>
+        <aside class="cart-total" aria-label="Resumen del carrito">
+          <p>Artículos <span>{{ cartService.itemCount() }}</span></p>
+          <p class="total-line">Total <strong>{{ formatPrice(cart.precioTotal) }}</strong></p>
+          <button class="primary-action checkout-action" type="button" [disabled]="checkoutLoading()"
+            (click)="iniciarCheckout()">
+            {{ checkoutLoading() ? 'Cargando checkout…' : 'Continuar con la compra' }}
+          </button>
+        </aside>
+      </section>
+    }
+  } @else {
+    <p class="cart-state" role="status">Cargando carrito…</p>
+  }
+</main>

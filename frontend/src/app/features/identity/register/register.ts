@@ -66,9 +66,9 @@ export class Register {
   form: FormGroup;
 
   serverError: string | null = null;
-
   loading = false;
-
+  registrationSuccess = false;
+  showCancelConfirmation = false;
   showPassword = false;
 
   clientAvatars = [
@@ -344,11 +344,7 @@ export class Register {
       this.authService.registerClient(payload).subscribe({
 
         next: () => {
-          alert(
-            'Registro completado exitosamente. Tu cuenta requiere activación por un administrador.'
-          );
-
-          this.router.navigate(['/']);
+          this.registrationSuccess = true;
         },
 
         error: (err) => {
@@ -380,11 +376,7 @@ export class Register {
       this.authService.registerSeller(payload).subscribe({
 
         next: () => {
-          alert(
-            'Registro completado exitosamente. Tu cuenta requiere activación por un administrador.'
-          );
-
-          this.router.navigate(['/']);
+          this.registrationSuccess = true;
         },
 
         error: (err) => {
@@ -401,13 +393,24 @@ export class Register {
   }
 
   cancelRegistration(): void {
-    const confirmed = window.confirm(
-      '¿Seguro que quieres cancelar el registro? Se perderán los datos introducidos.'
-    );
-
-    if (confirmed) {
-      void this.router.navigate(['/']);
+    if (this.loading) {
+      return;
     }
+
+    this.showCancelConfirmation = true;
+  }
+
+  dismissCancelConfirmation(): void {
+    this.showCancelConfirmation = false;
+  }
+
+  confirmCancelRegistration(): void {
+    this.showCancelConfirmation = false;
+    void this.router.navigate(['/']);
+  }
+
+  finishRegistration(): void {
+    void this.router.navigate(['/']);
   }
 
   private getRegistrationErrorMessage(error: unknown): string {

@@ -37,6 +37,8 @@ export interface ProductDetails {
   sellerId: string;
 }
 
+export type AvailableProduct = ProductDetails;
+
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
   private readonly http = inject(HttpClient);
@@ -51,6 +53,10 @@ export class ProductsService {
 
   getProduct(id: string): Observable<ProductDetails> {
     return this.http.get<ProductDetails>(`/api/products/${encodeURIComponent(id)}`);
+  }
+
+  getAvailableProducts(): Observable<AvailableProduct[]> {
+    return this.http.get<AvailableProduct[]>('/api/catalog/products');
   }
 
   updateProduct(id: string, request: ProductCreateRequest): Observable<ProductDetails> {

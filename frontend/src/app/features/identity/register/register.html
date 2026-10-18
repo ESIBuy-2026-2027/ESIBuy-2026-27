@@ -50,6 +50,54 @@
       <span>{{ serverError }}</span>
     </div>
 
+    @if (registrationSuccess) {
+    <div class="dialog-backdrop">
+      <dialog class="register-dialog" open aria-labelledby="registration-success-title"
+        aria-describedby="registration-success-description">
+
+        <div class="dialog-icon success-icon" aria-hidden="true">✓</div>
+
+        <h2 id="registration-success-title">¡Registro completado!</h2>
+
+        <p id="registration-success-description">
+          Tu cuenta se ha creado correctamente y requiere activación por un administrador.
+        </p>
+
+        <div class="dialog-actions">
+          <button type="button" class="dialog-primary-button" (click)="finishRegistration()">
+            Ir al inicio
+          </button>
+        </div>
+      </dialog>
+    </div>
+    }
+
+    @if (showCancelConfirmation) {
+    <div class="dialog-backdrop">
+      <dialog class="register-dialog" open aria-labelledby="cancel-registration-title"
+        aria-describedby="cancel-registration-description">
+
+        <div class="dialog-icon warning-icon" aria-hidden="true">!</div>
+
+        <h2 id="cancel-registration-title">¿Cancelar el registro?</h2>
+
+        <p id="cancel-registration-description">
+          Si vuelves al inicio, se perderán los datos que has introducido.
+          ¿Quieres continuar?
+        </p>
+
+        <div class="dialog-actions">
+          <button type="button" class="dialog-secondary-button" (click)="dismissCancelConfirmation()">
+            Seguir registrándome
+          </button>
+
+          <button type="button" class="dialog-danger-button" (click)="confirmCancelRegistration()">
+            Sí, volver al inicio
+          </button>
+        </div>
+      </dialog>
+    </div>
+    }
 
     <!-- FORMULARIO -->
 
@@ -167,8 +215,8 @@
             Teléfono
           </label>
 
-          <input id="phone" type="text" formControlName="phone" placeholder="Ej: 600112233" autocomplete="tel" />
-
+          <input id="phone" type="tel" formControlName="phone" placeholder="Ej: 600112233" autocomplete="tel"
+            inputmode="numeric" maxlength="9" />
           <span class="error" *ngIf="form.get('phone')?.touched && form.get('phone')?.hasError('pattern')">
             El teléfono debe contener exactamente 9 dígitos numéricos
           </span>
@@ -346,7 +394,8 @@
             Teléfono
           </label>
 
-          <input id="sellerPhone" type="text" formControlName="phone" placeholder="Ej: 600112233" autocomplete="tel" />
+          <input id="sellerPhone" type="tel" formControlName="phone" placeholder="Ej: 600112233" autocomplete="tel"
+            inputmode="numeric" maxlength="9" />
 
           <span class="error" *ngIf="form.get('phone')?.touched && form.get('phone')?.hasError('pattern')">
             El teléfono debe contener exactamente 9 dígitos numéricos

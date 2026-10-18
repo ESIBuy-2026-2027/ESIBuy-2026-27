@@ -4,20 +4,24 @@ import { signal, WritableSignal } from '@angular/core';
 import { of } from 'rxjs';
 import { AuthService, AuthenticatedUser } from './core/services/auth.service';
 import { App } from './app';
+import { CartService } from './features/client/cart/cart.service';
 
 describe('App', () => {
   let currentUser: WritableSignal<AuthenticatedUser | null>;
   let logout: ReturnType<typeof vi.fn>;
+  let cartService: { load: ReturnType<typeof vi.fn>; clear: ReturnType<typeof vi.fn>; itemCount: WritableSignal<number> };
 
   beforeEach(async () => {
     currentUser = signal<AuthenticatedUser | null>(null);
     logout = vi.fn().mockReturnValue(of(undefined));
+    cartService = { load: vi.fn(), clear: vi.fn(), itemCount: signal(0) };
 
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [
         provideRouter([]),
         { provide: AuthService, useValue: { currentUser, logout } },
+        { provide: CartService, useValue: cartService },
       ],
     })
       .compileComponents();
@@ -27,6 +31,23 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
+  });
+
+  it('should load the authenticated client cart and show its count in the header', () => {
+    currentUser.set({
+      id: 'client-1',
+      email: 'client@example.com',
+      role: 'CLIENT',
+      active: true,
+    });
+    cartService.itemCount.set(3);
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const cartLink = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>('.header-cart');
+    expect(cartService.load).toHaveBeenCalled();
+    expect(cartLink?.getAttribute('href')).toBe('/client/cart');
+    expect(cartLink?.textContent).toContain('3');
   });
 
     it('should render the router outlet', async () => {

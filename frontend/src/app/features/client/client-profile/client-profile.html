@@ -35,7 +35,20 @@
                 (click)="selectSection('security')">
                 {{ section.label }}
             </button>
-            } @else {
+            } @else if (section.label === 'Direcciones de envío') {
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'addresses'"
+                [attr.aria-current]="activeSection() === 'addresses' ? 'page' : null"
+                (click)="selectSection('addresses')">
+                {{ section.label }}
+            </button>
+            }@else if (section.label === 'Métodos de pago') {
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'payments'"
+                [attr.aria-current]="activeSection() === 'payments' ? 'page' : null"
+                (click)="selectSection('payments')">
+                {{ section.label }}
+            </button>
+            }
+            @else {
             <a class="nav-item disabled" aria-disabled="true">
                 {{ section.label }}
             </a>
@@ -82,7 +95,7 @@
         } @else if (profile(); as client) {
 
         <!-- BANNER PREMIUM -->
-        @if (isPremium()) {
+        @if (activeSection() === 'personal' && isPremium()) {
         <section class="premium-banner">
             <div>
                 <span class="premium-eyebrow">CUENTA PREMIUM</span>
@@ -181,9 +194,9 @@
                         <label for="phone">Teléfono</label>
 
                         @if (editing()) {
-                        <input id="phone" name="phone" type="tel" [(ngModel)]="editForm.phone" pattern="[0-9]{9}"
-                            maxlength="9" inputmode="numeric" autocomplete="tel" placeholder="Teléfono de 9 cifras"
-                            [disabled]="saving()" />
+                        <input id="phone" name="phone" type="tel" inputmode="numeric" maxlength="9"
+                            [(ngModel)]="editForm.phone" pattern="[0-9]{9}" maxlength="9" inputmode="numeric"
+                            autocomplete="tel" placeholder="Teléfono de 9 cifras" [disabled]="saving()" />
 
                         <small>
                             Campo opcional. Introduce 9 cifras si
@@ -310,6 +323,12 @@
         @if (activeSection() === 'security') {
         <app-two-factor-settings [enabled]="twoFactorEnabled()"
             (enabledChange)="onTwoFactorEnabledChange($any($event))" />
+        }
+        @if (activeSection() === 'addresses') {
+        <app-shipping-addresses />
+        }
+        @if (activeSection() === 'payments') {
+        <app-payment-methods />
         }
         }
     </main>

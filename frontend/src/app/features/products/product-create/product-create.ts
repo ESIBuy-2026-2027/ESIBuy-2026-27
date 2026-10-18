@@ -1,7 +1,7 @@
 import { DestroyRef, Component, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Category, ProductCreateRequest, ProductsService } from '../products.service';
 
@@ -50,14 +50,17 @@ export class ProductCreate implements OnInit {
   private readonly productsService = inject(ProductsService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   readonly productId = this.route.snapshot.paramMap.get('id');
 
   readonly form = new FormGroup<ProductFormControls>({
-    nombre: new FormControl('', { nonNullable: true, validators: [
-      Validators.required,
-      Validators.pattern(/\S/),
-      Validators.maxLength(150),
-    ] }),
+    nombre: new FormControl('', {
+      nonNullable: true, validators: [
+        Validators.required,
+        Validators.pattern(/\S/),
+        Validators.maxLength(150),
+      ]
+    }),
     categoriaIds: new FormControl<string[]>({ value: [], disabled: true }, {
       nonNullable: true,
       validators: [Validators.required],
@@ -168,27 +171,37 @@ export class ProductCreate implements OnInit {
     this.submitSuccess.set(false);
     this.submitError.set(null);
 
-    if (this.form.invalid || this.productLoading() || this.productLoadError()
-      || this.categoriesLoading || this.categoriesError
-      || this.categories.length === 0 || this.submitting()) {
+    if (
+      this.form.invalid ||
+      this.productLoading() ||
+      this.productLoadError() ||
+      this.categoriesLoading ||
+      this.categoriesError ||
+      this.categories.length === 0 ||
+      this.submitting()
+    ) {
       this.form.markAllAsTouched();
       return;
     }
 
     this.submitting.set(true);
+
     const saveRequest = this.productId
       ? this.productsService.updateProduct(this.productId, this.toRequest())
       : this.productsService.createProduct(this.toRequest());
-    saveRequest.subscribe({
-      next: () => {
-        this.submitting.set(false);
-        this.submitSuccess.set(true);
-      },
-      error: (error: unknown) => {
-        this.submitting.set(false);
-        this.handleSubmitError(error);
-      },
-    });
+
+    saveRequest
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.submitting.set(false);
+          this.router.navigate(['/seller/catalog']);
+        },
+        error: (error: unknown) => {
+          this.submitting.set(false);
+          this.handleSubmitError(error);
+        },
+      });
   }
 
   private handleSubmitError(error: unknown): void {

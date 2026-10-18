@@ -152,7 +152,8 @@
                             deseas indicar tu teléfono.
                         </small>
                         } @else {
-                        <input id="phone" type="text" [value]="seller.phone || 'No indicado'" readonly /> }
+                        <input id="phone" type="text" inputmode="numeric" maxlength="9"
+                            [value]="seller.phone || 'No indicado'" readonly /> }
                     </div>
 
                     <div class="field">
