@@ -43,17 +43,29 @@ public class Carrito {
         return precioTotal;
     }
 
-    public void addOrIncrementItem(String productoId, String nombre, BigDecimal precioUnitario, int cantidad) {
+    public void addOrIncrementItem(
+            String productoId,
+            String nombre,
+            BigDecimal precioUnitario,
+            int cantidad,
+            String imageUrl) {
         ItemCarrito existingItem = items.stream()
                 .filter(item -> item.getProductoId().equals(productoId))
                 .findFirst()
                 .orElse(null);
         if (existingItem == null) {
-            items.add(new ItemCarrito(productoId, nombre, precioUnitario, cantidad));
+            items.add(new ItemCarrito(productoId, nombre, precioUnitario, cantidad, imageUrl));
         } else {
             existingItem.addCantidad(cantidad);
+            if (existingItem.getImageUrl() == null || existingItem.getImageUrl().isBlank()) {
+                existingItem.setImageUrl(imageUrl);
+            }
         }
         recalculateTotal();
+    }
+
+    public void addOrIncrementItem(String productoId, String nombre, BigDecimal precioUnitario, int cantidad) {
+        addOrIncrementItem(productoId, nombre, precioUnitario, cantidad, null);
     }
 
     public boolean updateItemQuantity(String productoId, int cantidad) {

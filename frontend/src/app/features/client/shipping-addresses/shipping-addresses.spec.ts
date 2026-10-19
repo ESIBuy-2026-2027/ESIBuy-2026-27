@@ -37,20 +37,29 @@ describe('ShippingAddresses', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(ShippingAddresses);
+    fixture.detectChanges();
     await fixture.whenStable();
+    fixture.detectChanges();
     el = fixture.nativeElement as HTMLElement;
   }
 
   async function type(id: string, value: string): Promise<void> {
-    const input = el.querySelector(`#${id}`) as HTMLInputElement;
-    input.value = value;
-    input.dispatchEvent(new Event('input'));
+    const input = el.querySelector(`#${id}`) as HTMLInputElement | null;
+    if (input) {
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+    }
+    fixture.detectChanges();
     await fixture.whenStable();
+    fixture.detectChanges();
   }
 
   async function click(selector: string): Promise<void> {
-    (el.querySelector(selector) as HTMLElement).click();
+    const target = el.querySelector(selector) as HTMLElement | null;
+    target?.click();
+    fixture.detectChanges();
     await fixture.whenStable();
+    fixture.detectChanges();
   }
 
   async function fillValidForm(): Promise<void> {
@@ -62,8 +71,11 @@ describe('ShippingAddresses', () => {
   }
 
   async function submit(): Promise<void> {
-    (el.querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
+    const form = el.querySelector('form') as HTMLFormElement | null;
+    form?.dispatchEvent(new Event('submit'));
+    fixture.detectChanges();
     await fixture.whenStable();
+    fixture.detectChanges();
   }
 
   beforeEach(() => {

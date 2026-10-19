@@ -5,6 +5,14 @@
   @if (authService.currentUser(); as user) {
   <div class="app-session">
     @if (user.role === 'CLIENT') {
+      <a routerLink="/client/catalog" class="session-nav-button" role="button" (click)="closeProfileMenu()">Catálogo</a>
+    } @else if (user.role === 'SELLER') {
+      <a routerLink="/seller/catalog" class="session-nav-button" role="button" (click)="closeProfileMenu()">Catálogo</a>
+    } @else if (user.role === 'ADMIN') {
+      <a routerLink="/admin/usuarios" class="session-nav-button" role="button" (click)="closeProfileMenu()">Gestión Usuarios</a>
+    }
+
+    @if (user.role === 'CLIENT') {
     <a class="header-cart" routerLink="/client/cart" [attr.aria-label]="'Carrito, ' + cartService.itemCount() + ' artículos'">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -34,8 +42,21 @@
       <div id="profile-menu" class="profile-menu" aria-label="Opciones de cuenta" (click)="$event.stopPropagation()"
         (keydown)="$event.stopPropagation()">
         <p class="profile-menu-email">{{ user.email }}</p>
+        @if (user.role === 'CLIENT') {
+          <button type="button" class="profile-menu-item" (click)="goClientCatalog()">
+            Catálogo
+          </button>
+        } @else if (user.role === 'SELLER') {
+          <button type="button" class="profile-menu-item" (click)="goCatalog()">
+            Catálogo
+          </button>
+        } @else if (user.role === 'ADMIN') {
+          <button type="button" class="profile-menu-item" (click)="goUsersManagement()">
+            Gestión Usuarios
+          </button>
+        }
         <button type="button" class="profile-menu-item" (click)="goToProfile()">
-          Mi perfil
+          Perfil
         </button>
         <button type="button" class="profile-menu-item" (click)="logout()">
           Cerrar sesión
@@ -44,11 +65,23 @@
       }
     </div>
   </div>
+  } @else {
+  <div class="app-auth-nav">
+    <a routerLink="/login" class="auth-nav-link">Iniciar sesión</a>
+    <a routerLink="/register" class="auth-nav-button">Registrarse</a>
+  </div>
   }
 </header>
 
 @if (logoutError(); as error) {
 <p class="logout-error" role="alert">{{ error }}</p>
+}
+
+@if (toastService.toast(); as t) {
+<div class="app-toast" [class.is-success]="t.type === 'success'" [class.is-error]="t.type === 'error'" [class.is-info]="t.type === 'info'" role="status" aria-live="polite">
+  <span>{{ t.text }}</span>
+  <button type="button" class="toast-close" (click)="toastService.clear()" aria-label="Cerrar notificación">×</button>
+</div>
 }
 
 <router-outlet />

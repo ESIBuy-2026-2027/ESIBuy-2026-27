@@ -155,6 +155,7 @@ public class ApiExceptionHandler {
                 CORRELATION_ID, correlationId(request)));
     }
 
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, String>> handleIllegalState(IllegalStateException exception,
             HttpServletRequest request) {

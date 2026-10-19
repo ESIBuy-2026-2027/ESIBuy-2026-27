@@ -200,7 +200,7 @@ export class ProductCreate implements OnInit {
       .subscribe({
         next: () => {
           this.submitting.set(false);
-          this.router.navigate(['/seller/catalog']);
+          this.submitSuccess.set(true);
         },
         error: (error: unknown) => {
           this.submitting.set(false);

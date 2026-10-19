@@ -34,7 +34,12 @@ public class CarritoService {
         Carrito carrito = carritoRepository.findByClienteId(clienteId)
                 .orElseGet(() -> new Carrito(clienteId));
         validarStock(product, carrito, request.cantidad());
-        carrito.addOrIncrementItem(product.getId(), product.getName(), product.getPrice(), request.cantidad());
+        carrito.addOrIncrementItem(
+                product.getId(),
+                product.getName(),
+                product.getPrice(),
+                request.cantidad(),
+                product.getImageUrl());
         return toDto(carritoRepository.save(carrito));
     }
 
@@ -144,11 +149,18 @@ public class CarritoService {
     }
 
     private ItemCarritoDTO toDto(ItemCarrito item) {
+        String imageUrl = item.getImageUrl();
+        if ((imageUrl == null || imageUrl.isBlank()) && item.getProductoId() != null) {
+            imageUrl = productRepository.findById(item.getProductoId())
+                    .map(Product::getImageUrl)
+                    .orElse(null);
+        }
         return new ItemCarritoDTO(
                 item.getProductoId(),
                 item.getNombre(),
                 item.getPrecioUnitario(),
                 item.getCantidad(),
-                item.getSubtotal());
+                item.getSubtotal(),
+                imageUrl);
     }
 }

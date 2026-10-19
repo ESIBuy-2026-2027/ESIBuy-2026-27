@@ -70,29 +70,27 @@ describe('SellerCatalog', () => {
   it('should render the seller product catalog and category names', () => {
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(element.querySelector('h1')?.textContent?.trim()).toBe('Mi catálogo');
+    expect(element.querySelector('h1')?.textContent?.trim()).toBe('Catálogo');
     expect(element.querySelector('[aria-label="Productos del catálogo"]')).not.toBeNull();
     expect(Array.from(element.querySelectorAll('.seller-navigation .navigation-link'), (link) =>
       link.querySelector('span:last-child')?.textContent?.trim()))
-      .toEqual(['Mi catálogo', 'Mis pedidos', 'Estadísticas', 'Valoraciones']);
+      .toEqual(['Catálogo', 'Pedidos', 'Estadísticas', 'Valoraciones']);
     expect(element.textContent).toContain('Auriculares');
     expect(element.querySelector('.stock-badge')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Stock bajo · 3');
     expect(element.textContent).toContain('Publicado');
     expect(element.querySelector('thead')?.textContent).toContain('Categoría');
     expect(element.textContent).toContain('Audio');
     expect(element.textContent).not.toContain('INVENTARIO');
-    expect(element.querySelector('.product-table caption')?.textContent).toContain('Productos de mi catálogo');
+    expect(element.querySelector('.product-table caption')?.textContent).toContain('Productos del catálogo');
     expect(element.querySelector('.catalog-controls .catalog-search')).not.toBeNull();
     expect(element.querySelector('.catalog-controls .product-count')?.textContent).toContain('1 productos');
     const filterButton = element.querySelector<HTMLButtonElement>('.catalog-filter-button');
     expect(filterButton?.textContent).toContain('Filtrar');
-    expect(filterButton?.disabled).toBe(true);
-    expect(filterButton?.getAttribute('aria-disabled')).toBe('true');
-    expect(filterButton?.title).toBe('Próximamente');
+    expect(filterButton).not.toBeNull();
     expect(element.querySelector<HTMLImageElement>('.product-image')?.alt).toBe('');
     expect(element.querySelector('input[type="search"]')?.hasAttribute('aria-label')).toBe(false);
-    expect(element.querySelectorAll('.navigation-link[aria-disabled="true"]')).toHaveLength(3);
-    expect(element.querySelectorAll('.navigation-link[title="Próximamente"]')).toHaveLength(3);
+    expect(element.querySelectorAll('.navigation-link[aria-disabled="true"]')).toHaveLength(2);
+    expect(element.querySelectorAll('.navigation-link[title="Próximamente"]')).toHaveLength(2);
 
     expect(element.querySelector<HTMLAnchorElement>('.edit-button')?.getAttribute('href'))
       .toBe('/products/product-1/edit');

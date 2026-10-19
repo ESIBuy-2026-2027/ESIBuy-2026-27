@@ -23,7 +23,7 @@
           <rect width="7" height="7" x="3" y="14" rx="1"/>
           <rect width="7" height="7" x="14" y="14" rx="1"/>
         </svg>
-        <span>Mi catálogo</span>
+        <span>Catálogo</span>
       </a>
       <a class="navigation-link" routerLink="/seller/orders"
           routerLinkActive="is-active" ariaCurrentWhenActive="page">
@@ -34,7 +34,7 @@
             <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
             <path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
           </svg>
-          <span>Mis pedidos</span>
+          <span>Pedidos</span>
       </a>
       <a class="navigation-link is-disabled" role="link" aria-disabled="true"
           title="Próximamente" tabindex="-1">
@@ -165,7 +165,7 @@
         } @else {
           <div class="table-scroll">
             <table class="seller-data-table">
-              <caption class="visually-hidden">Pedidos recientes de mi tienda</caption>
+              <caption class="visually-hidden">Pedidos recientes</caption>
               <thead>
                 <tr>
                   <th scope="col">ID pedido</th>
@@ -233,7 +233,7 @@
 
       <div class="order-detail-body">
         <section class="detail-section" aria-labelledby="detail-products-title">
-          <h3 id="detail-products-title">Mis artículos</h3>
+          <h3 id="detail-products-title">Artículos</h3>
           @for (item of order.items; track item.name) {
             <div class="detail-product">
               <img [src]="item.imageUrl" [alt]="item.name">

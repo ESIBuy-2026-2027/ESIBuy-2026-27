@@ -3,11 +3,6 @@ package es.uclm.esibuy.security.config;
 import java.io.IOException;
 import java.util.List;
 
-import es.uclm.esibuy.common.filter.CorrelationIdFilter;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,17 +18,23 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import es.uclm.esibuy.common.filter.CorrelationIdFilter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -92,8 +93,13 @@ public class SecurityConfig {
                             .permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/users/admin").hasRole(ROLE_ADMIN)
                             .requestMatchers("/api/admin/**", "/api/v1/admin/**").hasRole(ROLE_ADMIN)
+                            .requestMatchers(HttpMethod.GET, "/api/products/mine", "/api/products/summary", "/api/products/resumen").hasRole(ROLE_SELLER)
+                            .requestMatchers(HttpMethod.POST, "/api/products").hasRole(ROLE_SELLER)
+                            .requestMatchers(HttpMethod.PATCH, "/api/products/*/status").hasAnyRole(ROLE_SELLER, ROLE_ADMIN)
+                            .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/*").permitAll()
                             .requestMatchers("/api/catalog/**").hasRole(ROLE_CLIENT)
                             .requestMatchers("/api/products/**").hasRole(ROLE_SELLER)
+                            .requestMatchers("/api/wishlist/**").hasRole(ROLE_CLIENT)
                             .requestMatchers(HttpMethod.GET, "/api/users/me/profile")
                             .hasAnyRole(ROLE_CLIENT, ROLE_SELLER, ROLE_ADMIN)
                             .requestMatchers(HttpMethod.DELETE, "/api/users/me")

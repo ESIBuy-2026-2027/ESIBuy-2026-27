@@ -123,7 +123,7 @@ export class ClientProfile implements OnInit {
 
     readonly sections: ProfileSection[] = [
         { label: 'Datos personales', active: true },
-        { label: 'Mis pedidos', active: false },
+        { label: 'Pedidos', active: false },
         { label: 'Direcciones de envío', active: false },
         { label: 'Suscripción premium', active: false },
         { label: 'Seguridad', active: false },

@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { of, throwError } from 'rxjs';
 import { CartService } from '../cart/cart.service';
 import { ProductsService } from '../../products/products.service';
@@ -41,6 +42,21 @@ describe('ClientDashboard', () => {
     }).compileComponents();
   });
 
+  it('should render navigation links with Catálogo active', () => {
+    const fixture = TestBed.createComponent(ClientDashboard);
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
+    expect(navLinks.length).toBe(5);
+    expect(navLinks[0].textContent).toContain('Catálogo');
+    expect(navLinks[0].classList.contains('is-active')).toBe(true);
+    expect(navLinks[1].textContent).toContain('Lista de deseos');
+    expect(navLinks[2].textContent).toContain('Mis compras');
+    expect(navLinks[3].textContent).toContain('Carrito');
+    expect(navLinks[4].textContent).toContain('Perfil');
+  });
+
   it('should render product names as text and not create markup from them', () => {
     const fixture = TestBed.createComponent(ClientDashboard);
     fixture.detectChanges();
@@ -78,3 +94,4 @@ describe('ClientDashboard', () => {
     expect(fixture.componentInstance.notification()?.type).toBe('error');
   });
 });
+

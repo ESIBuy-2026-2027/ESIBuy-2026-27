@@ -79,7 +79,7 @@ describe('App', () => {
     const profileOption = menuButtons.find((button) => button.textContent?.trim() === 'Perfil');
     const logoutOption = menuButtons.find((button) => button.textContent?.trim() === 'Cerrar sesión');
 
-    expect(profileOption?.disabled).toBe(true);
+    expect(profileOption).toBeDefined();
     expect(logoutOption).toBeDefined();
     logoutOption?.click();
     fixture.detectChanges();
@@ -108,5 +108,74 @@ describe('App', () => {
 
     expect(navigate).toHaveBeenCalledWith(['/seller/catalog']);
     expect((fixture.nativeElement as HTMLElement).querySelector('#profile-menu')).toBeNull();
+  });
+
+  it('should render Iniciar sesión and Registrarse buttons when unauthenticated', () => {
+    currentUser.set(null);
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const loginLink = compiled.querySelector<HTMLAnchorElement>('.auth-nav-link');
+    const registerLink = compiled.querySelector<HTMLAnchorElement>('.auth-nav-button');
+
+    expect(loginLink?.textContent?.trim()).toBe('Iniciar sesión');
+    expect(loginLink?.getAttribute('href')).toBe('/login');
+    expect(registerLink?.textContent?.trim()).toBe('Registrarse');
+    expect(registerLink?.getAttribute('href')).toBe('/register');
+  });
+
+  it('should render "Catálogo" button linking to /client/catalog for CLIENT', () => {
+    currentUser.set({
+      id: 'client-1',
+      email: 'client@example.com',
+      role: 'CLIENT',
+      active: true,
+    });
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const roleButton = compiled.querySelector<HTMLAnchorElement>('.session-nav-button');
+
+    expect(roleButton).not.toBeNull();
+    expect(roleButton?.textContent?.trim()).toBe('Catálogo');
+    expect(roleButton?.getAttribute('href')).toBe('/client/catalog');
+  });
+
+  it('should render "Catálogo" button linking to /seller/catalog for SELLER', () => {
+    currentUser.set({
+      id: 'seller-1',
+      email: 'seller@example.com',
+      role: 'SELLER',
+      active: true,
+    });
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const roleButton = compiled.querySelector<HTMLAnchorElement>('.session-nav-button');
+
+    expect(roleButton).not.toBeNull();
+    expect(roleButton?.textContent?.trim()).toBe('Catálogo');
+    expect(roleButton?.getAttribute('href')).toBe('/seller/catalog');
+  });
+
+  it('should render "Gestión Usuarios" button linking to /admin/usuarios for ADMIN', () => {
+    currentUser.set({
+      id: 'admin-1',
+      email: 'admin@example.com',
+      role: 'ADMIN',
+      active: true,
+    });
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const roleButton = compiled.querySelector<HTMLAnchorElement>('.session-nav-button');
+
+    expect(roleButton).not.toBeNull();
+    expect(roleButton?.textContent?.trim()).toBe('Gestión Usuarios');
+    expect(roleButton?.getAttribute('href')).toBe('/admin/usuarios');
   });
 });

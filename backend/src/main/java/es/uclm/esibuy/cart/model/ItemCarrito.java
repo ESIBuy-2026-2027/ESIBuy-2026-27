@@ -10,15 +10,26 @@ public class ItemCarrito {
     private BigDecimal precioUnitario;
     private int cantidad;
     private BigDecimal subtotal;
+    private String imageUrl;
 
     protected ItemCarrito() {
     }
 
-    public ItemCarrito(String productoId, String nombre, BigDecimal precioUnitario, int cantidad) {
+    public ItemCarrito(
+            String productoId,
+            String nombre,
+            BigDecimal precioUnitario,
+            int cantidad,
+            String imageUrl) {
         this.productoId = Objects.requireNonNull(productoId);
         this.nombre = Objects.requireNonNull(nombre);
         this.precioUnitario = Objects.requireNonNull(precioUnitario);
+        this.imageUrl = imageUrl;
         setCantidad(cantidad);
+    }
+
+    public ItemCarrito(String productoId, String nombre, BigDecimal precioUnitario, int cantidad) {
+        this(productoId, nombre, precioUnitario, cantidad, null);
     }
 
     public String getProductoId() {
@@ -39,6 +50,14 @@ public class ItemCarrito {
 
     public BigDecimal getSubtotal() {
         return subtotal;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     void addCantidad(int cantidad) {

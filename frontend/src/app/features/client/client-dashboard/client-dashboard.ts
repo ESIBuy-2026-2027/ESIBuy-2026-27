@@ -93,3 +93,4 @@ export class ClientDashboard implements OnInit {
     return 'No se pudo añadir el producto. Inténtalo de nuevo.';
   }
 }
+
