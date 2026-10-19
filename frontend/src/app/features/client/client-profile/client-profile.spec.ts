@@ -2,6 +2,7 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '../../../core/services/auth.service';
 import { ClientProfile } from './client-profile';
@@ -20,16 +21,34 @@ describe('ClientProfile', () => {
                     provide: AuthService,
                     useValue: { currentUser: signal({ email: 'ana@esibuy.com', role: 'CLIENT' }), logout },
                 },
+                {
+                    provide: HttpClient,
+                    useValue: {
+                        get: vi.fn(() => of({
+                            firstName: 'Ana',
+                            lastName: 'García',
+                            email: 'ana@esibuy.com',
+                            phone: null,
+                            maskedNationalId: null,
+                            profileImage: null,
+                            customerType: 'STANDARD',
+                            birthDate: '1990-01-01',
+                        })),
+                        put: vi.fn(() => of({})),
+                    },
+                },
             ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(ClientProfile);
+        fixture.detectChanges();
         await fixture.whenStable();
     });
 
     it('muestra el título y los campos en solo lectura', () => {
         const el: HTMLElement = fixture.nativeElement;
-        expect(el.querySelector('h1')?.textContent).toContain('Datos personales');
+        expect(el.querySelector('h1')?.textContent).toContain('Mi perfil');
+        expect(el.querySelector('.section-title')?.textContent).toContain('Datos personales');
         el.querySelectorAll('input').forEach((input) => expect(input.readOnly).toBe(true));
     });
 
@@ -40,7 +59,7 @@ describe('ClientProfile', () => {
 
     it('deja las secciones de otras HU como próximamente', () => {
         const disabled = fixture.nativeElement.querySelectorAll('.nav-item.is-disabled');
-        expect(disabled.length).toBe(5);
+        expect(disabled.length).toBe(4);
     });
 
     it('cierra sesión y vuelve al inicio', () => {

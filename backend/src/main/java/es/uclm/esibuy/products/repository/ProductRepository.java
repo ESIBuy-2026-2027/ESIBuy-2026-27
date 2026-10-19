@@ -9,6 +9,8 @@ public interface ProductRepository extends MongoRepository<Product, String> {
 
     List<Product> findAllBySellerId(String sellerId);
 
+    List<Product> findAllByAvailableTrue();
+
     long countBySellerId(String sellerId);
 
     long countBySellerIdAndStock(String sellerId, int stock);

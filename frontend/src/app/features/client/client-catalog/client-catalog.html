@@ -1,0 +1,211 @@
+<div class="seller-layout">
+  <aside class="sidebar" aria-label="Panel del cliente">
+    <a class="brand" routerLink="/" aria-label="ESIBuy">
+      <span class="brand-mark" aria-hidden="true">E</span>
+      <span>ESI<span class="brand-accent">Buy</span></span>
+    </a>
+
+    <div class="sidebar-caption">ÁREA DE CLIENTE</div>
+    <nav class="seller-navigation" aria-label="Navegación del cliente">
+      <a class="navigation-link is-active" routerLink="/client/catalog" aria-current="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+          <path d="M3 6h18" />
+          <path d="M16 10a4 4 0 0 1-8 0" />
+        </svg>
+        <span>Mi catálogo</span>
+      </a>
+
+      <a class="navigation-link" routerLink="/client/dashboard">
+        <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect width="7" height="9" x="3" y="3" rx="1" />
+          <rect width="7" height="5" x="14" y="3" rx="1" />
+          <rect width="7" height="9" x="14" y="12" rx="1" />
+          <rect width="7" height="5" x="3" y="16" rx="1" />
+        </svg>
+        <span>Mi panel</span>
+      </a>
+
+      <a class="navigation-link" routerLink="/client/wishlist">
+        <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path
+            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+        </svg>
+        <span>Lista de deseos</span>
+      </a>
+
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true"
+        title="Próximamente" tabindex="-1">
+        <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="9" cy="21" r="1" />
+          <circle cx="20" cy="21" r="1" />
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+        </svg>
+        <span>Mis compras</span>
+      </a>
+
+      <a class="navigation-link" routerLink="/client/profile">
+        <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+        <span>Mi perfil</span>
+      </a>
+    </nav>
+  </aside>
+
+  <div class="workspace">
+    <main class="catalog-content">
+      <section class="page-heading" aria-labelledby="catalog-title">
+        <div>
+          <h1 id="catalog-title">Catálogo de productos</h1>
+          <p class="page-description">Explora la oferta de ESIBuy, encuentra lo que buscas y guarda tus favoritos.</p>
+        </div>
+      </section>
+
+      <!-- BARRA DE FILTROS COMBINABLES CON RECUADRO NOTABLE -->
+      <section class="filter-bar" aria-label="Filtros del catálogo">
+        <div class="filter-group search-group">
+          <label for="catalog-search" class="visually-hidden">Buscar producto</label>
+          <div class="search-input-wrapper">
+            <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"></circle>
+              <path d="m16 16 4.5 4.5" fill="none" stroke="currentColor" stroke-width="2"></path>
+            </svg>
+            <input id="catalog-search" type="search" placeholder="Buscar por nombre o palabra clave..."
+              [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event); onFilterChange()" />
+          </div>
+        </div>
+
+        <div class="filter-controls-row">
+          <div class="filter-control">
+            <label for="filter-category" class="filter-label">Categoría</label>
+            <select id="filter-category" [ngModel]="selectedCategory()" (ngModelChange)="selectedCategory.set($event); onFilterChange()">
+              <option value="">Todas las categorías</option>
+              @for (cat of categories(); track cat.id) {
+                <option [value]="cat.id">{{ cat.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="filter-control price-control">
+            <span class="filter-label">Precio (€)</span>
+            <div class="price-inputs">
+              <input type="number" min="0" placeholder="Mín" [ngModel]="minPrice()"
+                (ngModelChange)="minPrice.set($event); onFilterChange()" aria-label="Precio mínimo" />
+              <span class="price-sep">-</span>
+              <input type="number" min="0" placeholder="Máx" [ngModel]="maxPrice()"
+                (ngModelChange)="maxPrice.set($event); onFilterChange()" aria-label="Precio máximo" />
+            </div>
+          </div>
+
+          <div class="filter-control">
+            <label for="filter-rating" class="filter-label">Valoración mínima</label>
+            <select id="filter-rating" [ngModel]="minRating()" (ngModelChange)="minRating.set($event); onFilterChange()">
+              <option [ngValue]="null">Cualquier valoración</option>
+              <option [ngValue]="4">4 estrellas o más (★★★★☆)</option>
+              <option [ngValue]="3">3 estrellas o más (★★★☆☆)</option>
+              <option [ngValue]="2">2 estrellas o más (★★☆☆☆)</option>
+              <option [ngValue]="1">1 estrella o más (★☆☆☆☆)</option>
+            </select>
+          </div>
+
+          <div class="filter-control checkbox-control">
+            <label class="checkbox-label">
+              <input type="checkbox" [ngModel]="onlyInStock()" (ngModelChange)="onlyInStock.set($event); onFilterChange()" />
+              <span>Solo en stock</span>
+            </label>
+          </div>
+
+          <button type="button" class="reset-filter-btn" (click)="resetFilters()" title="Limpiar todos los filtros">
+            Limpiar filtros
+          </button>
+        </div>
+      </section>
+
+      <!-- RESULTADOS -->
+      <section class="products-region" aria-label="Listado de productos">
+        <div class="results-header">
+          @if (!loading() && !error()) {
+            <span class="product-count">{{ products().length }} productos disponibles</span>
+          }
+        </div>
+
+        @if (loading()) {
+          <div class="catalog-message">
+            <div class="spinner"></div>
+            <span>Cargando productos…</span>
+          </div>
+        } @else if (error()) {
+          <div class="catalog-error" role="alert">
+            <span>No se pudieron cargar los productos. Inténtalo de nuevo.</span>
+            <button type="button" (click)="loadProducts()">Reintentar</button>
+          </div>
+        } @else if (products().length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">⌕</span>
+            <h3>No se encontraron productos</h3>
+            <p>Prueba a modificar los filtros o los términos de búsqueda.</p>
+            <button type="button" class="secondary-action" (click)="resetFilters()">Restablecer filtros</button>
+          </div>
+        } @else {
+          <div class="product-grid">
+            @for (product of products(); track product.id) {
+              <article class="product-card" [routerLink]="['/products', product.id]">
+                <div class="product-image-container">
+                  @if (product.imageUrl) {
+                    <img class="product-card-img" [src]="product.imageUrl" [alt]="product.name" loading="lazy" />
+                  } @else {
+                    <div class="product-img-fallback" aria-hidden="true">▦</div>
+                  }
+
+                  <!-- CORAZÓN CENTRADO AL HACER HOVER -->
+                  <button type="button" class="heart-center-button"
+                    [class.is-favorite]="wishlistService.isFavorite(product.id)"
+                    (click)="toggleFavorite(product.id, $event)"
+                    [attr.aria-label]="wishlistService.isFavorite(product.id) ? 'Quitar de la lista de deseos' : 'Añadir a la lista de deseos'"
+                    [title]="wishlistService.isFavorite(product.id) ? 'En tu lista de deseos' : 'Guardar en lista de deseos'">
+                    <svg viewBox="0 0 24 24" class="heart-svg" aria-hidden="true">
+                      <path
+                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                  </button>
+
+                  <span class="rating-tag">★ {{ (product.rating ?? 5.0).toFixed(1) }}</span>
+                </div>
+
+                <div class="product-card-body">
+                  <div class="product-card-tags">
+                    @for (catId of product.categoryIds; track catId) {
+                      <span class="tag-badge">{{ categoryName(catId) }}</span>
+                    }
+                  </div>
+
+                  <h3 class="product-card-title">{{ product.name }}</h3>
+                  <p class="product-card-desc">{{ product.description || 'Sin descripción' }}</p>
+
+                  <div class="product-card-footer">
+                    <div class="price-stock-wrap">
+                      <span class="product-card-price">{{ formatPrice(product.price) }}</span>
+                      <span class="stock-pill" [class.stock-empty]="product.stock === 0" [class.stock-low]="stockStatus(product.stock) === 'Stock bajo'">
+                        {{ stockStatus(product.stock) }}
+                      </span>
+                    </div>
+
+                    <span class="view-detail-btn">Ver detalle →</span>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    </main>
+  </div>
+</div>
+

@@ -88,6 +88,17 @@ public class ApiExceptionHandler {
             CORRELATION_ID, id));
     }
 
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleProductNotFound(ProductNotFoundException exception,
+            HttpServletRequest request) {
+        String id = correlationId(request);
+        if (LOGGER.isWarnEnabled()) {
+            LOGGER.warn("Producto solicitado no encontrado. correlationId={}", id);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(MESSAGE, exception.getMessage(),
+            CORRELATION_ID, id));
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, String>> handleIllegalState(IllegalStateException exception,
             HttpServletRequest request) {

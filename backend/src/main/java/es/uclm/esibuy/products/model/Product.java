@@ -22,6 +22,7 @@ public class Product {
     private String imageUrl;
     private boolean available;
     private String sellerId;
+    private Double rating = 5.0;
 
     protected Product() {
     }
@@ -89,7 +90,19 @@ public class Product {
         return available;
     }
 
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
     public String getSellerId() {
         return sellerId;
+    }
+
+    public Double getRating() {
+        return rating != null ? rating : 5.0;
+    }
+
+    public void setRating(Double rating) {
+        this.rating = rating;
     }
 }

@@ -34,6 +34,10 @@ describe('Login', () => {
     await fixture.whenStable();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
@@ -45,17 +49,17 @@ describe('Login', () => {
       role: 'SELLER',
       active: true,
     }));
-    component.loginForm.setValue({
+    component.loginForm.patchValue({
       email: 'seller@example.com',
       password: 'short',
     });
 
     component.onSubmit();
 
-    expect(login).toHaveBeenCalledWith({
+    expect(login).toHaveBeenCalledWith(expect.objectContaining({
       email: 'seller@example.com',
       password: 'short',
-    });
+    }));
     expect(navigate).toHaveBeenCalledWith(['/seller/catalog']);
   });
 
@@ -66,7 +70,7 @@ describe('Login', () => {
       role: 'ADMIN',
       active: true,
     }));
-    component.loginForm.setValue({
+    component.loginForm.patchValue({
       email: 'admin@example.com',
       password: 'Password123!',
     });
@@ -74,6 +78,23 @@ describe('Login', () => {
     component.onSubmit();
 
     expect(navigate).toHaveBeenCalledWith(['/admin/usuarios']);
+  });
+
+  it('routes clients to their catalog', () => {
+    login.mockReturnValue(of({
+      id: 'client-1',
+      email: 'client@example.com',
+      role: 'CLIENT',
+      active: true,
+    }));
+    component.loginForm.patchValue({
+      email: 'client@example.com',
+      password: 'Password123!',
+    });
+
+    component.onSubmit();
+
+    expect(navigate).toHaveBeenCalledWith(['/client/catalog']);
   });
 
   it('shows the session-expired message from the redirect query parameter', () => {
@@ -99,7 +120,7 @@ describe('Login', () => {
       headers: new HttpHeaders({ 'Retry-After': '3' }),
       error: { message: 'Demasiados intentos de inicio de sesión.' },
     })));
-    component.loginForm.setValue({
+    component.loginForm.patchValue({
       email: 'seller@example.com',
       password: 'short',
     });

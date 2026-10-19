@@ -1,5 +1,6 @@
 package es.uclm.esibuy.products.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -7,6 +8,7 @@ import java.util.stream.Collectors;
 import es.uclm.esibuy.categories.model.Category;
 import es.uclm.esibuy.categories.repository.CategoryRepository;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
+import es.uclm.esibuy.common.exception.ProductNotFoundException;
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
 import es.uclm.esibuy.products.dto.ProductResponse;
 import es.uclm.esibuy.products.dto.ProductSummaryResponse;
@@ -80,6 +82,70 @@ public class ProductService {
         return productRepository.findAllBySellerId(sellerId).stream()
                 .map(ProductResponse::from)
                 .toList();
+    }
+
+    public List<ProductResponse> getPublicCatalog(
+            String query,
+            String categoryId,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Double minRating,
+            Boolean inStock) {
+        return productRepository.findAllByAvailableTrue().stream()
+                .filter(p -> {
+                    if (query == null || query.isBlank()) return true;
+                    String q = query.trim().toLowerCase();
+                    boolean matchName = p.getName() != null && p.getName().toLowerCase().contains(q);
+                    boolean matchDesc = p.getDescription() != null && p.getDescription().toLowerCase().contains(q);
+                    return matchName || matchDesc;
+                })
+                .filter(p -> {
+                    if (categoryId == null || categoryId.isBlank()) return true;
+                    return p.getCategoryIds() != null && p.getCategoryIds().contains(categoryId.trim());
+                })
+                .filter(p -> {
+                    if (minPrice == null) return true;
+                    return p.getPrice() != null && p.getPrice().compareTo(minPrice) >= 0;
+                })
+                .filter(p -> {
+                    if (maxPrice == null) return true;
+                    return p.getPrice() != null && p.getPrice().compareTo(maxPrice) <= 0;
+                })
+                .filter(p -> {
+                    if (minRating == null) return true;
+                    return p.getRating() != null && p.getRating() >= minRating;
+                })
+                .filter(p -> {
+                    if (!Boolean.TRUE.equals(inStock)) return true;
+                    return p.getStock() > 0;
+                })
+                .map(ProductResponse::from)
+                .toList();
+    }
+
+    public ProductResponse getProductById(String id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Producto no encontrado"));
+        return ProductResponse.from(product);
+    }
+
+    public ProductResponse updateProductStatus(String id, boolean available, String authenticatedEmail) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Producto no encontrado"));
+
+        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
+            throw new AccessDeniedException("Autenticación requerida");
+        }
+
+        User user = userRepository.findByEmailIgnoreCase(authenticatedEmail)
+                .orElseThrow(() -> new AccessDeniedException("Usuario no encontrado"));
+
+        if (user.getRole() != UserRole.ADMIN && !user.getId().equals(product.getSellerId())) {
+            throw new AccessDeniedException("No tiene permisos para modificar este producto");
+        }
+
+        product.setAvailable(available);
+        return ProductResponse.from(productRepository.save(product));
     }
 
     private User findSeller(String authenticatedEmail) {

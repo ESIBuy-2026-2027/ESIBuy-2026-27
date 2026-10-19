@@ -58,14 +58,14 @@ class CategoryControllerTest {
 
     @Test
     void shouldKeepProductEndpointsProtected() throws Exception {
-        mockMvc.perform(get("/api/products"))
+        mockMvc.perform(get("/api/products/mine"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     @WithMockUser(roles = "CLIENT")
     void shouldRejectNonSellerFromProductEndpoints() throws Exception {
-        mockMvc.perform(get("/api/products"))
+        mockMvc.perform(get("/api/products/mine"))
                 .andExpect(status().isForbidden());
     }
 }
