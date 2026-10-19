@@ -59,6 +59,7 @@ class CarritoServiceTest {
         assertEquals(1, result.items().size());
         assertEquals(2, result.items().get(0).cantidad());
         assertEquals(new BigDecimal("39.98"), result.items().get(0).subtotal());
+        assertEquals("https://example.com/auriculares.jpg", result.items().get(0).imageUrl());
         assertEquals(new BigDecimal("39.98"), result.precioTotal());
         verify(carritoRepository).save(any(Carrito.class));
     }
@@ -220,6 +221,7 @@ class CarritoServiceTest {
         when(product.getPrice()).thenReturn(PRECIO);
         when(product.getStock()).thenReturn(stock);
         when(product.isAvailable()).thenReturn(true);
+        when(product.getImageUrl()).thenReturn("https://example.com/auriculares.jpg");
         return product;
     }
 

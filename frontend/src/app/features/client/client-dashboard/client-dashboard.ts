@@ -2,15 +2,14 @@ import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
 import { AvailableProduct, ProductsService } from '../../../core/services/products.service';
 
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
-  imports: [FormsModule, RouterLink, AppSidebarComponent],
+  imports: [FormsModule, RouterLink],
   templateUrl: './client-dashboard.html',
   styleUrl: './client-dashboard.css',
 })
@@ -28,6 +27,11 @@ export class ClientDashboard implements OnInit {
   readonly quantities = signal<Record<string, number>>({});
   readonly addingProductId = signal<string | null>(null);
   readonly notification = signal<{ type: 'success' | 'error'; text: string } | null>(null);
+  readonly sidebarCollapsed = signal(false);
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update((collapsed) => !collapsed);
+  }
 
   ngOnInit(): void {
     this.productsService.getAvailableProducts().subscribe({
@@ -90,3 +94,4 @@ export class ClientDashboard implements OnInit {
     return 'No se pudo añadir el producto. Inténtalo de nuevo.';
   }
 }
+

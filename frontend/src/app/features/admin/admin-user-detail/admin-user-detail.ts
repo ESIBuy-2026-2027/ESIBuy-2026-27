@@ -2,7 +2,7 @@ import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService, UpdateUserRequest, UserResponse } from '../../../core/services/auth.service';
 import { isAdultValidator } from '../../identity/register/register';
@@ -11,11 +11,16 @@ import { Category, ProductsService } from '../../../core/services/products.servi
 @Component({
   selector: 'app-admin-user-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, AppSidebarComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive],
   templateUrl: './admin-user-detail.html',
   styleUrl: './admin-user-detail.css'
 })
 export class AdminUserDetail implements OnInit {
+  sidebarCollapsed = signal(false);
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update((collapsed) => !collapsed);
+  }
   private readonly formBuilder = inject(FormBuilder);
   readonly cargando = signal(true);
   readonly guardando = signal(false);

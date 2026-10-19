@@ -2,18 +2,19 @@ import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms'; // <-- IMPORTANTE: Añadido para los filtros
 import { AuthService, UserAdmin } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-admin-user-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, AppSidebarComponent], // <-- Añadido aquí
+  imports: [CommonModule, RouterLink, RouterLinkActive, FormsModule],
   templateUrl: './admin-user-list.html',
   styleUrls: ['./admin-user-list.css']
 })
 export class AdminUserList implements OnInit {
+  sidebarCollapsed = signal(false);
   users = signal<UserAdmin[]>([]);
   loading = signal(true);
   error = signal('');
@@ -313,4 +314,9 @@ export class AdminUserList implements OnInit {
       default: return 'badge-default';
     }
   }
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update((collapsed) => !collapsed);
+  }
+
 }

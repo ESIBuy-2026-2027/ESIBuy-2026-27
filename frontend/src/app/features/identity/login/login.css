@@ -29,13 +29,17 @@
 
 .login-card {
   width: 100%;
-  max-width: none;
-  padding: 0;
+  max-width: 520px;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 16px;
+  padding: 2.5rem;
   box-sizing: border-box;
   background: transparent;
   border: 0;
   border-radius: 0;
   box-shadow: none;
+  box-shadow: 0 8px 30px rgba(16, 44, 64, 0.1);
 }
 
 /* Modo integrado en otra pantalla */
@@ -409,7 +413,7 @@
   width: 100%;
   box-sizing: border-box;
   padding: 2rem 1.5rem;
-  border: 1px solid #e2e8f0;
+  border: 2px solid #cbd5e1;
   border-radius: 14px;
   background: #fff;
   box-shadow: 0 8px 24px rgb(16 44 64 / 6%);

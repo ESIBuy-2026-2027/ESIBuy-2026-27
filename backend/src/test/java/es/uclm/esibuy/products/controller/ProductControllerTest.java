@@ -21,6 +21,7 @@ import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
 import es.uclm.esibuy.users.model.UserRole;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -226,6 +227,61 @@ class ProductControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(validRequest()))
                                 .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        void shouldAllowPublicAccessToCatalog() throws Exception {
+                when(productService.getPublicCatalog(null, null, null, null, null, null))
+                                .thenReturn(List.of(new ProductResponse(
+                                                "prod-1", PRODUCT_NAME, List.of(CATEGORY_ID), 5,
+                                                "Desc", new BigDecimal(PRODUCT_PRICE), null, null, null, true,
+                                                SELLER_ID)));
+
+                mockMvc.perform(get(PRODUCTS_API))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$[0].id").value("prod-1"))
+                                .andExpect(jsonPath("$[0].name").value(PRODUCT_NAME));
+        }
+
+        @Test
+        void shouldAllowPublicAccessToProductById() throws Exception {
+                when(productService.getProductById("prod-1"))
+                                .thenReturn(new ProductResponse(
+                                                "prod-1", PRODUCT_NAME, List.of(CATEGORY_ID), 5,
+                                                "Desc", new BigDecimal(PRODUCT_PRICE), null, null, null, true,
+                                                SELLER_ID));
+
+                mockMvc.perform(get(PRODUCTS_API + "/prod-1"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").value("prod-1"))
+                                .andExpect(jsonPath("$.name").value(PRODUCT_NAME));
+        }
+
+        @Test
+        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
+        void shouldAllowSellerToUpdateStatus() throws Exception {
+                when(productService.updateProductStatus("prod-1", false, SELLER_EMAIL))
+                                .thenReturn(new ProductResponse(
+                                                "prod-1", PRODUCT_NAME, List.of(CATEGORY_ID), 5,
+                                                "Desc", new BigDecimal(PRODUCT_PRICE), null, null, null, false,
+                                                SELLER_ID));
+
+                mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                                .patch(PRODUCTS_API + "/prod-1/status")
+                                .param("available", "false")
+                                .with(csrf()))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.available").value(false));
+        }
+
+        @Test
+        void shouldRejectClientFromUpdatingStatus() throws Exception {
+                mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                                .patch(PRODUCTS_API + "/prod-1/status")
+                                .param("available", "false")
+                                .with(csrf())
+                                .with(user("client@example.com").roles("CLIENT")))
+                                .andExpect(status().isForbidden());
         }
 
         private String validRequest() {

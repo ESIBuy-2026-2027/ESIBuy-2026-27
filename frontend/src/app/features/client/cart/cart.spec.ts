@@ -296,4 +296,60 @@ describe('ClientCart', () => {
     expect(fixture.nativeElement.querySelector('.checkout-panel')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.order-confirmation')).toBeNull();
   });
+
+  it('should render product image when imageUrl is provided, and fallback when missing', async () => {
+    const cart = signal({
+      id: 'cart-1',
+      clienteId: 'client-1',
+      items: [
+        {
+          productoId: 'p-1',
+          nombre: 'Auriculares Pro',
+          precioUnitario: 50,
+          cantidad: 1,
+          subtotal: 50,
+          imageUrl: 'https://example.com/auriculares.jpg',
+        },
+        {
+          productoId: 'p-2',
+          nombre: 'Cable USB',
+          precioUnitario: 10,
+          cantidad: 1,
+          subtotal: 10,
+        },
+      ],
+      precioTotal: 60,
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [ClientCart],
+      providers: [
+        provideRouter([]),
+        {
+          provide: CartService,
+          useValue: {
+            cart,
+            loading: signal(false),
+            loadError: signal(null),
+            itemCount: () => 2,
+          },
+        },
+        { provide: PedidoService, useValue: { obtenerCheckoutResumen: vi.fn(), crearPedido: vi.fn() } },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ClientCart);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const items = element.querySelectorAll('.cart-item');
+    expect(items.length).toBe(2);
+
+    const img = items[0].querySelector('.product-thumb') as HTMLImageElement;
+    expect(img).toBeTruthy();
+    expect(img.getAttribute('src')).toBe('https://example.com/auriculares.jpg');
+
+    const fallback = items[1].querySelector('.thumb-fallback');
+    expect(fallback).toBeTruthy();
+  });
 });

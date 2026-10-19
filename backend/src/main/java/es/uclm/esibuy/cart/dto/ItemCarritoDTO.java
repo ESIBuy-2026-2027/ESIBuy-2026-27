@@ -7,5 +7,15 @@ public record ItemCarritoDTO(
         String nombre,
         BigDecimal precioUnitario,
         int cantidad,
-        BigDecimal subtotal) {
+        BigDecimal subtotal,
+        String imageUrl) {
+
+    public ItemCarritoDTO(
+            String productoId,
+            String nombre,
+            BigDecimal precioUnitario,
+            int cantidad,
+            BigDecimal subtotal) {
+        this(productoId, nombre, precioUnitario, cantidad, subtotal, null);
+    }
 }

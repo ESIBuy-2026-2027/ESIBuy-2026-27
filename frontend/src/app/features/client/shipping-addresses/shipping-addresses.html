@@ -8,8 +8,8 @@
       </p>
     </div>
 
-    @if (!formOpen() && !limitReached()) {
-    <button type="button" class="primary-action" (click)="openForm()">
+    @if (!formOpen()) {
+    <button type="button" class="primary-action" data-testid="add-address" [disabled]="limitReached()" (click)="openForm()">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 5v14M5 12h14"></path>
       </svg>
@@ -39,7 +39,7 @@
   }
 
   @if (limitReached() && !formOpen()) {
-  <div class="limit-notice">
+  <div class="limit-notice limit-note">
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"></path>
       <path d="m3 7.5 9 4.5 9-4.5M12 12v9"></path>
@@ -66,17 +66,16 @@
       </div>
     </div>
 
-    @if (formError()) {
-    <div class="form-error" role="alert">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="9"></circle>
-        <path d="M12 8v5M12 16h.01"></path>
-      </svg>
-      <span>{{ formError() }}</span>
-    </div>
-    }
-
     <form class="address-form" (ngSubmit)="save()" novalidate>
+      @if (formError()) {
+      <div class="form-error" role="alert">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 8v5M12 16h.01"></path>
+        </svg>
+        <span>{{ formError() }}</span>
+      </div>
+      }
       <div class="field-grid">
         <div class="form-field field-full">
           <label for="recipientName">Nombre del destinatario <span class="required-mark">*</span></label>
@@ -234,8 +233,8 @@
       <h3>Aún no tienes direcciones</h3>
       <p>Añade una dirección para tener tus datos de entrega preparados.</p>
 
-      @if (!formOpen() && !limitReached()) {
-      <button type="button" class="primary-action" (click)="openForm()">
+      @if (!formOpen()) {
+      <button type="button" class="primary-action" data-testid="add-address" [disabled]="limitReached()" (click)="openForm()">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 5v14M5 12h14"></path>
         </svg>
@@ -258,7 +257,7 @@
 
             <div class="address-recipient">
               <h3>{{ address.recipientName }}</h3>
-              <p>{{ address.street }}</p>
+              <p>{{ address.street }}{{ address.additionalInfo ? ', ' + address.additionalInfo : '' }}</p>
             </div>
           </div>
 

@@ -8,7 +8,7 @@
             <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Perfil" />
 
             <h2 class="sidebar-name">
-                {{ fullName() || 'Mi perfil' }}
+                {{ fullName() || 'Perfil' }}
             </h2>
 
             @if (isPremium()) {
@@ -50,7 +50,7 @@
             </button>
             }
             @else {
-            <a class="nav-item disabled" aria-disabled="true">
+            <a class="nav-item is-disabled disabled" aria-disabled="true">
                 {{ section.label }}
             </a>
             }
@@ -85,7 +85,7 @@
         </section>
         } @else if (profileError(); as error) {
         <section class="panel">
-            <h1 class="panel-title">Mi perfil</h1>
+            <h1 class="panel-title">Perfil</h1>
 
             <p class="form-error" role="alert">{{ error }}</p>
 
@@ -119,7 +119,7 @@
                 <div class="panel-heading-text">
                     <span class="eyebrow">CUENTA DE CLIENTE</span>
 
-                    <h1 class="panel-title">Mi perfil</h1>
+                    <h1 class="panel-title">Perfil</h1>
 
                     <p class="panel-description">
                         Consulta y actualiza tus datos personales.

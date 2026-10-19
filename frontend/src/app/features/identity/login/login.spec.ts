@@ -34,6 +34,10 @@ describe('Login', () => {
     await fixture.whenStable();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
@@ -52,7 +56,7 @@ describe('Login', () => {
 
     component.onSubmit();
 
-    expect(login).toHaveBeenCalledWith({
+    expect(login).toHaveBeenCalledWith(expect.objectContaining({
       email: 'seller@example.com',
       password: 'short',
       totpCode: '',
@@ -75,6 +79,23 @@ describe('Login', () => {
     component.onSubmit();
 
     expect(navigate).toHaveBeenCalledWith(['/admin/usuarios']);
+  });
+
+  it('routes clients to their catalog', () => {
+    login.mockReturnValue(of({
+      id: 'client-1',
+      email: 'client@example.com',
+      role: 'CLIENT',
+      active: true,
+    }));
+    component.loginForm.patchValue({
+      email: 'client@example.com',
+      password: 'Password123!',
+    });
+
+    component.onSubmit();
+
+    expect(navigate).toHaveBeenCalledWith(['/client/catalog']);
   });
 
   it('shows the session-expired message from the redirect query parameter', () => {

@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, effect, HostListener, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
+import { ToastService } from './core/services/toast.service';
 import { CartService } from './core/services/cart.service';
 
 @Component({
@@ -14,6 +15,7 @@ import { CartService } from './core/services/cart.service';
 export class App {
   readonly authService = inject(AuthService);
   readonly cartService = inject(CartService);
+  readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
   readonly logoutError = signal<string | null>(null);
   readonly profileMenuOpen = signal(false);
@@ -51,6 +53,11 @@ export class App {
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.closeProfileMenu();
+  }
+
+  goClientCatalog(): void {
+    this.closeProfileMenu();
+    void this.router.navigate(['/client/catalog']);
   }
 
   goCatalog(): void {

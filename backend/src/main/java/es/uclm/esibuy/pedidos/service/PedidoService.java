@@ -227,11 +227,18 @@ public class PedidoService {
     }
 
     private ItemCarritoDTO toItemCarritoDTO(ItemCarrito item) {
+        String imageUrl = item.getImageUrl();
+        if ((imageUrl == null || imageUrl.isBlank()) && item.getProductoId() != null) {
+            imageUrl = productRepository.findById(item.getProductoId())
+                    .map(Product::getImageUrl)
+                    .orElse(null);
+        }
         return new ItemCarritoDTO(
                 item.getProductoId(),
                 item.getNombre(),
                 item.getPrecioUnitario(),
                 item.getCantidad(),
-                item.getSubtotal());
+                item.getSubtotal(),
+                imageUrl);
     }
 }

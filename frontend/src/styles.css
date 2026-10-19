@@ -1,5 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 
+@import './app/features/products/seller-shared.css';
+
 :root {
   --app-header-height: 3rem;
   --color-brand-dark: #102c40;

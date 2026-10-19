@@ -8,6 +8,7 @@ export interface CartItem {
   precioUnitario: number;
   cantidad: number;
   subtotal: number;
+  imageUrl?: string;
 }
 
 export interface CartResponse {
