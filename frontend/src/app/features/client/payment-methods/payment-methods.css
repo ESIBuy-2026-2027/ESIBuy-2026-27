@@ -51,7 +51,7 @@
 
 .page-heading h1 {
     margin: 0 0 8px;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: clamp(25px, 3vw, 32px);
     font-weight: 750;
     letter-spacing: -0.7px;
@@ -61,7 +61,7 @@
 .page-description {
     max-width: 580px;
     margin: 0;
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 13px;
     line-height: 1.6;
 }
@@ -104,9 +104,9 @@
     justify-content: center;
     gap: 8px;
     padding: 0 16px;
-    border: 1px solid #102c40;
+    border: 1px solid var(--color-brand-dark);
     border-radius: 8px;
-    background: #102c40;
+    background: var(--color-brand-dark);
     color: #fff;
     font-family: inherit;
     font-size: 12px;
@@ -214,7 +214,7 @@
 
 .panel-heading h2 {
     margin: 0 0 5px;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 17px;
     font-weight: 750;
     letter-spacing: -0.25px;
@@ -222,7 +222,7 @@
 
 .panel-heading p {
     margin: 0;
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 12px;
     line-height: 1.5;
 }
@@ -322,7 +322,7 @@
 .form-field small {
     display: block;
     min-height: 16px;
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 11px;
     line-height: 1.5;
 }
@@ -411,14 +411,14 @@
 }
 
 .default-option-copy strong {
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 12px;
     font-weight: 750;
     line-height: 1.45;
 }
 
 .default-option-copy small {
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 11px;
     line-height: 1.5;
 }
@@ -434,7 +434,7 @@
     border: 1px solid #d9e3eb;
     border-radius: 8px;
     background: #f4f8f9;
-    color: #587388;
+    color: var(--color-text-secondary);
 }
 
 .payment-notice svg {
@@ -494,7 +494,7 @@
     height: 17px;
     flex: 0 0 auto;
     border: 2px solid rgb(16 44 64 / 20%);
-    border-top-color: #102c40;
+    border-top-color: var(--color-brand-dark);
     border-radius: 50%;
     animation: spin 0.75s linear infinite;
 }
@@ -521,7 +521,7 @@
 
 .section-heading h2 {
     margin: 0 0 5px;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 17px;
     font-weight: 750;
     letter-spacing: -0.3px;
@@ -529,7 +529,7 @@
 
 .section-heading p {
     margin: 0;
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 12px;
     line-height: 1.5;
 }
@@ -565,7 +565,7 @@
     border: 1px dashed #cbdde2;
     border-radius: 12px;
     background: #f8fafc;
-    color: #587388;
+    color: var(--color-text-secondary);
     text-align: center;
 }
 
@@ -608,7 +608,7 @@
 
 .empty-state h3 {
     margin: 0;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 15px;
     font-weight: 750;
     line-height: normal;
@@ -617,7 +617,7 @@
 .empty-state > p {
     max-width: 360px;
     margin: 0 0 5px;
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 12px;
     line-height: 1.6;
 }
@@ -657,7 +657,7 @@
     margin: 26px 0 14px;
     padding-bottom: 10px;
     border-bottom: 1px solid #e7edf0;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 15px;
     font-weight: 750;
 }
@@ -790,7 +790,7 @@
 .payment-name h3 {
     margin: 0 0 5px;
     overflow-wrap: anywhere;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 13px;
     font-weight: 750;
     line-height: 1.4;
@@ -858,7 +858,7 @@
 .set-default-button:hover:not(:disabled) {
     border-color: #9aafbf;
     background: #f4f8f9;
-    color: #173247;
+    color: var(--color-text-primary);
 }
 
 /* DETALLES DE LAS TARJETAS */
@@ -879,7 +879,7 @@
     align-items: flex-start;
     gap: 9px;
     margin: 0;
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 11px;
     line-height: 1.55;
 }
@@ -948,7 +948,7 @@
 .edit-button:hover:not(:disabled) {
     border-color: #9aafbf;
     background: #f4f8f9;
-    color: #173247;
+    color: var(--color-text-primary);
 }
 
 .delete-button {
@@ -1093,7 +1093,7 @@
 
 .confirm-modal h2 {
     margin: 0 0 10px;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 19px;
     font-weight: 750;
     letter-spacing: -0.3px;
@@ -1101,14 +1101,14 @@
 
 .confirm-modal p {
     margin: 0;
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 13px;
     line-height: 1.7;
     overflow-wrap: anywhere;
 }
 
 .confirm-modal p strong {
-    color: #173247;
+    color: var(--color-text-primary);
     font-weight: 750;
 }
 

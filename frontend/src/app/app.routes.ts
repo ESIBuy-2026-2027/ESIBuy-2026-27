@@ -25,7 +25,6 @@ export const routes: Routes = [
   { path: '', component: Home },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
-  { path: 'products/:id', component: ProductDetail },
 
   { path: 'admin/users/new', component: AdminUserCreate, canActivate: [authGuard, roleGuard('ADMIN')] },
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
@@ -41,6 +40,7 @@ export const routes: Routes = [
   { path: 'seller/catalog', component: SellerCatalog, canActivate: [authGuard, roleGuard('SELLER')] },
   { path: 'seller/orders', component: SellerOrders, canActivate: [authGuard, roleGuard('SELLER')] },
   { path: 'products/new', component: ProductCreate, canActivate: [authGuard, roleGuard('SELLER')] },
+  { path: 'products/:id', component: ProductDetail },
   { path: 'products/:id/edit', component: ProductCreate, canActivate: [authGuard, roleGuard('SELLER')] },
   { path: 'seller/profile', component: SellerProfile, canActivate: [authGuard, roleGuard('SELLER')] },
 

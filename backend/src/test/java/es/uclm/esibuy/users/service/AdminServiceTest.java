@@ -48,7 +48,7 @@ class AdminServiceTest {
         User u1 = new User("admin@esibuy.com", "Admin", "Principal", UserRole.ADMIN);
         when(userRepository.findAll()).thenReturn(List.of(u1));
 
-        List<UserAdminDTO> result = adminService.obtenerTodosLosUsuarios();
+        List<UserAdminDTO> result = adminService.getAllUsers();
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -65,7 +65,7 @@ class AdminServiceTest {
         when(passwordEncoder.encode("Admin123456!#")).thenReturn("hashed-pass");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        User created = adminService.crearAdministrador(request);
+        User created = adminService.createAdmin(request);
 
         assertNotNull(created);
         assertEquals("carlos.admin@esibuy.com", created.getEmail());
@@ -91,7 +91,7 @@ class AdminServiceTest {
 
         when(userRepository.findAll()).thenReturn(List.of(activeClient, inactiveSeller, blockedAdmin));
 
-        List<UserAdminDTO> result = adminService.obtenerUsuariosFiltrados("CLIENTE", "ACTIVO");
+        List<UserAdminDTO> result = adminService.getFilteredUsers("CLIENTE", "ACTIVO");
 
         assertEquals(1, result.size());
         assertEquals("client@example.com", result.get(0).getEmail());
@@ -105,7 +105,7 @@ class AdminServiceTest {
         when(userRepository.findById("user-1")).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        adminService.activarUsuario("user-1");
+        adminService.activateUser("user-1");
 
         assertTrue(user.isActive());
         verify(userRepository).save(user);
@@ -118,7 +118,7 @@ class AdminServiceTest {
         user.setBlocked(true);
         when(userRepository.findById("user-1")).thenReturn(Optional.of(user));
 
-        adminService.activarUsuario("user-1");
+        adminService.activateUser("user-1");
 
         assertFalse(user.isActive());
         verify(userRepository, never()).save(any(User.class));
@@ -131,7 +131,7 @@ class AdminServiceTest {
         when(userRepository.findById("user-1")).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        adminService.desactivarUsuario("user-1");
+        adminService.deactivateUser("user-1");
 
         assertFalse(user.isActive());
         verify(userRepository).save(user);
@@ -144,7 +144,7 @@ class AdminServiceTest {
         when(userRepository.findById("user-1")).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        adminService.bloquearUsuario("user-1");
+        adminService.blockUser("user-1");
 
         assertFalse(user.isActive());
         assertTrue(user.isBlocked());
@@ -159,7 +159,7 @@ class AdminServiceTest {
         when(userRepository.findById("user-1")).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        adminService.desbloquearUsuario("user-1");
+        adminService.unblockUser("user-1");
 
         assertTrue(user.isActive());
         assertFalse(user.isBlocked());
@@ -183,22 +183,22 @@ class AdminServiceTest {
 
         when(userRepository.findAll()).thenReturn(List.of(activeClient, inactiveSeller, blockedAdmin, noRoleUser));
 
-        assertEquals(1, adminService.obtenerUsuariosFiltrados(null, "ACTIVO").size());
-        assertEquals(2, adminService.obtenerUsuariosFiltrados("  ", "INACTIVO").size());
-        assertEquals(0, adminService.obtenerUsuariosFiltrados("VENDEDOR", "BLOQUEADO").size());
-        assertEquals(0, adminService.obtenerUsuariosFiltrados("ROL_DESCONOCIDO", "ACTIVO").size());
-        assertEquals(0, adminService.obtenerUsuariosFiltrados("CLIENTE", "UNKNOWN").size());
-        assertEquals(1, adminService.obtenerUsuariosFiltrados("CLIENTE", null).size());
+        assertEquals(1, adminService.getFilteredUsers(null, "ACTIVO").size());
+        assertEquals(2, adminService.getFilteredUsers("  ", "INACTIVO").size());
+        assertEquals(0, adminService.getFilteredUsers("VENDEDOR", "BLOQUEADO").size());
+        assertEquals(0, adminService.getFilteredUsers("ROL_DESCONOCIDO", "ACTIVO").size());
+        assertEquals(0, adminService.getFilteredUsers("CLIENTE", "UNKNOWN").size());
+        assertEquals(1, adminService.getFilteredUsers("CLIENTE", null).size());
     }
 
     @Test
     void shouldThrowWhenUserDoesNotExist() {
         when(userRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> adminService.activarUsuario("missing"));
-        assertThrows(UserNotFoundException.class, () -> adminService.desactivarUsuario("missing"));
-        assertThrows(UserNotFoundException.class, () -> adminService.bloquearUsuario("missing"));
-        assertThrows(UserNotFoundException.class, () -> adminService.desbloquearUsuario("missing"));
+        assertThrows(UserNotFoundException.class, () -> adminService.activateUser("missing"));
+        assertThrows(UserNotFoundException.class, () -> adminService.deactivateUser("missing"));
+        assertThrows(UserNotFoundException.class, () -> adminService.blockUser("missing"));
+        assertThrows(UserNotFoundException.class, () -> adminService.unblockUser("missing"));
     }
 
     @Test
@@ -209,6 +209,6 @@ class AdminServiceTest {
 
         when(userRepository.existsByEmailIgnoreCase("carlos.duplicado@esibuy.com")).thenReturn(true);
 
-        assertThrows(DuplicateUserException.class, () -> adminService.crearAdministrador(request));
+        assertThrows(DuplicateUserException.class, () -> adminService.createAdmin(request));
     }
 }

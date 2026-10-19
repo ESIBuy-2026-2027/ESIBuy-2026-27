@@ -1,9 +1,13 @@
+import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { DestroyRef, Component, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink, Router } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Category, ProductCreateRequest, ProductsService } from '../products.service';
+import { isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID } from '@angular/core';
+import { Category, ProductCreateRequest, ProductsService } from '../../../core/services/products.service';
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 
 interface ProductFormControls {
   nombre: FormControl<string>;
@@ -42,24 +46,29 @@ const SERVER_FIELD_TO_FORM_FIELD: Readonly<Partial<Record<string, ProductFormFie
 @Component({
   selector: 'app-product-create',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, AppSidebarComponent],
   templateUrl: './product-create.html',
   styleUrl: './product-create.css',
 })
 export class ProductCreate implements OnInit {
   private readonly productsService = inject(ProductsService);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
+  private readonly platformId = inject(PLATFORM_ID);
+
   readonly productId = this.route.snapshot.paramMap.get('id');
+
+  readonly sidebarCollapsed = signal(this.readSidebarPreference());
 
   readonly form = new FormGroup<ProductFormControls>({
     nombre: new FormControl('', {
-      nonNullable: true, validators: [
+      nonNullable: true,
+      validators: [
         Validators.required,
         Validators.pattern(/\S/),
         Validators.maxLength(150),
-      ]
+      ],
     }),
     categoriaIds: new FormControl<string[]>({ value: [], disabled: true }, {
       nonNullable: true,
@@ -98,19 +107,15 @@ export class ProductCreate implements OnInit {
   categories: Category[] = [];
   categoriesLoading = true;
   categoriesError = false;
+
   submitting = signal(false);
   submitSuccess = signal(false);
   submitError = signal<string | null>(null);
   productLoading = signal(false);
   productLoadError = signal<string | null>(null);
-  serverFieldErrors: Partial<Record<ProductFormField, string>> = {};
-
   imageError = signal(false);
-  readonly sidebarCollapsed = signal(false);
 
-  toggleSidebar(): void {
-    this.sidebarCollapsed.update((collapsed) => !collapsed);
-  }
+  serverFieldErrors: Partial<Record<ProductFormField, string>> = {};
 
   get previewUrl(): string {
     const control = this.form.controls.imagen;
@@ -119,57 +124,84 @@ export class ProductCreate implements OnInit {
   }
 
   ngOnInit(): void {
-    this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      this.submitSuccess.set(false);
-      this.serverFieldErrors = {};
-      this.submitError.set(null);
-    });
+    this.form.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.submitSuccess.set(false);
+        this.serverFieldErrors = {};
+        this.submitError.set(null);
+      });
 
-    this.productsService.getCategories().subscribe({
-      next: (categories) => {
-        this.categories = categories;
-        this.categoriesLoading = false;
-        if (categories.length > 0) {
-          this.form.controls.categoriaIds.enable();
-        }
-      },
-      error: () => {
-        this.categoriesError = true;
-        this.categoriesLoading = false;
-      },
-    });
+    this.productsService.getCategories()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (categories) => {
+          this.categories = categories;
+          this.categoriesLoading = false;
+
+          if (categories.length > 0) {
+            this.form.controls.categoriaIds.enable();
+          }
+        },
+        error: () => {
+          this.categoriesError = true;
+          this.categoriesLoading = false;
+        },
+      });
 
     if (this.productId) {
       this.loadProduct();
     }
   }
 
+  toggleSidebar(): void {
+    const collapsed = !this.sidebarCollapsed();
+    this.sidebarCollapsed.set(collapsed);
+
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('seller-sidebar-collapsed', String(collapsed));
+    }
+  }
+
+  private readSidebarPreference(): boolean {
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+
+    return localStorage.getItem('seller-sidebar-collapsed') === 'true';
+  }
+
   loadProduct(): void {
     if (!this.productId) {
       return;
     }
+
     this.productLoading.set(true);
     this.productLoadError.set(null);
-    this.productsService.getProduct(this.productId).subscribe({
-      next: (product) => {
-        this.form.patchValue({
-          nombre: product.name,
-          categoriaIds: product.categoryIds,
-          stock: product.stock,
-          descripcion: product.description ?? '',
-          precio: product.price,
-          descuento: product.discount,
-          descuentoPremium: product.premiumDiscount,
-          imagen: product.imageUrl ?? '',
-          disponible: product.available,
-        });
-        this.productLoading.set(false);
-      },
-      error: (error: unknown) => {
-        this.productLoading.set(false);
-        this.productLoadError.set(this.getLoadErrorMessage(error));
-      },
-    });
+
+    this.productsService.getProduct(this.productId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (product) => {
+          this.form.patchValue({
+            nombre: product.name,
+            categoriaIds: product.categoryIds,
+            stock: product.stock,
+            descripcion: product.description ?? '',
+            precio: product.price,
+            descuento: product.discount,
+            descuentoPremium: product.premiumDiscount,
+            imagen: product.imageUrl ?? '',
+            disponible: product.available,
+          });
+
+          this.productLoading.set(false);
+        },
+        error: (error: unknown) => {
+          this.productLoading.set(false);
+          this.productLoadError.set(this.getLoadErrorMessage(error));
+        },
+      });
   }
 
   onSubmit(): void {
@@ -191,9 +223,10 @@ export class ProductCreate implements OnInit {
 
     this.submitting.set(true);
 
+    const request = this.toRequest();
     const saveRequest = this.productId
-      ? this.productsService.updateProduct(this.productId, this.toRequest())
-      : this.productsService.createProduct(this.toRequest());
+      ? this.productsService.updateProduct(this.productId, request)
+      : this.productsService.createProduct(request);
 
     saveRequest
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -201,6 +234,7 @@ export class ProductCreate implements OnInit {
         next: () => {
           this.submitting.set(false);
           this.submitSuccess.set(true);
+          this.router.navigate(['/seller/catalog']);
         },
         error: (error: unknown) => {
           this.submitting.set(false);
@@ -218,7 +252,9 @@ export class ProductCreate implements OnInit {
     }
 
     const response = error.error;
-    const message = typeof response['message'] === 'string' ? response['message'] : null;
+    const message = typeof response['message'] === 'string'
+      ? response['message']
+      : null;
     const unrecognizedErrors = this.parseFieldErrors(response['errors']);
 
     if (this.isCategoryErrorMessage(message)) {
@@ -227,7 +263,9 @@ export class ProductCreate implements OnInit {
       return;
     }
 
-    this.submitError.set(this.resolveSubmitErrorMessage(message, unrecognizedErrors, error.status));
+    this.submitError.set(
+      this.resolveSubmitErrorMessage(message, unrecognizedErrors, error.status),
+    );
   }
 
   private parseFieldErrors(errorsPayload: unknown): string[] {
@@ -236,6 +274,7 @@ export class ProductCreate implements OnInit {
     }
 
     const unrecognizedErrors: string[] = [];
+
     for (const [field, fieldError] of Object.entries(errorsPayload)) {
       if (typeof fieldError === 'string') {
         this.assignFieldError(field, fieldError, unrecognizedErrors);
@@ -245,12 +284,17 @@ export class ProductCreate implements OnInit {
     return unrecognizedErrors;
   }
 
-  private assignFieldError(field: string, error: string, unrecognizedErrors: string[]): void {
+  private assignFieldError(
+    field: string,
+    error: string,
+    unrecognizedErrors: string[],
+  ): void {
     const matchingField = SERVER_FIELD_TO_FORM_FIELD[field];
+
     if (matchingField) {
       this.serverFieldErrors[matchingField] = error;
     } else {
-      unrecognizedErrors.push(`${field}: ${error}`);
+      unrecognizedErrors.push(`${field}: ${error} `);
     }
   }
 
@@ -270,43 +314,56 @@ export class ProductCreate implements OnInit {
     if (unrecognizedErrors.length > 0) {
       return [message, ...unrecognizedErrors].filter(Boolean).join('. ');
     }
+
     if (Object.keys(this.serverFieldErrors).length > 0) {
       return 'Revisa los campos marcados y vuelve a intentarlo.';
     }
+
     return message || this.getFallbackError(status);
   }
 
   private getFallbackError(status: number): string {
-    if (status === 0) {
-      return 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
+    const sharedMessage = httpErrorMessage(status, {
+      401: 'Tu sesión ha caducado. Inicia sesión de nuevo para guardar el producto.',
+    });
+
+    if (sharedMessage) {
+      return sharedMessage;
     }
-    if (status === 401) {
-      return 'Tu sesión ha caducado. Inicia sesión de nuevo para guardar el producto.';
-    }
+
     if (status === 403) {
       return 'No tienes permiso para guardar este producto.';
     }
+
     if (status >= 500) {
       return 'El servidor no pudo guardar el producto. Inténtalo de nuevo más tarde.';
     }
+
     return 'No se pudo guardar el producto. Inténtalo de nuevo.';
   }
 
   private getLoadErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 401) {
-        return 'Tu sesión ha caducado. Inicia sesión de nuevo para editar productos.';
+        return httpErrorMessage(error, {
+          401: 'Tu sesión ha caducado. Inicia sesión de nuevo para editar productos.',
+        }) ?? 'No se pudo cargar el producto. Inténtalo de nuevo.';
       }
+
       if (error.status === 403) {
         return 'No tienes permiso para editar productos.';
       }
+
       if (error.status === 404) {
         return 'El producto ya no existe o no tienes permiso para editarlo.';
       }
+
       if (error.status === 0) {
-        return 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
+        return httpErrorMessage(error)
+          ?? 'No se pudo cargar el producto. Inténtalo de nuevo.';
       }
     }
+
     return 'No se pudo cargar el producto. Inténtalo de nuevo.';
   }
 
@@ -316,6 +373,7 @@ export class ProductCreate implements OnInit {
 
   private toRequest(): ProductCreateRequest {
     const value = this.form.getRawValue();
+
     const request: ProductCreateRequest = {
       name: value.nombre.trim(),
       categoryIds: value.categoriaIds,
@@ -326,15 +384,19 @@ export class ProductCreate implements OnInit {
     if (value.stock !== null) {
       request.stock = value.stock;
     }
+
     if (value.descripcion.trim()) {
       request.description = value.descripcion.trim();
     }
+
     if (value.descuento !== null) {
       request.discount = value.descuento;
     }
+
     if (value.descuentoPremium !== null) {
       request.premiumDiscount = value.descuentoPremium;
     }
+
     if (value.imagen.trim()) {
       request.imageUrl = value.imagen.trim();
     }

@@ -1,9 +1,10 @@
+import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { CartService } from '../cart/cart.service';
-import { AvailableProduct, ProductsService } from '../../products/products.service';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { CartService } from '../../../core/services/cart.service';
+import { AvailableProduct, ProductsService } from '../../../core/services/products.service';
 
 @Component({
   selector: 'app-client-dashboard',
@@ -87,7 +88,7 @@ export class ClientDashboard implements OnInit {
         return 'El producto ya no está disponible.';
       }
       if (error.status === 0) {
-        return 'No se pudo conectar con el servidor.';
+        return httpErrorMessage(error) ?? 'No se pudo añadir el producto. Inténtalo de nuevo.';
       }
     }
     return 'No se pudo añadir el producto. Inténtalo de nuevo.';

@@ -1,8 +1,8 @@
 :host {
   display: block;
   min-height: 100vh;
-  background: #e9eff8;
-  color: #173247;
+  background: var(--color-page-background);
+  color: var(--color-text-primary);
   font-family: Inter, "Segoe UI", sans-serif;
 }
 
@@ -35,104 +35,7 @@
     0 1px 3px rgb(25 48 70 / 3%);
 }
 
-/* Barra lateral */
-
-.sidebar {
-  position: fixed;
-  inset: 0 auto 0 0;
-  z-index: 10;
-  display: flex;
-  width: 248px;
-  height: 100vh;
-  flex-direction: column;
-  padding: 30px 18px 20px;
-  overflow-y: auto;
-  background: #102c40;
-  color: #edf5f8;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  width: fit-content;
-  margin: 0 0 54px 8px;
-  color: #ffffff;
-  font-size: 21px;
-  font-weight: 750;
-  letter-spacing: -0.7px;
-  text-decoration: none;
-}
-
-.brand-mark {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 11px;
-  background: #42d6b2;
-  color: #102c40;
-  font-size: 18px;
-}
-
-.brand-accent {
-  color: #42d6b2;
-}
-
-.sidebar-caption {
-  margin: 0;
-  padding: 0 10px 13px;
-  color: #8396a4;
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 1.15px;
-}
-
-.seller-navigation {
-  display: grid;
-  gap: 5px;
-}
-
-.navigation-link {
-  display: flex;
-  min-height: 44px;
-  align-items: center;
-  gap: 12px;
-  padding: 0 12px;
-  border-radius: 8px;
-  color: #c1d0d8;
-  font-size: 13px;
-  font-weight: 550;
-  text-decoration: none;
-  transition:
-    background-color 0.18s ease,
-    color 0.18s ease;
-}
-
-.navigation-icon {
-  display: grid;
-  width: 20px;
-  height: 20px;
-  flex: 0 0 20px;
-  place-items: center;
-}
-
-.navigation-link:hover:not(.is-disabled),
-.navigation-link.is-active {
-  background: #1d4357;
-  color: #ffffff;
-}
-
-.navigation-link.is-active {
-  box-shadow: inset 3px 0 #42d6b2;
-}
-
-.navigation-link.is-disabled {
-  color: #aebdc7;
-  cursor: not-allowed;
-  opacity: 0.65;
-}
+/* La barra lateral y sus estilos se comparten en AppSidebarComponent. */
 
 /* Cabecera de la página */
 
@@ -185,7 +88,7 @@ p {
 
 .page-header h1 {
   margin-bottom: 9px;
-  color: #102c40;
+  color: var(--color-brand-dark);
   font-size: clamp(25px, 3vw, 32px);
   font-weight: 750;
   letter-spacing: -1px;
@@ -244,7 +147,7 @@ p {
 
 .section-heading h2 {
   margin: 1px 0 5px;
-  color: #173247;
+  color: var(--color-text-primary);
   font-size: 16px;
   font-weight: 750;
   letter-spacing: -0.2px;
@@ -327,7 +230,7 @@ p {
 
 .form-field select[multiple] option:checked {
   background: #dffaf4;
-  color: #173247;
+  color: var(--color-text-primary);
 }
 
 .form-field input:hover,
@@ -592,7 +495,7 @@ p {
 .cancel-action:hover {
   border-color: #bdcfd9;
   background: #f7fafc;
-  color: #173247;
+  color: var(--color-text-primary);
 }
 
 .submit-action {
@@ -601,10 +504,10 @@ p {
   align-items: center;
   justify-content: center;
   padding: 0 20px;
-  border: 1px solid #42d6b2;
+  border: 1px solid var(--color-brand-accent);
   border-radius: 9px;
-  background: #42d6b2;
-  color: #102c40;
+  background: var(--color-brand-accent);
+  color: var(--color-brand-dark);
   cursor: pointer;
   font-family: inherit;
   font-size: 12px;
@@ -696,7 +599,7 @@ textarea:focus-visible {
   }
 
   .navigation-link.is-active {
-    box-shadow: inset 3px 0 #42d6b2;
+    box-shadow: inset 3px 0 var(--color-brand-accent);
   }
 
   .product-create-page {

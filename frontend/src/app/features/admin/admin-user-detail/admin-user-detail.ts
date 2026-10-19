@@ -1,10 +1,12 @@
+import { httpErrorMessage } from '../../../core/utils/http-error-message';
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService, UpdateUserRequest, UserResponse } from '../../../core/services/auth.service';
 import { isAdultValidator } from '../../identity/register/register';
-import { Category, ProductsService } from '../../products/products.service';
+import { Category, ProductsService } from '../../../core/services/products.service';
 
 @Component({
   selector: 'app-admin-user-detail',
@@ -31,9 +33,9 @@ export class AdminUserDetail implements OnInit {
 
   readonly form = this.formBuilder.nonNullable.group({
     firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25),
-      Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
+    Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
     lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50),
-      Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
+    Validators.pattern(/^[\p{L}\p{M}][\p{L}\p{M} '-]*$/u)]],
     nationalId: ['', [Validators.required, Validators.maxLength(20)]],
     birthDate: ['', [isAdultValidator]],
     defaultCategory: ['Electrónica'],
@@ -109,7 +111,7 @@ export class AdminUserDetail implements OnInit {
     private readonly router: Router,
     private readonly authService: AuthService,
     private readonly productsService: ProductsService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.userId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -119,7 +121,7 @@ export class AdminUserDetail implements OnInit {
       return;
     }
 
-    this.authService.obtenerUsuarioAdmin(this.userId).subscribe({
+    this.authService.getAdminUser(this.userId).subscribe({
       next: ({ data }) => {
         this.email = data.email;
         this.role = data.role;
@@ -185,13 +187,15 @@ export class AdminUserDetail implements OnInit {
       this.isSeller() && !this.categoriesLoadError() && Boolean(savedCategory) && !categoryIsCurrent,
     );
 
+    const defaultCategory = this.isSeller() && categoryIsCurrent
+      ? savedCategory
+      : '';
+
     this.form.patchValue({
       firstName: data.firstName,
       lastName: data.lastName,
       birthDate: data.birthDate ? String(data.birthDate).slice(0, 10) : '',
-      defaultCategory: this.isSeller()
-        ? categoryIsCurrent ? savedCategory : ''
-        : '',
+      defaultCategory,
       businessName: data.businessName ?? '',
       nationalId: data.nationalId ?? '',
       phone: data.phone ?? '',
@@ -250,7 +254,7 @@ export class AdminUserDetail implements OnInit {
       request.phone = this.form.controls.phone.value.trim();
     }
 
-    this.authService.actualizarUsuarioAdmin(this.userId, request).subscribe({
+    this.authService.updateAdminUser(this.userId, request).subscribe({
       next: () => {
         this.guardando.set(false);
         this.router.navigate(['/admin/usuarios'], {
@@ -265,7 +269,11 @@ export class AdminUserDetail implements OnInit {
   }
 
   private errorMessageFor(error: any): string {
-    if (error.status === 401) return 'La sesión ha caducado. Inicie sesión como administrador y vuelva a intentarlo.';
+    if (error.status === 401) {
+      return httpErrorMessage(error, {
+        401: 'La sesión ha caducado. Inicie sesión como administrador y vuelva a intentarlo.',
+      }) ?? 'No se pudo completar la operación. Compruebe los datos e inténtelo de nuevo.';
+    }
     if (error.status === 403) return 'No tiene permisos para modificar usuarios.';
     if (error.status === 404) return 'El usuario solicitado ya no existe.';
     if (error.status === 409) return error.error?.message || 'Ya existe un usuario o comercio con esos datos.';

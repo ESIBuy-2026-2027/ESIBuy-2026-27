@@ -1,3 +1,4 @@
+import { httpErrorMessage } from '../../core/utils/http-error-message';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, ElementRef, HostListener, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
@@ -106,7 +107,7 @@ export class DeleteAccount {
     private errorMessage(error: unknown): string {
         if (error instanceof HttpErrorResponse) {
             if (error.status === 0) {
-                return 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
+                return httpErrorMessage(error) ?? 'No se pudo eliminar la cuenta. Inténtalo de nuevo más tarde.';
             }
             if (error.status === 403) {
                 return 'No tienes permisos para eliminar esta cuenta.';

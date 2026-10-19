@@ -1,7 +1,9 @@
 <div class="client-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
   <aside class="client-sidebar app-sidebar" aria-label="Panel del cliente">
-    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()"
-      aria-label="Ocultar barra lateral"><span aria-hidden="true">‹</span></button>
+    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral">
+      <span aria-hidden="true">‹</span>
+    </button>
+
     <a routerLink="/" class="client-brand" aria-label="ESIBuy">
       <span class="brand-mark" aria-hidden="true">E</span>
       <span>ESI<span class="brand-accent">Buy</span></span>
@@ -60,63 +62,86 @@
     </nav>
   </aside>
 
-  <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()"
-    aria-label="Mostrar barra lateral" [hidden]="!sidebarCollapsed()"><span aria-hidden="true">›</span></button>
+  <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()" aria-label="Mostrar barra lateral"
+    [hidden]="!sidebarCollapsed()">
+    <span aria-hidden="true">›</span>
+  </button>
+
   <div class="client-workspace app-workspace">
     <main class="client-content">
       <section class="page-heading" aria-labelledby="client-title">
         <div>
           <p class="eyebrow">ÁREA DE CLIENTE</p>
           <h1 id="client-title">Catálogo de productos</h1>
-          <p class="page-description">Explora los productos disponibles y prepara tu compra.</p>
+          <p class="page-description">
+            Explora los productos disponibles y prepara tu compra.
+          </p>
         </div>
+
         <a class="primary-action" routerLink="/client/cart">
-          Ver carrito <span class="cart-count">{{ cartService.itemCount() }}</span>
+          Ver carrito
+          <span class="cart-count">{{ cartService.itemCount() }}</span>
         </a>
       </section>
 
       @if (notification(); as message) {
-        <p class="cart-notification" [class.is-error]="message.type === 'error'"
-          [class.is-success]="message.type === 'success'" role="status">
-          {{ message.text }}
-        </p>
+      <p class="cart-notification" [class.is-error]="message.type === 'error'"
+        [class.is-success]="message.type === 'success'" role="status">
+        {{ message.text }}
+      </p>
       }
 
       @if (productsLoading()) {
-        <p class="catalog-state" role="status">Cargando productos…</p>
+      <p class="catalog-state" role="status">Cargando productos…</p>
       } @else if (productsError(); as error) {
-        <p class="catalog-state is-error" role="alert">{{ error }}</p>
+      <p class="catalog-state is-error" role="alert">{{ error }}</p>
       } @else if (products().length === 0) {
-        <p class="catalog-state">No hay productos disponibles en este momento.</p>
+      <p class="catalog-state">
+        No hay productos disponibles en este momento.
+      </p>
       } @else {
-        <section class="product-grid" aria-label="Productos disponibles">
-          @for (product of products(); track product.id) {
-            <article class="product-card">
-              @if (product.imageUrl) {
-                <img class="product-image" [src]="product.imageUrl" [alt]="product.name">
-              } @else {
-                <div class="product-image-placeholder" aria-hidden="true">ESI</div>
-              }
-              <div class="product-details">
-                <h2>{{ product.name }}</h2>
-                @if (product.description) {
-                  <p class="product-description">{{ product.description }}</p>
-                }
-                <p class="product-stock">Disponible: {{ product.stock }}</p>
-                <p class="product-price">{{ formatPrice(product.price) }}</p>
-                <label [for]="'quantity-' + product.id">Cantidad</label>
-                <input [id]="'quantity-' + product.id" type="number" min="1" step="1"
-                  [max]="product.stock" [ngModel]="quantityFor(product.id)"
-                  (ngModelChange)="setQuantity(product.id, $event)">
-                <button class="primary-action add-to-cart" type="button"
-                  [disabled]="addingProductId() === product.id"
-                  (click)="addToCart(product)">
-                  {{ addingProductId() === product.id ? 'Añadiendo…' : 'Añadir al carrito' }}
-                </button>
-              </div>
-            </article>
+      <section class="product-grid" aria-label="Productos disponibles">
+        @for (product of products(); track product.id) {
+        <article class="product-card">
+          @if (product.imageUrl) {
+          <img class="product-image" [src]="product.imageUrl" [alt]="product.name">
+          } @else {
+          <div class="product-image-placeholder" aria-hidden="true">
+            ESI
+          </div>
           }
-        </section>
+
+          <div class="product-details">
+            <h2>{{ product.name }}</h2>
+
+            @if (product.description) {
+            <p class="product-description">
+              {{ product.description }}
+            </p>
+            }
+
+            <p class="product-stock">
+              Disponible: {{ product.stock }}
+            </p>
+
+            <p class="product-price">
+              {{ formatPrice(product.price) }}
+            </p>
+
+            <label [for]="'quantity-' + product.id">Cantidad</label>
+            <input [id]="'quantity-' + product.id" type="number" min="1" step="1" [max]="product.stock"
+              [ngModel]="quantityFor(product.id)" (ngModelChange)="setQuantity(product.id, $event)">
+
+            <button class="primary-action add-to-cart" type="button" [disabled]="addingProductId() === product.id"
+              (click)="addToCart(product)">
+              {{ addingProductId() === product.id
+              ? 'Añadiendo…'
+              : 'Añadir al carrito' }}
+            </button>
+          </div>
+        </article>
+        }
+      </section>
       }
     </main>
   </div>

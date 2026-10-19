@@ -1,0 +1,26 @@
+
+/**
+ * Avatares locales permitidos en los perfiles.
+ *
+ * Las rutas se comparten entre los perfiles para evitar listas duplicadas.
+ */
+export const CLIENT_AVATARS: readonly string[] = [
+    'assets/images/avatars/av_client_1.jpeg',
+    'assets/images/avatars/av_client_2.jpeg',
+    'assets/images/avatars/av_client_3.jpeg',
+    'assets/images/avatars/av_client_4.jpeg',
+    'assets/images/avatars/av_client_5.jpeg',
+];
+
+export const SELLER_AVATARS: readonly string[] = [
+    'assets/images/avatars/av_seller_1.jpeg',
+    'assets/images/avatars/av_seller_2.jpeg',
+    'assets/images/avatars/av_seller_3.jpeg',
+    'assets/images/avatars/av_seller_4.jpeg',
+    'assets/images/avatars/av_seller_5.jpeg',
+];
+
+export const ADMIN_AVATARS: readonly string[] = [
+    ...CLIENT_AVATARS,
+    ...SELLER_AVATARS,
+];

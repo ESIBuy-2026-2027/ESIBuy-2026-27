@@ -3,7 +3,7 @@ import { Component, effect, HostListener, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { ToastService } from './core/services/toast.service';
-import { CartService } from './features/client/cart/cart.service';
+import { CartService } from './core/services/cart.service';
 
 @Component({
   imports: [RouterLink, RouterOutlet],

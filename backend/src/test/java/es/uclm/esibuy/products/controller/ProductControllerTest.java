@@ -17,7 +17,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
+import es.uclm.esibuy.users.model.UserRole;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.core.Authentication;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -26,6 +31,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -50,8 +56,14 @@ class ProductControllerTest {
         @MockitoBean
         private ProductService productService;
 
+        private Authentication authenticationForSeller() {
+                AuthenticatedUserPrincipal principal = new AuthenticatedUserPrincipal(
+                                SELLER_ID, SELLER_EMAIL, UserRole.SELLER, true);
+                return new UsernamePasswordAuthenticationToken(principal, null,
+                                List.of(new SimpleGrantedAuthority("ROLE_SELLER")));
+        }
+
         @Test
-        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
         void shouldReturnCreatedProductAndUseAuthenticatedIdentity() throws Exception {
                 Product product = new Product(
                                 PRODUCT_NAME, List.of(CATEGORY_ID), 0, null,
@@ -60,6 +72,7 @@ class ProductControllerTest {
                                 .thenReturn(product);
 
                 mockMvc.perform(post(PRODUCTS_API)
+                                .with(authentication(authenticationForSeller()))
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(validRequest()))
@@ -72,9 +85,9 @@ class ProductControllerTest {
         }
 
         @Test
-        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
         void shouldReturnAllFieldValidationErrors() throws Exception {
                 mockMvc.perform(post(PRODUCTS_API)
+                                .with(authentication(authenticationForSeller()))
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -88,12 +101,12 @@ class ProductControllerTest {
         }
 
         @Test
-        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
         void shouldReturnClearBadRequestForUnknownCategory() throws Exception {
                 when(productService.createProduct(any(ProductCreateRequest.class), eq(SELLER_EMAIL)))
                                 .thenThrow(new CategoryNotFoundException(List.of(CATEGORY_ID)));
 
                 mockMvc.perform(post(PRODUCTS_API)
+                                .with(authentication(authenticationForSeller()))
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(validRequest()))
@@ -103,12 +116,12 @@ class ProductControllerTest {
         }
 
         @Test
-        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
         void shouldReturnSellerSummary() throws Exception {
                 when(productService.getSummary(SELLER_EMAIL))
                                 .thenReturn(new ProductSummaryResponse(12, 2, 3, 5));
 
-                mockMvc.perform(get(PRODUCTS_API + "/summary"))
+                mockMvc.perform(get(PRODUCTS_API + "/summary")
+                                .with(authentication(authenticationForSeller())))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.totalProducts").value(12))
                                 .andExpect(jsonPath("$.outOfStockProducts").value(2))
@@ -117,7 +130,6 @@ class ProductControllerTest {
         }
 
         @Test
-        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
         void shouldReturnProductsForAuthenticatedSeller() throws Exception {
                 when(productService.getSellerProducts(SELLER_EMAIL))
                                 .thenReturn(List.of(new ProductResponse(
@@ -125,7 +137,8 @@ class ProductControllerTest {
                                                 "Inalámbricos", new BigDecimal(PRODUCT_PRICE), null, null,
                                                 null, true, SELLER_ID)));
 
-                mockMvc.perform(get(PRODUCTS_API + "/mine"))
+                mockMvc.perform(get(PRODUCTS_API + "/mine")
+                                .with(authentication(authenticationForSeller())))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$[0].id").value("product-1"))
                                 .andExpect(jsonPath("$[0].name").value(PRODUCT_NAME))
@@ -136,13 +149,13 @@ class ProductControllerTest {
         }
 
         @Test
-        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
         void shouldReturnProductDetailsForEditing() throws Exception {
                 when(productService.getProduct("product-1", SELLER_EMAIL)).thenReturn(new Product(
                                 PRODUCT_NAME, List.of(CATEGORY_ID), 3, "Descripción",
                                 new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID));
 
-                mockMvc.perform(get(PRODUCTS_API + "/product-1"))
+                mockMvc.perform(get(PRODUCTS_API + "/product-1")
+                                .with(authentication(authenticationForSeller())))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.name").value(PRODUCT_NAME))
                                 .andExpect(jsonPath("$.categoryIds[0]").value(CATEGORY_ID))
@@ -152,19 +165,18 @@ class ProductControllerTest {
         }
 
         @Test
-        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
         void shouldReturnNotFoundWhenProductDoesNotExistOrBelongToAnotherSeller() throws Exception {
                 when(productService.getProduct("product-1", SELLER_EMAIL))
                                 .thenThrow(new ProductNotFoundException());
 
-                mockMvc.perform(get(PRODUCTS_API + "/product-1"))
+                mockMvc.perform(get(PRODUCTS_API + "/product-1")
+                                .with(authentication(authenticationForSeller())))
                                 .andExpect(status().isNotFound())
                                 .andExpect(jsonPath("$.message").value("Producto no encontrado"))
                                 .andExpect(jsonPath("$.correlationId").isNotEmpty());
         }
 
         @Test
-        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
         void shouldUpdateProductForAuthenticatedSeller() throws Exception {
                 when(productService.updateProduct(
                                 eq("product-1"), any(ProductCreateRequest.class), eq(SELLER_EMAIL)))
@@ -173,6 +185,7 @@ class ProductControllerTest {
                                                 new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID));
 
                 mockMvc.perform(put(PRODUCTS_API + "/product-1")
+                                .with(authentication(authenticationForSeller()))
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(validRequest()))
@@ -185,9 +198,9 @@ class ProductControllerTest {
         }
 
         @Test
-        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
         void shouldValidateProductUpdates() throws Exception {
                 mockMvc.perform(put(PRODUCTS_API + "/product-1")
+                                .with(authentication(authenticationForSeller()))
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -221,7 +234,8 @@ class ProductControllerTest {
                 when(productService.getPublicCatalog(null, null, null, null, null, null))
                                 .thenReturn(List.of(new ProductResponse(
                                                 "prod-1", PRODUCT_NAME, List.of(CATEGORY_ID), 5,
-                                                "Desc", new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID)));
+                                                "Desc", new BigDecimal(PRODUCT_PRICE), null, null, null, true,
+                                                SELLER_ID)));
 
                 mockMvc.perform(get(PRODUCTS_API))
                                 .andExpect(status().isOk())
@@ -234,7 +248,8 @@ class ProductControllerTest {
                 when(productService.getProductById("prod-1"))
                                 .thenReturn(new ProductResponse(
                                                 "prod-1", PRODUCT_NAME, List.of(CATEGORY_ID), 5,
-                                                "Desc", new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID));
+                                                "Desc", new BigDecimal(PRODUCT_PRICE), null, null, null, true,
+                                                SELLER_ID));
 
                 mockMvc.perform(get(PRODUCTS_API + "/prod-1"))
                                 .andExpect(status().isOk())
@@ -248,9 +263,11 @@ class ProductControllerTest {
                 when(productService.updateProductStatus("prod-1", false, SELLER_EMAIL))
                                 .thenReturn(new ProductResponse(
                                                 "prod-1", PRODUCT_NAME, List.of(CATEGORY_ID), 5,
-                                                "Desc", new BigDecimal(PRODUCT_PRICE), null, null, null, false, SELLER_ID));
+                                                "Desc", new BigDecimal(PRODUCT_PRICE), null, null, null, false,
+                                                SELLER_ID));
 
-                mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(PRODUCTS_API + "/prod-1/status")
+                mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                                .patch(PRODUCTS_API + "/prod-1/status")
                                 .param("available", "false")
                                 .with(csrf()))
                                 .andExpect(status().isOk())
@@ -259,7 +276,8 @@ class ProductControllerTest {
 
         @Test
         void shouldRejectClientFromUpdatingStatus() throws Exception {
-                mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(PRODUCTS_API + "/prod-1/status")
+                mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                                .patch(PRODUCTS_API + "/prod-1/status")
                                 .param("available", "false")
                                 .with(csrf())
                                 .with(user("client@example.com").roles("CLIENT")))

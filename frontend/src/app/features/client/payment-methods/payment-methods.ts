@@ -301,16 +301,14 @@ export class PaymentMethods implements OnInit {
         return year !== now.getFullYear() || month >= now.getMonth() + 1;
     }
 
+
     private addPayPalDetails(
         request: PaymentMethodRequest,
         form: PaymentMethodForm,
     ): PaymentMethodRequest | null {
         const paypalEmail = form.paypalEmail.trim();
 
-        if (
-            paypalEmail.length > 254
-            || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypalEmail)
-        ) {
+        if (!this.isValidPayPalEmail(paypalEmail)) {
             this.error.set('Introduce un correo electrónico válido para PayPal.');
             return null;
         }
@@ -318,6 +316,52 @@ export class PaymentMethods implements OnInit {
         request.paypalEmail = paypalEmail;
         return request;
     }
+
+    private isValidPayPalEmail(email: string): boolean {
+        if (email.length === 0 || email.length > 254) {
+            return false;
+        }
+
+        const atIndex = email.indexOf('@');
+
+        // Debe existir una única arroba, con contenido a ambos lados.
+        if (
+            atIndex <= 0
+            || atIndex !== email.lastIndexOf('@')
+            || atIndex === email.length - 1
+        ) {
+            return false;
+        }
+
+        const localPart = email.slice(0, atIndex);
+        const domain = email.slice(atIndex + 1);
+
+        // Validación básica de la parte local.
+        if (
+            localPart.length > 64
+            || localPart.startsWith('.')
+            || localPart.endsWith('.')
+            || localPart.includes('..')
+            || /\s/.test(localPart)
+        ) {
+            return false;
+        }
+
+        // El dominio debe contener al menos un punto.
+        const lastDot = domain.lastIndexOf('.');
+
+        if (
+            lastDot <= 0
+            || lastDot === domain.length - 1
+            || domain.includes('..')
+            || /[\s@]/.test(domain)
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
 
     private addBizumDetails(
         request: PaymentMethodRequest,
@@ -449,19 +493,34 @@ export class PaymentMethods implements OnInit {
     }
 
 
-    private parseExpiration(value: string): { month: number; year: number } | null {
-        const match = /^(0[1-9]|1[0-2])\/(\d{2})$/.exec(value.trim());
 
-        if (!match) {
+    private parseExpiration(
+        value: string,
+    ): { month: number; year: number } | null {
+        const expiration = value.trim();
+
+        if (expiration.length !== 5 || expiration[2] !== '/') {
             return null;
         }
 
-        const month = Number(match[1]);
-        const year = 2000 + Number(match[2]);
+        const monthText = expiration.slice(0, 2);
+        const yearText = expiration.slice(3, 5);
+
+        if (
+            !this.isNumericText(monthText)
+            || !this.isNumericText(yearText)
+        ) {
+            return null;
+        }
+
+        const month = Number(monthText);
+        const year = 2000 + Number(yearText);
         const now = new Date();
 
         if (
-            year < now.getFullYear()
+            month < 1
+            || month > 12
+            || year < now.getFullYear()
             || (year === now.getFullYear() && month < now.getMonth() + 1)
         ) {
             return null;
@@ -469,6 +528,15 @@ export class PaymentMethods implements OnInit {
 
         return { month, year };
     }
+
+    private isNumericText(value: string): boolean {
+        return value.length === 2
+            && value.charCodeAt(0) >= 48
+            && value.charCodeAt(0) <= 57
+            && value.charCodeAt(1) >= 48
+            && value.charCodeAt(1) <= 57;
+    }
+
 
     formatExpiration(value: string): string {
         const digits = value.replace(/\D/g, '').slice(0, 4);

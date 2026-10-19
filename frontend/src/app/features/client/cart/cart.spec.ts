@@ -3,8 +3,8 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
-import { CartService } from './cart.service';
-import { PedidoService } from './pedido.service';
+import { CartService } from '../../../core/services/cart.service';
+import { PedidoService } from '../../../core/services/pedido.service';
 import { ClientCart } from './cart';
 
 describe('ClientCart', () => {
@@ -275,10 +275,12 @@ describe('ClientCart', () => {
             clear: vi.fn(),
           },
         },
-        { provide: PedidoService, useValue: {
-          obtenerCheckoutResumen: vi.fn(() => of(summary)),
-          crearPedido,
-        } },
+        {
+          provide: PedidoService, useValue: {
+            obtenerCheckoutResumen: vi.fn(() => of(summary)),
+            crearPedido,
+          }
+        },
       ],
     }).compileComponents();
 

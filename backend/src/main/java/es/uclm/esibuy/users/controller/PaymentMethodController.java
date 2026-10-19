@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,10 +32,9 @@ public class PaymentMethodController {
 
     @GetMapping
     public ResponseEntity<List<PaymentMethodResponse>> list(
-            Authentication authentication) {
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
 
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -44,11 +43,10 @@ public class PaymentMethodController {
 
     @PostMapping
     public ResponseEntity<PaymentMethodResponse> add(
-            Authentication authentication,
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
             @Valid @RequestBody PaymentMethodRequest request) {
 
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -59,11 +57,10 @@ public class PaymentMethodController {
 
     @PutMapping("/{paymentMethodId}/default")
     public ResponseEntity<PaymentMethodResponse> setDefault(
-            Authentication authentication,
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
             @PathVariable String paymentMethodId) {
 
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -73,12 +70,11 @@ public class PaymentMethodController {
 
     @PutMapping("/{paymentMethodId}")
     public ResponseEntity<PaymentMethodResponse> update(
-            Authentication authentication,
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
             @PathVariable String paymentMethodId,
             @Valid @RequestBody PaymentMethodRequest request) {
 
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -88,11 +84,10 @@ public class PaymentMethodController {
 
     @DeleteMapping("/{paymentMethodId}")
     public ResponseEntity<Void> delete(
-            Authentication authentication,
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
             @PathVariable String paymentMethodId) {
 
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 

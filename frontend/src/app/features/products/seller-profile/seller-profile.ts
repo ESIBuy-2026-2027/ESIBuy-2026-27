@@ -5,8 +5,11 @@ import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { DeleteAccount } from '../../../shared/delete-account/delete-account';
-import { Category, ProductsService } from '../../products/products.service';
+import { Category, ProductsService } from '../../../core/services/products.service';
 import { TwoFactorSettingsComponent } from '../../../shared/two-factor-settings/two-factor-settings';
+import { ProfileShellComponent } from '../../../shared/profile-shell/profile-shell';
+import type { ProfileNavigationItem } from '../../../shared/profile-shell/profile-shell';
+import { SELLER_AVATARS } from '../../../core/constants/avatars';
 
 interface SellerProfileResponse {
     firstName: string;
@@ -33,7 +36,7 @@ interface UpdateSellerProfileRequest {
 @Component({
     selector: 'app-seller-profile',
     standalone: true,
-    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent],
+    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent, ProfileShellComponent],
     templateUrl: './seller-profile.html',
     styleUrl: './seller-profile.css',
 })
@@ -45,13 +48,7 @@ export class SellerProfile implements OnInit {
     private readonly productsService = inject(ProductsService);
     private readonly apiUrl = '/api/users/me/profile';
 
-    readonly sellerAvatars: string[] = [
-        'assets/images/avatars/av_seller_1.jpeg',
-        'assets/images/avatars/av_seller_2.jpeg',
-        'assets/images/avatars/av_seller_3.jpeg',
-        'assets/images/avatars/av_seller_4.jpeg',
-        'assets/images/avatars/av_seller_5.jpeg',
-    ];
+    readonly sellerAvatars: readonly string[] = SELLER_AVATARS;
 
     readonly selectedAvatar = signal(this.sellerAvatars[0]);
 
@@ -112,6 +109,11 @@ export class SellerProfile implements OnInit {
         this.loadProfile();
         this.loadCategories();
     }
+
+    readonly shellSections: ProfileNavigationItem[] = [
+        { key: 'personal', label: 'Datos personales y negocio' },
+        { key: 'security', label: 'Seguridad' },
+    ];
 
     readonly activeSection = signal<'personal' | 'security'>('personal');
 

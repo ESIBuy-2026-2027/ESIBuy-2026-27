@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { ProductItem } from '../../features/products/products.service';
+import { ProductItem } from '../services/products.service'
 import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })

@@ -4,7 +4,7 @@ import { signal, WritableSignal } from '@angular/core';
 import { of } from 'rxjs';
 import { AuthService, AuthenticatedUser } from './core/services/auth.service';
 import { App } from './app';
-import { CartService } from './features/client/cart/cart.service';
+import { CartService } from './core/services/cart.service';
 
 describe('App', () => {
   let currentUser: WritableSignal<AuthenticatedUser | null>;
@@ -50,7 +50,7 @@ describe('App', () => {
     expect(cartLink?.textContent).toContain('3');
   });
 
-    it('should render the router outlet', async () => {
+  it('should render the router outlet', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
@@ -76,12 +76,24 @@ describe('App', () => {
 
     const menu = (fixture.nativeElement as HTMLElement).querySelector('#profile-menu');
     const menuButtons = Array.from(menu?.querySelectorAll<HTMLButtonElement>('button') ?? []);
-    const profileOption = menuButtons.find((button) => button.textContent?.trim() === 'Perfil');
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const profileOption = menuButtons.find((button) => button.textContent?.trim() === 'Mi perfil');
     const logoutOption = menuButtons.find((button) => button.textContent?.trim() === 'Cerrar sesión');
 
     expect(profileOption).toBeDefined();
-    expect(logoutOption).toBeDefined();
-    logoutOption?.click();
+    profileOption?.click();
+    fixture.detectChanges();
+    expect(navigate).toHaveBeenCalledWith(['/client/profile']);
+
+    profileButton?.click();
+    fixture.detectChanges();
+
+    const reopenedMenu = (fixture.nativeElement as HTMLElement).querySelector('#profile-menu');
+    const freshLogoutOption = Array.from(reopenedMenu?.querySelectorAll<HTMLButtonElement>('button') ?? [])
+      .find((button) => button.textContent?.trim() === 'Cerrar sesión');
+
+    expect(freshLogoutOption).toBeDefined();
+    freshLogoutOption?.click();
     fixture.detectChanges();
     expect(logout).toHaveBeenCalledOnce();
     expect((fixture.nativeElement as HTMLElement).querySelector('#profile-menu')).toBeNull();

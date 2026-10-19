@@ -43,8 +43,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import es.uclm.esibuy.security.service.EncryptionService;
-import es.uclm.esibuy.security.service.TotpService;
+import es.uclm.esibuy.security.service.TwoFactorAuthenticationService;
 
 @WebMvcTest(UserController.class)
 @Import({ ApiExceptionHandler.class, SecurityConfig.class, SessionAuthenticationService.class })
@@ -65,10 +64,7 @@ class UserControllerTest {
         private LoginAttemptService loginAttemptService;
 
         @MockitoBean
-        private TotpService totpService;
-
-        @MockitoBean
-        private EncryptionService encryptionService;
+        private TwoFactorAuthenticationService twoFactorAuthenticationService;
 
         @Test
         void shouldCreateSessionOnLoginAndKeepItAcrossRequestsWithConfiguredTimeout() throws Exception {

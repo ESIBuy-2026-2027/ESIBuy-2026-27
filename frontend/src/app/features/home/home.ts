@@ -2,10 +2,10 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { ProductsService, ProductItem, Category } from '../products/products.service';
+import { ProductsService, ProductItem, Category } from '../../core/services/products.service';
 import { WishlistService } from '../../core/services/wishlist.service';
 import { ToastService } from '../../core/services/toast.service';
-import { CartService } from '../client/cart/cart.service';
+import { CartService } from '../../core/services/cart.service';
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -59,7 +59,7 @@ export class Home implements OnInit {
   loadCategories(): void {
     this.productsService.getCategories().subscribe({
       next: (categories) => this.categories.set(categories),
-      error: () => {},
+      error: () => { },
     });
   }
 

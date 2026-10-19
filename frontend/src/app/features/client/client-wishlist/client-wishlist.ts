@@ -3,8 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { CartService } from '../cart/cart.service';
-import { ProductItem } from '../../products/products.service';
+import { CartService } from '../../../core/services/cart.service';
+import { ProductItem } from '../../../core/services/products.service';
 
 @Component({
   selector: 'app-client-wishlist',

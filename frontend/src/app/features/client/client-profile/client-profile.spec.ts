@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
@@ -9,13 +11,28 @@ import { ClientProfile } from './client-profile';
 
 describe('ClientProfile', () => {
     let fixture: ComponentFixture<ClientProfile>;
+    let httpMock: HttpTestingController;
     const logout = vi.fn(() => of(void 0));
+
+    const mockProfile = {
+        firstName: 'Ana',
+        lastName: 'García',
+        email: 'ana@esibuy.com',
+        phone: '600123456',
+        maskedNationalId: '***4567*',
+        profileImage: 'assets/images/avatars/av_client_1.jpeg',
+        customerType: 'STANDARD',
+        birthDate: '1990-01-01',
+        totpEnabled: false,
+    };
 
     beforeEach(async () => {
         logout.mockClear();
         await TestBed.configureTestingModule({
             imports: [ClientProfile],
             providers: [
+                provideHttpClient(),
+                provideHttpClientTesting(),
                 provideRouter([]),
                 {
                     provide: AuthService,
@@ -40,14 +57,21 @@ describe('ClientProfile', () => {
             ],
         }).compileComponents();
 
+        httpMock = TestBed.inject(HttpTestingController);
         fixture = TestBed.createComponent(ClientProfile);
+        fixture.detectChanges();
+
+        const req = httpMock.expectOne('/api/users/me/profile');
+        expect(req.request.method).toBe('GET');
+        req.flush(mockProfile);
+
         fixture.detectChanges();
         await fixture.whenStable();
     });
 
     it('muestra el título y los campos en solo lectura', () => {
         const el: HTMLElement = fixture.nativeElement;
-        expect(el.querySelector('h1')?.textContent).toContain('Perfil');
+        expect(el.querySelector('h1')?.textContent).toContain('Mi perfil');
         expect(el.querySelector('.section-title')?.textContent).toContain('Datos personales');
         el.querySelectorAll('input').forEach((input) => expect(input.readOnly).toBe(true));
     });
@@ -58,7 +82,7 @@ describe('ClientProfile', () => {
     });
 
     it('deja las secciones de otras HU como próximamente', () => {
-        const disabled = fixture.nativeElement.querySelectorAll('.nav-item.is-disabled');
+        const disabled = fixture.nativeElement.querySelectorAll('.sidebar-nav .nav-item.disabled');
         expect(disabled.length).toBe(2);
     });
 

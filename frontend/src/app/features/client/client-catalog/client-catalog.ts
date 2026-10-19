@@ -1,10 +1,10 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ProductsService, ProductItem, Category } from '../../products/products.service';
+import { ProductsService, ProductItem, Category } from '../../../core/services/products.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { CartService } from '../cart/cart.service';
+import { CartService } from '../../../core/services/cart.service';
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -73,7 +73,7 @@ export class ClientCatalog implements OnInit {
   loadCategories(): void {
     this.productsService.getCategories().subscribe({
       next: (categories) => this.categories.set(categories),
-      error: () => {},
+      error: () => { },
     });
   }
 

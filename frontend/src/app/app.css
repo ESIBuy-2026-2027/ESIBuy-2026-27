@@ -11,7 +11,7 @@
   gap: 1rem;
   padding: 0 1.25rem 0 1rem;
   border-bottom: 1px solid rgba(146, 181, 196, 0.38);
-  background: #102c40;
+  background: var(--color-brand-dark);
   color: #ecf7fb;
   font-family: Arial, sans-serif;
 }
@@ -149,7 +149,7 @@
   border: 1px solid #dce5eb;
   border-radius: 1rem;
   background: #fff;
-  color: #173247;
+  color: var(--color-text-primary);
   box-shadow: 0 12px 32px rgba(10, 35, 50, 0.2);
 }
 
@@ -177,7 +177,7 @@
   border: 0;
   border-radius: 0.65rem;
   background: transparent;
-  color: #173247;
+  color: var(--color-text-primary);
   font: inherit;
   font-size: 0.9rem;
   text-align: left;

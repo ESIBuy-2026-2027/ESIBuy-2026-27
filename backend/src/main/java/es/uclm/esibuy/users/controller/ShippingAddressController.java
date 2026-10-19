@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,9 +31,9 @@ public class ShippingAddressController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ShippingAddressResponse>> list(Authentication authentication) {
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+    public ResponseEntity<List<ShippingAddressResponse>> list(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok(shippingAddressService.list(principal.id()).stream()
@@ -44,10 +43,9 @@ public class ShippingAddressController {
 
     @PostMapping
     public ResponseEntity<ShippingAddressResponse> add(
-            Authentication authentication,
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
             @Valid @RequestBody ShippingAddressRequest request) {
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -60,17 +58,16 @@ public class ShippingAddressController {
             @PathVariable String addressId,
             @Valid @RequestBody ShippingAddressRequest request) {
         if (principal == null)
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         return ResponseEntity.ok(shippingAddressService.update(principal.id(), addressId, request));
     }
 
     @DeleteMapping("/{addressId}")
     public ResponseEntity<Void> delete(
-            Authentication authentication,
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
             @PathVariable String addressId) {
 
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 

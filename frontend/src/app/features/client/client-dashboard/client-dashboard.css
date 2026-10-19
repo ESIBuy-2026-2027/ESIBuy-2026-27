@@ -7,100 +7,7 @@
 
 .client-layout {
   min-height: 100vh;
-  background: #e9eff8;
-}
-
-/* Barra lateral de navegación */
-.client-sidebar {
-  position: fixed;
-  inset: 0 auto 0 0;
-  z-index: 1;
-  display: flex;
-  width: 248px;
-  flex-direction: column;
-  box-sizing: border-box;
-  padding: 30px 18px 20px;
-  background: #102c40;
-  color: #edf5f8;
-}
-
-.client-brand {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  width: fit-content;
-  margin: 0 0 54px 8px;
-  color: #fff;
-  font-size: 21px;
-  font-weight: 750;
-  letter-spacing: -0.7px;
-  text-decoration: none;
-}
-
-.brand-mark {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border-radius: 11px;
-  background: #42d6b2;
-  color: #102c40;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.brand-accent {
-  color: #42d6b2;
-}
-
-.sidebar-caption,
-.eyebrow {
-  margin: 0;
-  color: #8396a4;
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 1.15px;
-}
-
-.sidebar-caption {
-  padding: 0 10px 13px;
-}
-
-.client-navigation {
-  display: grid;
-  gap: 7px;
-}
-
-.navigation-link {
-  display: flex;
-  min-height: 42px;
-  align-items: center;
-  gap: 12px;
-  padding: 0 12px;
-  border-radius: 8px;
-  color: #c1d0d8;
-  font-size: 13px;
-  font-weight: 550;
-  text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.navigation-link:hover,
-.navigation-link.is-active {
-  background: #1d4357;
-  color: #fff;
-}
-
-.navigation-link.is-active {
-  box-shadow: inset 3px 0 #42d6b2;
-}
-
-.navigation-icon {
-  display: block;
-  width: 19px;
-  height: 19px;
-  flex: 0 0 19px;
-  color: #42d6b2;
+  background: var(--color-page-background);
 }
 
 /* Área de contenido */
@@ -126,14 +33,14 @@
 
 .page-heading h1 {
   margin: 6px 0 8px;
-  color: #173247;
+  color: var(--color-text-primary);
   font-size: clamp(24px, 3vw, 30px);
   letter-spacing: -0.8px;
 }
 
 .page-description {
   margin: 0;
-  color: #587388;
+  color: var(--color-text-secondary);
   font-size: 14px;
   line-height: 1.5;
 }
@@ -144,7 +51,7 @@
   height: 1.5rem;
   place-items: center;
   border-radius: 999px;
-  background: #102c40;
+  background: var(--color-brand-dark);
   color: #fff;
   font-size: 0.8rem;
 }
@@ -171,7 +78,7 @@
   place-items: center;
   object-fit: cover;
   background: #eaf3f5;
-  color: #147c73;
+  color: var(--color-focus);
   font-size: 2rem;
   font-weight: 800;
 }
@@ -185,14 +92,14 @@
 
 .product-details h2 {
   margin: 0;
-  color: #173247;
+  color: var(--color-text-primary);
   font-size: 1.05rem;
 }
 
 .product-description {
   min-height: 2.7em;
   margin: 0.5rem 0;
-  color: #587388;
+  color: var(--color-text-secondary);
   font-size: 0.875rem;
   line-height: 1.4;
 }
@@ -205,7 +112,7 @@
 
 .product-price {
   margin: 0.5rem 0 0.85rem;
-  color: #173247;
+  color: var(--color-text-primary);
   font-size: 1.15rem;
   font-weight: 750;
 }
@@ -229,7 +136,7 @@
 }
 
 .product-details input:focus-visible {
-  outline: 3px solid #147c73;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 
@@ -241,15 +148,15 @@
   padding: 0 1rem;
   border: 0;
   border-radius: 8px;
-  background: #42d6b2;
-  color: #102c40;
+  background: var(--color-brand-accent);
+  color: var(--color-brand-dark);
   font: inherit;
   font-weight: 650;
   cursor: pointer;
 }
 
 .add-to-cart:hover:not(:disabled) {
-  background: #35c4a1;
+  background: var(--color-brand-accent-hover);
 }
 
 .add-to-cart:disabled {
@@ -259,7 +166,7 @@
 
 .add-to-cart:focus-visible,
 .primary-action:focus-visible {
-  outline: 3px solid #147c73;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 
@@ -291,40 +198,19 @@
   gap: 0.5rem;
   padding: 0 1rem;
   border-radius: 8px;
-  background: #42d6b2;
-  color: #102c40;
+  background: var(--color-brand-accent);
+  color: var(--color-brand-dark);
   font-size: 0.875rem;
   font-weight: 650;
   text-decoration: none;
 }
 
 .primary-action:hover {
-  background: #35c4a1;
+  background: var(--color-brand-accent-hover);
 }
 
 /* Responsividad */
 @media (max-width: 760px) {
-  .client-sidebar {
-    position: static;
-    width: 100%;
-    min-height: auto;
-    padding: 16px 20px 14px;
-  }
-
-  .client-brand {
-    margin: 0 0 16px 2px;
-  }
-
-  .sidebar-caption {
-    display: none;
-  }
-
-  .client-navigation {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
   .client-workspace {
     margin-left: 0;
   }

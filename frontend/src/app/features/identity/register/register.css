@@ -89,7 +89,7 @@
 
 .register-header h1 {
   margin: 0;
-  color: #102c40;
+  color: var(--color-brand-dark);
   font-size: clamp(1.8rem, 4vw, 2.25rem);
   font-weight: 800;
   letter-spacing: -0.045em;
@@ -161,7 +161,7 @@
 }
 
 .role-title {
-  color: #102c40;
+  color: var(--color-brand-dark);
   font-size: 0.95rem;
   font-weight: 750;
 }
@@ -212,7 +212,7 @@
 
 .section-title h2 {
   margin: 0;
-  color: #102c40;
+  color: var(--color-brand-dark);
   font-size: 1.08rem;
   font-weight: 750;
   letter-spacing: -0.02em;
@@ -376,7 +376,7 @@
   border: 2px solid #ffffff;
   border-radius: 50%;
   background: #5ccfc0;
-  color: #102c40;
+  color: var(--color-brand-dark);
   font-size: 0.75rem;
   font-weight: 850;
 }
@@ -443,7 +443,7 @@
   border: 1px solid transparent;
   border-radius: 9px;
   background: #5ccfc0;
-  color: #102c40;
+  color: var(--color-brand-dark);
   cursor: pointer;
   font-family: inherit;
   font-size: 0.92rem;
@@ -458,7 +458,7 @@
 }
 
 .btn-submit:hover:not(:disabled) {
-  background: #102c40;
+  background: var(--color-brand-dark);
   color: #ffffff;
   box-shadow: 0 5px 12px rgb(16 44 64 / 16%);
   transform: translateY(-1px);
@@ -540,7 +540,7 @@
 
 .register-dialog h2 {
   margin: 0 0 12px;
-  color: #102c40;
+  color: var(--color-brand-dark);
   font-size: 1.3rem;
   font-weight: 800;
   letter-spacing: -0.025em;
@@ -586,12 +586,12 @@
 .dialog-primary-button {
   border-color: #5ccfc0;
   background: #5ccfc0;
-  color: #102c40;
+  color: var(--color-brand-dark);
 }
 
 .dialog-primary-button:hover {
-  border-color: #102c40;
-  background: #102c40;
+  border-color: var(--color-brand-dark);
+  background: var(--color-brand-dark);
   color: #ffffff;
 }
 

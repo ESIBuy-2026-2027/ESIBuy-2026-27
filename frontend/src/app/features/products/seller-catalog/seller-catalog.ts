@@ -1,10 +1,12 @@
 import { isPlatformBrowser } from '@angular/common';
+import { httpErrorMessage } from '../../../core/utils/http-error-message';
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-import { Category, ProductCreateRequest, ProductsService } from '../products.service';
-import { SellerCatalogService, SellerProduct } from './seller-catalog.service';
+import { RouterLink } from '@angular/router';
+import { Category, ProductCreateRequest, ProductsService } from '../../../core/services/products.service';
+import { SellerCatalogService, SellerProduct } from '../../../core/services/seller-catalog.service';
 
 const LOW_STOCK_THRESHOLD = 5;
 type InlineField = 'price' | 'stock';
@@ -14,7 +16,7 @@ type StockFilter = 'all' | 'in-stock' | 'low-stock' | 'out-of-stock';
 @Component({
   selector: 'app-seller-catalog',
   standalone: true,
-  imports: [FormsModule, RouterLink, RouterLinkActive],
+  imports: [FormsModule, RouterLink],
   templateUrl: './seller-catalog.html',
   styleUrl: './seller-catalog.css',
 })
@@ -238,10 +240,10 @@ export class SellerCatalog implements OnInit {
   }
 
   private toUpdateRequest(
-      product: SellerProduct,
-      field: InlineField | null,
-      value: number | null,
-      available: boolean): ProductCreateRequest {
+    product: SellerProduct,
+    field: InlineField | null,
+    value: number | null,
+    available: boolean): ProductCreateRequest {
     const request: ProductCreateRequest = {
       name: product.name,
       categoryIds: product.categoryIds,
@@ -269,7 +271,7 @@ export class SellerCatalog implements OnInit {
   private getInlineErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 401) {
-        return 'Tu sesión ha caducado. Inicia sesión de nuevo.';
+        return httpErrorMessage(error) ?? 'No se pudo guardar el cambio. Inténtalo de nuevo.';
       }
       if (error.status === 403) {
         return 'No tienes permiso para modificar este producto.';
@@ -278,7 +280,7 @@ export class SellerCatalog implements OnInit {
         return 'El producto ya no existe o no tienes permiso para modificarlo.';
       }
       if (error.status === 0) {
-        return 'No se pudo conectar con el servidor.';
+        return httpErrorMessage(error) ?? 'No se pudo guardar el cambio. Inténtalo de nuevo.';
       }
       if (typeof error.error?.message === 'string') {
         return error.error.message;

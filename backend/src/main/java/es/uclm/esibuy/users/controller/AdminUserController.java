@@ -24,112 +24,112 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping({ "/api/v1/admin/users", "/api/admin/usuarios" })
+@RequestMapping({ "/api/v1/admin/users", "/api/admin/users", "/api/admin/usuarios" })
 public class AdminUserController {
 
-    private final AdminUserService adminUserService;
+        private final AdminUserService adminUserService;
 
-    public AdminUserController(AdminUserService adminUserService) {
-        this.adminUserService = adminUserService;
-    }
-
-    @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> obtener(
-            @PathVariable String id,
-            HttpServletRequest servletRequest,
-            CsrfToken csrfToken) {
-
-        csrfToken.getToken();
-        User user = adminUserService.obtenerPorId(id);
-
-        return ResponseEntity.ok(
-                response("Usuario cargado correctamente", user, servletRequest));
-    }
-
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> actualizar(
-            @PathVariable String id,
-            @Valid @RequestBody UpdateUserRequestDTO request,
-            HttpServletRequest servletRequest) {
-
-        User user = adminUserService.actualizar(id, request);
-
-        return ResponseEntity.ok(
-                response("Usuario actualizado correctamente", user, servletRequest));
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Void>> eliminar(
-            @PathVariable String id,
-            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
-            HttpServletRequest servletRequest) {
-
-        if (principal == null) {
-            throw new IllegalStateException(
-                    "No se pudo validar la identidad del administrador");
+        public AdminUserController(AdminUserService adminUserService) {
+                this.adminUserService = adminUserService;
         }
 
-        adminUserService.eliminar(id, principal.id());
+        @GetMapping("/{id}")
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<ApiResponse<UserResponseDTO>> getUser(
+                        @PathVariable String id,
+                        HttpServletRequest servletRequest,
+                        CsrfToken csrfToken) {
 
-        Object correlationId = servletRequest.getAttribute(CorrelationIdFilter.ATTRIBUTE);
+                csrfToken.getToken();
+                User user = adminUserService.findById(id);
 
-        return ResponseEntity.ok(
-                new ApiResponse<>(
-                        true,
-                        "Usuario eliminado correctamente",
-                        null,
-                        correlationId == null ? null : correlationId.toString()));
-    }
+                return ResponseEntity.ok(
+                                buildResponse("Usuario cargado correctamente", user, servletRequest));
+        }
 
-    private ApiResponse<UserResponseDTO> response(
-            String message,
-            User user,
-            HttpServletRequest request) {
+        @PutMapping("/{id}")
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<ApiResponse<UserResponseDTO>> updateUser(
+                        @PathVariable String id,
+                        @Valid @RequestBody UpdateUserRequestDTO request,
+                        HttpServletRequest servletRequest) {
 
-        String headquarters = user.getAdminProfile() != null
-                ? user.getAdminProfile().getHeadquarters()
-                : null;
+                User user = adminUserService.update(id, request);
 
-        String businessName = user.getSellerProfile() != null
-                ? user.getSellerProfile().getBusinessName()
-                : null;
+                return ResponseEntity.ok(
+                                buildResponse("Usuario actualizado correctamente", user, servletRequest));
+        }
 
-        String defaultCategory = user.getSellerProfile() != null
-                ? user.getSellerProfile().getDefaultCategory()
-                : null;
+        @DeleteMapping("/{id}")
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<ApiResponse<Void>> deleteUser(
+                        @PathVariable String id,
+                        @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
+                        HttpServletRequest servletRequest) {
 
-        java.time.LocalDate birthDate = user.getClientProfile() != null
-                ? user.getClientProfile().getBirthDate()
-                : null;
+                if (principal == null) {
+                        throw new IllegalStateException(
+                                        "No se pudo validar la identidad del administrador");
+                }
 
-        String phone = user.getRole() == UserRole.ADMIN
-                ? null
-                : user.getPhone();
+                adminUserService.delete(id, principal.id());
 
-        UserResponseDTO data = UserResponseDTO.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .phone(phone)
-                .role(user.getRole() == null ? null : user.getRole().name())
-                .profileImage(user.getProfileImage())
-                .nationalId(user.getNationalId())
-                .headquarters(headquarters)
-                .businessName(businessName)
-                .birthDate(birthDate)
-                .defaultCategory(defaultCategory)
-                .build();
+                Object correlationId = servletRequest.getAttribute(CorrelationIdFilter.ATTRIBUTE);
 
-        Object correlationId = request.getAttribute(CorrelationIdFilter.ATTRIBUTE);
+                return ResponseEntity.ok(
+                                new ApiResponse<>(
+                                                true,
+                                                "Usuario eliminado correctamente",
+                                                null,
+                                                correlationId == null ? null : correlationId.toString()));
+        }
 
-        return new ApiResponse<>(
-                true,
-                message,
-                data,
-                correlationId == null ? null : correlationId.toString());
-    }
+        private ApiResponse<UserResponseDTO> buildResponse(
+                        String message,
+                        User user,
+                        HttpServletRequest request) {
+
+                String headquarters = user.getAdminProfile() != null
+                                ? user.getAdminProfile().getHeadquarters()
+                                : null;
+
+                String businessName = user.getSellerProfile() != null
+                                ? user.getSellerProfile().getBusinessName()
+                                : null;
+
+                String defaultCategory = user.getSellerProfile() != null
+                                ? user.getSellerProfile().getDefaultCategory()
+                                : null;
+
+                java.time.LocalDate birthDate = user.getClientProfile() != null
+                                ? user.getClientProfile().getBirthDate()
+                                : null;
+
+                String phone = user.getRole() == UserRole.ADMIN
+                                ? null
+                                : user.getPhone();
+
+                UserResponseDTO data = UserResponseDTO.builder()
+                                .id(user.getId())
+                                .email(user.getEmail())
+                                .firstName(user.getFirstName())
+                                .lastName(user.getLastName())
+                                .phone(phone)
+                                .role(user.getRole() == null ? null : user.getRole().name())
+                                .profileImage(user.getProfileImage())
+                                .nationalId(user.getNationalId())
+                                .headquarters(headquarters)
+                                .businessName(businessName)
+                                .birthDate(birthDate)
+                                .defaultCategory(defaultCategory)
+                                .build();
+
+                Object correlationId = request.getAttribute(CorrelationIdFilter.ATTRIBUTE);
+
+                return new ApiResponse<>(
+                                true,
+                                message,
+                                data,
+                                correlationId == null ? null : correlationId.toString());
+        }
 }

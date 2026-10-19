@@ -79,7 +79,7 @@
 }
 
 .brand-name {
-  color: #102c40;
+  color: var(--color-brand-dark);
   font-size: 1.8rem;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -90,14 +90,14 @@
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
   background: #eff6ff;
-  color: #102c40;
+  color: var(--color-brand-dark);
   font-size: 0.8rem;
   font-weight: 600;
 }
 
 .login-header h1 {
   margin: 0;
-  color: #102c40;
+  color: var(--color-brand-dark);
   font-size: 1.8rem;
   font-weight: 800;
   letter-spacing: -0.035em;
@@ -156,7 +156,7 @@
 
 .form-section h2 {
   margin: 0 0 1.25rem;
-  color: #102c40;
+  color: var(--color-brand-dark);
   font-size: 1.1rem;
   font-weight: 700;
 }
@@ -295,7 +295,7 @@
   min-height: 2.9rem;
   padding: 0.85rem 1rem;
   background: #5ccfc0;
-  color: #102c40;
+  color: var(--color-brand-dark);
   border: 1px solid transparent;
   border-radius: 9px;
   font-family: inherit;
@@ -312,7 +312,7 @@
 }
 
 .btn-submit:hover:not(:disabled) {
-  background: #102c40;
+  background: var(--color-brand-dark);
   color: #fff;
   transform: translateY(-1px);
   box-shadow: 0 5px 12px rgb(16 44 64 / 16%);
@@ -359,7 +359,7 @@
 }
 
 .auth-link:hover {
-  color: #102c40;
+  color: var(--color-brand-dark);
   text-decoration: underline;
 }
 
@@ -384,7 +384,7 @@
 }
 
 .forgot-password-link:hover {
-  color: #102c40;
+  color: var(--color-brand-dark);
   text-decoration: underline;
 }
 
@@ -460,7 +460,7 @@
 
 .active-session-title {
   margin: 0 0 0.5rem;
-  color: #102c40;
+  color: var(--color-brand-dark);
   font-size: 1.5rem;
   font-weight: 750;
   letter-spacing: -0.03em;
@@ -497,7 +497,7 @@
   display: inline-block;
   padding: 0.2rem 0.55rem;
   border-radius: 6px;
-  background: #102c40;
+  background: var(--color-brand-dark);
   color: #5ccfc0;
   font-size: 0.75rem;
   font-weight: 700;
@@ -529,7 +529,7 @@
   box-sizing: border-box;
   border-radius: 9px;
   background: #5ccfc0;
-  color: #102c40;
+  color: var(--color-brand-dark);
   font-family: inherit;
   font-size: 0.95rem;
   font-weight: 750;
@@ -544,7 +544,7 @@
 }
 
 .btn-dashboard:hover {
-  background: #102c40;
+  background: var(--color-brand-dark);
   color: #fff;
   transform: translateY(-1px);
   box-shadow: 0 5px 12px rgb(16 44 64 / 16%);

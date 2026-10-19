@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
-import { Category, CreatedProduct, ProductCreateRequest, ProductDetails, ProductsService } from '../products.service';
+import { Category, CreatedProduct, ProductCreateRequest, ProductDetails, ProductsService } from '../../../core/services/products.service';
 import { ProductCreate as ProductCreateComponent } from './product-create';
 
 describe('ProductCreate', () => {
