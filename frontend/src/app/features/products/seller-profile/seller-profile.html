@@ -57,7 +57,7 @@
         </section>
         } @else if (profileError(); as error) {
         <section class="panel">
-            <h1 class="panel-title">Mi perfil de vendedor</h1>
+            <h1 class="panel-title">Perfil de vendedor</h1>
 
             <p class="form-error" role="alert">{{ error }}</p>
 
@@ -73,7 +73,7 @@
                 <div class="panel-heading-text">
                     <span class="eyebrow">CUENTA DE VENDEDOR</span>
 
-                    <h1 class="panel-title">Mi perfil</h1>
+                    <h1 class="panel-title">Perfil</h1>
 
                     <p class="panel-description">
                         Consulta y actualiza tus datos personales y la
@@ -152,7 +152,8 @@
                             deseas indicar tu teléfono.
                         </small>
                         } @else {
-                        <input id="phone" type="text" [value]="seller.phone || 'No indicado'" readonly /> }
+                        <input id="phone" type="text" inputmode="numeric" maxlength="9"
+                            [value]="seller.phone || 'No indicado'" readonly /> }
                     </div>
 
                     <div class="field">

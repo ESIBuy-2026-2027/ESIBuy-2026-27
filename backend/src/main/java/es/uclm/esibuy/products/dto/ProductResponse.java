@@ -51,6 +51,6 @@ public record ProductResponse(
                 product.getImageUrl(),
                 product.isAvailable(),
                 product.getSellerId(),
-                product.getRating() != null ? product.getRating() : 5.0);
+                product.getRating());
     }
 }

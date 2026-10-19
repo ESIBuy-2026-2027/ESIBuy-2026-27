@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+
 import es.uclm.esibuy.categories.model.Category;
 import es.uclm.esibuy.categories.repository.CategoryRepository;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
@@ -17,8 +20,6 @@ import es.uclm.esibuy.products.repository.ProductRepository;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Service;
 
 @Service
 public class ProductService {
@@ -40,18 +41,7 @@ public class ProductService {
 
     public Product createProduct(ProductCreateRequest request, String authenticatedEmail) {
         User seller = findSeller(authenticatedEmail);
-
-        List<String> categoryIds = List.copyOf(request.getCategoryIds());
-        Set<String> existingCategoryIds = categoryRepository.findAllById(categoryIds).stream()
-                .map(Category::getId)
-                .collect(Collectors.toSet());
-        List<String> missingCategoryIds = categoryIds.stream()
-                .filter(categoryId -> !existingCategoryIds.contains(categoryId))
-                .distinct()
-                .toList();
-        if (!missingCategoryIds.isEmpty()) {
-            throw new CategoryNotFoundException(missingCategoryIds);
-        }
+        List<String> categoryIds = validateCategories(request);
 
         Product product = new Product(
                 request.getName().trim(),
@@ -80,6 +70,42 @@ public class ProductService {
     public List<ProductResponse> getSellerProducts(String authenticatedEmail) {
         String sellerId = findSeller(authenticatedEmail).getId();
         return productRepository.findAllBySellerId(sellerId).stream()
+                .map(ProductResponse::from)
+                .toList();
+    }
+
+    public Product getProduct(String id, String authenticatedEmail) {
+        User seller = findSeller(authenticatedEmail);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException());
+        if (!seller.getId().equals(product.getSellerId())) {
+            throw new ProductNotFoundException();
+        }
+        return product;
+    }
+
+    public Product updateProduct(String id, ProductCreateRequest request, String authenticatedEmail) {
+        User seller = findSeller(authenticatedEmail);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException());
+        if (!seller.getId().equals(product.getSellerId())) {
+            throw new AccessDeniedException("No tiene permisos para modificar este producto");
+        }
+        List<String> categoryIds = validateCategories(request);
+        product.setName(request.getName().trim());
+        product.setCategoryIds(categoryIds);
+        product.setStock(request.getStock() == null ? 0 : request.getStock());
+        product.setDescription(request.getDescription() != null ? request.getDescription().trim() : null);
+        product.setPrice(request.getPrice());
+        product.setDiscount(request.getDiscount());
+        product.setPremiumDiscount(request.getPremiumDiscount());
+        product.setImageUrl(request.getImageUrl() != null && !request.getImageUrl().isBlank() ? request.getImageUrl().trim() : null);
+        product.setAvailable(Boolean.TRUE.equals(request.getAvailable()));
+        return productRepository.save(product);
+    }
+
+    public List<ProductResponse> getAvailableProducts() {
+        return productRepository.findAllByAvailableTrueAndStockGreaterThan(0).stream()
                 .map(ProductResponse::from)
                 .toList();
     }
@@ -158,5 +184,20 @@ public class ProductService {
             throw new AccessDeniedException("Solo un vendedor puede acceder a este recurso");
         }
         return seller;
+    }
+
+    private List<String> validateCategories(ProductCreateRequest request) {
+        List<String> categoryIds = List.copyOf(request.getCategoryIds());
+        Set<String> existingCategoryIds = categoryRepository.findAllById(categoryIds).stream()
+                .map(Category::getId)
+                .collect(Collectors.toSet());
+        List<String> missingCategoryIds = categoryIds.stream()
+                .filter(categoryId -> !existingCategoryIds.contains(categoryId))
+                .distinct()
+                .toList();
+        if (!missingCategoryIds.isEmpty()) {
+            throw new CategoryNotFoundException(missingCategoryIds);
+        }
+        return categoryIds;
     }
 }

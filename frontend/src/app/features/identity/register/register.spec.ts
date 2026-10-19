@@ -40,21 +40,20 @@ describe('Register', () => {
     });
 
     it('asks for confirmation before cancelling registration and returning home', () => {
-        const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
-
         component.cancelRegistration();
+        expect(component.showCancelConfirmation).toBe(true);
 
-        expect(confirm).toHaveBeenCalledWith(
-            '¿Seguro que quieres cancelar el registro? Se perderán los datos introducidos.'
-        );
+        component.confirmCancelRegistration();
+        expect(component.showCancelConfirmation).toBe(false);
         expect(navigate).toHaveBeenCalledWith(['/']);
     });
 
     it('stays on the registration page when cancellation is declined', () => {
-        vi.spyOn(window, 'confirm').mockReturnValue(false);
-
         component.cancelRegistration();
+        expect(component.showCancelConfirmation).toBe(true);
 
+        component.dismissCancelConfirmation();
+        expect(component.showCancelConfirmation).toBe(false);
         expect(navigate).not.toHaveBeenCalled();
     });
 

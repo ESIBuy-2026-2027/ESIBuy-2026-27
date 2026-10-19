@@ -9,6 +9,8 @@ import { DeleteAccount } from '../../../shared/delete-account/delete-account';
 import QRCode from 'qrcode';
 import { TwoFactorService, TwoFactorSetupResponse, } from '../../../core/services/two-factor.service';
 import { TwoFactorSettingsComponent } from '../../../shared/two-factor-settings/two-factor-settings';
+import { ShippingAddresses } from '../shipping-addresses/shipping-addresses';
+import { PaymentMethods } from '../payment-methods/payment-methods';
 
 export interface ProfileSection {
     label: string;
@@ -39,7 +41,7 @@ interface UpdateClientProfileRequest {
 @Component({
     selector: 'app-client-profile',
     standalone: true,
-    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent],
+    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent, ShippingAddresses, PaymentMethods],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     templateUrl: './client-profile.html',
     styleUrl: './client-profile.css',
@@ -121,7 +123,7 @@ export class ClientProfile implements OnInit {
 
     readonly sections: ProfileSection[] = [
         { label: 'Datos personales', active: true },
-        { label: 'Mis pedidos', active: false },
+        { label: 'Pedidos', active: false },
         { label: 'Direcciones de envío', active: false },
         { label: 'Suscripción premium', active: false },
         { label: 'Seguridad', active: false },
@@ -149,7 +151,14 @@ export class ClientProfile implements OnInit {
     }
 
     selectSection(section: string): void {
-        if (section !== 'personal' && section !== 'security') {
+        const availableSections = [
+            'personal',
+            'security',
+            'addresses',
+            'payments',
+        ];
+
+        if (!availableSections.includes(section)) {
             return;
         }
 

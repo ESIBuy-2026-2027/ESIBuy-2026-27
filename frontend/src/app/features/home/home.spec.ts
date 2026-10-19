@@ -8,6 +8,7 @@ import { ProductsService, ProductItem, Category } from '../products/products.ser
 import { WishlistService } from '../../core/services/wishlist.service';
 import { ToastService } from '../../core/services/toast.service';
 import { AuthService, AuthenticatedUser } from '../../core/services/auth.service';
+import { CartService } from '../client/cart/cart.service';
 
 describe('Home', () => {
   let component: Home;
@@ -15,6 +16,7 @@ describe('Home', () => {
   let productsServiceMock: any;
   let wishlistServiceMock: any;
   let toastServiceMock: any;
+  let cartServiceMock: any;
   let currentUserSignal = signal<AuthenticatedUser | null>(null);
 
   const mockCategories: Category[] = [
@@ -54,6 +56,11 @@ describe('Home', () => {
       show: vi.fn(),
     };
 
+    cartServiceMock = {
+      addItem: vi.fn(() => of({})),
+      itemCount: vi.fn(() => 0),
+    };
+
     await TestBed.configureTestingModule({
       imports: [Home],
       providers: [
@@ -62,6 +69,7 @@ describe('Home', () => {
         { provide: WishlistService, useValue: wishlistServiceMock },
         { provide: ToastService, useValue: toastServiceMock },
         { provide: AuthService, useValue: { currentUser: currentUserSignal } },
+        { provide: CartService, useValue: cartServiceMock },
       ],
     }).compileComponents();
 
@@ -100,6 +108,39 @@ describe('Home', () => {
     );
     expect(navigateSpy).toHaveBeenCalledWith(['/login']);
     expect(wishlistServiceMock.toggleWishlist).not.toHaveBeenCalled();
+  });
+
+  it('should redirect unauthenticated users to /login when clicking añadir al carrito', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const el: HTMLElement = fixture.nativeElement;
+    const addBtn = el.querySelector('.add-to-cart-action-btn') as HTMLButtonElement;
+    expect(addBtn).not.toBeNull();
+    addBtn.click();
+
+    expect(toastServiceMock.show).toHaveBeenCalledWith(
+      'Debes iniciar sesión con tu cuenta de cliente para realizar compras.',
+      'info'
+    );
+    expect(navigateSpy).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('should add to cart when authenticated as CLIENT', () => {
+    currentUserSignal.set({
+      id: 'c-1',
+      email: 'client@example.com',
+      role: 'CLIENT',
+      active: true,
+    });
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    const addBtn = el.querySelector('.add-to-cart-action-btn') as HTMLButtonElement;
+    addBtn.click();
+
+    expect(cartServiceMock.addItem).toHaveBeenCalledWith('p-1', 1);
+    expect(toastServiceMock.show).toHaveBeenCalledWith('Producto añadido al carrito', 'success');
   });
 
   it('should toggle favorite when authenticated as CLIENT', () => {

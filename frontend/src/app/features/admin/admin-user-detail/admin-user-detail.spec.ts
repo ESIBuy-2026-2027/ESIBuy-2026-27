@@ -4,11 +4,18 @@ import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { AdminUserDetail } from './admin-user-detail';
 import { AuthService, ApiResponse, UserResponse } from '../../../core/services/auth.service';
+import { Category, ProductsService } from '../../products/products.service';
 
 describe('AdminUserDetail', () => {
   let component: AdminUserDetail;
   let fixture: ComponentFixture<AdminUserDetail>;
   let authServiceSpy: any;
+  let productsServiceSpy: { getCategories: ReturnType<typeof vi.fn> };
+  const categories: Category[] = [
+    { id: 'category-1', name: 'Electrónica' },
+    { id: 'category-2', name: 'Hogar' },
+    { id: 'category-3', name: 'Moda' },
+  ];
 
   const mockUserResponse: ApiResponse<UserResponse> = {
     success: true,
@@ -40,6 +47,9 @@ describe('AdminUserDetail', () => {
         correlationId: 'cid-2'
       }))
     };
+    productsServiceSpy = {
+      getCategories: vi.fn().mockReturnValue(of(categories)),
+    };
 
     await TestBed.configureTestingModule({
       imports: [AdminUserDetail],
@@ -55,7 +65,8 @@ describe('AdminUserDetail', () => {
             }
           }
         },
-        { provide: AuthService, useValue: authServiceSpy }
+        { provide: AuthService, useValue: authServiceSpy },
+        { provide: ProductsService, useValue: productsServiceSpy }
       ]
     }).compileComponents();
 
@@ -110,6 +121,30 @@ describe('AdminUserDetail', () => {
     expect(component.selectedAvatar).toBe('assets/images/avatars/av_seller_2.jpeg');
     expect(component.form.value.businessName).toBe('Tienda de Prueba');
     expect(component.form.value.defaultCategory).toBe('Hogar');
+    expect(component.categories).toEqual(['Electrónica', 'Hogar', 'Moda']);
+    expect(productsServiceSpy.getCategories).toHaveBeenCalled();
+  });
+
+  it('should require choosing a current category when the seller default no longer exists', () => {
+    authServiceSpy.obtenerUsuarioAdmin.mockReturnValue(of({
+      ...mockUserResponse,
+      data: {
+        ...mockUserResponse.data,
+        role: 'SELLER',
+        businessName: 'Tienda de Prueba',
+        defaultCategory: 'Categoría antigua',
+        profileImage: 'assets/images/avatars/av_seller_2.jpeg'
+      }
+    }));
+
+    fixture = TestBed.createComponent(AdminUserDetail);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(component.categories).toEqual(['Electrónica', 'Hogar', 'Moda']);
+    expect(component.form.controls.defaultCategory.value).toBe('');
+    expect(component.categorySelectionUnavailable()).toBe(true);
+    expect(component.form.controls.defaultCategory.hasError('required')).toBe(true);
   });
 
   it('should submit form including selected avatar and navigate to user list with success message', () => {

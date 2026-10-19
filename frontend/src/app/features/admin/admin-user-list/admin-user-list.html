@@ -1,12 +1,19 @@
-<div class="admin-layout">
-    <aside class="admin-sidebar admin-sidebar--shared" aria-label="Panel de administración">
+<div class="admin-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
+    <aside class="admin-sidebar admin-sidebar--shared app-sidebar" aria-label="Panel de administración">
+        <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()"
+            aria-label="Ocultar barra lateral">
+            <span aria-hidden="true">‹</span>
+        </button>
         <a routerLink="/" class="admin-brand back-home-button" aria-label="ESIBuy">
             <span class="brand-mark" aria-hidden="true">E</span>
             <span>ESI<span class="brand-accent">Buy</span></span>
         </a>
+
         <p class="sidebar-caption">GESTIÓN DE ADMINISTRACIÓN</p>
+
         <nav class="admin-navigation" aria-label="Navegación de administración">
-            <a class="navigation-link is-active" routerLink="/admin/usuarios" aria-current="page">
+            <a class="navigation-link" routerLink="/admin/usuarios" routerLinkActive="is-active"
+                ariaCurrentWhenActive="page">
                 <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20"></path>
                     <circle cx="10" cy="7" r="3"></circle>
@@ -15,11 +22,15 @@
                 </svg>
                 <span>Usuarios</span>
             </a>
-            <a class="navigation-link" routerLink="/admin/altas">
+
+            <a class="navigation-link" routerLink="/admin/users/new" routerLinkActive="is-active"
+                [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
                 <span class="navigation-icon text-icon" aria-hidden="true">＋</span>
                 <span>Dar de alta Administrador</span>
             </a>
-            <a class="navigation-link" routerLink="/admin/categorias">
+
+            <a class="navigation-link" routerLink="/admin/categorias" routerLinkActive="is-active"
+                [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
                 <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M20 13 11 22l-9-9V2h11l9 9a1.4 1.4 0 0 1-2 2Z"></path>
                     <circle cx="7" cy="7" r="1.2"></circle>
@@ -29,274 +40,310 @@
         </nav>
     </aside>
 
-    <div class="admin-workspace">
+    <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()"
+        aria-label="Mostrar barra lateral" [hidden]="!sidebarCollapsed()">
+        <span aria-hidden="true">›</span>
+    </button>
+    <div class="admin-workspace app-workspace">
         <main class="admin-content">
-            <section class="page-heading" aria-labelledby="admin-title">
-                <div>
-                    <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
-                    <h1 id="admin-title">Gestión de usuarios</h1>
-                    <p class="page-description">Administra las cuentas registradas y controla su acceso a ESIBuy.</p>
-                </div>
-                <a routerLink="/admin/altas" class="primary-action" id="btnDarAltaAdmin">
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Dar de alta Administrador
-                </a>
-            </section>
 
-            @if (mensajeExito()) {
-            <output class="success-alert" aria-live="polite">{{ mensajeExito() }}</output>
-            }
+            <!-- Único recuadro de gestión -->
+            <div class="users-main-card">
 
-            <!-- Barra de Filtros -->
-            <div class="filters-bar">
-                <label class="search-field">
-                    <span class="visually-hidden">Buscar usuario por nombre</span>
+                <!-- Encabezado -->
+                <section class="page-heading" aria-labelledby="admin-title">
+                    <div class="page-heading-copy">
+                        <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
+                        <h1 id="admin-title">Gestión de usuarios</h1>
+                        <p class="page-description">
+                            Administra las cuentas registradas y controla su acceso a ESIBuy.
+                        </p>
+                    </div>
+
+                    <a routerLink="/admin/altas" class="primary-action" id="btnDarAltaAdmin">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span>Dar de alta Administrador</span>
+                    </a>
+                </section>
+
+                <!-- Mensaje de éxito -->
+                @if (mensajeExito()) {
+                <output class="success-alert" aria-live="polite">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <circle cx="11" cy="11" r="6.5"></circle>
-                        <path d="m16 16 4.5 4.5"></path>
+                        <path d="m5 12 4 4L19 6"></path>
                     </svg>
-                    <input type="search" [ngModel]="busquedaNombre()" (ngModelChange)="busquedaNombre.set($event)"
-                        placeholder="Buscar por nombre..." aria-label="Buscar usuario por nombre">
-                </label>
-                <div class="filter-controls">
-                    <select [(ngModel)]="filtroRol" (change)="aplicarFiltros()">
-                        <option value="">Todos los roles</option>
-                        <option value="CLIENTE">Clientes</option>
-                        <option value="VENDEDOR">Vendedores</option>
-                        <option value="ADMIN">Administradores</option>
-                    </select>
+                    <span>{{ mensajeExito() }}</span>
+                </output>
+                }
 
-                    <select [(ngModel)]="filtroEstado" (change)="aplicarFiltros()">
-                        <option value="">Cualquier estado</option>
-                        <option value="activo">Activos</option>
-                        <option value="inactivo">Inactivos</option>
-                        <option value="bloqueado">Bloqueados</option>
-                    </select>
+                <!-- Filtros -->
+                <section class="filters-bar" aria-label="Filtros de usuarios">
+                    <label class="search-field">
+                        <span class="visually-hidden">Buscar usuario por nombre</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="11" cy="11" r="6.5"></circle>
+                            <path d="m16 16 4.5 4.5"></path>
+                        </svg>
+                        <input type="search" [ngModel]="busquedaNombre()" (ngModelChange)="busquedaNombre.set($event)"
+                            placeholder="Buscar por nombre..." aria-label="Buscar usuario por nombre">
+                    </label>
+
+                    <div class="filter-controls">
+                        <label class="visually-hidden" for="filter-role">Filtrar por rol</label>
+                        <select id="filter-role" [(ngModel)]="filtroRol" (change)="aplicarFiltros()">
+                            <option value="">Todos los roles</option>
+                            <option value="CLIENTE">Clientes</option>
+                            <option value="VENDEDOR">Vendedores</option>
+                            <option value="ADMIN">Administradores</option>
+                        </select>
+
+                        <label class="visually-hidden" for="filter-status">Filtrar por estado</label>
+                        <select id="filter-status" [(ngModel)]="filtroEstado" (change)="aplicarFiltros()">
+                            <option value="">Cualquier estado</option>
+                            <option value="activo">Activos</option>
+                            <option value="inactivo">Inactivos</option>
+                            <option value="bloqueado">Bloqueados</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Cargando -->
+                @if (cargando()) {
+                <output class="loading-spinner" aria-live="polite">
+                    <span class="spinner" aria-hidden="true"></span>
+                    <p>Cargando información de usuarios...</p>
+                </output>
+                }
+
+                <!-- Error de carga -->
+                @if (error()) {
+                <div class="error-alert" role="alert">
+                    <strong>⚠️ Error:</strong> {{ error() }}
                 </div>
-            </div>
+                }
 
-            <!-- Mensaje de Carga -->
-            @if (cargando()) {
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p>Cargando información de usuarios...</p>
-            </div>
-            }
+                <!-- Tabla de usuarios -->
+                @if (!cargando() && !error()) {
+                <div class="table-container">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th class="col-user" scope="col">Usuario</th>
+                                <th class="col-contact" scope="col">Contacto</th>
+                                <th class="col-role" scope="col">Rol</th>
+                                <th class="col-status" scope="col">Estado</th>
+                                <th class="col-date" scope="col">Registro</th>
+                                <th class="col-actions" scope="col">Acciones</th>
+                            </tr>
+                        </thead>
 
-            <!-- Mensaje de Error -->
-            @if (error()) {
-            <div class="error-alert">
-                <strong>⚠️ Error:</strong> {{ error() }}
-            </div>
-            }
+                        <tbody>
+                            @for (user of usuariosFiltrados(); track user.email) {
+                            <tr>
+                                <td class="col-user">
+                                    <div class="user-cell-wrapper">
+                                        <img [src]="getAvatarUrl(user.profileImage)" alt="" class="avatar-img">
 
-            <!-- Tabla de Usuarios -->
-            @if (!cargando() && !error()) {
-            <div class="table-container">
-                <table class="user-table">
-                    <thead>
-                        <tr>
-                            <th class="col-user">Usuario</th>
-                            <th class="col-contact">Contacto</th>
-                            <th class="col-role">Rol</th>
-                            <th class="col-status">Estado</th>
-                            <th class="col-date">Registro</th>
-                            <th class="col-actions">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (user of usuariosFiltrados(); track user.email) {
-                        <tr>
-                            <!-- Columna 1: Avatar + Nombre Completo -->
-                            <td class="col-user">
-                                <div class="user-cell-wrapper">
-                                    <img [src]="getAvatarUrl(user.profileImage)" alt="Avatar" class="avatar-img" />
-                                    <div class="user-info">
-                                        <span class="user-name" [title]="user.firstName + ' ' + user.lastName">{{
-                                            user.firstName }} {{ user.lastName }}</span>
-                                        <span class="user-id">DNI: {{ user.nationalId || 'N/A' }}</span>
-                                        @if (user.role === 'SELLER' && (user.sellerProfile?.sede ||
-                                        user.sellerProfile?.businessName)) {
-                                        <span class="user-site"
-                                            [title]="user.sellerProfile?.sede || user.sellerProfile?.businessName">
-                                            Sede: {{ user.sellerProfile?.sede || user.sellerProfile?.businessName }}
-                                        </span>
+                                        <div class="user-info">
+                                            <span class="user-name" [title]="user.firstName + ' ' + user.lastName">
+                                                {{ user.firstName }} {{ user.lastName }}
+                                            </span>
+
+                                            <span class="user-id">
+                                                DNI: {{ user.nationalId || 'N/A' }}
+                                            </span>
+
+                                            @if (
+                                            user.role === 'SELLER' &&
+                                            (user.sellerProfile?.sede || user.sellerProfile?.businessName)
+                                            ) {
+                                            <span class="user-site"
+                                                [title]="user.sellerProfile?.sede || user.sellerProfile?.businessName">
+                                                Sede: {{ user.sellerProfile?.sede || user.sellerProfile?.businessName }}
+                                            </span>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="col-contact">
+                                    <div class="contact-item email-text" [title]="user.email">
+                                        {{ user.email }}
+                                    </div>
+
+                                    <div class="contact-item text-muted phone-text">
+                                        <svg class="phone-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path
+                                                d="M7.5 3.5h2l1.2 4.2-1.8 1.8a14.7 14.7 0 0 0 5.6 5.6l1.8-1.8 4.2 1.2v2c0 1.1-.9 2-2 2C11.6 18.5 5.5 12.4 5.5 5.5c0-1.1.9-2 2-2Z">
+                                            </path>
+                                        </svg>
+                                        <span>{{ user.phone || 'Sin teléfono' }}</span>
+                                    </div>
+                                </td>
+
+                                <td class="col-role">
+                                    <span class="badge" [ngClass]="getRoleBadgeClass(user.role)">
+                                        {{ user.role || 'DESCONOCIDO' }}
+                                    </span>
+
+                                    @if (user.role === 'ADMIN' && user.adminProfile?.headquarters) {
+                                    <div class="text-muted sede-text" [title]="user.adminProfile.headquarters">
+                                        <svg class="location-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"></path>
+                                            <circle cx="12" cy="9" r="2.5"></circle>
+                                        </svg>
+                                        <span>{{ user.adminProfile.headquarters }}</span>
+                                    </div>
+                                    }
+                                </td>
+
+                                <td class="col-status">
+                                    @if (getEstadoUsuario(user) === 'bloqueado') {
+                                    <div class="status-indicator blocked-status">
+                                        <span class="status-dot blocked"></span>
+                                        <span>Bloqueado</span>
+                                    </div>
+                                    } @else {
+                                    <button type="button" class="status-indicator status-clickable"
+                                        [class.status-active]="getEstadoUsuario(user) === 'activo'"
+                                        [class.status-inactive]="getEstadoUsuario(user) === 'inactivo'"
+                                        [disabled]="!puedeCambiarEstado(user) || actualizandoEstado() === user.id"
+                                        (click)="cambiarEstadoUsuario(user, getEstadoUsuario(user) === 'activo' ? 'desactivar' : 'activar')"
+                                        [attr.aria-label]="getEstadoUsuario(user) === 'activo' ? 'Desactivar usuario ' + user.firstName + ' ' + user.lastName : 'Activar usuario ' + user.firstName + ' ' + user.lastName">
+                                        <span class="status-dot" [ngClass]="getClaseEstado(user)"></span>
+                                        <span>{{ getTextoEstado(user) }}</span>
+                                    </button>
+                                    }
+                                </td>
+
+                                <td class="col-date text-muted">
+                                    {{ user.createdAt | date:'dd/MM/yyyy' }}
+                                </td>
+
+                                <td class="col-actions">
+                                    <div class="actions-wrapper">
+                                        <button class="btn-icon btn-edit" type="button" title="Modificar usuario"
+                                            [routerLink]="['/admin/usuarios', user.id, 'editar']"
+                                            [attr.aria-label]="'Modificar usuario ' + user.firstName + ' ' + user.lastName">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                <path d="M12 20h9"></path>
+                                                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path>
+                                            </svg>
+                                        </button>
+
+                                        @if (getEstadoUsuario(user) !== 'bloqueado') {
+                                        <button class="btn-icon btn-lock" type="button"
+                                            [disabled]="!puedeCambiarEstado(user) || actualizandoEstado() === user.id"
+                                            (click)="cambiarEstadoUsuario(user, 'bloquear')"
+                                            [title]="puedeCambiarEstado(user) ? 'Bloquear usuario' : 'No puedes cambiar tu propia cuenta'"
+                                            [attr.aria-label]="'Bloquear usuario ' + user.firstName + ' ' + user.lastName">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                <rect x="5" y="10" width="14" height="10" rx="2"></rect>
+                                                <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                                            </svg>
+                                        </button>
+                                        } @else {
+                                        <button class="btn-icon btn-lock is-blocked" type="button"
+                                            [disabled]="!puedeCambiarEstado(user) || actualizandoEstado() === user.id"
+                                            (click)="cambiarEstadoUsuario(user, 'desbloquear')"
+                                            [title]="puedeCambiarEstado(user) ? 'Desbloquear usuario' : 'No puedes cambiar tu propia cuenta'"
+                                            [attr.aria-label]="'Desbloquear usuario ' + user.firstName + ' ' + user.lastName">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                <rect x="5" y="10" width="14" height="10" rx="2"></rect>
+                                                <path d="M16 10V7a4 4 0 0 0-7.5-1.8"></path>
+                                            </svg>
+                                        </button>
+                                        }
+
+                                        @if (user.role === 'ADMIN') {
+                                        <button class="btn-icon btn-delete" type="button"
+                                            [disabled]="!puedeEliminar(user)" (click)="abrirConfirmacion(user)"
+                                            [title]="puedeEliminar(user) ? 'Eliminar administrador' : 'No puedes eliminar tu propia cuenta'"
+                                            [attr.aria-label]="'Eliminar administrador ' + user.firstName + ' ' + user.lastName">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                <path d="M3 6h18"></path>
+                                                <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path>
+                                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                                                <path d="M10 11v6M14 11v6"></path>
+                                            </svg>
+                                        </button>
                                         }
                                     </div>
-                                </div>
-                            </td>
+                                </td>
+                            </tr>
+                            } @empty {
+                            <tr>
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <span class="empty-state-mark" aria-hidden="true">⌕</span>
+                                        <p>No se encontraron usuarios con los criterios indicados.</p>
+                                        <span>Prueba a cambiar los filtros o el término de búsqueda.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                }
 
-                            <!-- Columna 2: Email y Teléfono -->
-                            <td class="col-contact">
-                                <div class="contact-item email-text" [title]="user.email">{{ user.email }}</div>
-                                <div class="contact-item text-muted phone-text">
-                                    <svg class="phone-icon" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path
-                                            d="M7.5 3.5h2l1.2 4.2-1.8 1.8a14.7 14.7 0 0 0 5.6 5.6l1.8-1.8 4.2 1.2v2c0 1.1-.9 2-2 2C11.6 18.5 5.5 12.4 5.5 5.5c0-1.1.9-2 2-2Z">
-                                        </path>
-                                    </svg>
-                                    {{ user.phone || 'Sin teléfono' }}
-                                </div>
-                            </td>
-
-                            <!-- Columna 3: Rol (y Sede si es Admin) -->
-                            <td class="col-role">
-                                <span class="badge" [ngClass]="getRoleBadgeClass(user.role)">
-                                    {{ user.role || 'DESCONOCIDO' }}
-                                </span>
-                                @if (user.role === 'ADMIN' && user.adminProfile?.headquarters) {
-                                <div class="text-muted mt-1 sede-text" [title]="user.adminProfile.headquarters">
-                                    <svg class="location-icon" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"></path>
-                                        <circle cx="12" cy="9" r="2.5"></circle>
-                                    </svg>
-                                    {{ user.adminProfile.headquarters }}
-                                </div>
-                                }
-                            </td>
-
-                            <!-- Columna 4: Estado (Punto de color visual) -->
-                            <td class="col-status">
-                                @if (getEstadoUsuario(user) === 'bloqueado') {
-
-                                <div class="status-indicator blocked-status">
-                                    <span class="status-dot blocked"></span>
-                                    <span>Bloqueado</span>
-                                </div>
-
-                                } @else {
-
-                                <button type="button" class="status-indicator status-clickable"
-                                    [class.status-active]="getEstadoUsuario(user) === 'activo'"
-                                    [class.status-inactive]="getEstadoUsuario(user) === 'inactivo'"
-                                    [disabled]="!puedeCambiarEstado(user) || actualizandoEstado() === user.id" (click)="cambiarEstadoUsuario(
-            user,
-            getEstadoUsuario(user) === 'activo' ? 'desactivar' : 'activar'
-        )" [attr.aria-label]="
-            getEstadoUsuario(user) === 'activo'
-                ? 'Desactivar usuario ' + user.firstName + ' ' + user.lastName
-                : 'Activar usuario ' + user.firstName + ' ' + user.lastName
-        ">
-
-                                    <span class="status-dot" [ngClass]="getClaseEstado(user)"></span>
-
-                                    <span>{{ getTextoEstado(user) }}</span>
-                                </button>
-
-                                }
-                            </td>
-
-                            <!-- Columna 5: Fecha -->
-                            <td class="col-date text-muted">
-                                {{ user.createdAt | date:'dd/MM/yyyy' }}
-                            </td>
-
-                            <!-- Columna 6: Acciones -->
-                            <td class="col-actions">
-                                <div class="actions-wrapper">
-                                    <button class="btn-icon btn-edit" title="Modificar usuario"
-                                        [routerLink]="['/admin/usuarios', user.id, 'editar']"
-                                        [attr.aria-label]="'Modificar usuario ' + user.firstName + ' ' + user.lastName">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                                            <path d="M12 20h9" />
-                                            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
-                                        </svg>
-                                    </button>
-                                    @if (getEstadoUsuario(user) !== 'bloqueado') {
-
-                                    <!-- Bloquear -->
-                                    <button class="btn-icon btn-lock" type="button"
-                                        [disabled]="!puedeCambiarEstado(user) || actualizandoEstado() === user.id"
-                                        (click)="cambiarEstadoUsuario(user, 'bloquear')"
-                                        [title]="puedeCambiarEstado(user) ? 'Bloquear usuario' : 'No puedes cambiar tu propia cuenta'"
-                                        [attr.aria-label]="'Bloquear usuario ' + user.firstName + ' ' + user.lastName">
-
-                                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                                            <rect x="5" y="10" width="14" height="10" rx="2" />
-                                            <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-                                        </svg>
-
-                                    </button>
-
-                                    } @else {
-
-                                    <!-- Desbloquear -->
-                                    <button class="btn-icon btn-lock is-blocked" type="button"
-                                        [disabled]="!puedeCambiarEstado(user) || actualizandoEstado() === user.id"
-                                        (click)="cambiarEstadoUsuario(user, 'desbloquear')"
-                                        [title]="puedeCambiarEstado(user) ? 'Desbloquear usuario' : 'No puedes cambiar tu propia cuenta'"
-                                        [attr.aria-label]="'Desbloquear usuario ' + user.firstName + ' ' + user.lastName">
-
-                                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                                            <rect x="5" y="10" width="14" height="10" rx="2" />
-                                            <path d="M16 10V7a4 4 0 0 0-7.5-1.8" />
-                                        </svg>
-
-                                    </button>
-
-                                    }
-                                    @if (user.role === 'ADMIN') {
-                                    <button class="btn-icon btn-delete" type="button" [disabled]="!puedeEliminar(user)"
-                                        (click)="abrirConfirmacion(user)"
-                                        [title]="puedeEliminar(user) ? 'Eliminar administrador' : 'No puedes eliminar tu propia cuenta'"
-                                        [attr.aria-label]="'Eliminar administrador ' + user.firstName + ' ' + user.lastName">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                                            <path d="M3 6h18" />
-                                            <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
-                                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                                            <path d="M10 11v6M14 11v6" />
-                                        </svg>
-                                    </button>
-                                    }
-                                </div>
-                            </td>
-                        </tr>
-                        } @empty {
-                        <tr>
-                            <td colspan="6">
-                                <div class="empty-state">
-                                    <p>No se encontraron usuarios con los criterios indicados.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        }
-                    </tbody>
-                </table>
             </div>
-            }
+            <!-- Fin del único recuadro -->
 
+            <!-- Modal de eliminación: permanece fuera del recuadro -->
             @if (usuarioPendiente(); as usuario) {
             <div class="modal-backdrop">
                 <section #deleteDialog class="delete-dialog" role="alertdialog" aria-modal="true"
                     aria-labelledby="delete-dialog-title" aria-describedby="delete-dialog-description" tabindex="-1">
+
+                    <div class="dialog-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path>
+                            <path d="M10 11v5M14 11v5"></path>
+                        </svg>
+                    </div>
+
                     @if (pasoConfirmacion() === 1) {
+                    <p class="dialog-eyebrow">ACCIÓN IRREVERSIBLE</p>
                     <h2 id="delete-dialog-title">Retirar cuenta</h2>
-                    <p id="delete-dialog-description">¿Quieres iniciar la eliminación de la cuenta de
-                        <strong>{{ usuario.firstName }} {{ usuario.lastName }}</strong> ({{ usuario.email }})?
+                    <p id="delete-dialog-description">
+                        ¿Quieres iniciar la eliminación de la cuenta de
+                        <strong>{{ usuario.firstName }} {{ usuario.lastName }}</strong>
+                        ({{ usuario.email }})?
                     </p>
-                    <p class="delete-warning">Esta acción eliminará la cuenta de la plataforma y no se puede deshacer.
+                    <p class="delete-warning">
+                        Esta acción eliminará la cuenta de la plataforma y no se puede deshacer.
                     </p>
+
                     <div class="dialog-actions">
-                        <button class="btn-secondary" type="button" (click)="cancelarConfirmacion()">Cancelar</button>
-                        <button class="btn-danger" type="button" (click)="confirmarPrimerPaso()">Continuar</button>
+                        <button class="btn-secondary" type="button" (click)="cancelarConfirmacion()">
+                            Cancelar
+                        </button>
+                        <button class="btn-danger" type="button" (click)="confirmarPrimerPaso()">
+                            Continuar
+                        </button>
                     </div>
                     } @else {
+                    <p class="dialog-eyebrow">ÚLTIMO PASO</p>
                     <h2 id="delete-dialog-title">Confirmación final</h2>
-                    <p id="delete-dialog-description">Confirma la eliminación definitiva de
-                        <strong>{{ usuario.email }}</strong>.
+                    <p id="delete-dialog-description">
+                        Confirma la eliminación definitiva de <strong>{{ usuario.email }}</strong>.
                     </p>
+
                     @if (errorEliminacion()) {
                     <p class="error-alert" role="alert">{{ errorEliminacion() }}</p>
                     }
+
                     <div class="dialog-actions">
                         <button class="btn-secondary" type="button" [disabled]="eliminando()"
-                            (click)="cancelarConfirmacion()">Volver</button>
-                        <button class="btn-danger" type="button" [disabled]="eliminando()"
-                            (click)="eliminarUsuario()">{{ eliminando() ? 'Eliminando...' : 'Eliminar definitivamente'
-                            }}</button>
+                            (click)="cancelarConfirmacion()">
+                            Volver
+                        </button>
+                        <button class="btn-danger" type="button" [disabled]="eliminando()" (click)="eliminarUsuario()">
+                            {{ eliminando() ? 'Eliminando...' : 'Eliminar definitivamente' }}
+                        </button>
                     </div>
                     }
                 </section>

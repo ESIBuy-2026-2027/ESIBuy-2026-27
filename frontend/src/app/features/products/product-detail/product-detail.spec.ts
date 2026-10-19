@@ -8,6 +8,7 @@ import { ProductsService, ProductItem, Category } from '../products.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService, AuthenticatedUser } from '../../../core/services/auth.service';
+import { CartService } from '../../client/cart/cart.service';
 
 describe('ProductDetail', () => {
   let component: ProductDetail;
@@ -15,6 +16,7 @@ describe('ProductDetail', () => {
   let productsServiceMock: any;
   let wishlistServiceMock: any;
   let toastServiceMock: any;
+  let cartServiceMock: any;
   let currentUserSignal = signal<AuthenticatedUser | null>(null);
 
   const mockProduct: ProductItem = {
@@ -57,6 +59,11 @@ describe('ProductDetail', () => {
       show: vi.fn(),
     };
 
+    cartServiceMock = {
+      addItem: vi.fn(() => of({})),
+      itemCount: vi.fn(() => 0),
+    };
+
     await TestBed.configureTestingModule({
       imports: [ProductDetail],
       providers: [
@@ -69,6 +76,7 @@ describe('ProductDetail', () => {
         { provide: WishlistService, useValue: wishlistServiceMock },
         { provide: ToastService, useValue: toastServiceMock },
         { provide: AuthService, useValue: { currentUser: currentUserSignal } },
+        { provide: CartService, useValue: cartServiceMock },
       ],
     }).compileComponents();
 
@@ -124,6 +132,15 @@ describe('ProductDetail', () => {
 
     expect(wishlistServiceMock.toggleWishlist).toHaveBeenCalledWith('p-1');
     expect(toastServiceMock.show).toHaveBeenCalledWith('Guardado', 'success');
+  });
+
+  it('should allow changing quantity and adding to cart with success toast', () => {
+    component.increaseQuantity();
+    expect(component.quantity()).toBe(2);
+
+    component.addToCart();
+    expect(cartServiceMock.addItem).toHaveBeenCalledWith('p-1', 2);
+    expect(toastServiceMock.show).toHaveBeenCalledWith('Producto añadido al carrito', 'success');
   });
 
   it('should redirect unauthenticated users to /login on favorite or buy click', () => {

@@ -133,10 +133,25 @@
                 </div>
 
                 <h3 class="card-title">{{ product.name }}</h3>
+                <p class="card-desc">{{ product.description || 'Sin descripción' }}</p>
+                
+                <span class="detail-link">Ver detalle →</span>
 
                 <div class="card-price-row">
-                  <span class="card-price">{{ formatPrice(product.price) }}</span>
-                  <span class="detail-link">Ver detalle →</span>
+                  <div class="price-stock-wrap">
+                    <span class="card-price">{{ formatPrice(product.price) }}</span>
+                    <span class="stock-pill" [class.stock-empty]="product.stock === 0" [class.stock-low]="stockStatus(product.stock) === 'Stock bajo'">
+                      {{ stockStatus(product.stock) }}
+                    </span>
+                  </div>
+
+                  <div class="card-btn-group">
+                    <button type="button" class="add-to-cart-action-btn"
+                      [disabled]="product.stock === 0"
+                      (click)="addToCart(product, $event)">
+                      Añadir al carrito
+                    </button>
+                  </div>
                 </div>
               </div>
             </article>
@@ -144,5 +159,6 @@
         </div>
       }
     </div>
+
   </section>
 </div>

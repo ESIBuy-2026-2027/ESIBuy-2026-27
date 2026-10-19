@@ -1,261 +1,356 @@
-<main class="product-create-page">
-  <aside class="sidebar" aria-label="Panel del vendedor">
+<main class="product-create-page seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
+  <aside class="sidebar app-sidebar" aria-label="Panel del vendedor">
+    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()"
+      aria-label="Ocultar barra lateral"><span aria-hidden="true">‹</span></button>
     <a class="brand" routerLink="/" aria-label="ESIBuy">
       <span class="brand-mark" aria-hidden="true">E</span>
       <span>ESI<span class="brand-accent">Buy</span></span>
     </a>
 
     <div class="sidebar-caption">GESTIÓN DE VENTA</div>
-    <nav class="seller-navigation" aria-label="Navegación del vendedor">
-    <a class="navigation-link" routerLink="/seller/catalog"
-      routerLinkActive="is-active" ariaCurrentWhenActive="page">
-      <span class="navigation-icon" aria-hidden="true">▦</span>
-      <span>Mi catálogo</span>
-    </a>
 
-      <a class="navigation-link is-disabled" role="link" aria-disabled="true"
-        title="Próximamente" tabindex="-1">
-        <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
-          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-          <path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
-        </svg>
-        <span>Mis pedidos</span>
+    <nav class="seller-navigation" aria-label="Navegación del vendedor">
+      <a class="navigation-link" routerLink="/seller/catalog" routerLinkActive="is-active" ariaCurrentWhenActive="page">
+        <span class="navigation-icon" aria-hidden="true">▦</span>
+        <span>Catálogo</span>
       </a>
 
-      <a class="navigation-link is-disabled" role="link" aria-disabled="true"
-        title="Próximamente" tabindex="-1">
+      <a class="navigation-link" routerLink="/seller/orders"
+        routerLinkActive="is-active" ariaCurrentWhenActive="page">
         <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3 3v18h18"/>
-          <path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
+          <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          <path d="M12 11h4" />
+          <path d="M12 16h4" />
+          <path d="M8 11h.01" />
+          <path d="M8 16h.01" />
+        </svg>
+        <span>Pedidos</span>
+      </a>
+
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
+        <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 3v18h18" />
+          <path d="M18 17V9" />
+          <path d="M13 17V5" />
+          <path d="M8 17v-3" />
         </svg>
         <span>Estadísticas</span>
       </a>
 
-      <a class="navigation-link is-disabled" role="link" aria-disabled="true"
-        title="Próximamente" tabindex="-1">
+      <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
         <svg class="navigation-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/>
+          <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />
         </svg>
         <span>Valoraciones</span>
       </a>
     </nav>
-
   </aside>
-  <header class="page-header">
-    <a class="back-link" routerLink="/seller/catalog">← Volver al catálogo</a>
-    <p class="eyebrow">REGISTRO DE PRODUCTOS DEL VENDEDOR</p>
-    <h1>Añadir producto</h1>
-    <p class="page-description">Completa los datos del producto que quieres ofrecer en ESIBuy.</p>
-  </header>
 
-  <form class="product-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-    <section class="form-section" aria-labelledby="product-information-heading">
-      <div class="section-heading">
-        <span class="section-number" aria-hidden="true">01</span>
-        <div>
-          <h2 id="product-information-heading">Información del producto</h2>
-          <p>Los campos marcados con * son obligatorios.</p>
+  <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()"
+    aria-label="Mostrar barra lateral" [hidden]="!sidebarCollapsed()"><span aria-hidden="true">›</span></button>
+  <div class="product-create-content app-workspace">
+    <section class="product-create-card" aria-labelledby="product-page-title">
+      <header class="page-header">
+        <a class="back-link" routerLink="/seller/catalog">
+          <span aria-hidden="true">←</span>
+          Volver al catálogo
+        </a>
+
+        <div class="page-heading-copy">
+          <span class="page-kicker">CATÁLOGO DE PRODUCTOS</span>
+
+          <h1 id="product-page-title">
+            {{ productId ? 'Editar producto' : 'Añadir producto' }}
+          </h1>
+
+          <p class="page-description">
+            {{ productId
+            ? 'Actualiza los datos del producto de tu tienda en ESIBuy.'
+            : 'Completa los datos del producto que quieres ofrecer en ESIBuy.' }}
+          </p>
         </div>
+      </header>
+
+      @if (productLoading()) {
+      <output class="product-load-message">
+        <span class="loading-indicator" aria-hidden="true"></span>
+        Cargando producto…
+      </output>
+      } @else if (productLoadError(); as error) {
+      <div class="submit-error" role="alert">
+        <span>{{ error }}</span>
+        <button type="button" (click)="loadProduct()">Reintentar</button>
       </div>
+      } @else {
+      <form class="product-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
 
-      <div class="form-grid">
-        <div class="form-field full-width">
-          <label for="nombre">Nombre del producto *</label>
-          <input id="nombre" type="text" formControlName="nombre" maxlength="150"
-            placeholder="Ej.: Auriculares inalámbricos" autocomplete="off" />
-          @if (form.controls.nombre.touched && form.controls.nombre.hasError('required')) {
-            <span class="field-error">El nombre es obligatorio.</span>
-          } @else if (form.controls.nombre.touched && form.controls.nombre.hasError('pattern')) {
-            <span class="field-error">El nombre no puede contener solo espacios.</span>
-          } @else if (form.controls.nombre.touched && form.controls.nombre.hasError('maxlength')) {
-            <span class="field-error">El nombre no puede superar los 150 caracteres.</span>
-          }
-          @if (serverFieldErrors.nombre) {
-            <span class="field-error" role="alert">{{ serverFieldErrors.nombre }}</span>
-          }
-        </div>
-
-        <div class="form-field full-width">
-          <label for="categoriaIds">Categorías *</label>
-          <span id="categories-hint" class="field-hint">Puedes seleccionar varias categorías. Usa Ctrl o ⌘ para elegir más de una.</span>
-          <select id="categoriaIds" formControlName="categoriaIds" multiple
-            [size]="categories.length > 0 ? 4 : 1"
-            aria-describedby="categories-hint">
-            @for (category of categories; track category.id) {
-              <option [value]="category.id">{{ category.name }}</option>
-            }
-          </select>
-          @if (categoriesLoading) {
-            <output class="field-hint">Cargando categorías…</output>
-          } @else if (categoriesError) {
-            <span class="field-error" role="alert">No se pudieron cargar las categorías. Vuelve a intentarlo más tarde.</span>
-          } @else if (categories.length === 0) {
-            <output class="field-hint">No hay categorías disponibles en este momento.</output>
-          } @else if (form.controls.categoriaIds.touched && form.controls.categoriaIds.hasError('required')) {
-            <span class="field-error">Selecciona al menos una categoría.</span>
-          }
-          @if (serverFieldErrors.categoriaIds) {
-            <span class="field-error" role="alert">{{ serverFieldErrors.categoriaIds }}</span>
-          }
-        </div>
-
-        <div class="form-field">
-          <label for="precio">Precio (€) *</label>
-          <div class="input-with-suffix">
-            <input id="precio" type="number" formControlName="precio" min="0" step="0.01"
-              placeholder="0,00" />
-            <span aria-hidden="true">€</span>
+        <section class="form-section" aria-labelledby="product-information-heading">
+          <div class="section-heading">
+            <div>
+              <h2 id="product-information-heading">Información del producto</h2>
+              <p>Los campos marcados con * son obligatorios.</p>
+            </div>
           </div>
-          @if (form.controls.precio.touched && form.controls.precio.hasError('required')) {
-            <span class="field-error">El precio es obligatorio.</span>
-          } @else if (form.controls.precio.touched && form.controls.precio.hasError('min')) {
-            <span class="field-error">El precio debe ser mayor que 0.</span>
-          }
-          @if (serverFieldErrors.precio) {
-            <span class="field-error" role="alert">{{ serverFieldErrors.precio }}</span>
-          }
-        </div>
 
-        <div class="form-field">
-          <label for="stock">Unidades en stock</label>
-          <input id="stock" type="number" formControlName="stock" min="0" step="1"
-            placeholder="Se inicializa a 0 si se deja vacío" />
-          @if (form.controls.stock.touched && form.controls.stock.hasError('min')) {
-            <span class="field-error">El stock no puede ser negativo.</span>
-          } @else if (form.controls.stock.touched && form.controls.stock.hasError('pattern')) {
-            <span class="field-error">El stock debe ser un número entero.</span>
-          }
-          @if (serverFieldErrors.stock) {
-            <span class="field-error" role="alert">{{ serverFieldErrors.stock }}</span>
-          }
-        </div>
+          <div class="form-grid">
+            <div class="form-field full-width">
+              <label for="nombre">Nombre del producto *</label>
+              <input id="nombre" type="text" formControlName="nombre" maxlength="150"
+                placeholder="Ej.: Auriculares inalámbricos" autocomplete="off" />
 
-        <div class="form-field full-width">
-          <label for="descripcion">Descripción</label>
-          <textarea id="descripcion" formControlName="descripcion" rows="4" maxlength="2000"
-            placeholder="Describe las características principales del producto."></textarea>
-          <span class="field-hint">{{ form.controls.descripcion.value.length }} / 2000 caracteres</span>
-          @if (form.controls.descripcion.touched && form.controls.descripcion.hasError('maxlength')) {
-            <span class="field-error">La descripción no puede superar los 2000 caracteres.</span>
-          }
-          @if (serverFieldErrors.descripcion) {
-            <span class="field-error" role="alert">{{ serverFieldErrors.descripcion }}</span>
-          }
-        </div>
-      </div>
-    </section>
-
-    <section class="form-section" aria-labelledby="discounts-heading">
-      <div class="section-heading">
-        <span class="section-number" aria-hidden="true">02</span>
-        <div>
-          <h2 id="discounts-heading">Descuentos</h2>
-          <p>El descuento premium sustituye al general; no se acumulan.</p>
-        </div>
-      </div>
-
-      <div class="form-grid">
-        <div class="form-field">
-          <label for="descuento">Descuento general</label>
-          <div class="input-with-suffix">
-            <input id="descuento" type="number" formControlName="descuento" min="0" max="100"
-              step="0.01" placeholder="Sin descuento" />
-            <span aria-hidden="true">%</span>
-          </div>
-          @if (form.controls.descuento.touched && (form.controls.descuento.hasError('min') || form.controls.descuento.hasError('max'))) {
-            <span class="field-error">El descuento debe estar entre 0 y 100 %.</span>
-          }
-          @if (serverFieldErrors.descuento) {
-            <span class="field-error" role="alert">{{ serverFieldErrors.descuento }}</span>
-          }
-        </div>
-
-        <div class="form-field">
-          <label for="descuentoPremium">Descuento premium</label>
-          <div class="input-with-suffix">
-            <input id="descuentoPremium" type="number" formControlName="descuentoPremium"
-              min="0" max="100" step="0.01" placeholder="Sin descuento" />
-            <span aria-hidden="true">%</span>
-          </div>
-          @if (form.controls.descuentoPremium.touched && (form.controls.descuentoPremium.hasError('min') || form.controls.descuentoPremium.hasError('max'))) {
-            <span class="field-error">El descuento premium debe estar entre 0 y 100 %.</span>
-          }
-          @if (serverFieldErrors.descuentoPremium) {
-            <span class="field-error" role="alert">{{ serverFieldErrors.descuentoPremium }}</span>
-          }
-        </div>
-      </div>
-    </section>
-
-    <section class="form-section" aria-labelledby="visibility-heading">
-      <div class="section-heading">
-        <span class="section-number" aria-hidden="true">03</span>
-        <div>
-          <h2 id="visibility-heading">Imagen y visibilidad</h2>
-          <p>La imagen es opcional. Puedes añadir una URL pública.</p>
-        </div>
-      </div>
-
-      <div class="form-grid">
-        <div class="form-field full-width">
-          <label for="imagen">URL de la imagen</label>
-          <input id="imagen" type="url" formControlName="imagen" maxlength="2000"
-            placeholder="https://ejemplo.com/imagen.jpg" autocomplete="url" />
-          <span class="field-hint">Introduce una URL http o https; si no se indica, el producto se guardará sin imagen.</span>
-                  <div class="image-preview" [class.has-error]="previewUrl && imageError()">
-            @if (previewUrl) {
-              <img [src]="previewUrl" alt="Vista previa del producto"
-                [hidden]="imageError()"
-                (load)="imageError.set(false)"
-                (error)="imageError.set(true)" />
-              @if (imageError()) {
-                <span class="image-preview-text">No se pudo cargar la imagen</span>
+              @if (form.controls.nombre.touched && form.controls.nombre.hasError('required')) {
+              <span class="field-error">El nombre es obligatorio.</span>
+              } @else if (form.controls.nombre.touched && form.controls.nombre.hasError('pattern')) {
+              <span class="field-error">El nombre no puede contener solo espacios.</span>
+              } @else if (form.controls.nombre.touched && form.controls.nombre.hasError('maxlength')) {
+              <span class="field-error">El nombre no puede superar los 150 caracteres.</span>
               }
-            } @else {
-              <span class="image-preview-text">Vista previa</span>
-            }
+
+              @if (serverFieldErrors.nombre) {
+              <span class="field-error" role="alert">{{ serverFieldErrors.nombre }}</span>
+              }
+            </div>
+
+            <div class="form-field full-width">
+              <label for="categoriaIds">Categorías *</label>
+              <span id="categories-hint" class="field-hint">
+                Puedes seleccionar varias categorías. Usa Ctrl o ⌘ para elegir más de una.
+              </span>
+
+              <select id="categoriaIds" formControlName="categoriaIds" multiple [size]="categories.length > 0 ? 4 : 1"
+                aria-describedby="categories-hint">
+                @for (category of categories; track category.id) {
+                <option [value]="category.id">{{ category.name }}</option>
+                }
+              </select>
+
+              @if (categoriesLoading) {
+              <output class="field-hint">Cargando categorías…</output>
+              } @else if (categoriesError) {
+              <span class="field-error" role="alert">
+                No se pudieron cargar las categorías. Vuelve a intentarlo más tarde.
+              </span>
+              } @else if (categories.length === 0) {
+              <output class="field-hint">
+                No hay categorías disponibles en este momento.
+              </output>
+              } @else if (form.controls.categoriaIds.touched && form.controls.categoriaIds.hasError('required')) {
+              <span class="field-error">Selecciona al menos una categoría.</span>
+              }
+
+              @if (serverFieldErrors.categoriaIds) {
+              <span class="field-error" role="alert">
+                {{ serverFieldErrors.categoriaIds }}
+              </span>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="precio">Precio (€) *</label>
+              <div class="input-with-suffix">
+                <input id="precio" type="number" formControlName="precio" min="0" step="0.01" placeholder="0,00" />
+                <span aria-hidden="true">€</span>
+              </div>
+
+              @if (form.controls.precio.touched && form.controls.precio.hasError('required')) {
+              <span class="field-error">El precio es obligatorio.</span>
+              } @else if (form.controls.precio.touched && form.controls.precio.hasError('min')) {
+              <span class="field-error">El precio debe ser mayor que 0.</span>
+              }
+
+              @if (serverFieldErrors.precio) {
+              <span class="field-error" role="alert">{{ serverFieldErrors.precio }}</span>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="stock">Unidades en stock</label>
+              <input id="stock" type="number" formControlName="stock" min="0" step="1"
+                placeholder="Se inicializa a 0 si se deja vacío" />
+
+              @if (form.controls.stock.touched && form.controls.stock.hasError('min')) {
+              <span class="field-error">El stock no puede ser negativo.</span>
+              } @else if (form.controls.stock.touched && form.controls.stock.hasError('pattern')) {
+              <span class="field-error">El stock debe ser un número entero.</span>
+              }
+
+              @if (serverFieldErrors.stock) {
+              <span class="field-error" role="alert">{{ serverFieldErrors.stock }}</span>
+              }
+            </div>
+
+            <div class="form-field full-width">
+              <label for="descripcion">Descripción</label>
+              <textarea id="descripcion" formControlName="descripcion" rows="4" maxlength="2000"
+                placeholder="Describe las características principales del producto.">
+                </textarea>
+
+              <span class="field-hint">
+                {{ form.controls.descripcion.value.length }} / 2000 caracteres
+              </span>
+
+              @if (form.controls.descripcion.touched && form.controls.descripcion.hasError('maxlength')) {
+              <span class="field-error">
+                La descripción no puede superar los 2000 caracteres.
+              </span>
+              }
+
+              @if (serverFieldErrors.descripcion) {
+              <span class="field-error" role="alert">
+                {{ serverFieldErrors.descripcion }}
+              </span>
+              }
+            </div>
           </div>
-          @if (form.controls.imagen.touched && form.controls.imagen.hasError('pattern')) {
-            <span class="field-error">Introduce una URL válida que empiece por http:// o https://.</span>
-          } @else if (form.controls.imagen.touched && form.controls.imagen.hasError('maxlength')) {
-            <span class="field-error">La URL no puede superar los 2000 caracteres.</span>
-          }
-          @if (serverFieldErrors.imagen) {
-            <span class="field-error" role="alert">{{ serverFieldErrors.imagen }}</span>
-          }
-        </div>
+        </section>
 
-        <label class="visibility-toggle" for="disponible">
-          <input id="disponible" type="checkbox" formControlName="disponible" />
-          <span>
-            <strong>Producto visible en la tienda</strong>
-            <small>Los clientes podrán encontrar este producto en ESIBuy.</small>
-            @if (serverFieldErrors.disponible) {
-              <small class="field-error" role="alert">{{ serverFieldErrors.disponible }}</small>
-            }
-          </span>
-        </label>
-      </div>
+        <section class="form-section" aria-labelledby="discounts-heading">
+          <div class="section-heading">
+            <div>
+              <h2 id="discounts-heading">Descuentos</h2>
+              <p>El descuento premium sustituye al general; no se acumulan.</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="descuento">Descuento general</label>
+              <div class="input-with-suffix">
+                <input id="descuento" type="number" formControlName="descuento" min="0" max="100" step="0.01"
+                  placeholder="Sin descuento" />
+                <span aria-hidden="true">%</span>
+              </div>
+
+              @if (form.controls.descuento.touched && (form.controls.descuento.hasError('min') ||
+              form.controls.descuento.hasError('max'))) {
+              <span class="field-error">El descuento debe estar entre 0 y 100 %.</span>
+              }
+
+              @if (serverFieldErrors.descuento) {
+              <span class="field-error" role="alert">
+                {{ serverFieldErrors.descuento }}
+              </span>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="descuentoPremium">Descuento premium</label>
+              <div class="input-with-suffix">
+                <input id="descuentoPremium" type="number" formControlName="descuentoPremium" min="0" max="100"
+                  step="0.01" placeholder="Sin descuento" />
+                <span aria-hidden="true">%</span>
+              </div>
+
+              @if (form.controls.descuentoPremium.touched && (form.controls.descuentoPremium.hasError('min') ||
+              form.controls.descuentoPremium.hasError('max'))) {
+              <span class="field-error">
+                El descuento premium debe estar entre 0 y 100 %.
+              </span>
+              }
+
+              @if (serverFieldErrors.descuentoPremium) {
+              <span class="field-error" role="alert">
+                {{ serverFieldErrors.descuentoPremium }}
+              </span>
+              }
+            </div>
+          </div>
+        </section>
+
+        <section class="form-section" aria-labelledby="visibility-heading">
+          <div class="section-heading">
+            <div>
+              <h2 id="visibility-heading">Imagen y visibilidad</h2>
+              <p>La imagen es opcional. Puedes añadir una URL pública.</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-field full-width">
+              <label for="imagen">URL de la imagen</label>
+              <input id="imagen" type="url" formControlName="imagen" maxlength="2000"
+                placeholder="https://ejemplo.com/imagen.jpg" autocomplete="url" />
+
+              <span class="field-hint">
+                Introduce una URL http o https; si no se indica, el producto se guardará sin imagen.
+              </span>
+
+              <div class="image-preview" [class.has-error]="previewUrl && imageError()">
+                @if (previewUrl) {
+                <img [src]="previewUrl" alt="Vista previa del producto" [hidden]="imageError()"
+                  (load)="imageError.set(false)" (error)="imageError.set(true)" />
+
+                @if (imageError()) {
+                <span class="image-preview-text">No se pudo cargar la imagen</span>
+                }
+                } @else {
+                <span class="image-preview-text">Vista previa</span>
+                }
+              </div>
+
+              @if (form.controls.imagen.touched && form.controls.imagen.hasError('pattern')) {
+              <span class="field-error">
+                Introduce una URL válida que empiece por http:// o https://.
+              </span>
+              } @else if (form.controls.imagen.touched && form.controls.imagen.hasError('maxlength')) {
+              <span class="field-error">
+                La URL no puede superar los 2000 caracteres.
+              </span>
+              }
+
+              @if (serverFieldErrors.imagen) {
+              <span class="field-error" role="alert">
+                {{ serverFieldErrors.imagen }}
+              </span>
+              }
+            </div>
+
+            <label class="visibility-toggle" for="disponible">
+              <input id="disponible" type="checkbox" formControlName="disponible" />
+              <span class="visibility-copy">
+                <strong>Producto visible en la tienda</strong>
+                <small>Los clientes podrán encontrar este producto en ESIBuy.</small>
+
+                @if (serverFieldErrors.disponible) {
+                <small class="field-error" role="alert">
+                  {{ serverFieldErrors.disponible }}
+                </small>
+                }
+              </span>
+            </label>
+          </div>
+        </section>
+
+        @if (submitSuccess()) {
+        <output class="submit-success">
+          {{ productId
+          ? 'Producto actualizado correctamente.'
+          : 'Producto registrado correctamente.' }}
+        </output>
+        }
+
+        @if (submitError(); as error) {
+        <div class="submit-error" role="alert">{{ error }}</div>
+        }
+
+        <footer class="form-actions">
+          <a class="cancel-action" routerLink="/seller/catalog">Cancelar</a>
+
+          <button class="submit-action" type="submit"
+            [disabled]="submitting() || categoriesLoading || categoriesError || categories.length === 0">
+            {{ submitting()
+            ? 'Guardando…'
+            : productId
+            ? 'Guardar cambios'
+            : 'Guardar producto' }}
+          </button>
+        </footer>
+      </form>
+      }
     </section>
-
-    @if (submitSuccess()) {
-      <output class="submit-success">Producto registrado correctamente.</output>
-    }
-
-    @if (submitError(); as error) {
-      <div class="submit-error" role="alert">{{ error }}</div>
-    }
-
-    <footer class="form-actions">
-      <a class="cancel-action" routerLink="/seller/catalog">Cancelar</a>
-      <button class="submit-action" type="submit"
-        [disabled]="submitting() || categoriesLoading || categoriesError || categories.length === 0">
-        {{ submitting() ? 'Guardando…' : 'Guardar producto' }}
-      </button>
-    </footer>
-  </form>
+  </div>
 </main>

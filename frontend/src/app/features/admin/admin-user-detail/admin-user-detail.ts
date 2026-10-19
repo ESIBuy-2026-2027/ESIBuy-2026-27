@@ -1,33 +1,33 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AuthService, UpdateUserRequest } from '../../../core/services/auth.service';
+import { AuthService, UpdateUserRequest, UserResponse } from '../../../core/services/auth.service';
 import { isAdultValidator } from '../../identity/register/register';
+import { Category, ProductsService } from '../../products/products.service';
 
 @Component({
   selector: 'app-admin-user-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive],
   templateUrl: './admin-user-detail.html',
   styleUrl: './admin-user-detail.css'
 })
 export class AdminUserDetail implements OnInit {
+  sidebarCollapsed = signal(false);
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update((collapsed) => !collapsed);
+  }
   private readonly formBuilder = inject(FormBuilder);
   readonly cargando = signal(true);
   readonly guardando = signal(false);
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
   readonly credentialMask = '••••••••••••';
-
-  readonly categories = [
-    'Electrónica',
-    'Hogar',
-    'Moda',
-    'Deportes',
-    'Libros',
-    'Otros'
-  ];
+  readonly categories: string[] = [];
+  readonly categoriesLoadError = signal(false);
+  readonly categorySelectionUnavailable = signal(false);
 
   readonly form = this.formBuilder.nonNullable.group({
     firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25),
@@ -107,7 +107,8 @@ export class AdminUserDetail implements OnInit {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly productsService: ProductsService
   ) {}
 
   ngOnInit(): void {
@@ -122,58 +123,87 @@ export class AdminUserDetail implements OnInit {
       next: ({ data }) => {
         this.email = data.email;
         this.role = data.role;
-        const normalized = this.normalizeAvatarPath(data.profileImage);
-        this.selectedAvatar = normalized || this.currentAvatarList[0] || this.clientAvatars[0];
-
-        if (this.isClient()) {
-          this.form.controls.birthDate.setValidators([Validators.required, isAdultValidator]);
-          this.form.controls.birthDate.updateValueAndValidity();
-        } else {
-          this.form.controls.birthDate.clearValidators();
-          this.form.controls.birthDate.updateValueAndValidity();
-        }
-
         if (this.isSeller()) {
-          this.form.controls.defaultCategory.setValidators([Validators.required]);
-          this.form.controls.defaultCategory.updateValueAndValidity();
-          this.form.controls.businessName.setValidators([
-            Validators.required,
-            Validators.minLength(2),
-            Validators.maxLength(100)
-          ]);
-          this.form.controls.businessName.updateValueAndValidity();
+          this.productsService.getCategories().subscribe({
+            next: (categories) => {
+              this.categories.splice(0, this.categories.length, ...this.categoryNames(categories));
+              this.initializeUserForm(data);
+            },
+            error: () => {
+              this.categoriesLoadError.set(true);
+              this.initializeUserForm(data);
+            },
+          });
         } else {
-          this.form.controls.defaultCategory.clearValidators();
-          this.form.controls.defaultCategory.updateValueAndValidity();
-          this.form.controls.businessName.clearValidators();
-          this.form.controls.businessName.updateValueAndValidity();
+          this.initializeUserForm(data);
         }
-
-        if (this.isAdmin()) {
-          this.form.controls.phone.clearValidators();
-          this.form.controls.phone.updateValueAndValidity();
-        } else {
-          this.form.controls.phone.setValidators([Validators.pattern(/^\d{9}$/)]);
-          this.form.controls.phone.updateValueAndValidity();
-        }
-
-        this.form.patchValue({
-          firstName: data.firstName,
-          lastName: data.lastName,
-          birthDate: data.birthDate ? String(data.birthDate).slice(0, 10) : '',
-          defaultCategory: data.defaultCategory || this.categories[0],
-          businessName: data.businessName ?? '',
-          nationalId: data.nationalId ?? '',
-          phone: data.phone ?? '',
-          headquarters: data.headquarters ?? ''
-        });
-        this.cargando.set(false);
       },
       error: (error) => {
         this.errorMessage.set(this.errorMessageFor(error));
         this.cargando.set(false);
       }
     });
+  }
+
+  private initializeUserForm(data: UserResponse): void {
+    this.email = data.email;
+    this.role = data.role;
+    const normalized = this.normalizeAvatarPath(data.profileImage);
+    this.selectedAvatar = normalized || this.currentAvatarList[0] || this.clientAvatars[0];
+
+    if (this.isClient()) {
+      this.form.controls.birthDate.setValidators([Validators.required, isAdultValidator]);
+    } else {
+      this.form.controls.birthDate.clearValidators();
+    }
+    this.form.controls.birthDate.updateValueAndValidity();
+
+    if (this.isSeller()) {
+      this.form.controls.defaultCategory.setValidators([Validators.required]);
+      this.form.controls.businessName.setValidators([
+        Validators.required,
+        Validators.minLength(2),
+        Validators.maxLength(100)
+      ]);
+    } else {
+      this.form.controls.defaultCategory.clearValidators();
+      this.form.controls.businessName.clearValidators();
+    }
+    this.form.controls.defaultCategory.updateValueAndValidity();
+    this.form.controls.businessName.updateValueAndValidity();
+
+    if (this.isAdmin()) {
+      this.form.controls.phone.clearValidators();
+    } else {
+      this.form.controls.phone.setValidators([Validators.pattern(/^\d{9}$/)]);
+    }
+    this.form.controls.phone.updateValueAndValidity();
+
+    const savedCategory = data.defaultCategory?.trim() ?? '';
+    const categoryIsCurrent = this.categories.includes(savedCategory);
+    this.categorySelectionUnavailable.set(
+      this.isSeller() && !this.categoriesLoadError() && Boolean(savedCategory) && !categoryIsCurrent,
+    );
+
+    this.form.patchValue({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      birthDate: data.birthDate ? String(data.birthDate).slice(0, 10) : '',
+      defaultCategory: this.isSeller()
+        ? categoryIsCurrent ? savedCategory : ''
+        : '',
+      businessName: data.businessName ?? '',
+      nationalId: data.nationalId ?? '',
+      phone: data.phone ?? '',
+      headquarters: data.headquarters ?? ''
+    });
+    this.cargando.set(false);
+  }
+
+  private categoryNames(categories: Category[]): string[] {
+    return [...new Set(categories
+      .map((category) => category.name.trim())
+      .filter((name) => name.length > 0))];
   }
 
   getEmail(): string {
@@ -187,6 +217,10 @@ export class AdminUserDetail implements OnInit {
   onSubmit(): void {
     this.errorMessage.set('');
     this.successMessage.set('');
+    if (this.isSeller() && this.categoriesLoadError()) {
+      this.errorMessage.set('No se pudieron cargar las categorías. Recarga la página antes de guardar los cambios.');
+      return;
+    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

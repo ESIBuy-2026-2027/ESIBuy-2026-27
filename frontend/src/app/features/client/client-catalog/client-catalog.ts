@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { ProductsService, ProductItem, Category } from '../../products/products.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { CartService } from '../cart/cart.service';
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -18,6 +19,32 @@ export class ClientCatalog implements OnInit {
   private readonly productsService = inject(ProductsService);
   readonly wishlistService = inject(WishlistService);
   private readonly toastService = inject(ToastService);
+  readonly cartService = inject(CartService);
+
+  readonly sidebarCollapsed = signal(false);
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update((collapsed) => !collapsed);
+  }
+
+  addToCart(product: ProductItem, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (product.stock === 0) {
+      this.toastService.show('El producto no tiene stock disponible.', 'error');
+      return;
+    }
+
+    this.cartService.addItem(product.id, 1).subscribe({
+      next: () => {
+        this.toastService.show('Producto añadido al carrito', 'success');
+      },
+      error: () => {
+        this.toastService.show('Error al añadir producto al carrito', 'error');
+      },
+    });
+  }
 
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',

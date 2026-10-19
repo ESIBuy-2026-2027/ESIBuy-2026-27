@@ -58,6 +58,29 @@ public class ApiExceptionHandler {
         return ResponseEntity.badRequest().body(Map.of(MESSAGE, exception.getMessage()));
     }
 
+    @ExceptionHandler(DuplicateCategoryException.class)
+    public ResponseEntity<Map<String, String>> handleDuplicateCategory(DuplicateCategoryException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MESSAGE, exception.getMessage(),
+                CORRELATION_ID, correlationId(request)));
+    }
+
+    @ExceptionHandler(CategoryInUseException.class)
+    public ResponseEntity<Map<String, String>> handleCategoryInUse(CategoryInUseException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MESSAGE, exception.getMessage(),
+                CORRELATION_ID, correlationId(request)));
+    }
+
+    @ExceptionHandler(CategoryIdNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleCategoryIdNotFound(CategoryIdNotFoundException exception,
+            HttpServletRequest request) {
+        String id = correlationId(request);
+        LOGGER.warn("Categoría solicitada no encontrada. correlationId={}", id);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(MESSAGE, exception.getMessage(),
+                CORRELATION_ID, id));
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, String>> handleAccessDenied(AccessDeniedException exception) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(MESSAGE, exception.getMessage()));
@@ -85,19 +108,53 @@ public class ApiExceptionHandler {
             LOGGER.warn("Usuario solicitado no encontrado. correlationId={}", id);
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(MESSAGE, "Usuario no encontrado",
-            CORRELATION_ID, id));
+                CORRELATION_ID, id));
     }
 
     @ExceptionHandler(ProductNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleProductNotFound(ProductNotFoundException exception,
             HttpServletRequest request) {
         String id = correlationId(request);
-        if (LOGGER.isWarnEnabled()) {
-            LOGGER.warn("Producto solicitado no encontrado. correlationId={}", id);
-        }
+        LOGGER.warn("Producto solicitado no encontrado. correlationId={}", id);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(MESSAGE, exception.getMessage(),
-            CORRELATION_ID, id));
+                CORRELATION_ID, id));
     }
+
+    @ExceptionHandler(ProductoNoDisponibleException.class)
+    public ResponseEntity<Map<String, String>> handleCartConflict(IllegalStateException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MESSAGE, exception.getMessage(),
+                CORRELATION_ID, correlationId(request)));
+    }
+
+    @ExceptionHandler(StockInsuficienteException.class)
+    public ResponseEntity<Map<String, String>> handleInsufficientStock(StockInsuficienteException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.badRequest().body(Map.of(MESSAGE, exception.getMessage(),
+                CORRELATION_ID, correlationId(request)));
+    }
+
+    @ExceptionHandler(PagoFallidoException.class)
+    public ResponseEntity<Map<String, String>> handlePaymentFailure(
+            PagoFallidoException exception, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(Map.of(
+                MESSAGE, exception.getMessage(), CORRELATION_ID, correlationId(request)));
+    }
+
+    @ExceptionHandler(RecursoCheckoutNoEncontradoException.class)
+    public ResponseEntity<Map<String, String>> handleCheckoutResourceNotFound(
+            RecursoCheckoutNoEncontradoException exception, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                MESSAGE, exception.getMessage(), CORRELATION_ID, correlationId(request)));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.badRequest().body(Map.of(MESSAGE, exception.getMessage(),
+                CORRELATION_ID, correlationId(request)));
+    }
+
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, String>> handleIllegalState(IllegalStateException exception,
@@ -107,7 +164,7 @@ public class ApiExceptionHandler {
             LOGGER.warn("Solicitud rechazada por estado no válido. correlationId={}", id);
         }
         return ResponseEntity.badRequest().body(Map.of(MESSAGE, exception.getMessage(),
-            CORRELATION_ID, id));
+                CORRELATION_ID, id));
     }
 
     @ExceptionHandler(Exception.class)
@@ -141,5 +198,12 @@ public class ApiExceptionHandler {
 
     private void addError(Map<String, String> errors, String field, String message) {
         errors.merge(field, message, (existing, next) -> existing.equals(next) ? existing : existing + "; " + next);
+    }
+
+    @ExceptionHandler(AddressLimitExceededException.class)
+    public ResponseEntity<Map<String, String>> handleAddressLimit(
+            AddressLimitExceededException exception, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                MESSAGE, exception.getMessage(), CORRELATION_ID, correlationId(request)));
     }
 }

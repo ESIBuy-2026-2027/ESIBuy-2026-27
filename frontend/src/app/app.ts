@@ -1,8 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, HostListener, inject, signal } from '@angular/core';
+import { Component, effect, HostListener, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { ToastService } from './core/services/toast.service';
+import { CartService } from './features/client/cart/cart.service';
 
 @Component({
   imports: [RouterLink, RouterOutlet],
@@ -13,10 +14,21 @@ import { ToastService } from './core/services/toast.service';
 })
 export class App {
   readonly authService = inject(AuthService);
+  readonly cartService = inject(CartService);
   readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
   readonly logoutError = signal<string | null>(null);
   readonly profileMenuOpen = signal(false);
+
+  constructor() {
+    effect(() => {
+      if (this.authService.currentUser()?.role === 'CLIENT') {
+        this.cartService.load();
+      } else {
+        this.cartService.clear();
+      }
+    });
+  }
 
   toggleProfileMenu(): void {
     this.profileMenuOpen.update((isOpen) => !isOpen);

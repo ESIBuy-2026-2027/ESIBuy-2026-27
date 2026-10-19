@@ -1,14 +1,16 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductsService, ProductItem, Category } from '../products.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { CartService } from '../../client/cart/cart.service';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [],
+  imports: [FormsModule],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.css',
 })
@@ -19,6 +21,9 @@ export class ProductDetail implements OnInit {
   readonly wishlistService = inject(WishlistService);
   private readonly toastService = inject(ToastService);
   readonly authService = inject(AuthService);
+  readonly cartService = inject(CartService);
+
+  readonly quantity = signal(1);
 
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
@@ -130,7 +135,28 @@ export class ProductDetail implements OnInit {
     return this.currencyFormatter.format(price);
   }
 
+  decreaseQuantity(): void {
+    this.quantity.update((q) => Math.max(1, q - 1));
+  }
+
+  increaseQuantity(): void {
+    const max = this.product()?.stock ?? 1;
+    this.quantity.update((q) => Math.min(max, q + 1));
+  }
+
+  setQuantity(val: number): void {
+    const max = this.product()?.stock ?? 1;
+    this.quantity.set(Math.max(1, Math.min(val || 1, max)));
+  }
+
   onBuy(): void {
+    this.addToCart();
+  }
+
+  addToCart(): void {
+    const p = this.product();
+    if (!p) return;
+
     const user = this.authService.currentUser();
     if (!user) {
       this.toastService.show('Debes iniciar sesión con tu cuenta de cliente para realizar compras.', 'info');
@@ -143,7 +169,14 @@ export class ProductDetail implements OnInit {
       return;
     }
 
-    this.toastService.show('Función de compra en desarrollo.', 'info');
+    this.cartService.addItem(p.id, this.quantity()).subscribe({
+      next: () => {
+        this.toastService.show('Producto añadido al carrito', 'success');
+      },
+      error: () => {
+        this.toastService.show('Error al añadir producto al carrito', 'error');
+      },
+    });
   }
 }
 

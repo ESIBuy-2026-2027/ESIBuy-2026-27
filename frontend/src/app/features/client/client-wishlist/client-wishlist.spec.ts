@@ -5,6 +5,7 @@ import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { ClientWishlist } from './client-wishlist';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { CartService } from '../cart/cart.service';
 import { ProductItem } from '../../products/products.service';
 
 describe('ClientWishlist', () => {
@@ -12,6 +13,7 @@ describe('ClientWishlist', () => {
   let fixture: ComponentFixture<ClientWishlist>;
   let wishlistServiceMock: any;
   let toastServiceMock: any;
+  let cartServiceMock: any;
 
   const mockWishlistProducts: ProductItem[] = [
     {
@@ -46,12 +48,18 @@ describe('ClientWishlist', () => {
       show: vi.fn(),
     };
 
+    cartServiceMock = {
+      addItem: vi.fn(() => of({})),
+      itemCount: vi.fn(() => 0),
+    };
+
     await TestBed.configureTestingModule({
       imports: [ClientWishlist],
       providers: [
         provideRouter([]),
         { provide: WishlistService, useValue: wishlistServiceMock },
         { provide: ToastService, useValue: toastServiceMock },
+        { provide: CartService, useValue: cartServiceMock },
       ],
     }).compileComponents();
 
@@ -65,14 +73,35 @@ describe('ClientWishlist', () => {
     expect(component).toBeTruthy();
     const el: HTMLElement = fixture.nativeElement;
 
+    expect(el.querySelector('#wishlist-title')?.textContent).toContain('Lista de deseos');
+
     const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
     expect(navLinks.length).toBe(5);
-    expect(navLinks[0].textContent).toContain('Mi catálogo');
-    expect(navLinks[1].textContent).toContain('Mi panel');
-    expect(navLinks[2].textContent).toContain('Lista de deseos');
-    expect(navLinks[2].classList.contains('is-active')).toBe(true);
-    expect(navLinks[3].textContent).toContain('Mis compras');
-    expect(navLinks[4].textContent).toContain('Mi perfil');
+    expect(navLinks[0].textContent).toContain('Catálogo');
+    expect(navLinks[1].textContent).toContain('Lista de deseos');
+    expect(navLinks[1].classList.contains('is-active')).toBe(true);
+    expect(navLinks[2].textContent).toContain('Mis compras');
+    expect(navLinks[3].textContent).toContain('Carrito');
+    expect(navLinks[4].textContent).toContain('Perfil');
+  });
+
+  it('should toggle sidebar collapsed state', () => {
+    expect(component.sidebarCollapsed()).toBe(false);
+    component.toggleSidebar();
+    expect(component.sidebarCollapsed()).toBe(true);
+  });
+
+  it('should add item to cart with selected quantity', () => {
+    component.setQuantity('p-1', 2, 3);
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    const buyBtn = el.querySelector('.buy-action-btn') as HTMLButtonElement;
+    expect(buyBtn.textContent).toContain('Añadir al carrito');
+    buyBtn.click();
+
+    expect(cartServiceMock.addItem).toHaveBeenCalledWith('p-1', 2);
+    expect(toastServiceMock.show).toHaveBeenCalledWith('Producto añadido al carrito', 'success');
   });
 
   it('should render items in wishlist and indicate unavailable products', () => {

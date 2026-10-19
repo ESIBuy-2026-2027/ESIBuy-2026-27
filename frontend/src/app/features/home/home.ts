@@ -5,6 +5,9 @@ import { AuthService } from '../../core/services/auth.service';
 import { ProductsService, ProductItem, Category } from '../products/products.service';
 import { WishlistService } from '../../core/services/wishlist.service';
 import { ToastService } from '../../core/services/toast.service';
+import { CartService } from '../client/cart/cart.service';
+
+const LOW_STOCK_THRESHOLD = 5;
 
 @Component({
   selector: 'app-home',
@@ -19,6 +22,7 @@ export class Home implements OnInit {
   private readonly productsService = inject(ProductsService);
   readonly wishlistService = inject(WishlistService);
   private readonly toastService = inject(ToastService);
+  readonly cartService = inject(CartService);
 
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
@@ -124,6 +128,42 @@ export class Home implements OnInit {
 
   categoryName(categoryId: string): string {
     return this.categories().find((c) => c.id === categoryId)?.name ?? 'Categoría';
+  }
+
+  stockStatus(stock: number): string {
+    if (stock === 0) return 'Agotado';
+    return stock <= LOW_STOCK_THRESHOLD ? 'Stock bajo' : 'En stock';
+  }
+
+  addToCart(product: ProductItem, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    const user = this.authService.currentUser();
+    if (!user) {
+      this.toastService.show('Debes iniciar sesión con tu cuenta de cliente para realizar compras.', 'info');
+      void this.router.navigate(['/login']);
+      return;
+    }
+
+    if (user.role !== 'CLIENT') {
+      this.toastService.show('Solo los clientes pueden realizar compras.', 'info');
+      return;
+    }
+
+    if (product.stock === 0) {
+      this.toastService.show('El producto no tiene stock disponible.', 'error');
+      return;
+    }
+
+    this.cartService.addItem(product.id, 1).subscribe({
+      next: () => {
+        this.toastService.show('Producto añadido al carrito', 'success');
+      },
+      error: () => {
+        this.toastService.show('Error al añadir producto al carrito', 'error');
+      },
+    });
   }
 
   formatPrice(price: number): string {

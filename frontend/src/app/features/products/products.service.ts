@@ -47,6 +47,23 @@ export interface CatalogFilterParams {
   inStock?: boolean;
 }
 
+export interface ProductDetails {
+  id: string;
+  name: string;
+  categoryIds: string[];
+  stock: number;
+  description: string | null;
+  price: number;
+  discount: number | null;
+  premiumDiscount: number | null;
+  imageUrl: string | null;
+  available: boolean;
+  sellerId: string;
+  rating?: number;
+}
+
+export type AvailableProduct = ProductDetails;
+
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
   private readonly http = inject(HttpClient);
@@ -57,6 +74,18 @@ export class ProductsService {
 
   createProduct(request: ProductCreateRequest): Observable<CreatedProduct> {
     return this.http.post<CreatedProduct>('/api/products', request);
+  }
+
+  getProduct(id: string): Observable<ProductDetails> {
+    return this.http.get<ProductDetails>(`/api/products/${id}`);
+  }
+
+  updateProduct(id: string, request: ProductCreateRequest): Observable<ProductDetails> {
+    return this.http.put<ProductDetails>(`/api/products/${id}`, request);
+  }
+
+  getAvailableProducts(): Observable<AvailableProduct[]> {
+    return this.http.get<AvailableProduct[]>('/api/catalog/products');
   }
 
   getPublicCatalog(filters?: CatalogFilterParams): Observable<ProductItem[]> {

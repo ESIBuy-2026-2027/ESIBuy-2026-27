@@ -6,6 +6,7 @@ import { ClientCatalog } from './client-catalog';
 import { ProductsService, ProductItem, Category } from '../../products/products.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { CartService } from '../cart/cart.service';
 
 describe('ClientCatalog', () => {
   let component: ClientCatalog;
@@ -13,6 +14,7 @@ describe('ClientCatalog', () => {
   let productsServiceMock: any;
   let wishlistServiceMock: any;
   let toastServiceMock: any;
+  let cartServiceMock: any;
 
   const mockCategories: Category[] = [
     { id: 'cat-1', name: 'Electrónica' },
@@ -60,6 +62,11 @@ describe('ClientCatalog', () => {
       show: vi.fn(),
     };
 
+    cartServiceMock = {
+      itemCount: vi.fn(() => 2),
+      addItem: vi.fn(() => of({})),
+    };
+
     await TestBed.configureTestingModule({
       imports: [ClientCatalog],
       providers: [
@@ -67,6 +74,7 @@ describe('ClientCatalog', () => {
         { provide: ProductsService, useValue: productsServiceMock },
         { provide: WishlistService, useValue: wishlistServiceMock },
         { provide: ToastService, useValue: toastServiceMock },
+        { provide: CartService, useValue: cartServiceMock },
       ],
     }).compileComponents();
 
@@ -81,16 +89,32 @@ describe('ClientCatalog', () => {
     const el: HTMLElement = fixture.nativeElement;
 
     expect(el.querySelector('#catalog-title')?.textContent).toContain('Catálogo de productos');
+    expect(el.querySelector('.primary-action')?.textContent).toContain('Ver carrito');
 
     const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
     expect(navLinks.length).toBe(5);
-    expect(navLinks[0].textContent).toContain('Mi catálogo');
+    expect(navLinks[0].textContent).toContain('Catálogo');
     expect(navLinks[0].classList.contains('is-active')).toBe(true);
-    expect(navLinks[1].textContent).toContain('Mi panel');
-    expect(navLinks[2].textContent).toContain('Lista de deseos');
-    expect(navLinks[3].textContent).toContain('Mis compras');
-    expect(navLinks[3].classList.contains('is-disabled')).toBe(true);
-    expect(navLinks[4].textContent).toContain('Mi perfil');
+    expect(navLinks[1].textContent).toContain('Lista de deseos');
+    expect(navLinks[2].textContent).toContain('Mis compras');
+    expect(navLinks[3].textContent).toContain('Carrito');
+    expect(navLinks[4].textContent).toContain('Perfil');
+  });
+
+  it('should toggle sidebar collapsed state', () => {
+    expect(component.sidebarCollapsed()).toBe(false);
+    component.toggleSidebar();
+    expect(component.sidebarCollapsed()).toBe(true);
+  });
+
+  it('should add product to cart and show toast', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    const addBtn = el.querySelector('.add-to-cart-action-btn') as HTMLButtonElement;
+    expect(addBtn).not.toBeNull();
+    addBtn?.click();
+
+    expect(cartServiceMock.addItem).toHaveBeenCalledWith('p-1', 1);
+    expect(toastServiceMock.show).toHaveBeenCalledWith('Producto añadido al carrito', 'success');
   });
 
   it('should render products and allow toggling favorite with feedback', () => {

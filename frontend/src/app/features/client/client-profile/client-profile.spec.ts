@@ -47,7 +47,7 @@ describe('ClientProfile', () => {
 
     it('muestra el título y los campos en solo lectura', () => {
         const el: HTMLElement = fixture.nativeElement;
-        expect(el.querySelector('h1')?.textContent).toContain('Mi perfil');
+        expect(el.querySelector('h1')?.textContent).toContain('Perfil');
         expect(el.querySelector('.section-title')?.textContent).toContain('Datos personales');
         el.querySelectorAll('input').forEach((input) => expect(input.readOnly).toBe(true));
     });
@@ -59,7 +59,7 @@ describe('ClientProfile', () => {
 
     it('deja las secciones de otras HU como próximamente', () => {
         const disabled = fixture.nativeElement.querySelectorAll('.nav-item.is-disabled');
-        expect(disabled.length).toBe(4);
+        expect(disabled.length).toBe(2);
     });
 
     it('cierra sesión y vuelve al inicio', () => {
