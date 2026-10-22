@@ -60,7 +60,7 @@ describe('Login', () => {
       email: 'seller@example.com',
       password: 'short',
       totpCode: '',
-    });
+    }));
     expect(navigate).toHaveBeenCalledWith(['/seller/catalog']);
   });
 

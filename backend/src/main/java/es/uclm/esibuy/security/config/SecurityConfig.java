@@ -89,13 +89,17 @@ public class SecurityConfig {
                     .authorizeHttpRequests(auth -> auth
                             .requestMatchers(HttpMethod.GET, "/api/categories", "/api/categorias").permitAll()
                             .requestMatchers(
-                                    "/", "/api/users/register/**", "/api/users/login", "/actuator/health")
+                                    "/", "/api/users/register/**", "/api/users/login", "/actuator/health",
+                                    "/api/users/login/verify-otp")
                             .permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/users/admin").hasRole(ROLE_ADMIN)
                             .requestMatchers("/api/admin/**", "/api/v1/admin/**").hasRole(ROLE_ADMIN)
-                            .requestMatchers(HttpMethod.GET, "/api/products/mine", "/api/products/summary", "/api/products/resumen").hasRole(ROLE_SELLER)
+                            .requestMatchers(HttpMethod.GET, "/api/products/mine", "/api/products/summary",
+                                    "/api/products/resumen")
+                            .hasRole(ROLE_SELLER)
                             .requestMatchers(HttpMethod.POST, "/api/products").hasRole(ROLE_SELLER)
-                            .requestMatchers(HttpMethod.PATCH, "/api/products/*/status").hasAnyRole(ROLE_SELLER, ROLE_ADMIN)
+                            .requestMatchers(HttpMethod.PATCH, "/api/products/*/status")
+                            .hasAnyRole(ROLE_SELLER, ROLE_ADMIN)
                             .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/*").permitAll()
                             .requestMatchers("/api/catalog/**").hasRole(ROLE_CLIENT)
                             .requestMatchers("/api/products/**").hasRole(ROLE_SELLER)

@@ -1,18 +1,9 @@
 <div class="profile-page">
     <!-- BARRA LATERAL -->
-    <app-profile-shell
-        [avatar]="displayAvatar()"
-        [initials]="initials()"
-        [displayName]="fullName()"
-        fallbackName="Vendedor"
-        avatarAlt="Perfil del vendedor"
-        badgeLabel="Vendedor"
-        [sections]="shellSections"
-        [activeSection]="activeSection()"
-        [logoutError]="logoutError()"
-        (sectionChange)="selectSection($any($event))"
-        (back)="goBack()"
-        (logout)="logout()">
+    <app-profile-shell [avatar]="displayAvatar()" [initials]="initials()" [displayName]="fullName()"
+        fallbackName="Vendedor" avatarAlt="Perfil del vendedor" badgeLabel="Vendedor" [sections]="shellSections"
+        [activeSection]="activeSection()" [logoutError]="logoutError()" (sectionChange)="selectSection($any($event))"
+        (back)="goBack()" (logout)="logout()">
     </app-profile-shell>
 
     <!-- CONTENIDO PRINCIPAL -->

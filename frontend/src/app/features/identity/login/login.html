@@ -28,6 +28,7 @@
       <div class="active-session-actions">
         <a [routerLink]="getDashboardRoute(user.role)" class="btn-dashboard">
           {{ getDashboardButtonText(user.role) }}
+
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M5 12h14m-7-7 7 7-7 7" />
@@ -45,18 +46,33 @@
         </button>
       </div>
     </div>
+
     } @else {
+
     <header class="login-header" *ngIf="!embedded">
       <div class="brand">
         <span class="brand-name">ESIBuy</span>
         <span class="brand-badge">Plataforma de Comercio Electrónico</span>
       </div>
 
-      <h1>{{ requires2FA ? 'Autenticación en Dos Pasos' : 'Iniciar sesión' }}</h1>
+      <h1>
+        {{
+        requires3FA
+        ? 'Verificación por correo electrónico'
+        : requires2FA
+        ? 'Autenticación en Dos Pasos'
+        : 'Iniciar sesión'
+        }}
+      </h1>
 
       <p class="login-subtitle">
-        {{ requires2FA ? 'Introduce el código de tu aplicación Authenticator o un código de respaldo.' : 'Accede a tu
-        cuenta para continuar.' }}
+        {{
+        requires3FA
+        ? 'Introduce el código de seis dígitos enviado a tu correo electrónico.'
+        : requires2FA
+        ? 'Introduce el código de tu aplicación Authenticator o un código de respaldo.'
+        : 'Accede a tu cuenta para continuar.'
+        }}
       </p>
     </header>
 
@@ -74,7 +90,30 @@
 
       <fieldset class="form-section" [disabled]="loading || retryAfterSeconds > 0">
 
-        @if (!requires2FA) {
+        @if (requires3FA) {
+
+        <!-- Verificación por correo electrónico -->
+        <div class="form-group">
+          <label for="emailOtpCode">Código enviado por email</label>
+
+          <input id="emailOtpCode" type="text" formControlName="emailOtpCode" placeholder="123456" inputmode="numeric"
+            autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" aria-describedby="otp-help otp-error" />
+
+          <small id="otp-help" class="login-subtitle">
+            El código caduca en {{ otpExpiresInMinutes }} minutos.
+          </small>
+
+          <span id="otp-error" class="error" *ngIf="
+                  loginForm.get('emailOtpCode')?.touched &&
+                  loginForm.get('emailOtpCode')?.hasError('pattern')
+                ">
+            Introduce un código de seis dígitos.
+          </span>
+        </div>
+
+        } @else if (!requires2FA) {
+
+        <!-- Credenciales de acceso -->
         <div class="form-group">
           <label for="email">Email</label>
 
@@ -85,98 +124,120 @@
                   loginForm.get('email')?.touched &&
                   loginForm.get('email')?.hasError('required')
                 ">
-            El email es obligatorio
+            El email es obligatorio.
           </span>
 
           <span class="error" *ngIf="
                   loginForm.get('email')?.touched &&
                   loginForm.get('email')?.hasError('email')
                 ">
-            Formato de email no válido
+            Formato de email no válido.
           </span>
-
         </div>
 
         <div class="form-group">
-
           <label for="password">Contraseña</label>
 
           <div class="password-wrapper">
-
             <input id="password" [attr.type]="showPassword ? 'text' : 'password'" formControlName="password"
               placeholder="Tu contraseña" [attr.autocomplete]="showPassword ? 'off' : 'current-password'" />
 
-            <button type="button" class="password-toggle" (click)="showPassword = !showPassword"
-              [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
-              <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" fill="none" stroke="currentColor"
-                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <button type="button" class="password-toggle" (click)="showPassword = !showPassword" [attr.aria-label]="
+                    showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
+                  ">
 
-                <circle cx="12" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="2" />
+              <svg *ngIf="!showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                aria-hidden="true">
+                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                <circle cx="12" cy="12" r="2.5" />
               </svg>
 
-              <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M3 3l18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-
+              <svg *ngIf="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                aria-hidden="true">
+                <path d="M3 3l18 18" />
                 <path
-                  d="M10.6 6.2A10.5 10.5 0 0 1 12 6c6 0 9.5 6 9.5 6a17.5 17.5 0 0 1-3.2 3.8M6.2 6.2C3.9 7.8 2.5 12 2.5 12s3.5 6 9.5 6c1.4 0 2.7-.3 3.8-.8"
-                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  d="M10.6 6.2A10.5 10.5 0 0 1 12 6c6 0 9.5 6 9.5 6a17.5 17.5 0 0 1-3.2 3.8M6.2 6.2C3.9 7.8 2.5 12 2.5 12s3.5 6 9.5 6c1.4 0 2.7-.3 3.8-.8" />
               </svg>
             </button>
-
           </div>
 
           <span class="error" *ngIf="
                   loginForm.get('password')?.touched &&
                   loginForm.get('password')?.hasError('required')
                 ">
-            La contraseña es obligatoria
+            La contraseña es obligatoria.
           </span>
-
         </div>
+
         } @else {
+
+        <!-- Verificación TOTP -->
         <div class="form-group">
-          <label for="totpCode">Código de verificación (6 dígitos o Respaldo)</label>
-          <input id="totpCode" type="text" formControlName="totpCode" placeholder="ej. 123456" autofocus
+          <label for="totpCode">
+            Código de verificación (6 dígitos o respaldo)
+          </label>
+
+          <input id="totpCode" type="text" formControlName="totpCode" placeholder="Ej. 123456" inputmode="numeric"
             autocomplete="one-time-code" maxlength="8" />
+
           <span class="error" *ngIf="
                   loginForm.get('totpCode')?.touched &&
                   loginForm.get('totpCode')?.hasError('required')
                 ">
-            Introduce el código TOTP o de respaldo
+            Introduce el código TOTP o de respaldo.
           </span>
         </div>
+
         }
 
       </fieldset>
 
+      <!-- Botón principal: un único envío para los tres estados -->
       <button type="submit" class="btn-submit" [disabled]="loading || retryAfterSeconds > 0">
-        {{ loading ? 'Verificando...' : requires2FA ? 'Confirmar código' : retryAfterSeconds > 0 ? 'Espera para
-        reintentar' : 'Entrar' }}
+
+        {{
+        loading
+        ? (requires3FA ? 'Verificando código...' : 'Verificando...')
+        : requires3FA
+        ? 'Verificar código'
+        : requires2FA
+        ? 'Confirmar código'
+        : retryAfterSeconds > 0
+        ? 'Espera para reintentar'
+        : 'Entrar'
+        }}
       </button>
 
-      <button *ngIf="requires2FA" type="button" class="btn-logout-session" (click)="cancel2FA()"
-        style="margin-top: 10px;">
+      <!-- Permite regresar al formulario de credenciales -->
+      <button *ngIf="requires2FA || requires3FA" type="button" class="btn-logout-session" style="margin-top: 10px;"
+        (click)="cancel2FA()">
         Volver a introducir credenciales
       </button>
 
     </form>
 
-    <div class="forgot-password" *ngIf="!requires2FA">
+    <!-- Recuperación de contraseña -->
+    <div class="forgot-password" *ngIf="!requires2FA && !requires3FA">
+
       <button type="button" class="forgot-password-link" (click)="showForgotPasswordMessage()">
         ¿Has olvidado tu contraseña?
       </button>
+
       <output *ngIf="forgotPasswordMessage" class="forgot-password-message">
         {{ forgotPasswordMessage }}
       </output>
     </div>
 
-    <div class="auth-links" *ngIf="!embedded && !requires2FA">
+    <!-- Registro -->
+    <div class="auth-links" *ngIf="!embedded && !requires2FA && !requires3FA">
+
       <span>¿No tienes cuenta?</span>
+
       <a routerLink="/register" class="auth-link">
         Regístrate aquí
       </a>
     </div>
+
     }
 
   </main>

@@ -1,18 +1,10 @@
 <div class="profile-page">
 
     <!-- BARRA LATERAL -->
-    <app-profile-shell
-        [avatar]="selectedAvatar()"
-        [displayName]="fullName()"
-        fallbackName="Administrador"
-        avatarAlt="Perfil del administrador"
-        badgeLabel="Administrador"
-        [sections]="shellSections"
-        [activeSection]="activeSection()"
-        [logoutError]="logoutError()"
-        (sectionChange)="selectSection($any($event))"
-        (back)="goBack()"
-        (logout)="logout()">
+    <app-profile-shell [avatar]="selectedAvatar()" [displayName]="fullName()" fallbackName="Administrador"
+        avatarAlt="Perfil del administrador" badgeLabel="Administrador" [sections]="shellSections"
+        [activeSection]="activeSection()" [logoutError]="logoutError()" (sectionChange)="selectSection($any($event))"
+        (back)="goBack()" (logout)="logout()">
     </app-profile-shell>
 
     <!-- CONTENIDO PRINCIPAL -->
