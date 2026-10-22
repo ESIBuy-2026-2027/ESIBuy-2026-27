@@ -1,39 +1,41 @@
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms'; // <-- IMPORTANTE: Añadido para los filtros
 import { AuthService, UserAdmin } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-admin-user-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule], // <-- Añadido aquí
+  imports: [CommonModule, RouterLink, RouterLinkActive, FormsModule],
   templateUrl: './admin-user-list.html',
   styleUrls: ['./admin-user-list.css']
 })
 export class AdminUserList implements OnInit {
-  usuarios = signal<UserAdmin[]>([]);
-  cargando = signal(true);
+  sidebarCollapsed = signal(false);
+  users = signal<UserAdmin[]>([]);
+  loading = signal(true);
   error = signal('');
-  mensajeExito = signal('');
-  usuarioPendiente = signal<UserAdmin | null>(null);
-  pasoConfirmacion = signal<1 | 2>(1);
-  eliminando = signal(false);
-  errorEliminacion = signal('');
-  actualizandoEstado = signal<string | null>(null);
+  successMessage = signal('');
+  pendingUser = signal<UserAdmin | null>(null);
+  confirmationStep = signal<1 | 2>(1);
+  deleting = signal(false);
+  deletionError = signal('');
+  updatingStatus = signal<string | null>(null);
 
-  filtroRol: string = '';
-  filtroEstado: string = '';
-  busquedaNombre = signal('');
-  usuariosFiltrados = computed(() => {
-    const query = this.busquedaNombre().trim().toLocaleLowerCase();
+  roleFilter: string = '';
+  statusFilter: string = '';
+  nameSearch = signal('');
+  filteredUsers = computed(() => {
+    const query = this.nameSearch().trim().toLocaleLowerCase();
     if (!query) {
-      return this.usuarios();
+      return this.users();
     }
 
-    return this.usuarios().filter((usuario) =>
-      `${usuario.firstName} ${usuario.lastName}`.toLocaleLowerCase().includes(query));
+    return this.users().filter((user) =>
+      `${user.firstName} ${user.lastName}`.toLocaleLowerCase().includes(query));
   });
   private lastFocusedElement: HTMLElement | null = null;
 
@@ -45,20 +47,20 @@ export class AdminUserList implements OnInit {
   ngOnInit(): void {
     const stateMessage = history.state?.successMessage;
     if (stateMessage && typeof stateMessage === 'string') {
-      this.mensajeExito.set(stateMessage);
+      this.successMessage.set(stateMessage);
     }
-    this.cargarUsuarios();
+    this.loadUsers();
   }
 
-  cargarUsuarios(): void {
-    this.cargando.set(true);
+  loadUsers(): void {
+    this.loading.set(true);
     this.error.set('');
     this.cdr.markForCheck();
 
-    this.authService.obtenerTodosLosUsuarios(this.filtroRol, this.filtroEstado).subscribe({
+    this.authService.getAllUsers(this.roleFilter, this.statusFilter).subscribe({
       next: (data) => {
-        this.usuarios.set(data);
-        this.cargando.set(false);
+        this.users.set(data);
+        this.loading.set(false);
       },
       error: (err: unknown) => {
         if (err instanceof HttpErrorResponse && err.status === 403) {
@@ -68,13 +70,13 @@ export class AdminUserList implements OnInit {
         } else {
           this.error.set('No se pudo cargar la lista de usuarios. Inténtalo de nuevo.');
         }
-        this.cargando.set(false);
+        this.loading.set(false);
       }
     });
   }
 
-  aplicarFiltros(): void {
-    this.cargarUsuarios();
+  applyFilters(): void {
+    this.loadUsers();
   }
 
   @ViewChild('deleteDialog')
@@ -82,52 +84,52 @@ export class AdminUserList implements OnInit {
     element?.nativeElement.focus();
   }
 
-  puedeEliminar(usuario: UserAdmin): boolean {
-    return usuario.role === 'ADMIN' && this.authService.currentUser()?.id !== usuario.id;
+  canDelete(user: UserAdmin): boolean {
+    return user.role === 'ADMIN' && this.authService.currentUser()?.id !== user.id;
   }
 
-  puedeCambiarEstado(usuario: UserAdmin): boolean {
-    return this.authService.currentUser()?.id !== usuario.id;
+  canChangeStatus(user: UserAdmin): boolean {
+    return this.authService.currentUser()?.id !== user.id;
   }
 
-  cambiarEstadoUsuario(usuario: UserAdmin, accion: 'activar' | 'desactivar' | 'bloquear' | 'desbloquear'): void {
-    if (!this.puedeCambiarEstado(usuario) || this.actualizandoEstado()) {
+  changeUserStatus(user: UserAdmin, action: 'activar' | 'desactivar' | 'bloquear' | 'desbloquear'): void {
+    if (!this.canChangeStatus(user) || this.updatingStatus()) {
       return;
     }
 
-    this.actualizandoEstado.set(usuario.id);
+    this.updatingStatus.set(user.id);
     this.error.set('');
-    this.mensajeExito.set('');
+    this.successMessage.set('');
 
-    let peticion;
+    let request;
 
-    switch (accion) {
+    switch (action) {
       case 'activar':
-        peticion = this.authService.activarUsuarioAdmin(usuario.id);
+        request = this.authService.activateAdminUser(user.id);
         break;
 
       case 'desactivar':
-        peticion = this.authService.desactivarUsuarioAdmin(usuario.id);
+        request = this.authService.deactivateAdminUser(user.id);
         break;
 
       case 'bloquear':
-        peticion = this.authService.bloquearUsuarioAdmin(usuario.id);
+        request = this.authService.blockAdminUser(user.id);
         break;
 
       case 'desbloquear':
-        peticion = this.authService.desbloquearUsuarioAdmin(usuario.id);
+        request = this.authService.unblockAdminUser(user.id);
         break;
     }
 
-    peticion.subscribe({
+    request.subscribe({
       next: () => {
-        this.usuarios.update((usuarios) =>
-          usuarios.map((actual) => {
-            if (actual.id !== usuario.id) {
+        this.users.update((users) =>
+          users.map((actual) => {
+            if (actual.id !== user.id) {
               return actual;
             }
 
-            switch (accion) {
+            switch (action) {
               case 'activar':
                 return { ...actual, active: true, blocked: false };
 
@@ -143,33 +145,33 @@ export class AdminUserList implements OnInit {
           }),
         );
 
-        const mensajes = {
-          activar: `La cuenta de ${usuario.email} se ha activado correctamente.`,
-          desactivar: `La cuenta de ${usuario.email} se ha desactivado correctamente.`,
-          bloquear: `La cuenta de ${usuario.email} se ha bloqueado correctamente.`,
-          desbloquear: `La cuenta de ${usuario.email} se ha desbloqueado correctamente.`,
+        const messages = {
+          activar: `La cuenta de ${user.email} se ha activado correctamente.`,
+          desactivar: `La cuenta de ${user.email} se ha desactivado correctamente.`,
+          bloquear: `La cuenta de ${user.email} se ha bloqueado correctamente.`,
+          desbloquear: `La cuenta de ${user.email} se ha desbloqueado correctamente.`,
         };
 
-        this.mensajeExito.set(mensajes[accion]);
-        this.actualizandoEstado.set(null);
+        this.successMessage.set(messages[action]);
+        this.updatingStatus.set(null);
       },
 
       error: () => {
         this.error.set('No se pudo cambiar el estado del usuario. Inténtalo de nuevo.');
-        this.actualizandoEstado.set(null);
+        this.updatingStatus.set(null);
       },
     });
   }
 
-  getEstadoUsuario(usuario: UserAdmin): 'activo' | 'inactivo' | 'bloqueado' {
-    if (usuario.blocked) {
+  getUserStatus(user: UserAdmin): 'activo' | 'inactivo' | 'bloqueado' {
+    if (user.blocked) {
       return 'bloqueado';
     }
-    return usuario.active ? 'activo' : 'inactivo';
+    return user.active ? 'activo' : 'inactivo';
   }
 
-  getTextoEstado(usuario: UserAdmin): string {
-    switch (this.getEstadoUsuario(usuario)) {
+  getStatusText(user: UserAdmin): string {
+    switch (this.getUserStatus(user)) {
       case 'activo':
         return 'Activo';
       case 'inactivo':
@@ -179,8 +181,8 @@ export class AdminUserList implements OnInit {
     }
   }
 
-  getClaseEstado(usuario: UserAdmin): string {
-    switch (this.getEstadoUsuario(usuario)) {
+  getStatusClass(user: UserAdmin): string {
+    switch (this.getUserStatus(user)) {
       case 'activo':
         return 'active';
       case 'inactivo':
@@ -190,26 +192,26 @@ export class AdminUserList implements OnInit {
     }
   }
 
-  abrirConfirmacion(usuario: UserAdmin): void {
-    if (!this.puedeEliminar(usuario)) {
+  openConfirmation(user: UserAdmin): void {
+    if (!this.canDelete(user)) {
       return;
     }
     this.lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    this.usuarioPendiente.set(usuario);
-    this.pasoConfirmacion.set(1);
-    this.errorEliminacion.set('');
-    this.mensajeExito.set('');
+    this.pendingUser.set(user);
+    this.confirmationStep.set(1);
+    this.deletionError.set('');
+    this.successMessage.set('');
   }
 
-  confirmarPrimerPaso(): void {
-    this.pasoConfirmacion.set(2);
+  confirmFirstStep(): void {
+    this.confirmationStep.set(2);
   }
 
-  cancelarConfirmacion(): void {
-    if (!this.eliminando()) {
-      this.usuarioPendiente.set(null);
-      this.pasoConfirmacion.set(1);
-      this.errorEliminacion.set('');
+  cancelConfirmation(): void {
+    if (!this.deleting()) {
+      this.pendingUser.set(null);
+      this.confirmationStep.set(1);
+      this.deletionError.set('');
       const focusTarget = this.lastFocusedElement;
       this.lastFocusedElement = null;
       queueMicrotask(() => {
@@ -220,36 +222,36 @@ export class AdminUserList implements OnInit {
     }
   }
 
-  eliminarUsuario(): void {
-    const usuario = this.usuarioPendiente();
-    if (!usuario || !this.puedeEliminar(usuario) || this.eliminando()) {
+  deleteUser(): void {
+    const user = this.pendingUser();
+    if (!user || !this.canDelete(user) || this.deleting()) {
       return;
     }
 
-    this.eliminando.set(true);
-    this.errorEliminacion.set('');
-    this.authService.eliminarUsuarioAdmin(usuario.id).subscribe({
+    this.deleting.set(true);
+    this.deletionError.set('');
+    this.authService.deleteAdminUser(user.id).subscribe({
       next: () => {
-        this.usuarios.update((usuarios) => usuarios.filter((actual) => actual.id !== usuario.id));
-        this.mensajeExito.set(`La cuenta de ${usuario.email} se eliminó correctamente.`);
-        this.usuarioPendiente.set(null);
-        this.eliminando.set(false);
+        this.users.update((users) => users.filter((currentUser) => currentUser.id !== user.id));
+        this.successMessage.set(`La cuenta de ${user.email} se eliminó correctamente.`);
+        this.pendingUser.set(null);
+        this.deleting.set(false);
       },
       error: (err: unknown) => {
-        this.errorEliminacion.set(this.mensajeErrorEliminacion(err));
-        this.eliminando.set(false);
+        this.deletionError.set(this.getDeletionErrorMessage(err));
+        this.deleting.set(false);
       }
     });
   }
 
   @HostListener('document:keydown', ['$event'])
-  gestionarTecladoDialogo(event: KeyboardEvent): void {
-    if (!this.usuarioPendiente()) {
+  handleDialogKeyboard(event: KeyboardEvent): void {
+    if (!this.pendingUser()) {
       return;
     }
     if (event.key === 'Escape') {
       event.preventDefault();
-      this.cancelarConfirmacion();
+      this.cancelConfirmation();
       return;
     }
     if (event.key !== 'Tab') {
@@ -274,7 +276,7 @@ export class AdminUserList implements OnInit {
     }
   }
 
-  private mensajeErrorEliminacion(error: unknown): string {
+  private getDeletionErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       switch (error.status) {
         case 400: return 'La solicitud no es válida. No puedes eliminar tu propia cuenta.';
@@ -312,4 +314,9 @@ export class AdminUserList implements OnInit {
       default: return 'badge-default';
     }
   }
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update((collapsed) => !collapsed);
+  }
+
 }

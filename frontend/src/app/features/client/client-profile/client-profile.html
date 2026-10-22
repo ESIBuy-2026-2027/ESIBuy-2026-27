@@ -1,3 +1,4 @@
+
 <div class="profile-page">
 
     <!-- BARRA LATERAL -->
@@ -7,7 +8,7 @@
             <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Perfil" />
 
             <h2 class="sidebar-name">
-                {{ fullName() || 'Mi perfil' }}
+                {{ fullName() || 'Perfil' }}
             </h2>
 
             @if (isPremium()) {
@@ -35,8 +36,21 @@
                 (click)="selectSection('security')">
                 {{ section.label }}
             </button>
-            } @else {
-            <a class="nav-item disabled" aria-disabled="true">
+            } @else if (section.label === 'Direcciones de envío') {
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'addresses'"
+                [attr.aria-current]="activeSection() === 'addresses' ? 'page' : null"
+                (click)="selectSection('addresses')">
+                {{ section.label }}
+            </button>
+            }@else if (section.label === 'Métodos de pago') {
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'payments'"
+                [attr.aria-current]="activeSection() === 'payments' ? 'page' : null"
+                (click)="selectSection('payments')">
+                {{ section.label }}
+            </button>
+            }
+            @else {
+            <a class="nav-item is-disabled disabled" aria-disabled="true">
                 {{ section.label }}
             </a>
             }
@@ -71,7 +85,7 @@
         </section>
         } @else if (profileError(); as error) {
         <section class="panel">
-            <h1 class="panel-title">Mi perfil</h1>
+            <h1 class="panel-title">Perfil</h1>
 
             <p class="form-error" role="alert">{{ error }}</p>
 
@@ -82,7 +96,7 @@
         } @else if (profile(); as client) {
 
         <!-- BANNER PREMIUM -->
-        @if (isPremium()) {
+        @if (activeSection() === 'personal' && isPremium()) {
         <section class="premium-banner">
             <div>
                 <span class="premium-eyebrow">CUENTA PREMIUM</span>
@@ -105,7 +119,7 @@
                 <div class="panel-heading-text">
                     <span class="eyebrow">CUENTA DE CLIENTE</span>
 
-                    <h1 class="panel-title">Mi perfil</h1>
+                    <h1 class="panel-title">Perfil</h1>
 
                     <p class="panel-description">
                         Consulta y actualiza tus datos personales.
@@ -181,9 +195,9 @@
                         <label for="phone">Teléfono</label>
 
                         @if (editing()) {
-                        <input id="phone" name="phone" type="tel" [(ngModel)]="editForm.phone" pattern="[0-9]{9}"
-                            maxlength="9" inputmode="numeric" autocomplete="tel" placeholder="Teléfono de 9 cifras"
-                            [disabled]="saving()" />
+                        <input id="phone" name="phone" type="tel" inputmode="numeric" maxlength="9"
+                            [(ngModel)]="editForm.phone" pattern="[0-9]{9}"
+                            autocomplete="tel" placeholder="Teléfono de 9 cifras" [disabled]="saving()" />
 
                         <small>
                             Campo opcional. Introduce 9 cifras si
@@ -310,6 +324,12 @@
         @if (activeSection() === 'security') {
         <app-two-factor-settings [enabled]="twoFactorEnabled()"
             (enabledChange)="onTwoFactorEnabledChange($any($event))" />
+        }
+        @if (activeSection() === 'addresses') {
+        <app-shipping-addresses />
+        }
+        @if (activeSection() === 'payments') {
+        <app-payment-methods />
         }
         }
     </main>

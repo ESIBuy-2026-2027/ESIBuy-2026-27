@@ -1,51 +1,19 @@
 <div class="profile-page">
     <!-- BARRA LATERAL -->
-    <aside class="profile-card" aria-label="Menú de perfil">
-        <div class="sidebar-profile">
-            @if (displayAvatar()) {
-            <img class="avatar avatar-image" [src]="displayAvatar()" alt="Perfil del vendedor" />
-            } @else {
-            <div class="avatar" aria-hidden="true">
-                {{ initials() }}
-            </div>
-            }
-
-            <h2 class="sidebar-name">
-                {{ fullName() || 'Vendedor' }}
-            </h2>
-
-            <span class="role-badge">Vendedor</span>
-        </div>
-
-        <nav class="sidebar-nav" aria-label="Secciones del perfil">
-            <button type="button" class="nav-item" [class.active]="activeSection() === 'personal'"
-                [attr.aria-current]="activeSection() === 'personal' ? 'page' : null"
-                (click)="selectSection('personal')">
-                Datos personales y negocio
-            </button>
-
-            <button type="button" class="nav-item" [class.active]="activeSection() === 'security'"
-                [attr.aria-current]="activeSection() === 'security' ? 'page' : null"
-                (click)="selectSection('security')">
-                Seguridad
-            </button>
-        </nav>
-
-        <div class="sidebar-footer">
-            @if (logoutError(); as error) {
-            <p class="form-error" role="alert">{{ error }}</p>
-            }
-
-            <button type="button" class="back-button" (click)="goBack()">
-                <span aria-hidden="true">←</span>
-                Volver
-            </button>
-
-            <button type="button" class="logout-button" (click)="logout()">
-                Cerrar sesión
-            </button>
-        </div>
-    </aside>
+    <app-profile-shell
+        [avatar]="displayAvatar()"
+        [initials]="initials()"
+        [displayName]="fullName()"
+        fallbackName="Vendedor"
+        avatarAlt="Perfil del vendedor"
+        badgeLabel="Vendedor"
+        [sections]="shellSections"
+        [activeSection]="activeSection()"
+        [logoutError]="logoutError()"
+        (sectionChange)="selectSection($any($event))"
+        (back)="goBack()"
+        (logout)="logout()">
+    </app-profile-shell>
 
     <!-- CONTENIDO PRINCIPAL -->
     <main class="profile-main">
@@ -57,7 +25,7 @@
         </section>
         } @else if (profileError(); as error) {
         <section class="panel">
-            <h1 class="panel-title">Mi perfil de vendedor</h1>
+            <h1 class="panel-title">Perfil de vendedor</h1>
 
             <p class="form-error" role="alert">{{ error }}</p>
 
@@ -73,7 +41,7 @@
                 <div class="panel-heading-text">
                     <span class="eyebrow">CUENTA DE VENDEDOR</span>
 
-                    <h1 class="panel-title">Mi perfil</h1>
+                    <h1 class="panel-title">Perfil</h1>
 
                     <p class="panel-description">
                         Consulta y actualiza tus datos personales y la
@@ -152,7 +120,8 @@
                             deseas indicar tu teléfono.
                         </small>
                         } @else {
-                        <input id="phone" type="text" [value]="seller.phone || 'No indicado'" readonly /> }
+                        <input id="phone" type="text" inputmode="numeric" maxlength="9"
+                            [value]="seller.phone || 'No indicado'" readonly /> }
                     </div>
 
                     <div class="field">

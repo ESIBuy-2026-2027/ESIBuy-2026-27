@@ -18,99 +18,89 @@ import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
 import es.uclm.esibuy.users.service.AdminService;
 
-
 import es.uclm.esibuy.common.exception.UserNotFoundException;
-
-
-
 
 @ExtendWith(MockitoExtension.class)
 class BloqueoDesbloqueoUsuarioTest {
-    @Mock
-    private UserRepository userRepository;
+        @Mock
+        private UserRepository userRepository;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+        @Mock
+        private PasswordEncoder passwordEncoder;
 
-    private AdminService adminService;
-
-    @Test
-    void unAdministradorPuedeBloquearUnaCuentaActiva() {
-        // Arrange
-
-        User usuario = new User(
-                "usuario@test.com",
-                "Juan",
-                "Pérez",
-                UserRole.CLIENT
-        );
-
-        usuario.setActive(true);
-
-        when(userRepository.findById("123"))
-                .thenReturn(Optional.of(usuario));
-
-        adminService = new AdminService(userRepository, passwordEncoder);
-
-        // Act
-        adminService.bloquearUsuario("123");
-
-        // Assert
-        assertFalse(usuario.isActive());
-    }
-
-    @Test
-    void noSePuedeBloquearUnUsuarioInexistente() {
-        // Arrange
-        when(userRepository.findById("999"))
-                .thenReturn(Optional.empty());
-
-        adminService = new AdminService(userRepository, passwordEncoder);
-
-        // Act + Assert
-        assertThrows(
-                UserNotFoundException.class,
-                () -> adminService.bloquearUsuario("999")
-        );
-    }
-
+        private AdminService adminService;
 
         @Test
-    void unAdministradorPuedeDesbloquearUnaCuentaBloqueada() {
-        // Arrange
-        User usuario = new User(
-                "usuario@test.com",
-                "Juan",
-                "Pérez",
-                UserRole.CLIENT
-        );
-        usuario.setActive(false);
+        void unAdministradorPuedeBloquearUnaCuentaActiva() {
+                // Arrange
 
-        when(userRepository.findById("123"))
-                .thenReturn(Optional.of(usuario));
+                User usuario = new User(
+                                "usuario@test.com",
+                                "Juan",
+                                "Pérez",
+                                UserRole.CLIENT);
 
-        adminService = new AdminService(userRepository, passwordEncoder);
+                usuario.setActive(true);
 
-        // Act
-        adminService.desbloquearUsuario("123");
+                when(userRepository.findById("123"))
+                                .thenReturn(Optional.of(usuario));
 
-        // Assert
-        assertTrue(usuario.isActive());
-    }
+                adminService = new AdminService(userRepository, passwordEncoder);
 
+                // Act
+                adminService.blockUser("123");
 
-    @Test
-    void noSePuedeDesbloquearUnUsuarioInexistente() {
-        // Arrange
-        when(userRepository.findById("999"))
-                .thenReturn(Optional.empty());
+                // Assert
+                assertFalse(usuario.isActive());
+        }
 
-        adminService = new AdminService(userRepository, passwordEncoder);
+        @Test
+        void noSePuedeBloquearUnUsuarioInexistente() {
+                // Arrange
+                when(userRepository.findById("999"))
+                                .thenReturn(Optional.empty());
 
-        // Act + Assert
-        assertThrows(
-                UserNotFoundException.class,
-                () -> adminService.desbloquearUsuario("999")
-        );
-    }
+                adminService = new AdminService(userRepository, passwordEncoder);
+
+                // Act + Assert
+                assertThrows(
+                                UserNotFoundException.class,
+                                () -> adminService.blockUser("999"));
+        }
+
+        @Test
+        void unAdministradorPuedeDesbloquearUnaCuentaBloqueada() {
+                // Arrange
+                User usuario = new User(
+                                "usuario@test.com",
+                                "Juan",
+                                "Pérez",
+                                UserRole.CLIENT);
+                usuario.setActive(false);
+
+                when(userRepository.findById("123"))
+                                .thenReturn(Optional.of(usuario));
+
+                adminService = new AdminService(userRepository, passwordEncoder);
+
+                // Act
+                adminService.unblockUser("123");
+
+                // Assert
+                assertTrue(usuario.isActive());
+        }
+
+        @Test
+        void noSePuedeDesbloquearUnUsuarioInexistente() {
+                // Arrange
+                when(userRepository.findById("999"))
+                                .thenReturn(Optional.empty());
+
+                adminService = new AdminService(userRepository, passwordEncoder);
+
+                // Act + Assert
+                assertThrows(
+                                UserNotFoundException.class,
+                                () -> adminService.unblockUser("999"));
+        }
 }

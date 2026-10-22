@@ -2,7 +2,6 @@ import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http'
 import { computed, Injectable, signal } from '@angular/core';
 import { Observable, catchError, of, tap, throwError } from 'rxjs';
 
-
 export type UserRole = 'CLIENT' | 'SELLER' | 'ADMIN';
 
 export interface AuthenticatedUser {
@@ -22,6 +21,22 @@ export interface LoginResponse {
   totpEnabled?: boolean;
 }
 
+export interface ClientProfile {
+  birthDate?: string;
+  customerType?: string;
+}
+
+export interface SellerProfile {
+  businessName?: string;
+  defaultCategory?: string;
+  headquarters?: string;
+}
+
+export interface AdminProfile {
+  headquarters?: string;
+  hireDate?: string;
+}
+
 export interface UserAdmin {
   id: string;
   email: string;
@@ -34,9 +49,9 @@ export interface UserAdmin {
   active: boolean;
   blocked: boolean;
   createdAt: string | null;
-  clientProfile?: { birthDate?: string; customerType?: string } | null;
-  sellerProfile?: { businessName?: string; defaultCategory?: string; sede?: string } | null;
-  adminProfile?: { headquarters?: string; hireDate?: string } | null;
+  clientProfile?: ClientProfile | null;
+  sellerProfile?: SellerProfile | null;
+  adminProfile?: AdminProfile | null;
 }
 
 export interface UpdateUserRequest {
@@ -66,16 +81,15 @@ export interface UserResponse {
   defaultCategory?: string | null;
 }
 
-
-export interface AltaAdminRequest {
-  dni: string;
-  nombre: string;
-  apellidos: string;
+export interface CreateAdminRequest {
+  nationalId: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  contrasena: string;
-  repetirContrasena: string;
-  sede?: string | null;
-  imagenPerfil?: string | null;
+  password: string;
+  confirmPassword: string;
+  headquarters?: string | null;
+  profileImage?: string | null;
 }
 
 export interface ApiResponse<T> {
@@ -85,50 +99,88 @@ export interface ApiResponse<T> {
   correlationId: string | null;
 }
 
-
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly apiUrl = '/api/users';
+  private readonly adminApiUrl = '/api/admin/users';
   private readonly currentUserSignal = signal<AuthenticatedUser | null>(null);
+
   readonly currentUser = this.currentUserSignal.asReadonly();
   readonly isAuthenticated = computed(() => this.currentUserSignal() !== null);
 
   constructor(private readonly http: HttpClient) { }
 
   registerClient(data: unknown): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/register/client`, data, { withCredentials: true });
+    return this.http.post(
+      `${this.apiUrl}/register/client`,
+      data,
+      { withCredentials: true },
+    );
   }
 
   registerSeller(data: unknown): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/register/seller`, data, { withCredentials: true });
+    return this.http.post(
+      `${this.apiUrl}/register/seller`,
+      data,
+      { withCredentials: true },
+    );
   }
 
-  createAdmin(data: unknown): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/admin`, data, { withCredentials: true });
+
+  createAdmin(data: CreateAdminRequest): Observable<unknown> {
+    return this.http.post(
+      '/api/admin/create-admin',
+      data,
+      { withCredentials: true },
+    );
   }
 
-  login(data: { email: string; password: string; totpCode?: string }): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, data, { withCredentials: true })
-      .pipe(tap((res) => {
-        if (!res.requires2fa && res.id) {
-          this.currentUserSignal.set(res as AuthenticatedUser);
-        }
-      }));
+
+  login(data: {
+    email: string;
+    password: string;
+    totpCode?: string;
+  }): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>(
+        `${this.apiUrl}/login`,
+        data,
+        { withCredentials: true },
+      )
+      .pipe(
+        tap((response) => {
+          if (!response.requires2fa && response.id) {
+            this.currentUserSignal.set(response as AuthenticatedUser);
+          }
+        }),
+      );
   }
 
   setup2FA(): Observable<{ secret: string; qrUri: string }> {
-    return this.http.post<{ secret: string; qrUri: string }>(`${this.apiUrl}/2fa/setup`, {}, { withCredentials: true });
+    return this.http.post<{ secret: string; qrUri: string }>(
+      `${this.apiUrl}/2fa/setup`,
+      {},
+      { withCredentials: true },
+    );
   }
 
-  enable2FA(code: string): Observable<{ message: string; backupCodes: string[] }> {
-    return this.http.post<{ message: string; backupCodes: string[] }>(`${this.apiUrl}/2fa/enable`, { code }, { withCredentials: true });
+  enable2FA(
+    code: string,
+  ): Observable<{ message: string; backupCodes: string[] }> {
+    return this.http.post<{ message: string; backupCodes: string[] }>(
+      `${this.apiUrl}/2fa/enable`,
+      { code },
+      { withCredentials: true },
+    );
   }
 
-  regenerateBackupCodes(code?: string): Observable<{ message: string; backupCodes: string[] }> {
+  regenerateBackupCodes(
+    code?: string,
+  ): Observable<{ message: string; backupCodes: string[] }> {
     return this.http.post<{ message: string; backupCodes: string[] }>(
       `${this.apiUrl}/2fa/regenerate-backup-codes`,
       { code },
-      { withCredentials: true }
+      { withCredentials: true },
     );
   }
 
@@ -136,13 +188,19 @@ export class AuthService {
     return this.http.post<{ message: string }>(
       `${this.apiUrl}/2fa/disable`,
       { code },
-      { withCredentials: true }
+      { withCredentials: true },
     );
   }
 
   me(): Observable<AuthenticatedUser> {
-    return this.http.get<AuthenticatedUser>(`${this.apiUrl}/me`, { withCredentials: true })
-      .pipe(tap((user) => this.currentUserSignal.set(user)));
+    return this.http
+      .get<AuthenticatedUser>(
+        `${this.apiUrl}/me`,
+        { withCredentials: true },
+      )
+      .pipe(
+        tap((user) => this.currentUserSignal.set(user)),
+      );
   }
 
   loadCurrentUser(): Observable<AuthenticatedUser | null> {
@@ -152,100 +210,109 @@ export class AuthService {
           this.clearCurrentUser();
           return of(null);
         }
+
         return throwError(() => error);
       }),
     );
   }
 
   logout(): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/logout`, {}, { withCredentials: true })
-      .pipe(tap(() => this.clearCurrentUser()));
+    return this.http
+      .post<void>(
+        `${this.apiUrl}/logout`,
+        {},
+        { withCredentials: true },
+      )
+      .pipe(
+        tap(() => this.clearCurrentUser()),
+      );
   }
 
   clearCurrentUser(): void {
     this.currentUserSignal.set(null);
   }
 
-  obtenerTodosLosUsuarios(rol?: string, estado?: string): Observable<UserAdmin[]> {
+  getAllUsers(role?: string, status?: string): Observable<UserAdmin[]> {
     let params = new HttpParams();
 
-    if (rol) {
-      params = params.set('rol', rol);
-    }
-    if (estado) {
-      params = params.set('estado', estado);
+    if (role) {
+      params = params.set('role', role);
     }
 
-    return this.http.get<UserAdmin[]>('/api/admin/usuarios', {
+    if (status) {
+      params = params.set('status', status);
+    }
+
+    return this.http.get<UserAdmin[]>(this.adminApiUrl, {
       params,
       withCredentials: true,
     });
   }
 
-  obtenerUsuarioAdmin(id: string): Observable<ApiResponse<UserResponse>> {
+  getAdminUser(id: string): Observable<ApiResponse<UserResponse>> {
     return this.http.get<ApiResponse<UserResponse>>(
-      `/api/v1/admin/users/${encodeURIComponent(id)}`,
+      `${this.adminApiUrl}/${encodeURIComponent(id)}`,
       { withCredentials: true },
     );
   }
 
-  actualizarUsuarioAdmin(id: string, data: UpdateUserRequest): Observable<ApiResponse<UserResponse>> {
+  updateAdminUser(
+    id: string,
+    data: UpdateUserRequest,
+  ): Observable<ApiResponse<UserResponse>> {
     return this.http.put<ApiResponse<UserResponse>>(
-      `/api/v1/admin/users/${encodeURIComponent(id)}`,
+      `${this.adminApiUrl}/${encodeURIComponent(id)}`,
       data,
       { withCredentials: true },
     );
   }
 
-  eliminarUsuarioAdmin(id: string): Observable<ApiResponse<void>> {
+  deleteAdminUser(id: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(
-      `/api/admin/usuarios/${encodeURIComponent(id)}`,
+      `${this.adminApiUrl}/${encodeURIComponent(id)}`,
       { withCredentials: true },
     );
   }
 
-  alternarEstadoUsuarioAdmin(id: string): Observable<ApiResponse<UserResponse>> {
+  toggleAdminUserStatus(
+    id: string,
+  ): Observable<ApiResponse<UserResponse>> {
     return this.http.put<ApiResponse<UserResponse>>(
-      `/api/admin/usuarios/${encodeURIComponent(id)}/estado`,
+      `${this.adminApiUrl}/${encodeURIComponent(id)}/status`,
       {},
       { withCredentials: true },
     );
   }
 
-  bloquearUsuarioAdmin(id: string): Observable<ApiResponse<void>> {
+  blockAdminUser(id: string): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
-      `/api/admin/usuarios/${encodeURIComponent(id)}/bloquear`,
+      `${this.adminApiUrl}/${encodeURIComponent(id)}/block`,
       {},
       { withCredentials: true },
     );
   }
 
-  desbloquearUsuarioAdmin(id: string): Observable<ApiResponse<void>> {
+  unblockAdminUser(id: string): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
-      `/api/admin/usuarios/${encodeURIComponent(id)}/desbloquear`,
+      `${this.adminApiUrl}/${encodeURIComponent(id)}/unblock`,
       {},
       { withCredentials: true },
     );
   }
 
-  crearAdministrador(data: AltaAdminRequest): Observable<any> {
-    return this.http.post<any>('/api/admin/alta', data, { withCredentials: true });
-  }
-
-  activarUsuarioAdmin(id: string): Observable<ApiResponse<void>> {
+  activateAdminUser(id: string): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
-      `/api/admin/usuarios/${encodeURIComponent(id)}/activar`,
+      `${this.adminApiUrl}/${encodeURIComponent(id)}/activate`,
       {},
       { withCredentials: true },
     );
   }
 
-  desactivarUsuarioAdmin(id: string): Observable<ApiResponse<void>> {
+  deactivateAdminUser(id: string): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
-      `/api/admin/usuarios/${encodeURIComponent(id)}/desactivar`,
+      `${this.adminApiUrl}/${encodeURIComponent(id)}/deactivate`,
       {},
       { withCredentials: true },
     );
   }
-
 }

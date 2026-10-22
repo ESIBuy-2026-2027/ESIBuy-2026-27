@@ -12,7 +12,7 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { Category, ProductsService } from '../../products/products.service';
+import { Category, ProductsService } from '../../../core/services/products.service';
 
 export function isAdultValidator(control: AbstractControl): ValidationErrors | null {
   if (!control.value) return null;
@@ -66,9 +66,9 @@ export class Register {
   form: FormGroup;
 
   serverError: string | null = null;
-
   loading = false;
-
+  registrationSuccess = false;
+  showCancelConfirmation = false;
   showPassword = false;
 
   clientAvatars = [
@@ -344,11 +344,7 @@ export class Register {
       this.authService.registerClient(payload).subscribe({
 
         next: () => {
-          alert(
-            'Registro completado exitosamente. Tu cuenta requiere activación por un administrador.'
-          );
-
-          this.router.navigate(['/']);
+          this.registrationSuccess = true;
         },
 
         error: (err) => {
@@ -380,11 +376,7 @@ export class Register {
       this.authService.registerSeller(payload).subscribe({
 
         next: () => {
-          alert(
-            'Registro completado exitosamente. Tu cuenta requiere activación por un administrador.'
-          );
-
-          this.router.navigate(['/']);
+          this.registrationSuccess = true;
         },
 
         error: (err) => {
@@ -401,17 +393,36 @@ export class Register {
   }
 
   cancelRegistration(): void {
-    const confirmed = window.confirm(
-      '¿Seguro que quieres cancelar el registro? Se perderán los datos introducidos.'
-    );
-
-    if (confirmed) {
-      void this.router.navigate(['/']);
+    if (this.loading) {
+      return;
     }
+
+    this.showCancelConfirmation = true;
+    this.changeDetector.markForCheck();
+  }
+
+  dismissCancelConfirmation(): void {
+    this.showCancelConfirmation = false;
+    this.changeDetector.markForCheck();
+  }
+
+  confirmCancelRegistration(): void {
+    this.showCancelConfirmation = false;
+    this.changeDetector.markForCheck();
+    void this.router.navigate(['/']);
+  }
+
+  finishRegistration(): void {
+    void this.router.navigate(['/']);
   }
 
   private getRegistrationErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
+      const serverMessage = this.getServerMessage(error.error);
+      if (serverMessage) {
+        return serverMessage;
+      }
+
       if (error.status === 409) {
         return 'No se ha podido completar el registro. Comprueba los datos introducidos e inténtalo de nuevo.';
       }

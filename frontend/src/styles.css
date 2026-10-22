@@ -1,7 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
 
+@import './app/features/products/seller-shared.css';
+
 :root {
   --app-header-height: 3rem;
+  --color-brand-dark: #102c40;
+  --color-brand-accent: #42d6b2;
+  --color-brand-accent-hover: #35c4a1;
+  --color-page-background: #e9eff8;
+  --color-surface: #ffffff;
+  --color-text-primary: #173247;
+  --color-text-secondary: #587388;
+  --color-focus: #147c73;
 }
 
 body {
@@ -19,7 +29,7 @@ body {
   flex-direction: column;
   box-sizing: border-box;
   padding: 30px 18px 20px;
-  background: #102c40;
+  background: var(--color-brand-dark);
   color: #edf5f8;
 }
 
@@ -42,14 +52,14 @@ body {
   height: 34px;
   place-items: center;
   border-radius: 11px;
-  background: #42d6b2;
-  color: #102c40;
+  background: var(--color-brand-accent);
+  color: var(--color-brand-dark);
   font-size: 18px;
   font-weight: 800;
 }
 
 .admin-layout .admin-sidebar.admin-sidebar--shared .brand-accent {
-  color: #42d6b2;
+  color: var(--color-brand-accent);
 }
 
 .admin-layout .admin-sidebar.admin-sidebar--shared .sidebar-caption {
@@ -87,7 +97,7 @@ body {
 }
 
 .admin-layout .admin-sidebar.admin-sidebar--shared .navigation-link.is-active {
-  box-shadow: inset 3px 0 #42d6b2;
+  box-shadow: inset 3px 0 var(--color-brand-accent);
 }
 
 .admin-layout .admin-sidebar.admin-sidebar--shared .navigation-icon {
@@ -96,7 +106,7 @@ body {
   height: 19px;
   place-items: center;
   flex: 0 0 19px;
-  color: #42d6b2;
+  color: var(--color-brand-accent);
   fill: none;
   stroke: currentColor;
   stroke-width: 1.8;

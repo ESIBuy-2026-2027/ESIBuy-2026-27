@@ -13,6 +13,7 @@ import es.uclm.esibuy.security.service.EncryptionService;
 import es.uclm.esibuy.security.service.LoginAttemptService;
 import es.uclm.esibuy.security.service.SessionAuthenticationService;
 import es.uclm.esibuy.security.service.TotpService;
+import es.uclm.esibuy.security.service.TwoFactorAuthenticationService;
 import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
@@ -51,11 +52,14 @@ class UserSessionAuthenticationTest {
         @MockitoBean
         private EncryptionService encryptionService;
 
+        @MockitoBean
+        private TwoFactorAuthenticationService twoFactorAuthenticationService;
+
         @Test
         void adminLoginCreatesSessionAcceptedByAdminEndpoint() throws Exception {
                 User admin = user("admin-1", UserRole.ADMIN);
                 when(userService.login(any(LoginRequest.class))).thenReturn(admin);
-                when(adminUserService.obtenerPorId("admin-1")).thenReturn(admin);
+                when(adminUserService.findById("admin-1")).thenReturn(admin);
 
                 MvcResult loginResult = mockMvc.perform(post("/api/users/login")
                                 .with(csrf())

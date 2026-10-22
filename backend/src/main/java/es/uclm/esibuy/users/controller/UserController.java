@@ -1,16 +1,13 @@
 package es.uclm.esibuy.users.controller;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import es.uclm.esibuy.common.exception.InvalidCredentialsException;
 import es.uclm.esibuy.common.exception.TooManyRequestsException;
 import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
-import es.uclm.esibuy.security.service.EncryptionService;
 import es.uclm.esibuy.security.service.LoginAttemptService;
 import es.uclm.esibuy.security.service.SessionAuthenticationService;
-import es.uclm.esibuy.security.service.TotpService;
+import es.uclm.esibuy.security.service.TwoFactorAuthenticationService;
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
 import es.uclm.esibuy.users.dto.LoginRequest;
@@ -25,7 +22,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,20 +41,17 @@ public class UserController {
     private final UserService userService;
     private final LoginAttemptService loginAttemptService;
     private final SessionAuthenticationService sessionAuthenticationService;
-    private final TotpService totpService;
-    private final EncryptionService encryptionService;
+    private final TwoFactorAuthenticationService twoFactorAuthenticationService;
 
     public UserController(
             UserService userService,
             LoginAttemptService loginAttemptService,
             SessionAuthenticationService sessionAuthenticationService,
-            TotpService totpService,
-            EncryptionService encryptionService) {
+            TwoFactorAuthenticationService twoFactorAuthenticationService) {
         this.userService = userService;
         this.loginAttemptService = loginAttemptService;
         this.sessionAuthenticationService = sessionAuthenticationService;
-        this.totpService = totpService;
-        this.encryptionService = encryptionService;
+        this.twoFactorAuthenticationService = twoFactorAuthenticationService;
     }
 
     @PostMapping("/register/client")
@@ -106,21 +100,7 @@ public class UserController {
                         "email", user.getEmail()));
             }
 
-            // DESCIFRAR el secreto cifrado con AES antes de verificar el código TOTP
-            String rawSecret = encryptionService.decrypt(user.getTotpSecret());
-            boolean isValidTotp = totpService.verifyCode(rawSecret, code);
-            boolean isValidBackup = false;
-
-            if (!isValidTotp && user.getBackupCodes() != null) {
-                isValidBackup = user.getBackupCodes().contains(code.trim());
-                if (isValidBackup) {
-                    // Consumir el código de respaldo usado (un solo uso)
-                    user.getBackupCodes().remove(code.trim());
-                    userService.save(user);
-                }
-            }
-
-            if (!isValidTotp && !isValidBackup) {
+            if (!twoFactorAuthenticationService.verifyLoginCode(user, code)) {
                 loginAttemptService.loginFailed(request.getEmail(), ipAddress);
                 throw new InvalidCredentialsException();
             }
@@ -132,9 +112,9 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<Map<String, Object>> currentUser(Authentication authentication) {
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+    public ResponseEntity<Map<String, Object>> currentUser(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -148,9 +128,9 @@ public class UserController {
     }
 
     @GetMapping("/me/profile")
-    public ResponseEntity<UserProfileResponse> ownProfile(Authentication authentication) {
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+    public ResponseEntity<UserProfileResponse> ownProfile(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok(userService.getOwnProfile(principal.id()));
@@ -168,11 +148,10 @@ public class UserController {
 
     @DeleteMapping("/me")
     public ResponseEntity<Void> deleteOwnAccount(
-            Authentication authentication,
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
             HttpServletRequest request) {
 
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -190,11 +169,10 @@ public class UserController {
 
     @PutMapping("/me/profile")
     public ResponseEntity<UserProfileResponse> updateOwnProfile(
-            Authentication authentication,
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
             @Valid @RequestBody UpdateOwnProfileRequestDTO request) {
 
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -205,114 +183,78 @@ public class UserController {
     }
 
     @PostMapping("/2fa/setup")
-    public ResponseEntity<Map<String, String>> setup2FA(Authentication authentication) {
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+    public ResponseEntity<Map<String, String>> setup2FA(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        User user = userService.findById(principal.id());
-        String secret = totpService.generateSecret();
-
-        String encryptedSecret = encryptionService.encrypt(secret);
-        user.setTotpSecret(encryptedSecret);
-        userService.save(user);
-
-        String qrUri = String.format("otpauth://totp/ESIBuy:%s?secret=%s&issuer=ESIBuy", user.getEmail(), secret);
-        return ResponseEntity.ok(Map.of(
-                "secret", secret,
-                "qrUri", qrUri));
+        String secret = twoFactorAuthenticationService.setup(principal.id());
+        String qrUri = String.format("otpauth://totp/ESIBuy:%s?secret=%s&issuer=ESIBuy", principal.email(), secret);
+        return ResponseEntity.ok(Map.of("secret", secret, "qrUri", qrUri));
     }
 
     @PostMapping("/2fa/enable")
     public ResponseEntity<Map<String, Object>> enable2FA(
             @RequestBody Map<String, String> body,
-            Authentication authentication) {
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String code = body.get("code");
-        User user = userService.findById(principal.id());
-        String rawSecret = encryptionService.decrypt(user.getTotpSecret());
-
-        if (!totpService.verifyCode(rawSecret, code)) {
+        TwoFactorAuthenticationService.EnableResult result =
+                twoFactorAuthenticationService.enable(principal.id(), body != null ? body.get("code") : null);
+        if (!result.enabled()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(MESSAGE_KEY, (Object) "El código introducido es incorrecto o ha caducado"));
         }
-
-        List<String> rawBackupCodes = totpService.generateBackupCodes(8);
-        user.setTotpEnabled(true);
-        user.setBackupCodes(new ArrayList<>(rawBackupCodes));
-        userService.save(user);
-
         return ResponseEntity.ok(Map.of(
                 MESSAGE_KEY, "2FA activado correctamente",
-                "backupCodes", rawBackupCodes));
+                "backupCodes", result.backupCodes()));
     }
 
     @PostMapping("/2fa/regenerate-backup-codes")
     public ResponseEntity<Map<String, Object>> regenerateBackupCodes(
             @RequestBody(required = false) Map<String, String> body,
-            Authentication authentication) {
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        User user = userService.findById(principal.id());
-        if (!user.isTotpEnabled()) {
+        String code = body != null ? body.get("code") : null;
+        TwoFactorAuthenticationService.BackupCodesResult result =
+                twoFactorAuthenticationService.regenerateBackupCodes(principal.id(), code);
+        if (result.status() == TwoFactorAuthenticationService.Status.TWO_FACTOR_DISABLED) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(MESSAGE_KEY, "El usuario no tiene activado el 2FA"));
         }
-
-        String code = body != null ? body.get("code") : null;
-        if (code != null && !code.isBlank()) {
-            String rawSecret = encryptionService.decrypt(user.getTotpSecret());
-            if (!totpService.verifyCode(rawSecret, code)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of(MESSAGE_KEY, "Código 2FA incorrecto"));
-            }
+        if (result.status() == TwoFactorAuthenticationService.Status.INVALID_CODE) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(MESSAGE_KEY, "Código 2FA incorrecto"));
         }
-
-        List<String> newBackupCodes = totpService.generateBackupCodes(8);
-        user.setBackupCodes(new ArrayList<>(newBackupCodes));
-        userService.save(user);
-
         return ResponseEntity.ok(Map.of(
                 MESSAGE_KEY, "Nuevos códigos de respaldo generados correctamente",
-                "backupCodes", newBackupCodes));
+                "backupCodes", result.backupCodes()));
     }
 
     @PostMapping("/2fa/disable")
     public ResponseEntity<Map<String, Object>> disable2FA(
             @RequestBody Map<String, String> body,
-            Authentication authentication) {
-        if (authentication == null
-                || !(authentication.getPrincipal() instanceof AuthenticatedUserPrincipal principal)) {
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         String code = body != null ? body.get("code") : null;
-        User user = userService.findById(principal.id());
-
-        if (!user.isTotpEnabled()) {
+        TwoFactorAuthenticationService.Status result = twoFactorAuthenticationService.disable(principal.id(), code);
+        if (result == TwoFactorAuthenticationService.Status.TWO_FACTOR_DISABLED) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(MESSAGE_KEY, "El 2FA no está activado"));
         }
-
-        String rawSecret = encryptionService.decrypt(user.getTotpSecret());
-        if (code == null || !totpService.verifyCode(rawSecret, code)) {
+        if (result == TwoFactorAuthenticationService.Status.INVALID_CODE) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(MESSAGE_KEY, "El código introducido es incorrecto"));
         }
-
-        user.setTotpEnabled(false);
-        user.setTotpSecret(null);
-        user.getBackupCodes().clear();
-        userService.save(user);
-
         return ResponseEntity.ok(Map.of(MESSAGE_KEY, "2FA desactivado correctamente"));
     }
 

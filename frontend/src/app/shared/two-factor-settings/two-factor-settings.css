@@ -6,24 +6,81 @@
     font-family: Inter, "Segoe UI", sans-serif;
 }
 
-* {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 
-/* PANEL PRINCIPAL */
+/* CONTENEDOR PRINCIPAL: MISMO ESTILO QUE EL RESTO DEL PERFIL */
 
-.security-panel {
+.security-page {
     display: block;
-    width: 100%;
+    width: min(100%, 1000px);
     min-width: 0;
-    padding: 26px 28px 30px;
+    margin: 0 auto;
+    padding: 30px 28px;
     border: 1px solid #d9e3eb;
     border-radius: 16px;
     background: #fff;
     box-shadow: 0 8px 24px rgb(16 44 64 / 5%);
 }
 
-/* CABECERA Y ESTADO */
+/* CABECERA DE LA PÁGINA */
+
+.page-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.heading-copy {
+    min-width: 0;
+}
+
+.page-heading .eyebrow {
+    display: block;
+    margin: 0 0 7px;
+    color: #528477;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 1.1px;
+}
+
+.page-heading h1 {
+    margin: 0 0 8px;
+    color: var(--color-text-primary);
+    font-size: clamp(25px, 3vw, 32px);
+    font-weight: 750;
+    letter-spacing: -0.7px;
+    overflow-wrap: anywhere;
+}
+
+.page-description {
+    max-width: 580px;
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* PANEL INTERIOR */
+
+.security-panel {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 24px;
+    border: 1px solid #d9e3eb;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 4px 16px rgb(16 44 64 / 3%);
+}
+
+/* CABECERA DEL PANEL */
 
 .panel-heading {
     display: flex;
@@ -38,7 +95,7 @@
     min-width: 0;
 }
 
-.eyebrow {
+.panel-eyebrow {
     display: block;
     margin: 0 0 7px;
     color: #528477;
@@ -49,7 +106,7 @@
 
 .panel-title {
     margin: 0 0 6px;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 20px;
     font-weight: 750;
     letter-spacing: -0.4px;
@@ -58,10 +115,12 @@
 
 .panel-description {
     margin: 0;
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 13px;
     line-height: 1.6;
 }
+
+/* INDICADOR DE ESTADO */
 
 .security-status {
     display: inline-flex;
@@ -72,7 +131,7 @@
     border: 1px solid #d9e3eb;
     border-radius: 999px;
     background: #f4f8f9;
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 11px;
     font-weight: 750;
     white-space: nowrap;
@@ -99,11 +158,11 @@
 /* TEXTOS E INSTRUCCIONES */
 
 .security-copy,
-.setup-instructions>p,
-.backup-codes-section>p,
-.disable-two-factor>p,
+.setup-instructions > p,
+.backup-codes-section > p,
+.disable-two-factor > p,
 .security-enabled-note p {
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 13px;
     line-height: 1.65;
 }
@@ -129,27 +188,29 @@
 .disable-two-factor h3,
 .backup-codes-result h3 {
     margin: 0 0 8px;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 14px;
     font-weight: 750;
 }
 
-.setup-instructions>p,
-.backup-codes-section>p,
-.disable-two-factor>p {
+.setup-instructions > p,
+.backup-codes-section > p,
+.disable-two-factor > p {
     margin: 0 0 14px;
 }
 
-/* CONFIGURACIÓN DEL CÓDIGO QR */
+/* CÓDIGO QR */
 
 .qr-container {
-    display: flex;
-    width: 100%;
-    min-width: 0;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    margin: 18px 0 22px;
+  text-align: center;
+  margin: 24px 0;
+}
+
+.qr-container img,
+.qr-container canvas,
+.qr-container svg {
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .totp-qr {
@@ -166,7 +227,7 @@
 
 .qr-caption {
     margin: 0;
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 12px;
     line-height: 1.6;
 }
@@ -194,14 +255,14 @@
 
 .manual-setup h4 {
     margin: 0 0 8px;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 13px;
     font-weight: 750;
 }
 
-.manual-setup>p {
+.manual-setup > p {
     margin: 0 0 12px;
-    color: #587388;
+    color: var(--color-text-secondary);
     font-size: 12px;
     line-height: 1.6;
 }
@@ -215,7 +276,7 @@
     border: 1px solid #dce6ea;
     border-radius: 8px;
     background: #f4f8f9;
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 12px;
     line-height: 1.6;
     overflow-wrap: anywhere;
@@ -229,8 +290,10 @@
 .secret-value code,
 .backup-code-list code {
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 14px;
+    letter-spacing: 0.06em;
     overflow-wrap: anywhere;
-    word-break: break-word;
+    font-variant-ligatures: none;
 }
 
 .otpauth-details {
@@ -265,14 +328,12 @@
 
 .security-code-field {
     display: flex;
-    width: 160px;
-    max-width: 100%;
+    width: 100%;
     min-width: 0;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 8px;
-    margin-top: 18px;
-    margin-bottom: 26px;
+    margin: 18px 0 26px;
 }
 
 .security-code-field label {
@@ -281,6 +342,7 @@
     font-size: 11px;
     font-weight: 700;
     line-height: 1.5;
+    text-align: center;
 }
 
 .security-code-field input {
@@ -316,6 +378,11 @@
     opacity: 0.7;
 }
 
+.security-code-field .qr-caption {
+    max-width: 100%;
+    text-align: center;
+}
+
 /* BOTONES */
 
 .primary-button,
@@ -342,7 +409,7 @@
 .primary-button {
     flex-shrink: 0;
     border: 0;
-    background: #102c40;
+    background: var(--color-brand-dark);
     color: #fff;
 }
 
@@ -416,7 +483,7 @@
     padding: 10px 16px;
 }
 
-/* ESTADO DE SEGURIDAD ACTIVADO */
+/* VERIFICACIÓN ACTIVADA */
 
 .security-enabled-note {
     padding: 15px 16px;
@@ -474,14 +541,15 @@
 }
 
 .backup-code-list code {
-    color: #173247;
+    color: var(--color-text-primary);
     font-size: 13px;
 }
 
-/* MENSAJES */
+/* MENSAJES DE ESTADO */
 
 .form-error,
 .success-message {
+    display: block;
     margin: 0 0 18px;
     padding: 12px 14px;
     border-radius: 8px;
@@ -504,16 +572,36 @@
 /* TABLET */
 
 @media (max-width: 760px) {
+    .security-page {
+        padding: 25px 20px;
+    }
+
     .security-panel {
-        padding: 22px 18px 24px;
+        padding: 22px 18px;
     }
 }
 
 /* MÓVIL */
 
 @media (max-width: 520px) {
+    .security-page {
+        padding: 22px 15px;
+        border-radius: 12px;
+    }
+
+    .page-heading {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 24px;
+    }
+
+    .page-heading h1 {
+        font-size: 25px;
+    }
+
     .security-panel {
-        padding: 22px 18px 24px;
+        padding: 20px 15px;
     }
 
     .panel-heading {
@@ -573,7 +661,6 @@
 /* ACCESIBILIDAD */
 
 @media (prefers-reduced-motion: reduce) {
-
     *,
     *::before,
     *::after {

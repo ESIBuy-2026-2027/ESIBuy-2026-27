@@ -34,6 +34,10 @@ describe('Login', () => {
     await fixture.whenStable();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
@@ -45,16 +49,17 @@ describe('Login', () => {
       role: 'SELLER',
       active: true,
     }));
-    component.loginForm.setValue({
+    component.loginForm.patchValue({
       email: 'seller@example.com',
       password: 'short',
     });
 
     component.onSubmit();
 
-    expect(login).toHaveBeenCalledWith({
+    expect(login).toHaveBeenCalledWith(expect.objectContaining({
       email: 'seller@example.com',
       password: 'short',
+      totpCode: '',
     });
     expect(navigate).toHaveBeenCalledWith(['/seller/catalog']);
   });
@@ -66,7 +71,7 @@ describe('Login', () => {
       role: 'ADMIN',
       active: true,
     }));
-    component.loginForm.setValue({
+    component.loginForm.patchValue({
       email: 'admin@example.com',
       password: 'Password123!',
     });
@@ -74,6 +79,23 @@ describe('Login', () => {
     component.onSubmit();
 
     expect(navigate).toHaveBeenCalledWith(['/admin/usuarios']);
+  });
+
+  it('routes clients to their catalog', () => {
+    login.mockReturnValue(of({
+      id: 'client-1',
+      email: 'client@example.com',
+      role: 'CLIENT',
+      active: true,
+    }));
+    component.loginForm.patchValue({
+      email: 'client@example.com',
+      password: 'Password123!',
+    });
+
+    component.onSubmit();
+
+    expect(navigate).toHaveBeenCalledWith(['/client/catalog']);
   });
 
   it('shows the session-expired message from the redirect query parameter', () => {
@@ -93,29 +115,32 @@ describe('Login', () => {
 
   it('blocks login and counts down after a rate-limit response', () => {
     vi.useFakeTimers();
-    login.mockReturnValue(throwError(() => new HttpErrorResponse({
-      status: 429,
-      statusText: 'Too Many Requests',
-      headers: new HttpHeaders({ 'Retry-After': '3' }),
-      error: { message: 'Demasiados intentos de inicio de sesión.' },
-    })));
-    component.loginForm.setValue({
-      email: 'seller@example.com',
-      password: 'short',
-    });
+    try {
+      login.mockReturnValue(throwError(() => new HttpErrorResponse({
+        status: 429,
+        statusText: 'Too Many Requests',
+        headers: new HttpHeaders({ 'Retry-After': '3' }),
+        error: { message: 'Demasiados intentos de inicio de sesión.' },
+      })));
+      component.loginForm.patchValue({
+        email: 'seller@example.com',
+        password: 'short',
+      });
 
-    component.onSubmit();
-    fixture.detectChanges();
+      component.onSubmit();
+      fixture.detectChanges();
 
-    expect(component.retryAfterSeconds).toBe(3);
-    expect(component.serverError).toContain('3 segundos');
-    expect(fixture.nativeElement.querySelector('.btn-submit').disabled).toBe(true);
+      expect(component.retryAfterSeconds).toBe(3);
+      expect(component.serverError).toContain('3 segundos');
+      expect(fixture.nativeElement.querySelector('.btn-submit').disabled).toBe(true);
 
-    vi.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(3000);
 
-    expect(component.retryAfterSeconds).toBe(0);
-    expect(component.serverError).toBe('Demasiados intentos de inicio de sesión.');
-    vi.useRealTimers();
+      expect(component.retryAfterSeconds).toBe(0);
+      expect(component.serverError).toBe('Demasiados intentos de inicio de sesión.');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('shows the account-deleted message from the redirect query parameter', () => {
@@ -124,5 +149,4 @@ describe('Login', () => {
 
     expect(fixture.componentInstance.successMessage).toBe('Tu cuenta se ha eliminado correctamente.');
   });
-
 });

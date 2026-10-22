@@ -16,6 +16,7 @@ import es.uclm.esibuy.security.service.EncryptionService;
 import es.uclm.esibuy.security.service.LoginAttemptService;
 import es.uclm.esibuy.security.service.SessionAuthenticationService;
 import es.uclm.esibuy.security.service.TotpService;
+import es.uclm.esibuy.security.service.TwoFactorAuthenticationService;
 import es.uclm.esibuy.users.dto.UserProfileResponse;
 import es.uclm.esibuy.users.model.CustomerType;
 import es.uclm.esibuy.users.model.UserRole;
@@ -50,6 +51,9 @@ class UserProfileControllerTest {
 
         @MockitoBean
         private EncryptionService encryptionService;
+
+        @MockitoBean
+        private TwoFactorAuthenticationService twoFactorAuthenticationService;
 
         private Authentication authenticationFor(UserRole role) {
                 AuthenticatedUserPrincipal principal = new AuthenticatedUserPrincipal(

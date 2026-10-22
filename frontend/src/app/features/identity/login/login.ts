@@ -103,7 +103,7 @@ export class Login implements OnDestroy {
         } else if (response.role === 'SELLER') {
           void this.router.navigate(['/seller/catalog']);
         } else if (response.role === 'CLIENT') {
-          void this.router.navigate(['/client/dashboard']);
+          void this.router.navigate(['/client/catalog']);
         } else {
           void this.router.navigate(['/']);
         }
@@ -209,7 +209,7 @@ export class Login implements OnDestroy {
       case 'SELLER':
         return '/seller/catalog';
       case 'CLIENT':
-        return '/client/dashboard';
+        return '/client/catalog';
       default:
         return '/';
     }
@@ -222,7 +222,7 @@ export class Login implements OnDestroy {
       case 'SELLER':
         return 'Ir a mi catálogo de vendedor';
       case 'CLIENT':
-        return 'Ir a mi panel de cliente';
+        return 'Ir a mi catálogo';
       default:
         return 'Ir a mi panel';
     }

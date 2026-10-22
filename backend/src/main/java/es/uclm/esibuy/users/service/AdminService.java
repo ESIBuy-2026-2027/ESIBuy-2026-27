@@ -30,22 +30,22 @@ public class AdminService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User crearAdministrador(AltaAdminDTO request) {
+    public User createAdmin(AltaAdminDTO request) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new DuplicateUserException(MSG_DUPLICATE_EMAIL);
         }
 
-        User user = new User(email, request.getNombre().trim(), request.getApellidos().trim(), UserRole.ADMIN);
-        user.setNationalId(request.getDni().trim());
-        user.setPasswordHash(passwordEncoder.encode(request.getContrasena()));
+        User user = new User(email, request.getFirstName().trim(), request.getLastName().trim(), UserRole.ADMIN);
+        user.setNationalId(request.getNationalId().trim());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
 
-        String profileImage = (request.getImagenPerfil() == null || request.getImagenPerfil().isBlank())
+        String profileImage = (request.getProfileImage() == null || request.getProfileImage().isBlank())
                 ? DEFAULT_ADMIN_AVATAR
-                : request.getImagenPerfil().trim();
+                : request.getProfileImage().trim();
         user.setProfileImage(profileImage);
 
-        AdminProfile adminProfile = new AdminProfile(blankToNull(request.getSede()), LocalDateTime.now());
+        AdminProfile adminProfile = new AdminProfile(blankToNull(request.getHeadquarters()), LocalDateTime.now());
         user.setAdminProfile(adminProfile);
         user.setActive(true);
         user.setRole(UserRole.ADMIN);
@@ -57,21 +57,21 @@ public class AdminService {
         return value == null || value.isBlank() ? null : value.trim();
     }
 
-    public List<UserAdminDTO> obtenerTodosLosUsuarios() {
+    public List<UserAdminDTO> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(UserAdminDTO::fromUser)
                 .toList();
     }
 
-    public List<UserAdminDTO> obtenerUsuariosFiltrados(String rol, String estado) {
+    public List<UserAdminDTO> getFilteredUsers(String rol, String estado) {
         return userRepository.findAll().stream()
-                .filter(u -> cumpleFiltroRol(u, rol))
-                .filter(u -> cumpleFiltroEstado(u, estado))
+                .filter(u -> matchesRoleFilter(u, rol))
+                .filter(u -> matchesStatusFilter(u, estado))
                 .map(UserAdminDTO::fromUser)
                 .toList();
     }
 
-    private boolean cumpleFiltroRol(User user, String rol) {
+    private boolean matchesRoleFilter(User user, String rol) {
         if (rol == null || rol.isBlank()) {
             return true;
         }
@@ -90,7 +90,7 @@ public class AdminService {
         };
     }
 
-    private boolean cumpleFiltroEstado(User user, String estado) {
+    private boolean matchesStatusFilter(User user, String estado) {
         if (estado == null || estado.isBlank()) {
             return true;
         }
@@ -103,7 +103,7 @@ public class AdminService {
         };
     }
 
-    public void activarUsuario(String id) {
+    public void activateUser(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(MSG_USER_NOT_FOUND));
 
@@ -114,7 +114,7 @@ public class AdminService {
         }
     }
 
-    public void desactivarUsuario(String id) {
+    public void deactivateUser(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(MSG_USER_NOT_FOUND));
 
@@ -122,7 +122,7 @@ public class AdminService {
         userRepository.save(user);
     }
 
-    public void bloquearUsuario(String id) {
+    public void blockUser(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(MSG_USER_NOT_FOUND));
 
@@ -132,7 +132,7 @@ public class AdminService {
         userRepository.save(user);
     }
 
-    public void desbloquearUsuario(String id) {
+    public void unblockUser(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(MSG_USER_NOT_FOUND));
 

@@ -1,8 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
-import { Category, CreatedProduct, ProductCreateRequest, ProductsService } from '../products.service';
+import { Category, CreatedProduct, ProductCreateRequest, ProductDetails, ProductsService } from '../../../core/services/products.service';
 import { ProductCreate as ProductCreateComponent } from './product-create';
 
 describe('ProductCreate', () => {
@@ -11,28 +11,67 @@ describe('ProductCreate', () => {
     { id: 'category-home', name: 'Hogar' },
   ];
   let fixture: ComponentFixture<ProductCreateComponent>;
-  let productService: Pick<ProductsService, 'getCategories' | 'createProduct'>;
+  let productService: Pick<ProductsService, 'getCategories' | 'createProduct' | 'getProduct' | 'updateProduct'>;
   let createProduct: ReturnType<typeof vi.fn<(request: ProductCreateRequest) => Observable<CreatedProduct>>>;
+  let getProduct: ReturnType<typeof vi.fn<(id: string) => Observable<ProductDetails>>>;
+  let updateProduct: ReturnType<typeof vi.fn<
+    (id: string, request: ProductCreateRequest) => Observable<ProductDetails>
+  >>;
   let categoriesResponse: Observable<Category[]>;
+  let routeProductId: string | null;
 
   beforeEach(async () => {
     categoriesResponse = of(categories);
+    routeProductId = null;
     createProduct = vi.fn<(request: ProductCreateRequest) => Observable<CreatedProduct>>(
       () => of({ id: 'product-1' }),
     );
+    getProduct = vi.fn<(id: string) => Observable<ProductDetails>>(() => of({
+      id: 'product-1',
+      name: 'Auriculares',
+      categoryIds: ['category-tech'],
+      stock: 3,
+      description: 'Inalámbricos',
+      price: 19.99,
+      discount: 5,
+      premiumDiscount: 10,
+      imageUrl: 'https://example.com/auriculares.png',
+      available: true,
+      sellerId: 'seller-1',
+    }));
+    updateProduct = vi.fn<
+      (id: string, request: ProductCreateRequest) => Observable<ProductDetails>
+    >(() => of({
+      id: 'product-1',
+      name: 'Auriculares',
+      categoryIds: ['category-tech'],
+      stock: 3,
+      description: 'Inalámbricos',
+      price: 19.99,
+      discount: 5,
+      premiumDiscount: 10,
+      imageUrl: 'https://example.com/auriculares.png',
+      available: true,
+      sellerId: 'seller-1',
+    }));
     productService = {
       getCategories: () => categoriesResponse,
       createProduct,
+      getProduct,
+      updateProduct,
     };
 
     await TestBed.configureTestingModule({
       imports: [ProductCreateComponent],
       providers: [
         provideRouter([{ path: 'seller/catalog', children: [] }]),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { paramMap: { get: (key: string) => key === 'id' ? routeProductId : null } } },
+        },
         { provide: ProductsService, useValue: productService },
       ],
     }).compileComponents();
-    fixture = TestBed.createComponent(ProductCreateComponent);
     fixture = TestBed.createComponent(ProductCreateComponent);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -124,14 +163,50 @@ describe('ProductCreate', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Producto registrado correctamente.');
   });
 
+  it('should preload and update the selected product', async () => {
+    fixture.destroy();
+    routeProductId = 'product-1';
+    fixture = TestBed.createComponent(ProductCreateComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    expect(getProduct).toHaveBeenCalledWith('product-1');
+    expect(component.form.getRawValue()).toEqual({
+      nombre: 'Auriculares',
+      categoriaIds: ['category-tech'],
+      stock: 3,
+      descripcion: 'Inalámbricos',
+      precio: 19.99,
+      descuento: 5,
+      descuentoPremium: 10,
+      imagen: 'https://example.com/auriculares.png',
+      disponible: true,
+    });
+
+    component.form.controls.nombre.setValue('Auriculares actualizados');
+    component.onSubmit();
+    await fixture.whenStable();
+
+    expect(updateProduct).toHaveBeenCalledWith('product-1', expect.objectContaining({
+      name: 'Auriculares actualizados',
+      categoryIds: ['category-tech'],
+      price: 19.99,
+      available: true,
+    }));
+    expect(createProduct).not.toHaveBeenCalled();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Producto actualizado correctamente.');
+  });
+
   it('should show all backend validation errors under their fields', () => {
     createProduct.mockReturnValue(throwError(() => new HttpErrorResponse({
       status: 400,
       error: {
         message: 'La solicitud contiene errores',
         errors: {
-          nombre: 'El nombre no puede estar vacío.',
-          precio: 'El precio debe ser mayor que 0.',
+          name: 'El nombre no puede estar vacío.',
+          price: 'El precio debe ser mayor que 0.',
         },
       },
     })));

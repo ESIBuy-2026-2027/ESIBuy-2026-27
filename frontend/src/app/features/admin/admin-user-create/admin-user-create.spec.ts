@@ -8,18 +8,21 @@ import { AdminUserCreate } from './admin-user-create';
 describe('AdminUserCreate', () => {
   let component: AdminUserCreate;
   let fixture: ComponentFixture<AdminUserCreate>;
-  let crearAdministrador: ReturnType<typeof vi.fn>;
+  let createAdmin: ReturnType<typeof vi.fn>;
   let navigate: ReturnType<typeof vi.spyOn>;
 
   beforeEach(async () => {
-    crearAdministrador = vi.fn();
+    createAdmin = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [AdminUserCreate],
       providers: [
         provideRouter([]),
-        { provide: AuthService, useValue: { crearAdministrador } }
-      ]
+        {
+          provide: AuthService,
+          useValue: { createAdmin },
+        },
+      ],
     }).compileComponents();
 
     const router = TestBed.inject(Router);
@@ -41,22 +44,22 @@ describe('AdminUserCreate', () => {
 
   it('validates mandatory fields', () => {
     const form = component.form;
-    expect(form.get('dni')?.hasError('required')).toBe(true);
-    expect(form.get('nombre')?.hasError('required')).toBe(true);
-    expect(form.get('apellidos')?.hasError('required')).toBe(true);
+    expect(form.get('nationalId')?.hasError('required')).toBe(true);
+    expect(form.get('firstName')?.hasError('required')).toBe(true);
+    expect(form.get('lastName')?.hasError('required')).toBe(true);
     expect(form.get('email')?.hasError('required')).toBe(true);
-    expect(form.get('contrasena')?.hasError('required')).toBe(true);
-    expect(form.get('repetirContrasena')?.hasError('required')).toBe(true);
+    expect(form.get('password')?.hasError('required')).toBe(true);
+    expect(form.get('confirmPassword')?.hasError('required')).toBe(true);
   });
 
   it('validates password mismatch cross-validation', () => {
     component.form.patchValue({
-      dni: '12345678Z',
-      nombre: 'Carlos',
-      apellidos: 'Gómez Pérez',
+      nationalId: '12345678Z',
+      firstName: 'Carlos',
+      lastName: 'Gómez Pérez',
       email: 'carlos.admin@esibuy.com',
-      contrasena: 'Admin123456!#',
-      repetirContrasena: 'Distinta123456!#'
+      password: 'Admin123456!#',
+      confirmPassword: 'Distinta123456!#'
     });
 
     expect(component.form.hasError('passwordsMismatch')).toBe(true);
@@ -65,14 +68,14 @@ describe('AdminUserCreate', () => {
 
   it('is valid when all required fields and formats are correct', () => {
     component.form.patchValue({
-      dni: '12345678Z',
-      nombre: 'Carlos',
-      apellidos: 'Gómez Pérez',
+      nationalId: '12345678Z',
+      firstName: 'Carlos',
+      lastName: 'Gómez Pérez',
       email: 'carlos.admin@esibuy.com',
-      contrasena: 'Admin123456!#',
-      repetirContrasena: 'Admin123456!#',
-      sede: 'Ciudad Real',
-      imagenPerfil: 'https://avatar.ejemplo.com/carlos.png'
+      password: 'Admin123456!#',
+      confirmPassword: 'Admin123456!#',
+      headquarters: 'Ciudad Real',
+      profileImage: 'https://avatar.ejemplo.com/carlos.png'
     });
 
     expect(component.form.valid).toBe(true);
@@ -80,38 +83,49 @@ describe('AdminUserCreate', () => {
 
   it('renders all form inputs and the primary submit button with exact text "Crear administrador"', () => {
     const rendered = fixture.nativeElement as HTMLElement;
-    expect(rendered.querySelector('input[formControlName="dni"]')).toBeTruthy();
-    expect(rendered.querySelector('input[formControlName="nombre"]')).toBeTruthy();
-    expect(rendered.querySelector('input[formControlName="apellidos"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="nationalId"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="firstName"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="lastName"]')).toBeTruthy();
     expect(rendered.querySelector('input[formControlName="email"]')).toBeTruthy();
-    expect(rendered.querySelector('input[formControlName="contrasena"]')).toBeTruthy();
-    expect(rendered.querySelector('input[formControlName="repetirContrasena"]')).toBeTruthy();
-    expect(rendered.querySelector('input[formControlName="sede"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="password"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="confirmPassword"]')).toBeTruthy();
+    expect(rendered.querySelector('input[formControlName="headquarters"]')).toBeTruthy();
 
     const submitBtn = rendered.querySelector('button[type="submit"]');
     expect(submitBtn).toBeTruthy();
     expect(submitBtn?.textContent?.trim()).toContain('Dar de alta Administrador');
   });
 
-  it('calls crearAdministrador on submit when form is valid', () => {
-    crearAdministrador.mockReturnValue(of({ id: 'admin-1', email: 'carlos.admin@esibuy.com' }));
+  it('calls createAdmin on submit when form is valid', () => {
+    createAdmin.mockReturnValue(
+      of({
+        success: true,
+        message: 'Administrador creado correctamente',
+        data: null,
+        correlationId: null,
+      }),
+    );
 
     component.form.patchValue({
-      dni: '12345678Z',
-      nombre: 'Carlos',
-      apellidos: 'Gómez Pérez',
+      nationalId: '12345678Z',
+      firstName: 'Carlos',
+      lastName: 'Gómez Pérez',
       email: 'carlos.admin@esibuy.com',
-      contrasena: 'Admin123456!#',
-      repetirContrasena: 'Admin123456!#',
-      sede: 'Ciudad Real',
-      imagenPerfil: 'https://avatar.ejemplo.com/carlos.png'
+      password: 'Admin123456!#',
+      confirmPassword: 'Admin123456!#',
+      headquarters: 'Ciudad Real',
+      profileImage: component.avatars[0],
     });
 
     fixture.detectChanges();
-    const submitBtn = fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
-    submitBtn?.click();
 
-    expect(crearAdministrador).toHaveBeenCalled();
+    const submitButton = fixture.nativeElement.querySelector(
+      'button[type="submit"]',
+    ) as HTMLButtonElement;
+
+    submitButton.click();
+
+    expect(createAdmin).toHaveBeenCalled();
   });
 
   it('navigates to /admin/usuarios when cancel button is clicked', () => {
@@ -123,11 +137,11 @@ describe('AdminUserCreate', () => {
 
   it('renders non-modifiable creation date input with current date', () => {
     const rendered = fixture.nativeElement as HTMLElement;
-    const fechaInput = rendered.querySelector<HTMLInputElement>('input#fechaCreacion');
+    const fechaInput = rendered.querySelector<HTMLInputElement>('input#creationDate');
 
     expect(fechaInput).toBeTruthy();
     expect(fechaInput?.readOnly).toBe(true);
-    expect(fechaInput?.value).toBe(component.fechaCreacion);
+    expect(fechaInput?.value).toBe(component.creationDate);
   });
 
   it('renders 10 registration avatar buttons and toggles avatar selection', () => {
@@ -138,12 +152,12 @@ describe('AdminUserCreate', () => {
     const firstAvatarBtn = avatarButtons[0] as HTMLButtonElement;
     firstAvatarBtn.click();
     fixture.detectChanges();
-    expect(component.form.get('imagenPerfil')?.value).toBe(component.avatars[0]);
+    expect(component.form.get('profileImage')?.value).toBe(component.avatars[0]);
 
     // Clicking again deselects
     firstAvatarBtn.click();
     fixture.detectChanges();
-    expect(component.form.get('imagenPerfil')?.value).toBe('');
+    expect(component.form.get('profileImage')?.value).toBe('');
   });
 
   it('does not display any "Opcional" text or badges in the template', () => {
