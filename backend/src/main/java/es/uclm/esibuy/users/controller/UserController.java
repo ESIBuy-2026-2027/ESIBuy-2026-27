@@ -31,6 +31,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import es.uclm.esibuy.common.exception.InvalidOtpException;
+import es.uclm.esibuy.security.service.EmailOtpService;
+import es.uclm.esibuy.users.dto.VerifyOtpRequest;
+import es.uclm.esibuy.users.model.UserRole;
 
 @RestController
 @RequestMapping("/api/users")
@@ -42,16 +46,20 @@ public class UserController {
     private final LoginAttemptService loginAttemptService;
     private final SessionAuthenticationService sessionAuthenticationService;
     private final TwoFactorAuthenticationService twoFactorAuthenticationService;
+    private static final String PENDING_OTP_USER_ID = "PENDING_OTP_USER_ID";
+    private final EmailOtpService emailOtpService;
 
     public UserController(
             UserService userService,
             LoginAttemptService loginAttemptService,
             SessionAuthenticationService sessionAuthenticationService,
-            TwoFactorAuthenticationService twoFactorAuthenticationService) {
+            TwoFactorAuthenticationService twoFactorAuthenticationService,
+            EmailOtpService emailOtpService) {
         this.userService = userService;
         this.loginAttemptService = loginAttemptService;
         this.sessionAuthenticationService = sessionAuthenticationService;
         this.twoFactorAuthenticationService = twoFactorAuthenticationService;
+        this.emailOtpService = emailOtpService;
     }
 
     @PostMapping("/register/client")
@@ -77,37 +85,68 @@ public class UserController {
             @Valid @RequestBody LoginRequest request,
             HttpServletRequest servletRequest,
             HttpServletResponse servletResponse) {
+
         String ipAddress = servletRequest.getRemoteAddr();
+
         if (loginAttemptService.isBlocked(request.getEmail(), ipAddress)) {
             throw new TooManyRequestsException(
-                    loginAttemptService.getRemainingBlockSeconds(request.getEmail(), ipAddress));
+                    loginAttemptService.getRemainingBlockSeconds(
+                            request.getEmail(), ipAddress));
         }
 
         User user;
+
         try {
             user = userService.login(request);
         } catch (InvalidCredentialsException exception) {
-            loginAttemptService.loginFailed(request.getEmail(), ipAddress);
+            loginAttemptService.loginFailed(
+                    request.getEmail(), ipAddress);
             throw exception;
         }
 
-        // Si el usuario tiene activo el 2FA
         if (user.isTotpEnabled()) {
             String code = request.getTotpCode();
+
             if (code == null || code.isBlank()) {
-                return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of(
-                        "requires2fa", true,
-                        "email", user.getEmail()));
+                return ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .body(Map.of(
+                                "requires2fa", true,
+                                "email", user.getEmail()));
             }
 
-            if (!twoFactorAuthenticationService.verifyLoginCode(user, code)) {
-                loginAttemptService.loginFailed(request.getEmail(), ipAddress);
+            if (!twoFactorAuthenticationService
+                    .verifyLoginCode(user, code)) {
+                loginAttemptService.loginFailed(
+                        request.getEmail(), ipAddress);
                 throw new InvalidCredentialsException();
             }
         }
 
-        loginAttemptService.loginSucceeded(request.getEmail(), ipAddress);
-        sessionAuthenticationService.authenticate(user, servletRequest, servletResponse);
+        if (user.getRole() == UserRole.ADMIN
+                || user.getRole() == UserRole.SELLER) {
+
+            emailOtpService.issueChallenge(user);
+
+            HttpSession session = servletRequest.getSession(true);
+
+            // La sesión conserva el usuario pendiente, no autenticado.
+            session.setAttribute(PENDING_OTP_USER_ID, user.getId());
+
+            SecurityContextHolder.clearContext();
+
+            return ResponseEntity.status(HttpStatus.ACCEPTED)
+                    .body(Map.of(
+                            "requires3fa", true,
+                            "expiresInSeconds", 600));
+        }
+
+        // CLIENT mantiene el comportamiento actual.
+        loginAttemptService.loginSucceeded(
+                request.getEmail(), ipAddress);
+
+        sessionAuthenticationService.authenticate(
+                user, servletRequest, servletResponse);
+
         return ResponseEntity.ok(buildUserResponse(user));
     }
 
@@ -202,8 +241,8 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        TwoFactorAuthenticationService.EnableResult result =
-                twoFactorAuthenticationService.enable(principal.id(), body != null ? body.get("code") : null);
+        TwoFactorAuthenticationService.EnableResult result = twoFactorAuthenticationService.enable(principal.id(),
+                body != null ? body.get("code") : null);
         if (!result.enabled()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(MESSAGE_KEY, (Object) "El código introducido es incorrecto o ha caducado"));
@@ -222,8 +261,8 @@ public class UserController {
         }
 
         String code = body != null ? body.get("code") : null;
-        TwoFactorAuthenticationService.BackupCodesResult result =
-                twoFactorAuthenticationService.regenerateBackupCodes(principal.id(), code);
+        TwoFactorAuthenticationService.BackupCodesResult result = twoFactorAuthenticationService
+                .regenerateBackupCodes(principal.id(), code);
         if (result.status() == TwoFactorAuthenticationService.Status.TWO_FACTOR_DISABLED) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(MESSAGE_KEY, "El usuario no tiene activado el 2FA"));
@@ -256,6 +295,52 @@ public class UserController {
                     .body(Map.of(MESSAGE_KEY, "El código introducido es incorrecto"));
         }
         return ResponseEntity.ok(Map.of(MESSAGE_KEY, "2FA desactivado correctamente"));
+    }
+
+    @PostMapping("/login/verify-otp")
+    public ResponseEntity<Map<String, Object>> verifyOtp(
+            @Valid @RequestBody VerifyOtpRequest request,
+            HttpServletRequest servletRequest,
+            HttpServletResponse servletResponse) {
+
+        HttpSession session = servletRequest.getSession(false);
+
+        if (session == null) {
+            throw new InvalidOtpException();
+        }
+
+        Object pendingUserId = session.getAttribute(
+                PENDING_OTP_USER_ID);
+
+        if (!(pendingUserId instanceof String userId)) {
+            throw new InvalidOtpException();
+        }
+
+        User user = userService.findById(userId);
+
+        if (user == null
+                || (user.getRole() != UserRole.ADMIN
+                        && user.getRole() != UserRole.SELLER)) {
+            session.removeAttribute(PENDING_OTP_USER_ID);
+            throw new InvalidOtpException();
+        }
+
+        if (!user.isActive() || user.isBlocked()) {
+            session.removeAttribute(PENDING_OTP_USER_ID);
+            throw new InvalidCredentialsException();
+        }
+        emailOtpService.verifyChallenge(userId, request.code());
+
+        // El desafío ya se ha consumido correctamente.
+        session.removeAttribute(PENDING_OTP_USER_ID);
+
+        loginAttemptService.loginSucceeded(
+                user.getEmail(), servletRequest.getRemoteAddr());
+
+        sessionAuthenticationService.authenticate(
+                user, servletRequest, servletResponse);
+
+        return ResponseEntity.ok(buildUserResponse(user));
     }
 
     private Map<String, Object> buildUserResponse(User user) {

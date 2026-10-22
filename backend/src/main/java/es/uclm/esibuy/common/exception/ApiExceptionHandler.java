@@ -239,4 +239,11 @@ public class ApiExceptionHandler {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
                                 MESSAGE, exception.getMessage(), CORRELATION_ID, correlationId(request)));
         }
+
+        @ExceptionHandler(InvalidOtpException.class)
+        public ResponseEntity<Map<String, String>> handleInvalidOtp(
+                        InvalidOtpException exception) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                .body(Map.of(MESSAGE, exception.getMessage()));
+        }
 }
