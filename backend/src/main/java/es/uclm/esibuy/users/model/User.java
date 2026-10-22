@@ -35,6 +35,7 @@ public class User {
     private String totpSecret;
     private boolean totpEnabled = false;
     private List<String> backupCodes = new ArrayList<>();
+    private boolean emailOtpEnabled = false;
 
     protected User() {
     }
@@ -179,5 +180,13 @@ public class User {
 
     public void setBackupCodes(List<String> backupCodes) {
         this.backupCodes = backupCodes;
+    }
+
+    public boolean isEmailOtpEnabled() {
+        return emailOtpEnabled;
+    }
+
+    public void setEmailOtpEnabled(boolean emailOtpEnabled) {
+        this.emailOtpEnabled = emailOtpEnabled;
     }
 }

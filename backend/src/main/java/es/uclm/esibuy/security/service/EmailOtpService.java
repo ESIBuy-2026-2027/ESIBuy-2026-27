@@ -21,6 +21,9 @@ public class EmailOtpService {
     private static final int MAX_ATTEMPTS = 5;
     private static final Duration OTP_VALIDITY = Duration.ofMinutes(10);
 
+    private static final String LOGIN = "LOGIN";
+    private static final String DISABLE_EMAIL_OTP = "DISABLE_EMAIL_OTP";
+
     private final EmailOtpChallengeRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final OtpMailSender otpMailSender;
@@ -36,38 +39,59 @@ public class EmailOtpService {
     }
 
     public void issueChallenge(User user) {
+        issueChallenge(user, LOGIN);
+    }
+
+    public void issueDisableChallenge(User user) {
+        issueChallenge(user, DISABLE_EMAIL_OTP);
+    }
+
+    private void issueChallenge(User user, String purpose) {
         String code = String.format(
                 Locale.ROOT,
                 "%0" + OTP_LENGTH + "d",
                 secureRandom.nextInt(OTP_BOUND));
 
-        repository.deleteByUserId(user.getId());
+        repository.deleteByUserIdAndPurpose(user.getId(), purpose);
 
         EmailOtpChallenge challenge = new EmailOtpChallenge(
                 user.getId(),
                 passwordEncoder.encode(code),
-                Instant.now().plus(OTP_VALIDITY));
+                Instant.now().plus(OTP_VALIDITY),
+                purpose);
 
         repository.save(challenge);
-
         otpMailSender.sendOtp(user.getEmail(), code);
     }
 
     public void verifyChallenge(String userId, String code) {
+        verifyChallenge(userId, code, LOGIN);
+    }
+
+    public void verifyDisableChallenge(String userId, String code) {
+        verifyChallenge(userId, code, DISABLE_EMAIL_OTP);
+    }
+
+    private void verifyChallenge(
+            String userId,
+            String code,
+            String purpose) {
+
         EmailOtpChallenge challenge = repository
-                .findFirstByUserIdAndUsedFalseOrderByExpiresAtDesc(
-                        userId)
+                .findFirstByUserIdAndPurposeAndUsedFalseOrderByExpiresAtDesc(
+                        userId, purpose)
                 .orElseThrow(InvalidOtpException::new);
 
-        if (challenge.isUsed()
-                || !Instant.now().isBefore(challenge.getExpiresAt())
+        if (!Instant.now().isBefore(challenge.getExpiresAt())
                 || challenge.getAttempts() >= MAX_ATTEMPTS) {
             challenge.markUsed();
             repository.save(challenge);
             throw new InvalidOtpException();
         }
 
-        if (!passwordEncoder.matches(code, challenge.getCodeHash())) {
+        if (code == null
+                || !code.matches("\\d{6}")
+                || !passwordEncoder.matches(code, challenge.getCodeHash())) {
             challenge.incrementAttempts();
 
             if (challenge.getAttempts() >= MAX_ATTEMPTS) {

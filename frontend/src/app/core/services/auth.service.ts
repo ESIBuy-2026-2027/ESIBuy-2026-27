@@ -14,6 +14,8 @@ export interface AuthenticatedUser {
 
 export interface LoginResponse {
   requires2fa?: boolean;
+  requires3fa?: boolean;
+  expiresInSeconds?: number;
   email?: string;
   id?: string;
   role?: UserRole;
@@ -149,7 +151,28 @@ export class AuthService {
       )
       .pipe(
         tap((response) => {
-          if (!response.requires2fa && response.id) {
+          // No autenticar hasta completar los factores requeridos.
+          if (
+            !response.requires2fa &&
+            !response.requires3fa &&
+            response.id
+          ) {
+            this.currentUserSignal.set(response as AuthenticatedUser);
+          }
+        }),
+      );
+  }
+
+  verifyLoginOtp(code: string): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>(
+        `${this.apiUrl}/login/verify-otp`,
+        { code },
+        { withCredentials: true },
+      )
+      .pipe(
+        tap((response) => {
+          if (response.id && response.role) {
             this.currentUserSignal.set(response as AuthenticatedUser);
           }
         }),

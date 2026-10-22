@@ -10,6 +10,7 @@ import es.uclm.esibuy.security.service.SessionAuthenticationService;
 import es.uclm.esibuy.security.service.TwoFactorAuthenticationService;
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
+import es.uclm.esibuy.users.dto.EmailOtpSettingsRequest;
 import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.dto.UpdateOwnProfileRequestDTO;
@@ -35,6 +36,7 @@ import es.uclm.esibuy.common.exception.InvalidOtpException;
 import es.uclm.esibuy.security.service.EmailOtpService;
 import es.uclm.esibuy.users.dto.VerifyOtpRequest;
 import es.uclm.esibuy.users.model.UserRole;
+import es.uclm.esibuy.users.dto.VerifyEmailOtpDisableRequest;
 
 @RestController
 @RequestMapping("/api/users")
@@ -122,24 +124,22 @@ public class UserController {
             }
         }
 
-        if (user.getRole() == UserRole.ADMIN
-                || user.getRole() == UserRole.SELLER) {
+        if ((user.getRole() == UserRole.ADMIN
+                || user.getRole() == UserRole.SELLER)
+                && user.isEmailOtpEnabled()) {
 
             emailOtpService.issueChallenge(user);
 
             HttpSession session = servletRequest.getSession(true);
-
-            // La sesión conserva el usuario pendiente, no autenticado.
             session.setAttribute(PENDING_OTP_USER_ID, user.getId());
 
             SecurityContextHolder.clearContext();
 
-            return ResponseEntity.status(HttpStatus.ACCEPTED)
-                    .body(Map.of(
+            return ResponseEntity.accepted().body(
+                    Map.of(
                             "requires3fa", true,
                             "expiresInSeconds", 600));
         }
-
         // CLIENT mantiene el comportamiento actual.
         loginAttemptService.loginSucceeded(
                 request.getEmail(), ipAddress);
@@ -350,5 +350,132 @@ public class UserController {
                 "role", user.getRole(),
                 "active", user.isActive(),
                 "totpEnabled", user.isTotpEnabled());
+    }
+
+    @GetMapping("/me/email-otp-settings")
+    public ResponseEntity<Map<String, Object>> getEmailOtpSettings(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = userService.findById(principal.id());
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        if (!supportsEmailOtp(user)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of(MESSAGE_KEY,
+                            "Esta configuración solo está disponible para administradores y vendedores"));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "enabled", user.isEmailOtpEnabled(),
+                "email", user.getEmail()));
+    }
+
+    @PutMapping("/me/email-otp-settings")
+    public ResponseEntity<Map<String, Object>> updateEmailOtpSettings(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
+            @Valid @RequestBody EmailOtpSettingsRequest request) {
+
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = userService.findById(principal.id());
+
+        if (!supportsEmailOtp(user)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of(MESSAGE_KEY,
+                            "Esta configuración solo está disponible para administradores y vendedores"));
+        }
+
+        if (!request.enabled()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of(MESSAGE_KEY,
+                            "Para desactivar la verificación debes confirmar el código enviado a tu correo."));
+        }
+
+        user.setEmailOtpEnabled(true);
+        userService.save(user);
+
+        return ResponseEntity.ok(Map.of(
+                "enabled", user.isEmailOtpEnabled(),
+                "email", user.getEmail(),
+                MESSAGE_KEY, "Verificación por correo activada correctamente."));
+    }
+
+    @PostMapping("/me/email-otp-settings/disable-challenge")
+    public ResponseEntity<Map<String, Object>> requestEmailOtpDisableChallenge(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = userService.findById(principal.id());
+
+        if (!supportsEmailOtp(user)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of(MESSAGE_KEY,
+                            "Esta configuración solo está disponible para administradores y vendedores"));
+        }
+
+        if (!user.isEmailOtpEnabled()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of(MESSAGE_KEY,
+                            "La verificación por correo ya está desactivada."));
+        }
+
+        emailOtpService.issueDisableChallenge(user);
+
+        return ResponseEntity.ok(Map.of(
+                MESSAGE_KEY,
+                "Hemos enviado un código de verificación a tu correo.",
+                "expiresInSeconds", 600));
+    }
+
+    @PostMapping("/me/email-otp-settings/disable")
+    public ResponseEntity<Map<String, Object>> confirmEmailOtpDisable(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
+            @Valid @RequestBody VerifyEmailOtpDisableRequest request) {
+
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = userService.findById(principal.id());
+
+        if (!supportsEmailOtp(user)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of(MESSAGE_KEY,
+                            "Esta configuración solo está disponible para administradores y vendedores"));
+        }
+
+        if (!user.isEmailOtpEnabled()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of(MESSAGE_KEY,
+                            "La verificación por correo ya está desactivada."));
+        }
+
+        emailOtpService.verifyDisableChallenge(user.getId(), request.code());
+
+        user.setEmailOtpEnabled(false);
+        userService.save(user);
+
+        return ResponseEntity.ok(Map.of(
+                "enabled", false,
+                "email", user.getEmail(),
+                MESSAGE_KEY,
+                "Verificación por correo desactivada correctamente."));
+    }
+
+    private boolean supportsEmailOtp(User user) {
+        return user.getRole() == UserRole.ADMIN
+                || user.getRole() == UserRole.SELLER;
     }
 }

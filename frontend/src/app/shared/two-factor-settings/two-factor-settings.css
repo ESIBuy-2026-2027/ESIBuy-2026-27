@@ -670,3 +670,42 @@
         animation-iteration-count: 1 !important;
     }
 }
+
+
+/* VERIFICACIÓN POR CORREO: segundo bloque visible en la misma pantalla */
+
+.email-otp-panel {
+    margin-top: 20px;
+}
+
+.email-otp-info {
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.email-otp-info p {
+    margin: 0 0 12px;
+}
+
+.email-otp-info p:last-child {
+    margin-bottom: 0;
+}
+
+.email-otp-note {
+    padding: 12px 14px;
+    border: 1px solid #d9e3eb;
+    border-radius: 9px;
+    background: #f6f9fb;
+}
+
+.email-otp-note strong {
+    color: var(--color-text-primary);
+}
+
+@media (max-width: 640px) {
+    .email-otp-panel .panel-heading {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

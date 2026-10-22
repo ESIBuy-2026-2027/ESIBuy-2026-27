@@ -8,10 +8,13 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import es.uclm.esibuy.security.model.EmailOtpChallenge;
 
 public interface EmailOtpChallengeRepository
-        extends MongoRepository<EmailOtpChallenge, String> {
+                extends MongoRepository<EmailOtpChallenge, String> {
 
-    Optional<EmailOtpChallenge> findFirstByUserIdAndUsedFalseOrderByExpiresAtDesc(
-            String userId);
+        Optional<EmailOtpChallenge> findFirstByUserIdAndPurposeAndUsedFalseOrderByExpiresAtDesc(
+                        String userId,
+                        String purpose);
 
-    void deleteByUserId(String userId);
+        void deleteByUserIdAndPurpose(
+                        String userId,
+                        String purpose);
 }

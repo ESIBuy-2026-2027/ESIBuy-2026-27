@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { EmailOtpSettingsComponent } from '../email-otp-settings/email-otp-settings';
 import QRCode from 'qrcode';
 import { TwoFactorService, TwoFactorSetupResponse, } from '../../core/services/two-factor.service';
 
@@ -15,7 +16,7 @@ type TwoFactorHttpError = {
 @Component({
     selector: 'app-two-factor-settings',
     standalone: true,
-    imports: [FormsModule],
+    imports: [FormsModule, EmailOtpSettingsComponent],
     templateUrl: './two-factor-settings.html',
     styleUrl: './two-factor-settings.css',
 })

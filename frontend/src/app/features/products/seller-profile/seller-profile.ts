@@ -11,6 +11,7 @@ import { ProfileShellComponent } from '../../../shared/profile-shell/profile-she
 import type { ProfileNavigationItem } from '../../../shared/profile-shell/profile-shell';
 import { SELLER_AVATARS } from '../../../core/constants/avatars';
 
+
 interface SellerProfileResponse {
     firstName: string;
     lastName: string;

@@ -1,0 +1,142 @@
+<section class="panel security-panel" aria-labelledby="email-otp-title">
+    <div class="panel-heading">
+        <div class="panel-heading-text">
+            <p class="panel-eyebrow">SEGURIDAD DE LA CUENTA</p>
+
+            <h2 class="panel-title" id="email-otp-title">
+                Verificación por correo electrónico
+            </h2>
+
+            <p class="panel-description">
+                Añade una capa adicional de protección mediante un
+                código temporal enviado a tu correo electrónico.
+            </p>
+        </div>
+
+        <span class="security-status" [class.security-status-on]="enabled">
+            <span class="status-dot"></span>
+            {{ enabled ? 'Activada' : 'Desactivada' }}
+        </span>
+    </div>
+
+    @if (loading) {
+    <p class="security-copy" role="status">
+        Cargando configuración de seguridad...
+    </p>
+    } @else {
+    @if (error) {
+    <p class="form-error" role="alert">
+        {{ error }}
+    </p>
+    }
+
+    @if (success) {
+    <output class="success-message" role="status">
+        {{ success }}
+    </output>
+    }
+
+    <div class="security-copy">
+        <p>
+            La verificación por correo permite solicitar un código
+            temporal al iniciar sesión. Esta opción está disponible
+            para las cuentas de administrador y vendedor.
+        </p>
+    </div>
+
+    <div class="email-information">
+        <span class="email-label">Correo asociado a la cuenta</span>
+        <span class="email-value">{{ email || 'No disponible' }}</span>
+    </div>
+
+    @if (enabled) {
+    <div class="security-enabled-note">
+        <strong>Verificación por correo activada</strong>
+        <p>
+            Se solicitará un código de verificación por correo
+            durante el inicio de sesión. Tu configuración TOTP
+            seguirá funcionando de forma independiente.
+        </p>
+    </div>
+
+    <div class="disable-email-otp">
+        <h3>Desactivar verificación por correo</h3>
+
+        @if (!awaitingCode) {
+        <p>
+            Para desactivar esta protección, confirma la operación
+            con un código enviado a tu correo electrónico.
+        </p>
+
+        <div class="security-actions">
+            <button type="button" class="danger-button" (click)="disableEmailOtp()"
+                [disabled]="saving || requestingCode">
+                {{ requestingCode ? 'Enviando código...' : 'Desactivar verificación' }}
+            </button>
+        </div>
+        } @else {
+        <p>
+            Hemos enviado un código de confirmación a
+            <strong>{{ email }}</strong>. Introdúcelo para confirmar la desactivación.
+        </p>
+
+        <div class="security-code-field">
+            <label for="email-otp-disable-code">Código de verificación</label>
+            <input id="email-otp-disable-code" type="text" name="emailOtpDisableCode"
+                [(ngModel)]="verificationCode"
+                (ngModelChange)="verificationCode = formatVerificationCode($event)"
+                autocomplete="one-time-code" inputmode="numeric" placeholder="XXX XXX"
+                maxlength="7" [disabled]="saving" aria-describedby="email-otp-disable-help" />
+            <span id="email-otp-disable-help" class="qr-caption">
+                Introduce los seis dígitos recibidos por correo. El código caduca a los 10 minutos.
+            </span>
+        </div>
+
+        <div class="security-actions">
+            <button type="button" class="secondary-button" (click)="cancelDisableEmailOtp()"
+                [disabled]="saving || requestingCode">
+                Cancelar
+            </button>
+            <button type="button" class="danger-button" (click)="confirmDisableEmailOtp()"
+                [disabled]="saving || verificationCode.replace(' ', '').length !== 6">
+                {{ saving ? 'Verificando...' : 'Desactivar verificación' }}
+            </button>
+        </div>
+        }
+    </div>
+    } @else {
+    <div class="setup-instructions">
+        <h3>Activar verificación por correo</h3>
+        <p>
+            Al activar esta opción, se solicitará un código temporal
+            enviado a la dirección asociada a tu cuenta cuando el inicio
+            de sesión requiera esta verificación.
+        </p>
+
+        <div class="email-confirmation">
+            <span class="email-label">Los códigos se enviarán a</span>
+            <strong class="email-value">{{ email || 'No disponible' }}</strong>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="primary-button" (click)="enableEmailOtp()"
+                [disabled]="saving || !email">
+                {{ saving ? 'Activando...' : 'Activar verificación' }}
+            </button>
+        </div>
+    </div>
+    }
+
+    @if (saving) {
+    <p class="security-copy" role="status">Guardando configuración...</p>
+    }
+    }
+
+    <div class="security-note">
+        <strong>Importante</strong>
+        <p>
+            La verificación por correo es independiente de la autenticación TOTP.
+            Desactivar una no desactiva la otra.
+        </p>
+    </div>
+</section>

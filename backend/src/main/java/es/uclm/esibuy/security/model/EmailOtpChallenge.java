@@ -25,6 +25,8 @@ public class EmailOtpChallenge {
 
     private boolean used;
 
+    private String purpose;
+
     protected EmailOtpChallenge() {
     }
 
@@ -32,9 +34,18 @@ public class EmailOtpChallenge {
             String userId,
             String codeHash,
             Instant expiresAt) {
+        this(userId, codeHash, expiresAt, "LOGIN");
+    }
+
+    public EmailOtpChallenge(
+            String userId,
+            String codeHash,
+            Instant expiresAt,
+            String purpose) {
         this.userId = userId;
         this.codeHash = codeHash;
         this.expiresAt = expiresAt;
+        this.purpose = purpose;
         this.attempts = 0;
         this.used = false;
     }
@@ -61,6 +72,10 @@ public class EmailOtpChallenge {
 
     public boolean isUsed() {
         return used;
+    }
+
+    public String getPurpose() {
+        return purpose;
     }
 
     public void incrementAttempts() {

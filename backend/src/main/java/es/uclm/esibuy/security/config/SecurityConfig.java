@@ -90,7 +90,7 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.GET, "/api/categories", "/api/categorias").permitAll()
                             .requestMatchers(
                                     "/", "/api/users/register/**", "/api/users/login", "/actuator/health",
-                                    "/api/users/verify-otp")
+                                    "/api/users/login/verify-otp")
                             .permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/users/admin").hasRole(ROLE_ADMIN)
                             .requestMatchers("/api/admin/**", "/api/v1/admin/**").hasRole(ROLE_ADMIN)

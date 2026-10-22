@@ -269,4 +269,31 @@ public class UserService {
         }
     }
 
+    public boolean isEmailOtpEnabled(String userId) {
+        User user = findById(userId);
+
+        if (user.getRole() != UserRole.ADMIN
+                && user.getRole() != UserRole.SELLER) {
+            throw new IllegalStateException(
+                    "La configuración del OTP por correo solo está disponible "
+                            + "para administradores y vendedores");
+        }
+
+        return user.isEmailOtpEnabled();
+    }
+
+    public User updateEmailOtpEnabled(String userId, boolean enabled) {
+        User user = findById(userId);
+
+        if (user.getRole() != UserRole.ADMIN
+                && user.getRole() != UserRole.SELLER) {
+            throw new IllegalStateException(
+                    "La configuración del OTP por correo solo está disponible "
+                            + "para administradores y vendedores");
+        }
+
+        user.setEmailOtpEnabled(enabled);
+        return userRepository.save(user);
+    }
+
 }
