@@ -10,7 +10,6 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
-import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { AuthService, CreateAdminRequest } from '../../../core/services/auth.service';
 
 export function passwordsMatchValidator(
@@ -54,18 +53,27 @@ export class AdminUserCreate {
 
   readonly creationDate = new Date();
 
-  readonly avatars = [
-    'assets/images/avatars/av_client_1.jpeg',
-    'assets/images/avatars/av_client_2.jpeg',
-    'assets/images/avatars/av_client_3.jpeg',
-    'assets/images/avatars/av_client_4.jpeg',
-    'assets/images/avatars/av_client_5.jpeg',
-    'assets/images/avatars/av_seller_1.jpeg',
-    'assets/images/avatars/av_seller_2.jpeg',
-    'assets/images/avatars/av_seller_3.jpeg',
-    'assets/images/avatars/av_seller_4.jpeg',
-    'assets/images/avatars/av_seller_5.jpeg',
+  avatars: string[] = [
+    '/assets/images/avatars/av_admin_1.jpeg',
+    '/assets/images/avatars/av_admin_2.jpeg',
+    '/assets/images/avatars/av_admin_3.jpeg',
+    '/assets/images/avatars/av_admin_4.jpeg',
+    '/assets/images/avatars/av_admin_5.jpeg',
+    '/assets/images/avatars/av_admin_6.jpeg',
+    '/assets/images/avatars/av_admin_7.jpeg',
+    '/assets/images/avatars/av_admin_8.jpeg',
+    '/assets/images/avatars/av_admin_9.jpeg',
+    '/assets/images/avatars/av_admin_10.jpeg',
   ];
+
+
+  avatarError = false;
+
+  onAvatarError(url: string): void {
+    console.error('No se ha podido cargar el avatar:', url);
+    this.avatarError = true;
+  }
+
 
   readonly form: FormGroup = this.formBuilder.group(
     {
@@ -107,18 +115,16 @@ export class AdminUserCreate {
       ],
       confirmPassword: ['', [Validators.required]],
       headquarters: ['', [Validators.maxLength(100)]],
-      profileImage: ['', [Validators.maxLength(500)]],
+      profileImage: [this.avatars[0], [Validators.maxLength(500)]],
     },
     { validators: passwordsMatchValidator },
   );
 
+
   selectAvatar(url: string): void {
-    if (this.form.get('profileImage')?.value === url) {
-      this.form.patchValue({ profileImage: '' });
-    } else {
-      this.form.patchValue({ profileImage: url });
-    }
+    this.form.patchValue({ profileImage: url });
   }
+
 
   cancel(): void {
     this.router.navigate(['/admin/usuarios']);

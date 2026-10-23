@@ -294,12 +294,13 @@
               <legend class="form-label">Avatar de perfil</legend>
 
               <div class="avatar-selector-grid">
-                <button *ngFor="let av of avatars" type="button" class="avatar-item"
-                  [class.selected]="form.get('profileImage')?.value === av" (click)="selectAvatar(av)"
-                  [attr.aria-label]="'Seleccionar avatar'">
-                  <img [src]="av" alt="Avatar disponible" />
+                <button *ngFor="let av of avatars; let i = index" type="button" class="avatar-item"
+                  [class.selected]="form.get('profileImage')?.value === av"
+                  [attr.aria-pressed]="form.get('profileImage')?.value === av"
+                  [attr.aria-label]="'Seleccionar avatar ' + (i + 1)" (click)="selectAvatar(av)">
+                  <img [src]="av" [alt]="'Avatar disponible ' + (i + 1)" loading="eager" (error)="onAvatarError(av)" />
 
-                  <span *ngIf="form.get('profileImage')?.value === av" class="avatar-check">
+                  <span *ngIf="form.get('profileImage')?.value === av" class="avatar-check" aria-hidden="true">
                     ✓
                   </span>
                 </button>
@@ -308,7 +309,12 @@
               <p class="avatar-hint">
                 Selecciona una imagen de perfil de las opciones disponibles.
               </p>
+
+              <p *ngIf="avatarError" class="field-error" role="alert">
+                No se han podido cargar los avatares. Comprueba las rutas de las imágenes.
+              </p>
             </fieldset>
+
 
             <!-- Botones -->
             <div class="btn-wrapper">
