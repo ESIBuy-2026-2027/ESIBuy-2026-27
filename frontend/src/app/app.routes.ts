@@ -11,7 +11,6 @@ import { AdminUserList } from './features/admin/admin-user-list/admin-user-list'
 import { AdminUserDetail } from './features/admin/admin-user-detail/admin-user-detail';
 import { SellerCatalog } from './features/products/seller-catalog/seller-catalog';
 import { ClientCatalog } from './features/client/client-catalog/client-catalog';
-import { ClientDashboard } from './features/client/client-dashboard/client-dashboard';
 import { ClientWishlist } from './features/client/client-wishlist/client-wishlist';
 import { ClientOrders } from './features/client/client-orders/client-orders';
 import { ClientProfile } from './features/client/client-profile/client-profile';

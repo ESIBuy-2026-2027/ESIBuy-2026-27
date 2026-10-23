@@ -9,7 +9,7 @@
   </header>
 
   @if (cartService.loading()) {
-  <p class="cart-state" role="status">Cargando carrito…</p>
+  <output class="cart-state">Cargando carrito…</output>
   } @else if (cartService.loadError(); as error) {
   <p class="cart-state is-error" role="alert">{{ error }}</p>
   <button class="secondary-action" type="button" (click)="cartService.load()">
@@ -34,16 +34,16 @@
   }
 
   @if (checkoutLoading()) {
-  <p class="cart-state" role="status">Cargando opciones de pago…</p>
+  <output class="cart-state">Cargando opciones de pago…</output>
   } @else if (checkoutOpen()) {
   @if (checkoutSummary(); as summary) {
   <section class="checkout-panel" aria-labelledby="checkout-title">
     <h2 id="checkout-title">Confirmación del pedido</h2>
 
     @if (summary.direcciones.length === 0 || summary.metodosPago.length === 0) {
-    <p class="checkout-notice" role="status">
+    <output class="checkout-notice">
       Guarda una dirección de envío y un método de pago en tu perfil para continuar.
-    </p>
+    </output>
     <a routerLink="/client/profile" class="secondary-action">Ir a mi perfil</a>
     } @else {
     <div class="checkout-fields">
@@ -156,7 +156,7 @@
             </button>
 
             @if (busyItemIds().has(item.productoId)) {
-            <span class="cart-state" role="status">Actualizando…</span>
+            <output class="cart-state">Actualizando…</output>
             }
           </div>
         </div>
@@ -181,6 +181,6 @@
   </section>
   }
   } @else {
-  <p class="cart-state" role="status">Cargando carrito…</p>
+  <output class="cart-state">Cargando carrito…</output>
   }
 </main>

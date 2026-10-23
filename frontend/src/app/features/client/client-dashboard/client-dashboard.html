@@ -85,14 +85,14 @@
       </section>
 
       @if (notification(); as message) {
-      <p class="cart-notification" [class.is-error]="message.type === 'error'"
-        [class.is-success]="message.type === 'success'" role="status">
+      <output class="cart-notification" [class.is-error]="message.type === 'error'"
+        [class.is-success]="message.type === 'success'">
         {{ message.text }}
-      </p>
+      </output>
       }
 
       @if (productsLoading()) {
-      <p class="catalog-state" role="status">Cargando productos…</p>
+      <output class="catalog-state">Cargando productos…</output>
       } @else if (productsError(); as error) {
       <p class="catalog-state is-error" role="alert">{{ error }}</p>
       } @else if (products().length === 0) {

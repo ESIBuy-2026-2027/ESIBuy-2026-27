@@ -1,4 +1,3 @@
-import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';

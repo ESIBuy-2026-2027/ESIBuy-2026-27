@@ -3,10 +3,10 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { ClientCatalog } from './client-catalog';
-import { ProductsService, ProductItem, Category } from '../../products/products.service';
+import { ProductsService, ProductItem, Category } from '../../../core/services/products.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { CartService } from '../cart/cart.service';
+import { CartService } from '../../../core/services/cart.service';
 
 describe('ClientCatalog', () => {
   let component: ClientCatalog;

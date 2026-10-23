@@ -1,5 +1,4 @@
 import { httpErrorMessage } from '../../../core/utils/http-error-message';
-import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';

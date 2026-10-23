@@ -89,16 +89,49 @@ export class ProductsService {
   }
 
   getPublicCatalog(filters?: CatalogFilterParams): Observable<ProductItem[]> {
-    let params = new HttpParams();
-    if (filters) {
-      if (filters.query?.trim()) params = params.set('query', filters.query.trim());
-      if (filters.categoryId?.trim()) params = params.set('categoryId', filters.categoryId.trim());
-      if (filters.minPrice !== undefined && filters.minPrice !== null) params = params.set('minPrice', filters.minPrice.toString());
-      if (filters.maxPrice !== undefined && filters.maxPrice !== null) params = params.set('maxPrice', filters.maxPrice.toString());
-      if (filters.minRating !== undefined && filters.minRating !== null) params = params.set('minRating', filters.minRating.toString());
-      if (filters.inStock !== undefined && filters.inStock !== null) params = params.set('inStock', filters.inStock.toString());
-    }
+    const params = this.buildCatalogParams(filters);
     return this.http.get<ProductItem[]>('/api/products', { params });
+  }
+
+  private buildCatalogParams(filters?: CatalogFilterParams): HttpParams {
+    let params = new HttpParams();
+
+    if (!filters) {
+      return params;
+    }
+
+    const query = filters.query?.trim();
+    const categoryId = filters.categoryId?.trim();
+
+    if (query) {
+      params = params.set('query', query);
+    }
+
+    if (categoryId) {
+      params = params.set('categoryId', categoryId);
+    }
+
+    params = this.setNumericParam(params, 'minPrice', filters.minPrice);
+    params = this.setNumericParam(params, 'maxPrice', filters.maxPrice);
+    params = this.setNumericParam(params, 'minRating', filters.minRating);
+
+    if (filters.inStock !== undefined && filters.inStock !== null) {
+      params = params.set('inStock', filters.inStock.toString());
+    }
+
+    return params;
+  }
+
+  private setNumericParam(
+    params: HttpParams,
+    name: string,
+    value: number | undefined
+  ): HttpParams {
+    if (value === undefined || value === null) {
+      return params;
+    }
+
+    return params.set(name, value.toString());
   }
 
   getProductById(id: string): Observable<ProductItem> {

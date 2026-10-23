@@ -2,7 +2,7 @@ import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
 import { AvailableProduct, ProductsService } from '../../../core/services/products.service';
 
