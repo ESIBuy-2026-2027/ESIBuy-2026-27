@@ -144,21 +144,29 @@ describe('AdminUserCreate', () => {
     expect(fechaInput?.value).toBe(component.creationDate);
   });
 
-  it('renders 10 registration avatar buttons and toggles avatar selection', () => {
+
+  it('renders 10 registration avatars and selects the first one by default', () => {
     const rendered = fixture.nativeElement as HTMLElement;
-    const avatarButtons = rendered.querySelectorAll('.avatar-selector-grid .avatar-item');
+    const avatarButtons = rendered.querySelectorAll<HTMLButtonElement>(
+      '.avatar-selector-grid .avatar-item',
+    );
+
     expect(avatarButtons.length).toBe(10);
-
-    const firstAvatarBtn = avatarButtons[0] as HTMLButtonElement;
-    firstAvatarBtn.click();
-    fixture.detectChanges();
     expect(component.form.get('profileImage')?.value).toBe(component.avatars[0]);
+    expect(avatarButtons[0].classList.contains('selected')).toBe(true);
 
-    // Clicking again deselects
-    firstAvatarBtn.click();
+    avatarButtons[1].click();
     fixture.detectChanges();
-    expect(component.form.get('profileImage')?.value).toBe('');
+
+    expect(component.form.get('profileImage')?.value).toBe(component.avatars[1]);
+    expect(avatarButtons[1].classList.contains('selected')).toBe(true);
+
+    avatarButtons[1].click();
+    fixture.detectChanges();
+
+    expect(component.form.get('profileImage')?.value).toBe(component.avatars[1]);
   });
+
 
   it('does not display any "Opcional" text or badges in the template', () => {
     const text = fixture.nativeElement.textContent || '';

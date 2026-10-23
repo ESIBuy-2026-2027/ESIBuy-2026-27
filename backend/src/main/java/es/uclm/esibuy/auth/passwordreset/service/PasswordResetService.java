@@ -17,8 +17,8 @@ import es.uclm.esibuy.users.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -29,8 +29,8 @@ import org.springframework.stereotype.Service;
 public class PasswordResetService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PasswordResetService.class);
+
     private static final Duration TOKEN_LIFETIME = Duration.ofMinutes(15);
-    private static final String GENERIC_MESSAGE = "Si el correo está registrado, recibirás instrucciones para recuperar tu contraseña.";
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
@@ -48,6 +48,7 @@ public class PasswordResetService {
             PasswordEncoder passwordEncoder,
             MongoTemplate mongoTemplate,
             @Value("${esibuy.password-reset.log-token:false}") boolean logRawTokenInDevelopment) {
+
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.rateLimiter = rateLimiter;
@@ -56,27 +57,29 @@ public class PasswordResetService {
         this.logRawTokenInDevelopment = logRawTokenInDevelopment;
     }
 
-    public String requestReset(String email, String ipAddress) {
+    public void requestReset(String email, String ipAddress) {
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
 
         if (!rateLimiter.allow(ipAddress, normalizedEmail)) {
             LOGGER.info("Password reset request ignored by rate limiter");
-            return GENERIC_MESSAGE;
+            return;
         }
 
         Optional<User> userOptional = userRepository.findByEmailIgnoreCase(normalizedEmail);
+
         if (userOptional.isEmpty()) {
             LOGGER.info("Password reset requested for an unregistered address");
-            return GENERIC_MESSAGE;
+            return;
         }
 
         User user = userOptional.get();
 
-        // Invalidar cualquier token previo sin consumir.
+        // Invalidar cualquier token previo que siga sin utilizarse.
         tokenRepository.deleteAllByUserIdAndUsedAtIsNull(user.getId());
 
         byte[] randomBytes = new byte[32];
         secureRandom.nextBytes(randomBytes);
+
         String rawToken = HexFormat.of().formatHex(randomBytes);
         Instant now = Instant.now();
 
@@ -87,19 +90,23 @@ public class PasswordResetService {
                 now.plus(TOKEN_LIFETIME)));
 
         /*
-         * Solo habilitar en desarrollo local. Nunca activar esta propiedad en
-         * producción.
-         * No se registra el token en los logs de auditoría habituales.
+         * Solo para desarrollo local.
+         * El token permite recuperar el acceso a la cuenta, por lo que
+         * no debe registrarse en producción.
          */
         if (logRawTokenInDevelopment) {
-            System.out.println("[DEV ONLY] ESIBuy password reset token for user "
-                    + user.getId() + ": " + rawToken);
+            LOGGER.warn(
+                    "[DEV ONLY] ESIBuy password reset token for user {}: {}",
+                    user.getId(),
+                    rawToken);
         }
 
-        LOGGER.info("Password reset token generated; expires in {} minutes", TOKEN_LIFETIME.toMinutes());
-        // El futuro proveedor de correo recibirá rawToken; el hash es lo único
-        // persistido.
-        return GENERIC_MESSAGE;
+        LOGGER.info(
+                "Password reset token generated; expires in {} minutes",
+                TOKEN_LIFETIME.toMinutes());
+
+        // Cuando se integre el proveedor de correo, se enviará rawToken
+        // al usuario. En la base de datos solo se almacena su hash.
     }
 
     public void validateResetToken(String rawToken) {
@@ -110,9 +117,14 @@ public class PasswordResetService {
         String tokenHash = sha256(rawToken.trim());
         Instant now = Instant.now();
 
-        tokenRepository
-                .findByTokenHashAndUsedAtIsNullAndExpiresAtAfter(tokenHash, now)
-                .orElseThrow(InvalidPasswordResetTokenException::new);
+        boolean valid = tokenRepository
+                .findByTokenHashAndUsedAtIsNullAndExpiresAtAfter(
+                        tokenHash, now)
+                .isPresent();
+
+        if (!valid) {
+            throw new InvalidPasswordResetTokenException();
+        }
     }
 
     public void confirmReset(String rawToken, String newPassword) {
@@ -120,13 +132,13 @@ public class PasswordResetService {
         Instant now = Instant.now();
 
         PasswordResetToken candidate = tokenRepository
-                .findByTokenHashAndUsedAtIsNullAndExpiresAtAfter(tokenHash, now)
+                .findByTokenHashAndUsedAtIsNullAndExpiresAtAfter(
+                        tokenHash, now)
                 .orElseThrow(InvalidPasswordResetTokenException::new);
 
         /*
-         * Consumo atómico: solo una petición concurrente puede marcar el token como
-         * usado.
-         * Si la actualización devuelve null, el token ya fue consumido o ha caducado.
+         * Consumo atómico: solo una petición concurrente puede marcar
+         * el token como utilizado.
          */
         Query query = new Query(new Criteria().andOperator(
                 Criteria.where("id").is(candidate.getId()),
@@ -135,6 +147,7 @@ public class PasswordResetService {
                 Criteria.where("expiresAt").gt(now)));
 
         Update update = new Update().set("usedAt", now);
+
         PasswordResetToken consumed = mongoTemplate.findAndModify(
                 query,
                 update,
@@ -151,7 +164,7 @@ public class PasswordResetService {
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
-        // Cualquier otro token activo de este usuario queda invalidado.
+        // Invalidar cualquier otro token activo del usuario.
         tokenRepository.deleteAllByUserIdAndUsedAtIsNull(user.getId());
 
         LOGGER.info("Password reset completed for userId={}", user.getId());
@@ -161,13 +174,17 @@ public class PasswordResetService {
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256")
                     .digest(value.getBytes(StandardCharsets.UTF_8));
+
             return HexFormat.of().formatHex(digest);
         } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 is not available", exception);
+            throw new IllegalStateException(
+                    "SHA-256 is not available", exception);
         }
     }
 
-    public static class InvalidPasswordResetTokenException extends RuntimeException {
+    public static class InvalidPasswordResetTokenException
+            extends RuntimeException {
+
         public InvalidPasswordResetTokenException() {
             super("El token no es válido, ha caducado o ya se ha utilizado.");
         }
