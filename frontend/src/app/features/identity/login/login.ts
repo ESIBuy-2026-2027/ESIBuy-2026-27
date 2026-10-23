@@ -26,7 +26,6 @@ export class Login implements OnDestroy {
   readonly loginForm: FormGroup;
   successMessage: string | null = null;
   serverError: string | null = null;
-  forgotPasswordMessage: string | null = null;
   retryAfterSeconds = 0;
   loading = false;
   showPassword = false;
@@ -190,8 +189,8 @@ export class Login implements OnDestroy {
     }
   }
 
-  showForgotPasswordMessage() {
-    this.forgotPasswordMessage = 'La recuperación de contraseña estará disponible próximamente.';
+  showForgotPasswordMessage(): void {
+    void this.router.navigate(['/recuperar-password']);
   }
 
   getUserDisplayName(user: AuthenticatedUser | null): string {

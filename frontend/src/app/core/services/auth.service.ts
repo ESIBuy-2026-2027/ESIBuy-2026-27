@@ -163,6 +163,31 @@ export class AuthService {
       );
   }
 
+  requestPasswordReset(email: string) {
+    return this.http.post<{ message: string }>(
+      '/api/auth/password-reset/request',
+      { email },
+      { withCredentials: true }
+    );
+  }
+
+
+  validatePasswordResetToken(token: string) {
+    return this.http.post<{ message: string }>(
+      '/api/auth/password-reset/validate',
+      { token },
+      { withCredentials: true }
+    );
+  }
+
+  confirmPasswordReset(token: string, newPassword: string) {
+    return this.http.post<{ message: string }>(
+      '/api/auth/password-reset/confirm',
+      { token, newPassword },
+      { withCredentials: true }
+    );
+  }
+
   verifyLoginOtp(code: string): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(

@@ -105,12 +105,10 @@ describe('Login', () => {
     expect(fixture.componentInstance.serverError).toBe('Tu sesión ha expirado');
   });
 
-  it('shows the forgot password information message', () => {
+  it('navigates to password recovery when requested', () => {
     component.showForgotPasswordMessage();
 
-    expect(component.forgotPasswordMessage).toBe(
-      'La recuperación de contraseña estará disponible próximamente.'
-    );
+    expect(navigate).toHaveBeenCalledWith(['/recuperar-password']);
   });
 
   it('blocks login and counts down after a rate-limit response', () => {
