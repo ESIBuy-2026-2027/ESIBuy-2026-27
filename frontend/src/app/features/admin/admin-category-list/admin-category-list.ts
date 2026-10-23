@@ -1,5 +1,5 @@
+
 import { httpErrorMessage } from '../../../core/utils/http-error-message';
-import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,7 @@ type CategoryDialogMode = 'create' | 'edit' | 'delete' | null;
 @Component({
   selector: 'app-admin-category-list',
   standalone: true,
-  imports: [FormsModule, RouterLink, RouterLinkActive, AppSidebarComponent],
+  imports: [FormsModule, RouterLink, RouterLinkActive],
   templateUrl: './admin-category-list.html',
   styleUrl: './admin-category-list.css',
 })

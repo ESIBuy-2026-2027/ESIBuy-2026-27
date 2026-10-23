@@ -20,10 +20,13 @@ import { SellerOrders } from './features/products/seller-orders/seller-orders';
 import { AdminProfile } from './features/admin/admin-profile/admin-profile';
 import { AdminCategoryList } from './features/admin/admin-category-list/admin-category-list';
 import { ClientCart } from './features/client/cart/cart';
+import { PasswordRecovery } from './features/identity/password-recovery/password-recovery';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'login', component: Login },
+  { path: 'recuperar-password', component: PasswordRecovery },
+  { path: 'restablecer-password', component: PasswordRecovery },
   { path: 'register', component: Register },
 
   { path: 'admin/users/new', component: AdminUserCreate, canActivate: [authGuard, roleGuard('ADMIN')] },
