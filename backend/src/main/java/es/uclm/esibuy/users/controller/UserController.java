@@ -43,6 +43,9 @@ import es.uclm.esibuy.users.dto.VerifyEmailOtpDisableRequest;
 public class UserController {
 
     private static final String MESSAGE_KEY = "message";
+    private static final String EMAIL_KEY = "email";
+    private static final String ENABLED_KEY = "enabled";
+    private static final String SOLO_ADMINS_SELLERS_MESSAGE = "Esta configuración solo está disponible para administradores y vendedores";
 
     private final UserService userService;
     private final LoginAttemptService loginAttemptService;
@@ -113,7 +116,7 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.ACCEPTED)
                         .body(Map.of(
                                 "requires2fa", true,
-                                "email", user.getEmail()));
+                                EMAIL_KEY, user.getEmail()));
             }
 
             if (!twoFactorAuthenticationService
@@ -131,6 +134,7 @@ public class UserController {
             emailOtpService.issueChallenge(user);
 
             HttpSession session = servletRequest.getSession(true);
+            session.setMaxInactiveInterval(30 * 60);
             session.setAttribute(PENDING_OTP_USER_ID, user.getId());
 
             SecurityContextHolder.clearContext();
@@ -346,7 +350,7 @@ public class UserController {
     private Map<String, Object> buildUserResponse(User user) {
         return Map.of(
                 "id", user.getId(),
-                "email", user.getEmail(),
+                EMAIL_KEY, user.getEmail(),
                 "role", user.getRole(),
                 "active", user.isActive(),
                 "totpEnabled", user.isTotpEnabled());
@@ -369,12 +373,12 @@ public class UserController {
         if (!supportsEmailOtp(user)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of(MESSAGE_KEY,
-                            "Esta configuración solo está disponible para administradores y vendedores"));
+                            SOLO_ADMINS_SELLERS_MESSAGE));
         }
 
         return ResponseEntity.ok(Map.of(
-                "enabled", user.isEmailOtpEnabled(),
-                "email", user.getEmail()));
+                ENABLED_KEY, user.isEmailOtpEnabled(),
+                EMAIL_KEY, user.getEmail()));
     }
 
     @PutMapping("/me/email-otp-settings")
@@ -391,7 +395,7 @@ public class UserController {
         if (!supportsEmailOtp(user)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of(MESSAGE_KEY,
-                            "Esta configuración solo está disponible para administradores y vendedores"));
+                            SOLO_ADMINS_SELLERS_MESSAGE));
         }
 
         if (!request.enabled()) {
@@ -404,8 +408,8 @@ public class UserController {
         userService.save(user);
 
         return ResponseEntity.ok(Map.of(
-                "enabled", user.isEmailOtpEnabled(),
-                "email", user.getEmail(),
+                ENABLED_KEY, user.isEmailOtpEnabled(),
+                EMAIL_KEY, user.getEmail(),
                 MESSAGE_KEY, "Verificación por correo activada correctamente."));
     }
 
@@ -422,7 +426,7 @@ public class UserController {
         if (!supportsEmailOtp(user)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of(MESSAGE_KEY,
-                            "Esta configuración solo está disponible para administradores y vendedores"));
+                            SOLO_ADMINS_SELLERS_MESSAGE));
         }
 
         if (!user.isEmailOtpEnabled()) {
@@ -453,7 +457,7 @@ public class UserController {
         if (!supportsEmailOtp(user)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of(MESSAGE_KEY,
-                            "Esta configuración solo está disponible para administradores y vendedores"));
+                            SOLO_ADMINS_SELLERS_MESSAGE));
         }
 
         if (!user.isEmailOtpEnabled()) {
@@ -468,8 +472,8 @@ public class UserController {
         userService.save(user);
 
         return ResponseEntity.ok(Map.of(
-                "enabled", false,
-                "email", user.getEmail(),
+                ENABLED_KEY, false,
+                EMAIL_KEY, user.getEmail(),
                 MESSAGE_KEY,
                 "Verificación por correo desactivada correctamente."));
     }

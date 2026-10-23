@@ -30,6 +30,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.mockito.Mockito.doNothing;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
+import es.uclm.esibuy.security.service.EmailOtpService;
 
 @WebMvcTest(UserController.class)
 @Import({ ApiExceptionHandler.class, SecurityConfig.class, SessionAuthenticationService.class })
@@ -54,6 +62,9 @@ class UserProfileControllerTest {
 
         @MockitoBean
         private TwoFactorAuthenticationService twoFactorAuthenticationService;
+
+        @MockitoBean
+        private EmailOtpService emailOtpService;
 
         private Authentication authenticationFor(UserRole role) {
                 AuthenticatedUserPrincipal principal = new AuthenticatedUserPrincipal(
@@ -125,5 +136,129 @@ class UserProfileControllerTest {
                 mockMvc.perform(get(PROFILE_API).with(authentication(authenticationFor(UserRole.CLIENT))))
                                 .andExpect(status().isNotFound())
                                 .andExpect(jsonPath("$.message").value("Usuario no encontrado"));
+        }
+
+        @Test
+        void shouldUpdateOwnProfileSuccessfully() throws Exception {
+                when(userService.updateOwnProfile(
+                                org.mockito.ArgumentMatchers.eq("user-1"),
+                                org.mockito.ArgumentMatchers.any()))
+                                .thenReturn(new UserProfileResponse(
+                                                "Ana María", "García López", "ana@example.com",
+                                                "611222333", "*****678Z", "avatar-client-default",
+                                                CustomerType.PREMIUM, null, null, null, null, null, null));
+
+                mockMvc.perform(put(PROFILE_API)
+                                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {
+                                                  "firstName": "Ana María",
+                                                  "lastName": "García López",
+                                                  "phone": "611222333"
+                                                }
+                                                """))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.firstName").value("Ana María"))
+                                .andExpect(jsonPath("$.lastName").value("García López"))
+                                .andExpect(jsonPath("$.phone").value("611222333"))
+                                .andExpect(jsonPath("$.passwordHash").doesNotExist());
+
+                org.mockito.Mockito.verify(userService).updateOwnProfile(
+                                org.mockito.ArgumentMatchers.eq("user-1"),
+                                org.mockito.ArgumentMatchers.any());
+        }
+
+        @Test
+        void shouldRejectProfileUpdateWhenRequiredFieldsAreMissing() throws Exception {
+                mockMvc.perform(put(PROFILE_API)
+                                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {
+                                                  "firstName": "",
+                                                  "lastName": ""
+                                                }
+                                                """))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.errors.firstName").exists())
+                                .andExpect(jsonPath("$.errors.lastName").exists());
+
+                org.mockito.Mockito.verifyNoInteractions(userService);
+        }
+
+        @Test
+        void shouldReturnUnauthorizedWhenUpdatingProfileWithoutSession() throws Exception {
+                mockMvc.perform(put(PROFILE_API)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {
+                                                  "firstName": "Ana",
+                                                  "lastName": "García"
+                                                }
+                                                """))
+                                .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        void shouldReturnNotFoundWhenUpdatingProfileOfMissingUser() throws Exception {
+                when(userService.updateOwnProfile(
+                                org.mockito.ArgumentMatchers.eq("user-1"),
+                                org.mockito.ArgumentMatchers.any()))
+                                .thenThrow(new UserNotFoundException("Usuario no encontrado"));
+
+                mockMvc.perform(put(PROFILE_API)
+                                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {
+                                                  "firstName": "Ana",
+                                                  "lastName": "García"
+                                                }
+                                                """))
+                                .andExpect(status().isNotFound())
+                                .andExpect(jsonPath("$.message").value("Usuario no encontrado"));
+        }
+
+        @Test
+        void shouldDeleteOwnAccountAndInvalidateSession() throws Exception {
+                MockHttpSession session = new MockHttpSession();
+
+                doNothing().when(userService).deleteOwnAccount("user-1");
+
+                mockMvc.perform(delete("/api/users/me")
+                                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                                .session(session)
+                                .with(csrf()))
+                                .andExpect(status().isNoContent());
+
+                org.mockito.Mockito.verify(userService).deleteOwnAccount("user-1");
+                org.junit.jupiter.api.Assertions.assertTrue(session.isInvalid());
+        }
+
+        @Test
+        void shouldReturnUnauthorizedWhenDeletingAccountWithoutSession() throws Exception {
+                mockMvc.perform(delete("/api/users/me")
+                                .with(csrf()))
+                                .andExpect(status().isUnauthorized());
+
+                org.mockito.Mockito.verifyNoInteractions(userService);
+        }
+
+        @Test
+        void shouldForbidAdminFromDeletingOwnAccount() throws Exception {
+                MockHttpSession session = new MockHttpSession();
+
+                mockMvc.perform(delete("/api/users/me")
+                                .with(authentication(authenticationFor(UserRole.ADMIN)))
+                                .session(session)
+                                .with(csrf()))
+                                .andExpect(status().isForbidden());
+
+                org.mockito.Mockito.verifyNoInteractions(userService);
         }
 }

@@ -260,6 +260,14 @@ public class PaymentMethodService {
         if (expiration.isBefore(YearMonth.now())) {
             throw badRequest("La tarjeta está caducada");
         }
+
+        if (request.expirationMonth() < 1 || request.expirationMonth() > 12) {
+            throw badRequest("El mes de caducidad debe estar entre 1 y 12");
+        }
+
+        if (request.expirationYear() < 2000 || request.expirationYear() > 9999) {
+            throw badRequest("El año de caducidad no es válido");
+        }
     }
 
     private void validatePayPal(PaymentMethodRequest request) {

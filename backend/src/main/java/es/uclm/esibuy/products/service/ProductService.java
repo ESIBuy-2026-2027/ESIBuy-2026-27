@@ -1,3 +1,4 @@
+
 package es.uclm.esibuy.products.service;
 
 import java.math.BigDecimal;
@@ -39,7 +40,9 @@ public class ProductService {
         this.userRepository = userRepository;
     }
 
-    public Product createProduct(ProductCreateRequest request, String authenticatedEmail) {
+    public Product createProduct(
+            ProductCreateRequest request,
+            String authenticatedEmail) {
         User seller = findSeller(authenticatedEmail);
         List<String> categoryIds = validateCategories(request);
 
@@ -54,11 +57,13 @@ public class ProductService {
                 request.getImageUrl(),
                 Boolean.TRUE.equals(request.getAvailable()),
                 seller.getId());
+
         return productRepository.save(product);
     }
 
     public ProductSummaryResponse getSummary(String authenticatedEmail) {
         String sellerId = findSeller(authenticatedEmail).getId();
+
         return new ProductSummaryResponse(
                 productRepository.countBySellerId(sellerId),
                 productRepository.countBySellerIdAndStock(sellerId, 0),
@@ -69,6 +74,7 @@ public class ProductService {
 
     public List<ProductResponse> getSellerProducts(String authenticatedEmail) {
         String sellerId = findSeller(authenticatedEmail).getId();
+
         return productRepository.findAllBySellerId(sellerId).stream()
                 .map(ProductResponse::from)
                 .toList();
@@ -76,31 +82,49 @@ public class ProductService {
 
     public Product getProduct(String id, String authenticatedEmail) {
         User seller = findSeller(authenticatedEmail);
+
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException());
+                .orElseThrow(ProductNotFoundException::new);
+
         if (!seller.getId().equals(product.getSellerId())) {
             throw new ProductNotFoundException();
         }
+
         return product;
     }
 
-    public Product updateProduct(String id, ProductCreateRequest request, String authenticatedEmail) {
+    public Product updateProduct(
+            String id,
+            ProductCreateRequest request,
+            String authenticatedEmail) {
         User seller = findSeller(authenticatedEmail);
+
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException());
+                .orElseThrow(ProductNotFoundException::new);
+
         if (!seller.getId().equals(product.getSellerId())) {
-            throw new AccessDeniedException("No tiene permisos para modificar este producto");
+            throw new AccessDeniedException(
+                    "No tiene permisos para modificar este producto");
         }
+
         List<String> categoryIds = validateCategories(request);
+
         product.setName(request.getName().trim());
         product.setCategoryIds(categoryIds);
         product.setStock(request.getStock() == null ? 0 : request.getStock());
-        product.setDescription(request.getDescription() != null ? request.getDescription().trim() : null);
+        product.setDescription(
+                request.getDescription() != null
+                        ? request.getDescription().trim()
+                        : null);
         product.setPrice(request.getPrice());
         product.setDiscount(request.getDiscount());
         product.setPremiumDiscount(request.getPremiumDiscount());
-        product.setImageUrl(request.getImageUrl() != null && !request.getImageUrl().isBlank() ? request.getImageUrl().trim() : null);
+        product.setImageUrl(
+                request.getImageUrl() != null && !request.getImageUrl().isBlank()
+                        ? request.getImageUrl().trim()
+                        : null);
         product.setAvailable(Boolean.TRUE.equals(request.getAvailable()));
+
         return productRepository.save(product);
     }
 
@@ -117,87 +141,148 @@ public class ProductService {
             BigDecimal maxPrice,
             Double minRating,
             Boolean inStock) {
+
         return productRepository.findAllByAvailableTrue().stream()
-                .filter(p -> {
-                    if (query == null || query.isBlank()) return true;
-                    String q = query.trim().toLowerCase();
-                    boolean matchName = p.getName() != null && p.getName().toLowerCase().contains(q);
-                    boolean matchDesc = p.getDescription() != null && p.getDescription().toLowerCase().contains(q);
-                    return matchName || matchDesc;
-                })
-                .filter(p -> {
-                    if (categoryId == null || categoryId.isBlank()) return true;
-                    return p.getCategoryIds() != null && p.getCategoryIds().contains(categoryId.trim());
-                })
-                .filter(p -> {
-                    if (minPrice == null) return true;
-                    return p.getPrice() != null && p.getPrice().compareTo(minPrice) >= 0;
-                })
-                .filter(p -> {
-                    if (maxPrice == null) return true;
-                    return p.getPrice() != null && p.getPrice().compareTo(maxPrice) <= 0;
-                })
-                .filter(p -> {
-                    if (minRating == null) return true;
-                    return p.getRating() != null && p.getRating() >= minRating;
-                })
-                .filter(p -> {
-                    if (!Boolean.TRUE.equals(inStock)) return true;
-                    return p.getStock() > 0;
-                })
+                .filter(product -> matchesQuery(product, query))
+                .filter(product -> matchesCategory(product, categoryId))
+                .filter(product -> matchesMinPrice(product, minPrice))
+                .filter(product -> matchesMaxPrice(product, maxPrice))
+                .filter(product -> matchesMinRating(product, minRating))
+                .filter(product -> matchesStock(product, inStock))
                 .map(ProductResponse::from)
                 .toList();
     }
 
+    private boolean matchesQuery(Product product, String query) {
+        if (query == null || query.isBlank()) {
+            return true;
+        }
+
+        String normalizedQuery = query.trim().toLowerCase();
+
+        boolean matchesName = product.getName() != null
+                && product.getName().toLowerCase().contains(normalizedQuery);
+
+        boolean matchesDescription = product.getDescription() != null
+                && product.getDescription().toLowerCase().contains(normalizedQuery);
+
+        return matchesName || matchesDescription;
+    }
+
+    private boolean matchesCategory(Product product, String categoryId) {
+        if (categoryId == null || categoryId.isBlank()) {
+            return true;
+        }
+
+        return product.getCategoryIds() != null
+                && product.getCategoryIds().contains(categoryId.trim());
+    }
+
+    private boolean matchesMinPrice(Product product, BigDecimal minPrice) {
+        if (minPrice == null) {
+            return true;
+        }
+
+        return product.getPrice() != null
+                && product.getPrice().compareTo(minPrice) >= 0;
+    }
+
+    private boolean matchesMaxPrice(Product product, BigDecimal maxPrice) {
+        if (maxPrice == null) {
+            return true;
+        }
+
+        return product.getPrice() != null
+                && product.getPrice().compareTo(maxPrice) <= 0;
+    }
+
+    private boolean matchesMinRating(Product product, Double minRating) {
+        if (minRating == null) {
+            return true;
+        }
+
+        return product.getRating() != null
+                && product.getRating() >= minRating;
+    }
+
+    private boolean matchesStock(Product product, Boolean inStock) {
+        if (!Boolean.TRUE.equals(inStock)) {
+            return true;
+        }
+
+        return product.getStock() > 0;
+    }
+
     public ProductResponse getProductById(String id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Producto no encontrado"));
+                .orElseThrow(
+                        () -> new ProductNotFoundException("Producto no encontrado"));
+
         return ProductResponse.from(product);
     }
 
-    public ProductResponse updateProductStatus(String id, boolean available, String authenticatedEmail) {
+    public ProductResponse updateProductStatus(
+            String id,
+            boolean available,
+            String authenticatedEmail) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Producto no encontrado"));
+                .orElseThrow(
+                        () -> new ProductNotFoundException("Producto no encontrado"));
 
         if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
             throw new AccessDeniedException("Autenticación requerida");
         }
 
         User user = userRepository.findByEmailIgnoreCase(authenticatedEmail)
-                .orElseThrow(() -> new AccessDeniedException("Usuario no encontrado"));
+                .orElseThrow(
+                        () -> new AccessDeniedException("Usuario no encontrado"));
 
-        if (user.getRole() != UserRole.ADMIN && !user.getId().equals(product.getSellerId())) {
-            throw new AccessDeniedException("No tiene permisos para modificar este producto");
+        if (user.getRole() != UserRole.ADMIN
+                && !user.getId().equals(product.getSellerId())) {
+            throw new AccessDeniedException(
+                    "No tiene permisos para modificar este producto");
         }
 
         product.setAvailable(available);
+
         return ProductResponse.from(productRepository.save(product));
     }
 
     private User findSeller(String authenticatedEmail) {
         if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
-            throw new AccessDeniedException("Se requiere una sesión de vendedor autenticada");
+            throw new AccessDeniedException(
+                    "Se requiere una sesión de vendedor autenticada");
         }
+
         User seller = userRepository.findByEmailIgnoreCase(authenticatedEmail)
-                .orElseThrow(() -> new AccessDeniedException("No se encontró el vendedor autenticado"));
+                .orElseThrow(
+                        () -> new AccessDeniedException(
+                                "No se encontró el vendedor autenticado"));
+
         if (seller.getRole() != UserRole.SELLER) {
-            throw new AccessDeniedException("Solo un vendedor puede acceder a este recurso");
+            throw new AccessDeniedException(
+                    "Solo un vendedor puede acceder a este recurso");
         }
+
         return seller;
     }
 
     private List<String> validateCategories(ProductCreateRequest request) {
         List<String> categoryIds = List.copyOf(request.getCategoryIds());
+
         Set<String> existingCategoryIds = categoryRepository.findAllById(categoryIds).stream()
                 .map(Category::getId)
                 .collect(Collectors.toSet());
+
         List<String> missingCategoryIds = categoryIds.stream()
                 .filter(categoryId -> !existingCategoryIds.contains(categoryId))
                 .distinct()
                 .toList();
+
         if (!missingCategoryIds.isEmpty()) {
             throw new CategoryNotFoundException(missingCategoryIds);
         }
+
         return categoryIds;
     }
 }
