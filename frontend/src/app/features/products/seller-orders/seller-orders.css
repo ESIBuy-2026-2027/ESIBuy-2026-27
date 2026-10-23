@@ -604,3 +604,28 @@
     padding-right: 20px;
   }
 }
+
+.order-detail-dialog {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  overflow: auto;
+}
+
+.order-detail-dialog[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.order-detail-dialog::backdrop {
+  background: rgba(16, 44, 64, 0.55);
+}

@@ -4,11 +4,11 @@ import { signal } from '@angular/core';
 import { of } from 'rxjs';
 import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { Home } from './home';
-import { ProductsService, ProductItem, Category } from '../products/products.service';
+import { ProductsService, ProductItem, Category } from '../../core/services/products.service';
 import { WishlistService } from '../../core/services/wishlist.service';
 import { ToastService } from '../../core/services/toast.service';
 import { AuthService, AuthenticatedUser } from '../../core/services/auth.service';
-import { CartService } from '../client/cart/cart.service';
+import { CartService } from '../../core/services/cart.service';
 
 describe('Home', () => {
   let component: Home;

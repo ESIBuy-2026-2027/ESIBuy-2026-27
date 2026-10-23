@@ -28,6 +28,7 @@ import es.uclm.esibuy.users.model.ShippingAddress;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
+import es.uclm.esibuy.common.exception.AddressNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class ShippingAddressServiceTest {
@@ -153,5 +154,81 @@ class ShippingAddressServiceTest {
         client.getClientProfile().setAddresses(new ArrayList<>(List.of(existing("a1", true))));
 
         assertEquals(1, service.list(USER_ID).size());
+    }
+
+    @Test
+    void shouldUpdateAddressAndPreserveItsId() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(client));
+        client.getClientProfile().setAddresses(
+                new ArrayList<>(List.of(existing("a1", true))));
+
+        var updated = service.update(USER_ID, "a1", request(false));
+
+        assertEquals("a1", updated.id());
+        assertEquals("Ana García", updated.recipientName());
+        assertEquals("Calle Mayor, 12", updated.street());
+        assertTrue(updated.defaultAddress());
+        verify(userRepository).save(client);
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingAnAddressThatDoesNotExist() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(client));
+
+        assertThrows(
+                AddressNotFoundException.class,
+                () -> service.update(USER_ID, "missing", request(false)));
+
+        verify(userRepository, never()).save(client);
+    }
+
+    @Test
+    void shouldDeleteAddressAndAssignDefaultToAnotherAddress() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(client));
+        client.getClientProfile().setAddresses(new ArrayList<>(List.of(
+                existing("a1", true),
+                existing("a2", false))));
+
+        service.delete(USER_ID, "a1");
+
+        assertEquals(1, client.getClientProfile().getAddresses().size());
+        assertEquals("a2", client.getClientProfile().getAddresses().get(0).getId());
+        assertTrue(client.getClientProfile().getAddresses().get(0).isDefaultAddress());
+        verify(userRepository).save(client);
+    }
+
+    @Test
+    void shouldDeleteNonDefaultAddressWithoutChangingTheDefault() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(client));
+        client.getClientProfile().setAddresses(new ArrayList<>(List.of(
+                existing("a1", true),
+                existing("a2", false))));
+
+        service.delete(USER_ID, "a2");
+
+        assertEquals(1, client.getClientProfile().getAddresses().size());
+        assertTrue(client.getClientProfile().getAddresses().get(0).isDefaultAddress());
+    }
+
+    @Test
+    void shouldThrowWhenDeletingAnAddressThatDoesNotExist() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(client));
+        client.getClientProfile().setAddresses(
+                new ArrayList<>(List.of(existing("a1", true))));
+
+        assertThrows(
+                AddressNotFoundException.class,
+                () -> service.delete(USER_ID, "missing"));
+
+        verify(userRepository, never()).save(client);
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingAnAddressForAMissingUser() {
+        when(userRepository.findById("missing")).thenReturn(Optional.empty());
+
+        assertThrows(
+                UserNotFoundException.class,
+                () -> service.update("missing", "a1", request(false)));
     }
 }

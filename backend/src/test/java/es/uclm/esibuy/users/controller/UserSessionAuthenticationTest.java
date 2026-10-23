@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import es.uclm.esibuy.security.config.SecurityConfig;
+import es.uclm.esibuy.security.service.EmailOtpService;
 import es.uclm.esibuy.security.service.EncryptionService;
 import es.uclm.esibuy.security.service.LoginAttemptService;
 import es.uclm.esibuy.security.service.SessionAuthenticationService;
@@ -54,6 +55,9 @@ class UserSessionAuthenticationTest {
 
         @MockitoBean
         private TwoFactorAuthenticationService twoFactorAuthenticationService;
+
+        @MockitoBean
+        private EmailOtpService emailOtpService;
 
         @Test
         void adminLoginCreatesSessionAcceptedByAdminEndpoint() throws Exception {

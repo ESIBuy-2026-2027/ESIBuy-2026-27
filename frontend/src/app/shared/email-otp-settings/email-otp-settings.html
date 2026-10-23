@@ -20,9 +20,9 @@
     </div>
 
     @if (loading) {
-    <p class="security-copy" role="status">
+    <output class="security-copy">
         Cargando configuración de seguridad...
-    </p>
+    </output>
     } @else {
     @if (error) {
     <p class="form-error" role="alert">
@@ -31,7 +31,7 @@
     }
 
     @if (success) {
-    <output class="success-message" role="status">
+    <output class="success-message">
         {{ success }}
     </output>
     }
@@ -82,11 +82,10 @@
 
         <div class="security-code-field">
             <label for="email-otp-disable-code">Código de verificación</label>
-            <input id="email-otp-disable-code" type="text" name="emailOtpDisableCode"
-                [(ngModel)]="verificationCode"
-                (ngModelChange)="verificationCode = formatVerificationCode($event)"
-                autocomplete="one-time-code" inputmode="numeric" placeholder="XXX XXX"
-                maxlength="7" [disabled]="saving" aria-describedby="email-otp-disable-help" />
+            <input id="email-otp-disable-code" type="text" name="emailOtpDisableCode" [(ngModel)]="verificationCode"
+                (ngModelChange)="verificationCode = formatVerificationCode($event)" autocomplete="one-time-code"
+                inputmode="numeric" placeholder="XXX XXX" maxlength="7" [disabled]="saving"
+                aria-describedby="email-otp-disable-help" />
             <span id="email-otp-disable-help" class="qr-caption">
                 Introduce los seis dígitos recibidos por correo. El código caduca a los 10 minutos.
             </span>
@@ -119,8 +118,7 @@
         </div>
 
         <div class="form-actions">
-            <button type="button" class="primary-button" (click)="enableEmailOtp()"
-                [disabled]="saving || !email">
+            <button type="button" class="primary-button" (click)="enableEmailOtp()" [disabled]="saving || !email">
                 {{ saving ? 'Activando...' : 'Activar verificación' }}
             </button>
         </div>
@@ -128,7 +126,7 @@
     }
 
     @if (saving) {
-    <p class="security-copy" role="status">Guardando configuración...</p>
+    <output class="security-copy">Guardando configuración...</output>
     }
     }
 

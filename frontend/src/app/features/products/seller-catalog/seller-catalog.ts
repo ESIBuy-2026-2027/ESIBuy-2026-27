@@ -1,6 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
 import { httpErrorMessage } from '../../../core/utils/http-error-message';
-import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';

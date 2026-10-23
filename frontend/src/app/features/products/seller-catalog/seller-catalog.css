@@ -712,31 +712,6 @@ h2 {
   outline-offset: 3px;
 }
 
-.action-column {
-  width: 1%;
-  padding-left: 14px !important;
-  padding-right: 14px !important;
-}
-
-.action-buttons {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.icon-button {
-  display: inline-grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-  text-decoration: none;
-}
-
 .icon-button:disabled {
   cursor: not-allowed;
   opacity: 0.55;

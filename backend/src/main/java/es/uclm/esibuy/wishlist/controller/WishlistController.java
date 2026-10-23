@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/wishlist")
 public class WishlistController {
 
+    private static final String IN_WISHLIST_KEY = "inWishlist";
+
     private final WishlistService wishlistService;
 
     public WishlistController(WishlistService wishlistService) {
@@ -44,8 +46,7 @@ public class WishlistController {
         wishlistService.addToWishlist(productId, email);
         return ResponseEntity.ok(Map.of(
                 "message", "Producto añadido a la lista de deseos",
-                "inWishlist", true
-        ));
+                IN_WISHLIST_KEY, true));
     }
 
     @DeleteMapping("/{productId}")
@@ -56,8 +57,7 @@ public class WishlistController {
         wishlistService.removeFromWishlist(productId, email);
         return ResponseEntity.ok(Map.of(
                 "message", "Producto eliminado de la lista de deseos",
-                "inWishlist", false
-        ));
+                IN_WISHLIST_KEY, false));
     }
 
     @GetMapping("/check/{productId}")
@@ -66,7 +66,6 @@ public class WishlistController {
             Authentication authentication) {
         String email = authentication != null ? authentication.getName() : null;
         boolean inWishlist = wishlistService.isInWishlist(productId, email);
-        return ResponseEntity.ok(Map.of("inWishlist", inWishlist));
+        return ResponseEntity.ok(Map.of(IN_WISHLIST_KEY, inWishlist));
     }
 }
-

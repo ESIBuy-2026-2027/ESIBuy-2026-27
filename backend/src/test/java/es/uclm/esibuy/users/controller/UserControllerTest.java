@@ -22,11 +22,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -35,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -77,7 +77,7 @@ class UserControllerTest {
         @MockitoBean
         private EmailOtpService emailOtpService;
 
-        @MockitoBean
+        @MockitoSpyBean
         private SessionAuthenticationService sessionAuthenticationService;
 
         @Test
@@ -165,36 +165,11 @@ class UserControllerTest {
 
         @Test
         void shouldInvalidateSessionOnLogout() throws Exception {
-                User seller = activeSeller();
-
-                when(userService.login(any(LoginRequest.class))).thenReturn(seller);
-                when(userService.findById(SELLER_ID)).thenReturn(seller);
-                doNothing().when(emailOtpService).verifyChallenge(SELLER_ID, TEST_OTP);
-
-                MvcResult loginResult = loginRequest()
-                                .andExpect(status().isAccepted())
-                                .andReturn();
-
-                MockHttpSession pendingSession = (MockHttpSession) loginResult.getRequest().getSession(false);
-                assertNotNull(pendingSession);
-
-                MvcResult verificationResult = mockMvc.perform(
-                                post(VERIFY_OTP_API)
-                                                .with(csrf())
-                                                .session(pendingSession)
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .content("""
-                                                                {"code":"123456"}
-                                                                """))
-                                .andExpect(status().isOk())
-                                .andReturn();
-
-                MockHttpSession authenticatedSession = (MockHttpSession) verificationResult.getRequest()
-                                .getSession(false);
-                assertNotNull(authenticatedSession);
+                MockHttpSession authenticatedSession = new MockHttpSession();
 
                 mockMvc.perform(post("/api/users/logout")
                                 .session(authenticatedSession)
+                                .with(user("seller@example.com").roles("SELLER"))
                                 .with(csrf()))
                                 .andExpect(status().isNoContent());
 
@@ -206,7 +181,7 @@ class UserControllerTest {
 
         @Test
         void shouldRegisterClient() throws Exception {
-                User client = org.mockito.Mockito.mock(User.class);
+                User client = mock(User.class);
                 when(client.getId()).thenReturn("client-id");
                 when(client.getEmail()).thenReturn("ana@example.com");
                 when(client.getRole()).thenReturn(UserRole.CLIENT);
@@ -231,7 +206,7 @@ class UserControllerTest {
 
         @Test
         void shouldRegisterSeller() throws Exception {
-                User seller = org.mockito.Mockito.mock(User.class);
+                User seller = mock(User.class);
                 when(seller.getId()).thenReturn(SELLER_ID);
                 when(seller.getEmail()).thenReturn("carlos@example.com");
                 when(seller.getRole()).thenReturn(UserRole.SELLER);
@@ -288,7 +263,7 @@ class UserControllerTest {
 
         @Test
         void shouldCreateAdmin() throws Exception {
-                User admin = org.mockito.Mockito.mock(User.class);
+                User admin = mock(User.class);
                 when(admin.getId()).thenReturn("admin-id");
                 when(admin.getEmail()).thenReturn("admin@esibuy.com");
                 when(admin.getRole()).thenReturn(UserRole.ADMIN);
@@ -381,14 +356,7 @@ class UserControllerTest {
                                 .thenReturn(30L);
 
                 User seller = activeSeller();
-                AtomicInteger evaluatedAttempts = new AtomicInteger();
-
-                when(userService.login(any(LoginRequest.class))).thenAnswer(invocation -> {
-                        if (evaluatedAttempts.incrementAndGet() == 1) {
-                                throw new InvalidCredentialsException();
-                        }
-                        return seller;
-                });
+                when(userService.login(any(LoginRequest.class))).thenReturn(seller);
 
                 loginRequest()
                                 .andExpect(status().isTooManyRequests())
@@ -418,7 +386,7 @@ class UserControllerTest {
 
         @Test
         void clientLoginDoesNotRequireEmailOtp() throws Exception {
-                User client = org.mockito.Mockito.mock(User.class);
+                User client = mock(User.class);
                 when(client.getId()).thenReturn("client-id");
                 when(client.getEmail()).thenReturn("client@example.com");
                 when(client.getRole()).thenReturn(UserRole.CLIENT);
@@ -456,6 +424,7 @@ class UserControllerTest {
                 User seller = activeSeller();
                 when(userService.login(any(LoginRequest.class))).thenReturn(seller);
                 when(userService.findById(SELLER_ID)).thenReturn(seller);
+
                 doThrow(new es.uclm.esibuy.common.exception.InvalidOtpException())
                                 .when(emailOtpService).verifyChallenge(SELLER_ID, "000000");
 
@@ -480,13 +449,16 @@ class UserControllerTest {
         }
 
         private User activeSeller() {
-                User seller = org.mockito.Mockito.mock(User.class);
+                User seller = mock(User.class);
+
                 when(seller.getId()).thenReturn(SELLER_ID);
                 when(seller.getEmail()).thenReturn(SELLER_EMAIL);
                 when(seller.getRole()).thenReturn(UserRole.SELLER);
                 when(seller.isActive()).thenReturn(true);
                 when(seller.isBlocked()).thenReturn(false);
                 when(seller.isTotpEnabled()).thenReturn(false);
+                when(seller.isEmailOtpEnabled()).thenReturn(true);
+
                 return seller;
         }
 

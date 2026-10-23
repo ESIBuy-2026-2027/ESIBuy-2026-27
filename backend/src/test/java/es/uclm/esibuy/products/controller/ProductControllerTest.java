@@ -21,7 +21,6 @@ import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
 import es.uclm.esibuy.users.model.UserRole;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -258,7 +257,6 @@ class ProductControllerTest {
         }
 
         @Test
-        @WithMockUser(username = SELLER_EMAIL, roles = "SELLER")
         void shouldAllowSellerToUpdateStatus() throws Exception {
                 when(productService.updateProductStatus("prod-1", false, SELLER_EMAIL))
                                 .thenReturn(new ProductResponse(
@@ -269,9 +267,12 @@ class ProductControllerTest {
                 mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
                                 .patch(PRODUCTS_API + "/prod-1/status")
                                 .param("available", "false")
+                                .with(authentication(authenticationForSeller()))
                                 .with(csrf()))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.available").value(false));
+
+                verify(productService).updateProductStatus("prod-1", false, SELLER_EMAIL);
         }
 
         @Test

@@ -70,9 +70,9 @@ export class Home implements OnInit {
     this.productsService.getPublicCatalog({
       query: this.searchQuery() || undefined,
       categoryId: this.selectedCategory() || undefined,
-      minPrice: this.minPrice() !== null ? this.minPrice()! : undefined,
-      maxPrice: this.maxPrice() !== null ? this.maxPrice()! : undefined,
-      minRating: this.minRating() !== null ? this.minRating()! : undefined,
+      minPrice: this.minPrice() ?? undefined,
+      maxPrice: this.maxPrice() ?? undefined,
+      minRating: this.minRating() ?? undefined,
       inStock: this.onlyInStock() || undefined,
     }).subscribe({
       next: (items) => {
