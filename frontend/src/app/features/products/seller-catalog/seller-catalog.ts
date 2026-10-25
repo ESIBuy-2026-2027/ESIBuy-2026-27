@@ -3,7 +3,7 @@ import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Category, ProductCreateRequest, ProductsService } from '../../../core/services/products.service';
 import { SellerCatalogService, SellerProduct } from '../../../core/services/seller-catalog.service';
 
@@ -15,7 +15,7 @@ type StockFilter = 'all' | 'in-stock' | 'low-stock' | 'out-of-stock';
 @Component({
   selector: 'app-seller-catalog',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, RouterLinkActive],
   templateUrl: './seller-catalog.html',
   styleUrl: './seller-catalog.css',
 })
