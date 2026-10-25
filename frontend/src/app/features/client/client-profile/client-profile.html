@@ -1,4 +1,3 @@
-
 <div class="profile-page">
 
     <!-- BARRA LATERAL -->
@@ -22,40 +21,33 @@
             }
         </div>
 
+
         <nav class="sidebar-nav" aria-label="Secciones del perfil">
-            @for (section of sections; track section.label) {
-            @if (section.label === 'Datos personales') {
             <button type="button" class="nav-item" [class.active]="activeSection() === 'personal'"
                 [attr.aria-current]="activeSection() === 'personal' ? 'page' : null"
                 (click)="selectSection('personal')">
-                {{ section.label }}
+                Datos personales
             </button>
-            } @else if (section.label === 'Seguridad') {
-            <button type="button" class="nav-item" [class.active]="activeSection() === 'security'"
-                [attr.aria-current]="activeSection() === 'security' ? 'page' : null"
-                (click)="selectSection('security')">
-                {{ section.label }}
-            </button>
-            } @else if (section.label === 'Direcciones de envío') {
+
             <button type="button" class="nav-item" [class.active]="activeSection() === 'addresses'"
                 [attr.aria-current]="activeSection() === 'addresses' ? 'page' : null"
                 (click)="selectSection('addresses')">
-                {{ section.label }}
+                Direcciones de envío
             </button>
-            }@else if (section.label === 'Métodos de pago') {
+
+            <button type="button" class="nav-item" [class.active]="activeSection() === 'security'"
+                [attr.aria-current]="activeSection() === 'security' ? 'page' : null"
+                (click)="selectSection('security')">
+                Seguridad
+            </button>
+
             <button type="button" class="nav-item" [class.active]="activeSection() === 'payments'"
                 [attr.aria-current]="activeSection() === 'payments' ? 'page' : null"
                 (click)="selectSection('payments')">
-                {{ section.label }}
+                Métodos de pago
             </button>
-            }
-            @else {
-            <a class="nav-item is-disabled disabled" aria-disabled="true">
-                {{ section.label }}
-            </a>
-            }
-            }
         </nav>
+
 
 
         <div class="sidebar-footer">
@@ -196,8 +188,8 @@
 
                         @if (editing()) {
                         <input id="phone" name="phone" type="tel" inputmode="numeric" maxlength="9"
-                            [(ngModel)]="editForm.phone" pattern="[0-9]{9}"
-                            autocomplete="tel" placeholder="Teléfono de 9 cifras" [disabled]="saving()" />
+                            [(ngModel)]="editForm.phone" pattern="[0-9]{9}" autocomplete="tel"
+                            placeholder="Teléfono de 9 cifras" [disabled]="saving()" />
 
                         <small>
                             Campo opcional. Introduce 9 cifras si
