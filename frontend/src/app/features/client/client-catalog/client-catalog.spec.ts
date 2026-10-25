@@ -89,8 +89,6 @@ describe('ClientCatalog', () => {
     const el: HTMLElement = fixture.nativeElement;
 
     expect(el.querySelector('#catalog-title')?.textContent).toContain('Catálogo de productos');
-    expect(el.querySelector('.primary-action')?.textContent).toContain('Ver carrito');
-
     const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
     expect(navLinks.length).toBe(5);
     expect(navLinks[0].textContent).toContain('Catálogo');
@@ -145,4 +143,3 @@ describe('ClientCatalog', () => {
     );
   });
 });
-

@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -129,6 +130,85 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$.precioTotal").value(0));
 
         verify(pedidoService).obtenerCheckoutResumen(CLIENTE_ID);
+    }
+
+    @Test
+    void shouldReturnSellerOrdersForAuthenticatedSeller() throws Exception {
+        when(pedidoService.obtenerPedidosDelVendedor(CLIENTE_ID)).thenReturn(List.of());
+
+        mockMvc.perform(get(API + "/vendedor")
+                .with(authentication(authenticationFor(UserRole.SELLER))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+
+        verify(pedidoService).obtenerPedidosDelVendedor(CLIENTE_ID);
+    }
+
+    @Test
+    void shouldRejectSellerOrdersForAuthenticatedClient() throws Exception {
+        mockMvc.perform(get(API + "/vendedor")
+                .with(authentication(authenticationFor(UserRole.CLIENT))))
+                .andExpect(status().isForbidden());
+
+        verify(pedidoService, never()).obtenerPedidosDelVendedor(any());
+    }
+
+    @Test
+    void shouldUpdateSellerOrderStatusForAuthenticatedSeller() throws Exception {
+        mockMvc.perform(patch(API + "/vendedor/pedido-123/estado")
+                .with(authentication(authenticationFor(UserRole.SELLER)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"estado":"ENVIADO"}
+                        """))
+                .andExpect(status().isNoContent());
+
+        verify(pedidoService).actualizarEstadoPedido(CLIENTE_ID, "pedido-123", PedidoEstado.ENVIADO, null);
+    }
+
+    @Test
+    void shouldRejectOrderStatusUpdateForAuthenticatedClient() throws Exception {
+        mockMvc.perform(patch(API + "/vendedor/pedido-123/estado")
+                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"estado":"ENVIADO"}
+                        """))
+                .andExpect(status().isForbidden());
+
+        verify(pedidoService, never()).actualizarEstadoPedido(any(), any(), any(), any());
+    }
+
+    @Test
+    void shouldValidateRequiredOrderStatus() throws Exception {
+        mockMvc.perform(patch(API + "/vendedor/pedido-123/estado")
+                .with(authentication(authenticationFor(UserRole.SELLER)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"estado":null}
+                        """))
+                .andExpect(status().isBadRequest());
+
+        verify(pedidoService, never()).actualizarEstadoPedido(any(), any(), any(), any());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenOrderDoesNotBelongToSeller() throws Exception {
+        doThrow(new IllegalArgumentException("El pedido no pertenece al vendedor"))
+                .when(pedidoService).actualizarEstadoPedido(CLIENTE_ID, "pedido-123", PedidoEstado.ENVIADO, null);
+
+        mockMvc.perform(patch(API + "/vendedor/pedido-123/estado")
+                .with(authentication(authenticationFor(UserRole.SELLER)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"estado":"ENVIADO"}
+                        """))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

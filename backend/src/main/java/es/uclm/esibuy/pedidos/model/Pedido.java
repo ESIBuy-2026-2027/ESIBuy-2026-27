@@ -68,6 +68,10 @@ public class Pedido {
         return estado;
     }
 
+    public void setEstado(PedidoEstado estado) {
+        this.estado = Objects.requireNonNull(estado);
+    }
+
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
     }

@@ -1,11 +1,17 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Component, computed, inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import {
+  PedidoService,
+  SellerOrder as ApiSellerOrder,
+  SellerOrderStatus,
+} from '../../../core/services/pedido.service';
 
 type OrderStatus = 'Pendiente' | 'En preparación' | 'Enviado' | 'Entregado' | 'Cancelado';
 
 interface SellerOrderItem {
+  productId: string;
   name: string;
   quantity: number;
   price: number;
@@ -27,94 +33,6 @@ interface SellerOrder {
 
 
 
-const MOCK_ORDERS: SellerOrder[] = [
-  {
-    id: 'PED-1048',
-    date: '15 oct 2026',
-    dateValue: '2026-10-15',
-    customer: 'Lucía Gómez',
-    products: 'Auriculares · 1 ud.',
-    total: 25,
-    status: 'Pendiente',
-    items: [{
-      name: 'Auriculares inalámbricos',
-      quantity: 1,
-      price: 25,
-      imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=160&q=80',
-    }],
-    shippingAddress: 'Calle Toledo, 24, 1º B, 13001 Ciudad Real',
-    customerEmail: 'lucia.gomez@example.com',
-  },
-  {
-    id: 'PED-1047',
-    date: '14 oct 2026',
-    dateValue: '2026-10-14',
-    customer: 'Marcos Ruiz',
-    products: 'Sudadera · 2 uds.',
-    total: 60,
-    status: 'En preparación',
-    items: [{
-      name: 'Sudadera básica',
-      quantity: 2,
-      price: 30,
-      imageUrl: 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=160&q=80',
-    }],
-    shippingAddress: 'Avenida de Europa, 15, 2º A, 13005 Ciudad Real',
-    customerEmail: 'marcos.ruiz@example.com',
-  },
-  {
-    id: 'PED-1046',
-    date: '13 oct 2026',
-    dateValue: '2026-10-13',
-    customer: 'Elena Martín',
-    products: 'Casita de juguete · 1 ud.',
-    total: 60,
-    status: 'Enviado',
-    items: [{
-      name: 'Casita de juguete',
-      quantity: 1,
-      price: 60,
-      imageUrl: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f?auto=format&fit=crop&w=160&q=80',
-    }],
-    shippingAddress: 'Calle Alarcos, 8, bajo, 13001 Ciudad Real',
-    customerEmail: 'elena.martin@example.com',
-  },
-  {
-    id: 'PED-1045',
-    date: '11 oct 2026',
-    dateValue: '2026-10-11',
-    customer: 'Pablo Sánchez',
-    products: 'Batería Yamaha · 1 ud.',
-    total: 300,
-    status: 'Entregado',
-    items: [{
-      name: 'Batería Yamaha',
-      quantity: 1,
-      price: 300,
-      imageUrl: 'https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?auto=format&fit=crop&w=160&q=80',
-    }],
-    shippingAddress: 'Calle Ciruela, 31, 3º C, 13001 Ciudad Real',
-    customerEmail: 'pablo.sanchez@example.com',
-  },
-  {
-    id: 'PED-1044',
-    date: '10 oct 2026',
-    dateValue: '2026-10-10',
-    customer: 'Sara López',
-    products: 'Sofá · 1 ud.',
-    total: 250,
-    status: 'Cancelado',
-    items: [{
-      name: 'Sofá de tres plazas',
-      quantity: 1,
-      price: 250,
-      imageUrl: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=160&q=80',
-    }],
-    shippingAddress: 'Calle Mata, 6, 1º, 13004 Ciudad Real',
-    customerEmail: 'sara.lopez@example.com',
-  },
-];
-
 @Component({
   selector: 'app-seller-orders',
   standalone: true,
@@ -122,15 +40,29 @@ const MOCK_ORDERS: SellerOrder[] = [
   templateUrl: './seller-orders.html',
   styleUrl: './seller-orders.css',
 })
-export class SellerOrders {
+export class SellerOrders implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
-  readonly orders = signal(MOCK_ORDERS);
+  private readonly pedidoService = inject(PedidoService);
+  readonly orders = signal<SellerOrder[]>([]);
+  readonly ordersLoading = signal(true);
+  readonly ordersError = signal<string | null>(null);
   readonly orderSearch = signal('');
   readonly selectedStatus = signal<'Todos' | OrderStatus>('Todos');
   readonly dateFrom = signal('');
   readonly dateTo = signal('');
   readonly filtersOpen = signal(false);
-  readonly selectedOrder = signal<SellerOrder | null>(null);
+  readonly expandedOrderId = signal<string | null>(null);
+  readonly statusSavingOrderId = signal<string | null>(null);
+  readonly statusUpdateError = signal<string | null>(null);
+  readonly statusUpdateSuccess = signal<string | null>(null);
+  readonly pendingStatusChange = signal<{ order: SellerOrder; status: OrderStatus } | null>(null);
+  readonly selectedRollbackReason = signal('');
+  readonly rollbackReasons = [
+    'Corrección de información del pedido',
+    'Incidencia durante la preparación',
+    'Solicitud del comprador',
+    'Otro motivo operativo',
+  ];
   readonly sidebarCollapsed = signal(this.readSidebarPreference());
   readonly statusSummary = computed(() => ([
     { label: 'Pendientes', status: 'Pendiente' as const },
@@ -160,6 +92,59 @@ export class SellerOrders {
       return matchesSearch && matchesStatus && matchesFromDate && matchesToDate;
     });
   });
+
+  ngOnInit(): void {
+    this.loadOrders();
+  }
+
+  loadOrders(): void {
+    this.ordersLoading.set(true);
+    this.ordersError.set(null);
+    this.pedidoService.obtenerPedidosDelVendedor().subscribe({
+      next: (orders) => {
+        this.orders.set(orders.map((order) => this.toViewOrder(order)));
+        this.ordersLoading.set(false);
+      },
+      error: () => {
+        this.ordersLoading.set(false);
+        this.ordersError.set('No se han podido cargar los pedidos. Inténtalo de nuevo.');
+      },
+    });
+  }
+
+  private toViewOrder(order: ApiSellerOrder): SellerOrder {
+    const date = new Date(order.fechaCreacion);
+    return {
+        id: order.pedidoId,
+        date: new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium' }).format(date),
+        dateValue: order.fechaCreacion.slice(0, 10),
+        customer: order.clienteNombre,
+        products: order.items.map((item) => `${item.nombre} · ${item.cantidad} ud.`).join(', '),
+        total: order.total,
+        status: this.toViewStatus(order.estado),
+        items: order.items.map((item) => ({
+          productId: item.productoId,
+          name: item.nombre,
+          quantity: item.cantidad,
+          price: item.precioUnitario,
+          imageUrl: item.imageUrl ?? '',
+        })),
+        shippingAddress: order.direccionEnvio,
+        customerEmail: order.clienteEmail ?? '',
+    };
+  }
+
+  private toViewStatus(status: SellerOrderStatus): OrderStatus {
+    const statuses: Record<SellerOrderStatus, OrderStatus> = {
+      PAGADO: 'Pendiente',
+      PENDIENTE: 'Pendiente',
+      PREPARANDO: 'En preparación',
+      ENVIADO: 'Enviado',
+      ENTREGADO: 'Entregado',
+      CANCELADO: 'Cancelado',
+    };
+    return statuses[status];
+  }
 
   formatPrice(total: number): string {
     return new Intl.NumberFormat('es-ES', {
@@ -202,24 +187,80 @@ export class SellerOrders {
     this.selectedStatus.set(this.selectedStatus() === status ? 'Todos' : status);
   }
 
-  openOrderDetails(order: SellerOrder): void {
-    this.selectedOrder.set(order);
+  toggleOrderDetails(orderId: string): void {
+    this.statusUpdateError.set(null);
+    this.statusUpdateSuccess.set(null);
+    this.pendingStatusChange.set(null);
+    this.selectedRollbackReason.set('');
+    this.expandedOrderId.set(this.expandedOrderId() === orderId ? null : orderId);
   }
 
-  closeOrderDetails(): void {
-    this.selectedOrder.set(null);
-  }
-
-  updateOrderStatus(status: OrderStatus): void {
-    const order = this.selectedOrder();
-    if (!order) {
+  updateOrderStatus(order: SellerOrder, status: OrderStatus): void {
+    if (order.status === status || this.statusSavingOrderId()) {
       return;
     }
 
-    const updatedOrder = { ...order, status };
-    this.orders.update((orders) => orders.map((currentOrder) =>
-      currentOrder.id === order.id ? updatedOrder : currentOrder));
-    this.selectedOrder.set(updatedOrder);
+    if (this.isRollback(order.status, status)) {
+      this.pendingStatusChange.set({ order, status });
+      this.selectedRollbackReason.set('');
+      this.statusUpdateError.set(null);
+      this.statusUpdateSuccess.set(null);
+      return;
+    }
+
+    this.saveOrderStatus(order, status);
+  }
+
+  confirmRollback(): void {
+    const pending = this.pendingStatusChange();
+    const reason = this.selectedRollbackReason();
+    if (!pending || !reason) {
+      return;
+    }
+    this.pendingStatusChange.set(null);
+    this.saveOrderStatus(pending.order, pending.status, reason);
+  }
+
+  cancelRollback(): void {
+    this.pendingStatusChange.set(null);
+    this.selectedRollbackReason.set('');
+  }
+
+  private saveOrderStatus(order: SellerOrder, status: OrderStatus, justificacion?: string): void {
+    this.statusSavingOrderId.set(order.id);
+    this.statusUpdateError.set(null);
+    this.statusUpdateSuccess.set(null);
+    this.pedidoService.actualizarEstadoPedido(order.id, this.toApiStatus(status), justificacion).subscribe({
+      next: () => {
+        this.orders.update((orders) => orders.map((currentOrder) =>
+          currentOrder.id === order.id ? { ...currentOrder, status } : currentOrder));
+        this.statusSavingOrderId.set(null);
+        this.statusUpdateSuccess.set('Estado actualizado correctamente.');
+      },
+      error: () => {
+        this.statusSavingOrderId.set(null);
+        this.statusUpdateSuccess.set(null);
+        this.statusUpdateError.set('No se ha podido actualizar el estado del pedido. Inténtalo de nuevo.');
+      },
+    });
+  }
+
+  private isRollback(current: OrderStatus, next: OrderStatus): boolean {
+    const order: OrderStatus[] = ['Pendiente', 'En preparación', 'Enviado', 'Entregado'];
+    const currentIndex = order.indexOf(current);
+    const nextIndex = order.indexOf(next);
+    return currentIndex >= 0 && nextIndex >= 0 && nextIndex < currentIndex;
+  }
+
+  private toApiStatus(status: OrderStatus): SellerOrderStatus {
+    const statuses: Record<OrderStatus, SellerOrderStatus> = {
+      Pendiente: 'PENDIENTE',
+      'En preparación': 'PREPARANDO',
+      Enviado: 'ENVIADO',
+      Entregado: 'ENTREGADO',
+      Cancelado: 'CANCELADO',
+    };
+    return statuses[status];
   }
 
   toggleSidebar(): void {

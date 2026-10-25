@@ -147,7 +147,18 @@
         </div>
 
         <section aria-label="Pedidos de la tienda">
-          @if (visibleOrders().length === 0) {
+          @if (ordersLoading()) {
+          <div class="empty-state">
+            <span class="loading-indicator" aria-hidden="true"></span>
+            <p>Cargando pedidos...</p>
+          </div>
+          } @else if (ordersError(); as error) {
+          <div class="empty-state" role="alert">
+            <h3>No se han podido cargar los pedidos</h3>
+            <p>{{ error }}</p>
+            <button type="button" class="secondary-button" (click)="loadOrders()">Reintentar</button>
+          </div>
+          } @else if (visibleOrders().length === 0) {
           <div class="empty-state">
             <span class="empty-icon" aria-hidden="true">⌕</span>
             <h3>No se encontraron pedidos</h3>
@@ -187,14 +198,97 @@
                   </td>
                   <td class="order-total">{{ formatPrice(order.total) }}</td>
                   <td class="order-action">
-                    <button type="button" class="details-button" [class.action-button]="order.status === 'Pendiente'
-                          || order.status === 'En preparación'" (click)="openOrderDetails(order)"
-                      [attr.aria-label]="orderActionLabel(order.status) + ' el pedido ' + order.id"
-                      [title]="orderActionLabel(order.status)">
-                      {{ orderActionLabel(order.status) }}
+                    <button type="button" class="details-button" [class.action-button]="expandedOrderId() !== order.id"
+                      (click)="toggleOrderDetails(order.id)"
+                      [attr.aria-expanded]="expandedOrderId() === order.id"
+                      [attr.aria-controls]="'order-details-' + order.id"
+                      [attr.aria-label]="(expandedOrderId() === order.id ? 'Ocultar' : 'Ver') + ' detalles del pedido ' + order.id">
+                      {{ expandedOrderId() === order.id ? 'Ocultar' : 'Ver detalles' }}
                     </button>
                   </td>
                 </tr>
+                @if (expandedOrderId() === order.id) {
+                <tr class="expanded-order-row" [id]="'order-details-' + order.id">
+                  <td colspan="7">
+                    <div class="expanded-order">
+                      <section class="expanded-products" aria-label="Productos del pedido">
+                        <h3>Detalle de productos</h3>
+                        <div class="expanded-product-list">
+                          @for (item of order.items; track item.productId) {
+                          <article class="expanded-product">
+                            @if (item.imageUrl) {
+                            <img [src]="item.imageUrl" [alt]="item.name">
+                            } @else {
+                            <span class="expanded-product-placeholder" aria-hidden="true">▦</span>
+                            }
+                            <div class="expanded-product-info">
+                              <strong>{{ item.name }}</strong>
+                              <span>{{ item.quantity }} unidad{{ item.quantity === 1 ? '' : 'es' }}</span>
+                            </div>
+                            <span class="expanded-product-price">{{ formatPrice(item.price) }} / ud.</span>
+                            <strong>{{ formatPrice(item.price * item.quantity) }}</strong>
+                          </article>
+                          }
+                        </div>
+                        <div class="expanded-total">
+                          <span>Total del pedido</span>
+                          <strong>{{ formatPrice(order.total) }}</strong>
+                        </div>
+                      </section>
+                      <section class="expanded-management" aria-label="Gestionar estado del pedido">
+                        <h3>Gestionar pedido</h3>
+                        <label [for]="'order-status-' + order.id">Estado</label>
+                        <select [id]="'order-status-' + order.id" [ngModel]="order.status"
+                          [disabled]="statusSavingOrderId() === order.id"
+                          (ngModelChange)="updateOrderStatus(order, $event)">
+                          <option value="Pendiente">Pendiente</option>
+                          <option value="En preparación">En preparación</option>
+                          <option value="Enviado">Enviado</option>
+                          <option value="Entregado">Entregado</option>
+                          <option value="Cancelado">Cancelado</option>
+                        </select>
+                        @if (pendingStatusChange(); as pending) {
+                        @if (pending.order.id === order.id) {
+                        <div class="rollback-confirmation">
+                          <label [for]="'rollback-reason-' + order.id">
+                            Para retroceder el estado, selecciona un motivo
+                          </label>
+                          <select [id]="'rollback-reason-' + order.id" [ngModel]="selectedRollbackReason()"
+                            (ngModelChange)="selectedRollbackReason.set($event)">
+                            <option value="">Selecciona un motivo</option>
+                            @for (reason of rollbackReasons; track reason) {
+                            <option [value]="reason">{{ reason }}</option>
+                            }
+                          </select>
+                          <div class="rollback-actions">
+                            <button type="button" class="secondary-button" (click)="cancelRollback()">Cancelar</button>
+                            <button type="button" class="details-button action-button"
+                              [disabled]="!selectedRollbackReason()" (click)="confirmRollback()">
+                              Confirmar retroceso
+                            </button>
+                          </div>
+                        </div>
+                        }
+                        }
+                        @if (statusSavingOrderId() === order.id) {
+                        <span class="status-saving" role="status">Guardando...</span>
+                        }
+                        @if (statusUpdateSuccess(); as success) {
+                        <p class="status-update-success" role="status">{{ success }}</p>
+                        }
+                        @if (statusUpdateError(); as error) {
+                        <p class="status-update-error" role="alert">{{ error }}</p>
+                        }
+                        <div class="expanded-customer">
+                          <strong>{{ order.customer }}</strong>
+                          <span>{{ order.customerEmail || 'Email no disponible' }}</span>
+                          <address>{{ order.shippingAddress }}</address>
+                        </div>
+                      </section>
+                    </div>
+                  </td>
+                </tr>
+                }
                 }
               </tbody>
             </table>
@@ -205,63 +299,3 @@
     </main>
   </div>
 </div>
-
-@if (selectedOrder(); as order) {
-<dialog class="order-detail-dialog" open aria-labelledby="order-detail-title">
-
-  <section class="order-detail-panel">
-    <div class="order-detail-header">
-      <div>
-        <p class="eyebrow">DETALLE DEL PEDIDO</p>
-        <h2 id="order-detail-title">#{{ order.id }}</h2>
-        <span class="order-detail-date">{{ order.date }}</span>
-      </div>
-      <button type="button" class="close-detail-button" aria-label="Cerrar detalle del pedido" title="Cerrar"
-        (click)="closeOrderDetails()">
-        ×
-      </button>
-    </div>
-
-    <div class="order-detail-body">
-      <section class="detail-section" aria-labelledby="detail-products-title">
-        <h3 id="detail-products-title">Artículos</h3>
-        @for (item of order.items; track item.name) {
-        <div class="detail-product">
-          <img [src]="item.imageUrl" [alt]="item.name">
-          <div>
-            <strong>{{ item.name }}</strong>
-            <span>{{ item.quantity }} ud. · {{ formatPrice(item.price) }}</span>
-          </div>
-          <b>{{ formatPrice(item.price * item.quantity) }}</b>
-        </div>
-        }
-        <div class="detail-total">
-          <span>Subtotal</span>
-          <strong>{{ formatPrice(order.total) }}</strong>
-        </div>
-      </section>
-
-      <section class="detail-section" aria-labelledby="detail-status-title">
-        <h3 id="detail-status-title">Estado del subpedido</h3>
-        <label class="detail-status-field" for="detail-order-status">
-          Actualizar estado
-        </label>
-        <select id="detail-order-status" [ngModel]="order.status" (ngModelChange)="updateOrderStatus($event)">
-          <option value="Pendiente">Pendiente</option>
-          <option value="En preparación">En preparación</option>
-          <option value="Enviado">Enviado</option>
-          <option value="Entregado">Entregado</option>
-          <option value="Cancelado">Cancelado</option>
-        </select>
-      </section>
-
-      <section class="detail-section detail-customer" aria-labelledby="detail-customer-title">
-        <h3 id="detail-customer-title">Comprador y envío</h3>
-        <strong>{{ order.customer }}</strong>
-        <span>{{ order.customerEmail }}</span>
-        <address>{{ order.shippingAddress }}</address>
-      </section>
-    </div>
-  </section>
-</dialog>
-}

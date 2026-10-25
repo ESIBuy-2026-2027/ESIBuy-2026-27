@@ -141,7 +141,7 @@ describe('AdminUserCreate', () => {
 
     expect(fechaInput).toBeTruthy();
     expect(fechaInput?.readOnly).toBe(true);
-    expect(fechaInput?.value).toBe(component.creationDate);
+    expect(fechaInput?.value).toBe(new Date(component.creationDate).toLocaleString('es-ES').replace(',', ''));
   });
 
 

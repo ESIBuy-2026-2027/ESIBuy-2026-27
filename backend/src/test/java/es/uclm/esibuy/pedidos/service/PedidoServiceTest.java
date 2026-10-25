@@ -14,6 +14,7 @@ import es.uclm.esibuy.pedidos.dto.CrearPedidoDTO;
 import es.uclm.esibuy.pedidos.dto.PedidoConfirmadoDTO;
 import es.uclm.esibuy.pedidos.model.Pedido;
 import es.uclm.esibuy.pedidos.model.PedidoEstado;
+import es.uclm.esibuy.pedidos.model.PedidoItem;
 import es.uclm.esibuy.pedidos.repository.PedidoRepository;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
@@ -39,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -78,7 +80,7 @@ class PedidoServiceTest {
                 profile.setPaymentMethods(List.of(PaymentMethod.card(
                                 "pago-1", "Visa", "Ana López", "VISA", "1234", 12, 2030, true)));
                 cliente.setClientProfile(profile);
-                when(userRepository.findById(CLIENTE_ID)).thenReturn(Optional.of(cliente));
+                lenient().when(userRepository.findById(CLIENTE_ID)).thenReturn(Optional.of(cliente));
 
                 carrito = new Carrito(CLIENTE_ID);
                 carrito.addOrIncrementItem(PRODUCTO_ID, "Auriculares", PRECIO, 2);
@@ -109,6 +111,44 @@ class PedidoServiceTest {
                 verify(carritoRepository).save(carrito);
                 assertEquals(List.of(), carrito.getItems());
                 assertEquals(BigDecimal.ZERO, carrito.getPrecioTotal());
+        }
+
+        @Test
+        void shouldAllowReturningFromShippedToPreparingWithSelectedReason() {
+                Product producto = productoConStock(4);
+                org.springframework.test.util.ReflectionTestUtils.setField(producto, "id", PRODUCTO_ID);
+                org.springframework.test.util.ReflectionTestUtils.setField(producto, "sellerId", "seller-1");
+                Pedido pedido = org.mockito.Mockito.mock(Pedido.class);
+                when(pedido.getItems()).thenReturn(List.of(new PedidoItem(
+                                PRODUCTO_ID,
+                                "Auriculares",
+                                1,
+                                PRECIO,
+                                PRECIO,
+                                null)));
+                when(pedidoRepository.findById("pedido-123")).thenReturn(Optional.of(pedido));
+                when(productRepository.findAllBySellerId("seller-1")).thenReturn(List.of(producto));
+
+                pedidoService.actualizarEstadoPedido(
+                                "seller-1", "pedido-123", PedidoEstado.PREPARANDO, "Incidencia durante la preparación");
+
+                verify(pedido).setEstado(PedidoEstado.PREPARANDO);
+                verify(pedidoRepository).save(pedido);
+        }
+
+        @Test
+        void shouldRejectReturningToPreviousStatusWithoutJustification() {
+                Product producto = productoConStock(4);
+                org.springframework.test.util.ReflectionTestUtils.setField(producto, "id", PRODUCTO_ID);
+                org.springframework.test.util.ReflectionTestUtils.setField(producto, "sellerId", "seller-1");
+                Pedido pedido = org.mockito.Mockito.mock(Pedido.class);
+                when(pedido.getEstado()).thenReturn(PedidoEstado.ENVIADO);
+                when(pedidoRepository.findById("pedido-123")).thenReturn(Optional.of(pedido));
+
+                assertThrows(IllegalArgumentException.class, () -> pedidoService.actualizarEstadoPedido(
+                                "seller-1", "pedido-123", PedidoEstado.PREPARANDO, null));
+
+                verify(pedidoRepository, never()).save(any(Pedido.class));
         }
 
         @Test

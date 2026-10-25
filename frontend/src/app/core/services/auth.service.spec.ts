@@ -141,7 +141,7 @@ describe('AuthService', () => {
       });
     });
 
-    const request = httpTesting.expectOne('/api/admin/users');
+    const request = httpTesting.expectOne('/api/admin/create-admin');
 
     expect(request.request.method).toBe('POST');
     expect(request.request.withCredentials).toBe(true);

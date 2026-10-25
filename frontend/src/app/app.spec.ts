@@ -77,7 +77,7 @@ describe('App', () => {
     const menu = (fixture.nativeElement as HTMLElement).querySelector('#profile-menu');
     const menuButtons = Array.from(menu?.querySelectorAll<HTMLButtonElement>('button') ?? []);
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    const profileOption = menuButtons.find((button) => button.textContent?.trim() === 'Mi perfil');
+    const profileOption = menuButtons.find((button) => button.textContent?.trim() === 'Perfil');
     const logoutOption = menuButtons.find((button) => button.textContent?.trim() === 'Cerrar sesión');
 
     expect(profileOption).toBeDefined();

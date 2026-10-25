@@ -10,7 +10,17 @@ public record PedidoItem(
         String nombre,
         int cantidad,
         BigDecimal precioUnitario,
-        BigDecimal subtotal) {
+        BigDecimal subtotal,
+        String imageUrl) {
+
+    public PedidoItem(
+            String productoId,
+            String nombre,
+            int cantidad,
+            BigDecimal precioUnitario,
+            BigDecimal subtotal) {
+        this(productoId, nombre, cantidad, precioUnitario, subtotal, null);
+    }
 
     public PedidoItem {
         Objects.requireNonNull(productoId);
@@ -26,6 +36,7 @@ public record PedidoItem(
                 item.getNombre(),
                 item.getCantidad(),
                 item.getPrecioUnitario(),
-                item.getSubtotal());
+                item.getSubtotal(),
+                item.getImageUrl());
     }
 }

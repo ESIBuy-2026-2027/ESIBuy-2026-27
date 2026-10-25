@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { describe, beforeEach, it, expect } from 'vitest';
 import { ClientOrders } from './client-orders';
-import { CartService } from '../cart/cart.service';
+import { CartService } from '../../../core/services/cart.service';
 
 describe('ClientOrders', () => {
   let component: ClientOrders;
@@ -47,4 +47,3 @@ describe('ClientOrders', () => {
     expect(component.sidebarCollapsed()).toBe(false);
   });
 });
-
