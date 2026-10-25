@@ -1,4 +1,3 @@
-
 ---
 name: esibuy-workflow
 description: Aplica la metodología de trabajo específica de ESIBuy para analizar requisitos, comprender el código existente, implementar cambios acotados, mantener la arquitectura y verificar los resultados. Utilízala al desarrollar funcionalidades, corregir errores, refactorizar o trabajar con tareas de Azure DevOps.

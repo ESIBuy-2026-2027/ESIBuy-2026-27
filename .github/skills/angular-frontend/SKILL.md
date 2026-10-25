@@ -1,4 +1,3 @@
-
 ---
 name: angular-frontend
 description: Desarrolla, corrige y revisa el frontend Angular de ESIBuy respetando los componentes standalone, la estructura existente, los contratos de API, los estilos, la accesibilidad y los tests del proyecto. Utilízala al trabajar en páginas, componentes, formularios, navegación, perfiles, integración con el backend o CSS y HTML.

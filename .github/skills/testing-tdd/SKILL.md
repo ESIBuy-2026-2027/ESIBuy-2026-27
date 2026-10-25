@@ -1,4 +1,3 @@
-
 ---
 name: testing-tdd
 description: Diseña, implementa y revisa pruebas para ESIBuy siguiendo las herramientas existentes y los principios de TDD. Utilízala al desarrollar funcionalidades, corregir errores, aumentar cobertura o verificar reglas de negocio, permisos e integraciones.

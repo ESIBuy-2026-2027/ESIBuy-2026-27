@@ -1,4 +1,3 @@
-
 ---
 name: ui-design
 description: Diseña y ajusta interfaces de ESIBuy manteniendo su identidad visual, coherencia entre páginas, accesibilidad y diseño responsive. Utilízala al crear o modificar pantallas, formularios, perfiles, tarjetas, navegación y componentes visuales.

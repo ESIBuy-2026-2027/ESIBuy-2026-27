@@ -1,4 +1,3 @@
-
 ---
 name: sonar-quality
 description: Analiza y corrige problemas de calidad en ESIBuy aplicando los perfiles de SonarQube específicos de Java, HTML y CSS del proyecto. Utilízala al revisar código, resolver incidencias, reducir complejidad, eliminar duplicaciones o preparar entregas de calidad.

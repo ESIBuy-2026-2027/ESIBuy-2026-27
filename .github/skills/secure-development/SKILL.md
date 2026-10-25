@@ -1,4 +1,3 @@
-
 ---
 name: secure-development
 description: Analiza e implementa medidas de seguridad en ESIBuy, especialmente autenticación, autorización por roles, sesiones, CSRF, MFA, validación de datos y protección de información sensible. Utilízala al desarrollar o revisar funcionalidades con implicaciones de seguridad.

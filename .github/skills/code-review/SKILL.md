@@ -1,4 +1,3 @@
-
 ---
 name: code-review
 description: Revisa cambios de código en ESIBuy para detectar errores funcionales, vulnerabilidades, regresiones, problemas de arquitectura y defectos de calidad. Utilízala antes de integrar cambios, cerrar tareas o preparar entregas.

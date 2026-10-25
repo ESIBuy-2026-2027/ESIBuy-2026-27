@@ -1,4 +1,3 @@
-
 ---
 name: spring-mongodb-backend
 description: Implementa y revisa el backend Java de ESIBuy con Spring Boot y MongoDB, respetando la arquitectura existente, los DTO, la validación, la seguridad, la persistencia y las pruebas. Utilízala al crear o modificar endpoints, servicios, repositorios, modelos y lógica de negocio.
