@@ -9,6 +9,7 @@ import { DeleteAccount } from '../../../shared/delete-account/delete-account';
 import { TwoFactorSettingsComponent } from '../../../shared/two-factor-settings/two-factor-settings';
 import { ShippingAddresses } from '../shipping-addresses/shipping-addresses';
 import { PaymentMethods } from '../payment-methods/payment-methods';
+import { CLIENT_AVATARS } from '../../../core/constants/avatars';
 
 export interface ProfileSection {
     label: string;
@@ -65,13 +66,7 @@ export class ClientProfile implements OnInit {
     readonly twoFactorEnabled = signal(false);
 
     // Avatares locales predefinidos para clientes.
-    readonly clientAvatars: string[] = [
-        'assets/images/avatars/av_client_1.jpeg',
-        'assets/images/avatars/av_client_2.jpeg',
-        'assets/images/avatars/av_client_3.jpeg',
-        'assets/images/avatars/av_client_4.jpeg',
-        'assets/images/avatars/av_client_5.jpeg',
-    ];
+    readonly clientAvatars: readonly string[] = CLIENT_AVATARS;
 
     readonly selectedAvatar = signal(this.clientAvatars[0]);
 
@@ -110,9 +105,7 @@ export class ClientProfile implements OnInit {
 
     readonly sections: ProfileSection[] = [
         { label: 'Datos personales', active: true },
-        { label: 'Pedidos', active: false },
         { label: 'Direcciones de envío', active: false },
-        { label: 'Suscripción premium', active: false },
         { label: 'Seguridad', active: false },
         { label: 'Métodos de pago', active: false },
     ];

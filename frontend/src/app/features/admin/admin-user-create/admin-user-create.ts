@@ -11,6 +11,7 @@ import {
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AuthService, CreateAdminRequest } from '../../../core/services/auth.service';
+import { ADMIN_AVATARS } from '../../../core/constants/avatars';
 
 export function passwordsMatchValidator(
   control: AbstractControl,
@@ -53,20 +54,8 @@ export class AdminUserCreate {
 
   readonly creationDate = new Date();
 
-  avatars: string[] = [
-    '/assets/images/avatars/av_admin_1.jpeg',
-    '/assets/images/avatars/av_admin_2.jpeg',
-    '/assets/images/avatars/av_admin_3.jpeg',
-    '/assets/images/avatars/av_admin_4.jpeg',
-    '/assets/images/avatars/av_admin_5.jpeg',
-    '/assets/images/avatars/av_admin_6.jpeg',
-    '/assets/images/avatars/av_admin_7.jpeg',
-    '/assets/images/avatars/av_admin_8.jpeg',
-    '/assets/images/avatars/av_admin_9.jpeg',
-    '/assets/images/avatars/av_admin_10.jpeg',
-  ];
-
-
+  readonly avatars: readonly string[] = ADMIN_AVATARS;
+  readonly selectedAvatar = signal(this.avatars[0]);
   avatarError = false;
 
   onAvatarError(url: string): void {
