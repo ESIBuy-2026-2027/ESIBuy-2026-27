@@ -569,38 +569,6 @@ textarea:focus-visible {
 /* Móvil y tablet estrecha */
 
 @media (max-width: 760px) {
-  .sidebar {
-    width: 72px;
-    align-items: center;
-    padding: 24px 9px 18px;
-  }
-
-  .brand {
-    justify-content: center;
-    margin: 0 0 40px;
-  }
-
-  .brand > span:last-child,
-  .sidebar-caption,
-  .navigation-link > span:not(.navigation-icon),
-  .navigation-link > span:first-child:not(.navigation-icon) {
-    display: none;
-  }
-
-  .seller-navigation {
-    width: 100%;
-  }
-
-  .navigation-link {
-    justify-content: center;
-    gap: 0;
-    padding: 0;
-  }
-
-  .navigation-link.is-active {
-    box-shadow: inset 3px 0 var(--color-brand-accent);
-  }
-
   .product-create-page {
     padding: 24px 18px 40px;
   }

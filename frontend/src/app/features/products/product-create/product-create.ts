@@ -6,7 +6,6 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { isPlatformBrowser } from '@angular/common';
 import { Category, ProductCreateRequest, ProductsService } from '../../../core/services/products.service';
-import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 
 interface ProductFormControls {
   nombre: FormControl<string>;
@@ -45,7 +44,7 @@ const SERVER_FIELD_TO_FORM_FIELD: Readonly<Partial<Record<string, ProductFormFie
 @Component({
   selector: 'app-product-create',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, AppSidebarComponent],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './product-create.html',
   styleUrl: './product-create.css',
 })
