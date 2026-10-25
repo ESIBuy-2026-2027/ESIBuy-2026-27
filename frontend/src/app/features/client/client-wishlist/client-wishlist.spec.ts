@@ -5,8 +5,8 @@ import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { ClientWishlist } from './client-wishlist';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { CartService } from '../cart/cart.service';
-import { ProductItem } from '../../products/products.service';
+import { CartService } from '../../../core/services/cart.service';
+import { ProductItem } from '../../../core/services/products.service';
 
 describe('ClientWishlist', () => {
   let component: ClientWishlist;

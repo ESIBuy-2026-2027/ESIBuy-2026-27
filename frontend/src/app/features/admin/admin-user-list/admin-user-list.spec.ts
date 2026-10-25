@@ -58,7 +58,7 @@ describe('AdminUserList', () => {
 
   it('renders a link to the home page', () => {
     const rendered = fixture.nativeElement as HTMLElement;
-    expect(rendered.querySelector('.back-home-button')?.getAttribute('href')).toBe('');
+    expect(rendered.querySelector('.back-home-button')?.getAttribute('href')).toBe('/');
   });
 
   it('renders users returned by the admin endpoint and links to admin creation', () => {

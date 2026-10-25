@@ -3,6 +3,8 @@ package es.uclm.esibuy.pedidos.service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.mongodb.client.result.UpdateResult;
 import es.uclm.esibuy.cart.dto.ItemCarritoDTO;
@@ -19,6 +21,8 @@ import es.uclm.esibuy.pedidos.dto.CheckoutResumenDTO;
 import es.uclm.esibuy.pedidos.dto.CrearPedidoDTO;
 import es.uclm.esibuy.pedidos.dto.MetodoPagoCheckoutDTO;
 import es.uclm.esibuy.pedidos.dto.PedidoConfirmadoDTO;
+import es.uclm.esibuy.pedidos.dto.ItemPedidoVendedorDTO;
+import es.uclm.esibuy.pedidos.dto.PedidoVendedorDTO;
 import es.uclm.esibuy.pedidos.model.DireccionEnvioPedido;
 import es.uclm.esibuy.pedidos.model.MetodoPagoPedido;
 import es.uclm.esibuy.pedidos.model.Pedido;
@@ -87,6 +91,7 @@ public class PedidoService {
         if (request == null) {
             throw new IllegalArgumentException("La solicitud del pedido es obligatoria");
         }
+
         User cliente = obtenerCliente(clienteId);
         ShippingAddress direccion = obtenerDireccion(cliente.getClientProfile(), request.direccionId());
         PaymentMethod metodoPago = obtenerMetodoPago(cliente.getClientProfile(), request.metodoPagoId());
@@ -131,6 +136,116 @@ public class PedidoService {
                 guardado.getPrecioTotal(),
                 guardado.getEstado(),
                 guardado.getFechaCreacion());
+    }
+
+    public List<PedidoVendedorDTO> obtenerPedidosDelVendedor(String vendedorId) {
+        if (vendedorId == null || vendedorId.isBlank()) {
+            throw new IllegalArgumentException("El identificador del vendedor es obligatorio");
+        }
+
+        Set<String> productosDelVendedor = productRepository.findAllBySellerId(vendedorId).stream()
+                .map(Product::getId)
+                .collect(Collectors.toSet());
+
+        return pedidoRepository.findAll().stream()
+                .map(pedido -> toSellerOrder(pedido, productosDelVendedor))
+                .filter(java.util.Objects::nonNull)
+                .toList();
+    }
+
+    public void actualizarEstadoPedido(
+            String vendedorId,
+            String pedidoId,
+            PedidoEstado estado,
+            String justificacion) {
+        if (vendedorId == null || vendedorId.isBlank() || pedidoId == null || pedidoId.isBlank()) {
+            throw new IllegalArgumentException("El vendedor y el pedido son obligatorios");
+        }
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new IllegalArgumentException("El pedido no existe"));
+        if (estado == null) {
+            throw new IllegalArgumentException("El estado es obligatorio");
+        }
+        if (esRetroceso(pedido.getEstado(), estado)
+                && (justificacion == null || justificacion.isBlank())) {
+            throw new IllegalArgumentException("La justificación es obligatoria para retroceder el estado");
+        }
+        Set<String> productosDelVendedor = productRepository.findAllBySellerId(vendedorId).stream()
+                .map(Product::getId)
+                .collect(Collectors.toSet());
+        boolean perteneceAlVendedor = pedido.getItems().stream()
+                .anyMatch(item -> productosDelVendedor.contains(item.productoId()));
+        if (!perteneceAlVendedor) {
+            throw new IllegalArgumentException("El pedido no pertenece al vendedor");
+        }
+        pedido.setEstado(estado);
+        pedidoRepository.save(pedido);
+    }
+
+    private boolean esRetroceso(PedidoEstado actual, PedidoEstado nuevo) {
+        if (actual == null) {
+            return false;
+        }
+        List<PedidoEstado> flujo = List.of(
+                PedidoEstado.PENDIENTE,
+                PedidoEstado.PREPARANDO,
+                PedidoEstado.ENVIADO,
+                PedidoEstado.ENTREGADO);
+        int posicionActual = flujo.indexOf(actual);
+        int posicionNueva = flujo.indexOf(nuevo);
+        return posicionActual >= 0 && posicionNueva >= 0 && posicionNueva < posicionActual;
+    }
+
+    private PedidoVendedorDTO toSellerOrder(Pedido pedido, Set<String> productosDelVendedor) {
+        List<ItemPedidoVendedorDTO> items = pedido.getItems().stream()
+                .filter(item -> productosDelVendedor.contains(item.productoId()))
+                .map(item -> new ItemPedidoVendedorDTO(
+                        item.productoId(),
+                        item.nombre(),
+                        item.cantidad(),
+                        item.precioUnitario(),
+                        item.subtotal(),
+                        resolveImageUrl(item)))
+                .toList();
+
+        if (items.isEmpty()) {
+            return null;
+        }
+
+        User cliente = userRepository.findById(pedido.getClienteId()).orElse(null);
+        String clienteNombre = cliente == null
+                ? "Cliente no disponible"
+                : (cliente.getFirstName() + " " + cliente.getLastName()).trim();
+        String clienteEmail = cliente == null ? null : cliente.getEmail();
+        BigDecimal total = items.stream()
+                .map(ItemPedidoVendedorDTO::subtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new PedidoVendedorDTO(
+                pedido.getId(),
+                pedido.getFechaCreacion(),
+                clienteNombre,
+                clienteEmail,
+                formatAddress(pedido.getDireccionEnvio()),
+                items,
+                total,
+                pedido.getEstado());
+    }
+
+    private String resolveImageUrl(PedidoItem item) {
+        if (item.imageUrl() != null && !item.imageUrl().isBlank()) {
+            return item.imageUrl();
+        }
+        return productRepository.findById(item.productoId())
+                .map(Product::getImageUrl)
+                .orElse(null);
+    }
+
+    private String formatAddress(DireccionEnvioPedido address) {
+        return String.join(", ", List.of(
+                address.street(),
+                address.postalCode() + " " + address.city(),
+                address.province()));
     }
 
     private User obtenerCliente(String clienteId) {

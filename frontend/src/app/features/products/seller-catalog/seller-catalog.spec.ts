@@ -70,16 +70,16 @@ describe('SellerCatalog', () => {
   it('should render the seller product catalog and category names', () => {
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(element.querySelector('h1')?.textContent?.trim()).toBe('Catálogo');
+    expect(element.querySelector('h1')?.textContent?.trim()).toBe('Mi catálogo');
     expect(element.querySelector('[aria-label="Productos del catálogo"]')).not.toBeNull();
     expect(
       Array.from(
-        element.querySelectorAll('.app-navigation .navigation-link'),
+        element.querySelectorAll('.seller-navigation .navigation-link'),
         (link) => link.querySelector('span:last-child')?.textContent?.trim(),
       ),
     ).toEqual([
-      'Mi catálogo',
-      'Mis pedidos',
+      'Catálogo',
+      'Pedidos',
       'Estadísticas',
       'Valoraciones',
     ]);
@@ -89,14 +89,14 @@ describe('SellerCatalog', () => {
     expect(element.querySelector('thead')?.textContent).toContain('Categoría');
     expect(element.textContent).toContain('Audio');
     expect(element.textContent).not.toContain('INVENTARIO');
-    expect(element.querySelector('.product-table caption')?.textContent).toContain('Productos del catálogo');
+    expect(element.querySelector('.product-table caption')?.textContent).toContain('Productos de mi catálogo');
     expect(element.querySelector('.catalog-controls .catalog-search')).not.toBeNull();
     expect(element.querySelector('.catalog-controls .product-count')?.textContent).toContain('1 producto');
     const filterButton = element.querySelector<HTMLButtonElement>('.catalog-filter-button');
     expect(filterButton?.textContent).toContain('Filtrar');
     expect(filterButton).not.toBeNull();
     expect(element.querySelector<HTMLImageElement>('.product-image')?.alt).toBe('');
-    expect(element.querySelector('input[type="search"]')?.hasAttribute('aria-label')).toBe(false);
+    expect(element.querySelector('input[type="search"]')?.hasAttribute('aria-label')).toBe(true);
     expect(element.querySelectorAll('.navigation-link[aria-disabled="true"]')).toHaveLength(2);
     expect(element.querySelectorAll('.navigation-link[title="Próximamente"]')).toHaveLength(2);
 

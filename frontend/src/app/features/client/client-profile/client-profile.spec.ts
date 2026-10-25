@@ -4,7 +4,6 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '../../../core/services/auth.service';
 import { ClientProfile } from './client-profile';
@@ -38,22 +37,6 @@ describe('ClientProfile', () => {
                     provide: AuthService,
                     useValue: { currentUser: signal({ email: 'ana@esibuy.com', role: 'CLIENT' }), logout },
                 },
-                {
-                    provide: HttpClient,
-                    useValue: {
-                        get: vi.fn(() => of({
-                            firstName: 'Ana',
-                            lastName: 'García',
-                            email: 'ana@esibuy.com',
-                            phone: null,
-                            maskedNationalId: null,
-                            profileImage: null,
-                            customerType: 'STANDARD',
-                            birthDate: '1990-01-01',
-                        })),
-                        put: vi.fn(() => of({})),
-                    },
-                },
             ],
         }).compileComponents();
 
@@ -71,7 +54,7 @@ describe('ClientProfile', () => {
 
     it('muestra el título y los campos en solo lectura', () => {
         const el: HTMLElement = fixture.nativeElement;
-        expect(el.querySelector('h1')?.textContent).toContain('Mi perfil');
+        expect(el.querySelector('h1')?.textContent).toContain('Perfil');
         expect(el.querySelector('.section-title')?.textContent).toContain('Datos personales');
         el.querySelectorAll('input').forEach((input) => expect(input.readOnly).toBe(true));
     });

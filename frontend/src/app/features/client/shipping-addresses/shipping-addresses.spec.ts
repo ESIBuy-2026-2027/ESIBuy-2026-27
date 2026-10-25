@@ -258,7 +258,7 @@ describe('ShippingAddresses', () => {
     list.mockReturnValue(of(many));
     await render();
 
-    expect(el.querySelector('.primary-action')).toBeNull();
+    expect((el.querySelector('.primary-action') as HTMLButtonElement)?.disabled).toBe(true);
     expect(el.querySelector('.limit-notice')).not.toBeNull();
   });
 
