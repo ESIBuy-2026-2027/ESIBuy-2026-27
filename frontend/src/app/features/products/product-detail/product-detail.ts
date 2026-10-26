@@ -6,6 +6,7 @@ import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
+import { ADMIN_READONLY_ERROR_MESSAGE } from '../../../core/services/admin-product.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -104,6 +105,11 @@ export class ProductDetail implements OnInit {
       return;
     }
 
+    if (user.role === 'ADMIN') {
+      this.toastService.show(ADMIN_READONLY_ERROR_MESSAGE, 'error');
+      return;
+    }
+
     if (user.role !== 'CLIENT') {
       this.toastService.show('Solo los clientes pueden guardar productos en su lista de deseos.', 'info');
       return;
@@ -164,6 +170,11 @@ export class ProductDetail implements OnInit {
       return;
     }
 
+    if (user.role === 'ADMIN') {
+      this.toastService.show(ADMIN_READONLY_ERROR_MESSAGE, 'error');
+      return;
+    }
+
     if (user.role !== 'CLIENT') {
       this.toastService.show('Solo los clientes pueden realizar compras.', 'info');
       return;
@@ -179,4 +190,3 @@ export class ProductDetail implements OnInit {
     });
   }
 }
-
