@@ -7,6 +7,8 @@ import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
 
+const LOW_STOCK_THRESHOLD = 5;
+
 @Component({
   selector: 'app-product-detail',
   standalone: true,
@@ -135,6 +137,10 @@ export class ProductDetail implements OnInit {
     return this.currencyFormatter.format(price);
   }
 
+  isLowStock(stock: number): boolean {
+    return stock > 0 && stock <= LOW_STOCK_THRESHOLD;
+  }
+
   decreaseQuantity(): void {
     this.quantity.update((q) => Math.max(1, q - 1));
   }
@@ -179,4 +185,3 @@ export class ProductDetail implements OnInit {
     });
   }
 }
-

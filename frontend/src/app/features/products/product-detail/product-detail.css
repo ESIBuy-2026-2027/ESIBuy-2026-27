@@ -243,9 +243,14 @@
   color: #15803d;
 }
 
+.status-low {
+  background: #fff5dc;
+  color: #8a5a08;
+}
+
 .status-out {
-  background: #ffedd5;
-  color: #c2410c;
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 .status-disabled {

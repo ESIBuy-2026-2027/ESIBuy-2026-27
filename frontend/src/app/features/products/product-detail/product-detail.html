@@ -112,7 +112,8 @@
             @if (!p.available) {
               <span class="status-pill status-disabled">No disponible</span>
             } @else if (p.stock > 0) {
-              <span class="status-pill status-available">En stock ({{ p.stock }} disponibles)</span>
+              <span class="status-pill" [class.status-available]="!isLowStock(p.stock)"
+                [class.status-low]="isLowStock(p.stock)">En stock ({{ p.stock }} disponibles)</span>
             } @else {
               <span class="status-pill status-out">Agotado</span>
             }
@@ -196,4 +197,3 @@
     }
   </div>
 </div>
-
