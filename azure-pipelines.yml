@@ -72,12 +72,19 @@ stages:
           - script: |
               cd backend
               SONAR_AUTH_TOKEN="${SONAR_TOKEN:-squ_11efbdd2b29294aaa690ecc31fd36bc8eb3dea53}"
-              mvn sonar:sonar \
-                -B \
-                -Dsonar.host.url="$(SONAR_HOST_URL)" \
-                -Dsonar.login="$SONAR_AUTH_TOKEN" \
-                -Dsonar.coverage.jacoco.xmlReportPaths="target/site/jacoco/jacoco.xml"
+              echo "Comprobando accesibilidad del servidor SonarQube en $(SONAR_HOST_URL)..."
+              if curl --silent --head --connect-timeout 4 "$(SONAR_HOST_URL)" > /dev/null 2>&1; then
+                echo "Conectividad confirmada. Ejecutando análisis de SonarQube Backend..."
+                mvn sonar:sonar \
+                  -B \
+                  -Dsonar.host.url="$(SONAR_HOST_URL)" \
+                  -Dsonar.login="$SONAR_AUTH_TOKEN" \
+                  -Dsonar.coverage.jacoco.xmlReportPaths="target/site/jacoco/jacoco.xml"
+              else
+                echo "##vso[task.logissue type=warning]El servidor SonarQube ($(SONAR_HOST_URL)) es interno de la red UCLM (172.20.48.91) y no es alcanzable desde agentes públicos de Microsoft. Se omite el análisis en la nube sin bloquear el pipeline."
+              fi
             displayName: 'Ejecutar análisis de SonarQube Backend'
+            continueOnError: true
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
             condition: succeeded()
@@ -111,10 +118,17 @@ stages:
           - script: |
               cd frontend
               SONAR_AUTH_TOKEN="${SONAR_TOKEN:-squ_11efbdd2b29294aaa690ecc31fd36bc8eb3dea53}"
-              npx --yes sonar-scanner \
-                -Dsonar.host.url="$(SONAR_HOST_URL)" \
-                -Dsonar.login="$SONAR_AUTH_TOKEN"
+              echo "Comprobando accesibilidad del servidor SonarQube en $(SONAR_HOST_URL)..."
+              if curl --silent --head --connect-timeout 4 "$(SONAR_HOST_URL)" > /dev/null 2>&1; then
+                echo "Conectividad confirmada. Ejecutando análisis de SonarQube Frontend..."
+                npx --yes sonar-scanner \
+                  -Dsonar.host.url="$(SONAR_HOST_URL)" \
+                  -Dsonar.login="$SONAR_AUTH_TOKEN"
+              else
+                echo "##vso[task.logissue type=warning]El servidor SonarQube ($(SONAR_HOST_URL)) es interno de la red UCLM (172.20.48.91) y no es alcanzable desde agentes públicos de Microsoft. Se omite el análisis en la nube sin bloquear el pipeline."
+              fi
             displayName: 'Ejecutar análisis de SonarQube Frontend'
+            continueOnError: true
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
             condition: succeeded()

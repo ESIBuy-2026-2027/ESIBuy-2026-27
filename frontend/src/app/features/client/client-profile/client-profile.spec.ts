@@ -64,9 +64,9 @@ describe('ClientProfile', () => {
         expect(email.value).toBe('ana@esibuy.com');
     });
 
-    it('deja las secciones de otras HU como próximamente', () => {
-        const disabled = fixture.nativeElement.querySelectorAll('.sidebar-nav .nav-item.disabled');
-        expect(disabled.length).toBe(2);
+    it('muestra las 4 secciones de navegación del perfil de cliente', () => {
+        const navItems = fixture.nativeElement.querySelectorAll('.sidebar-nav .nav-item');
+        expect(navItems.length).toBe(4);
     });
 
     it('cierra sesión y vuelve al inicio', () => {
