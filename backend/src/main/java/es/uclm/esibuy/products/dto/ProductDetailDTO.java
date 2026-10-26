@@ -53,9 +53,8 @@ public record ProductDetailDTO(
 
     public static ProductDetailDTO from(Product product) {
         String firstCategory = (product.getCategoryIds() != null && !product.getCategoryIds().isEmpty())
-                ? product.getCategoryIds().getFirst()
+                ? product.getCategoryIds().get(0)
                 : null;
         return from(product, firstCategory, null);
     }
 }
-

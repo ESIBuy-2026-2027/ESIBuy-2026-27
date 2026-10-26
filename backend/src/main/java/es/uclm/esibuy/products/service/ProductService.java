@@ -1,4 +1,3 @@
-
 package es.uclm.esibuy.products.service;
 
 import java.math.BigDecimal;
@@ -14,7 +13,9 @@ import es.uclm.esibuy.categories.repository.CategoryRepository;
 import es.uclm.esibuy.common.exception.CategoryNotFoundException;
 import es.uclm.esibuy.common.exception.ProductNotFoundException;
 import es.uclm.esibuy.products.dto.ProductCreateRequest;
+import es.uclm.esibuy.products.dto.ProductDetailDTO;
 import es.uclm.esibuy.products.dto.ProductResponse;
+import es.uclm.esibuy.products.dto.ProductSummaryDTO;
 import es.uclm.esibuy.products.dto.ProductSummaryResponse;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
@@ -26,6 +27,8 @@ import es.uclm.esibuy.users.repository.UserRepository;
 public class ProductService {
 
     private static final int LOW_STOCK_THRESHOLD = 5;
+    private static final String NO_PERMISSIONS_MESSAGE = "No tiene permisos para modificar este producto";
+    private static final String PRODUCT_NOT_FOUND_MESSAGE = "Producto no encontrado";
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
@@ -103,8 +106,7 @@ public class ProductService {
                 .orElseThrow(ProductNotFoundException::new);
 
         if (!seller.getId().equals(product.getSellerId())) {
-            throw new AccessDeniedException(
-                    "No tiene permisos para modificar este producto");
+            throw new AccessDeniedException(NO_PERMISSIONS_MESSAGE);
         }
 
         List<String> categoryIds = validateCategories(request);
@@ -151,6 +153,91 @@ public class ProductService {
                 .filter(product -> matchesStock(product, inStock))
                 .map(ProductResponse::from)
                 .toList();
+    }
+
+    public List<ProductSummaryDTO> getProductsForAdmin(
+            String sellerId,
+            String categoryId,
+            Boolean inStock) {
+
+        List<Product> products;
+        if (sellerId != null && !sellerId.isBlank()) {
+            products = productRepository.findAllBySellerId(sellerId.trim());
+        } else {
+            products = productRepository.findAll();
+        }
+
+        return products.stream()
+                .filter(product -> matchesCategory(product, categoryId))
+                .filter(product -> matchesStockFilter(product, inStock))
+                .map(this::toProductSummaryDTO)
+                .toList();
+    }
+
+    public ProductDetailDTO getProductDetailForAdmin(String id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE));
+        String categoryName = resolveCategoryName(product);
+        String sellerName = resolveSellerName(product.getSellerId());
+        return ProductDetailDTO.from(product, categoryName, sellerName);
+    }
+
+    public void deleteProduct(String id, String authenticatedEmail) {
+        User seller = findSeller(authenticatedEmail);
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE));
+
+        if (!seller.getId().equals(product.getSellerId())) {
+            throw new AccessDeniedException(NO_PERMISSIONS_MESSAGE);
+        }
+
+        productRepository.delete(product);
+    }
+
+    private ProductSummaryDTO toProductSummaryDTO(Product product) {
+        String categoryName = resolveCategoryName(product);
+        String sellerName = resolveSellerName(product.getSellerId());
+        return ProductSummaryDTO.from(product, categoryName, sellerName);
+    }
+
+    private String resolveCategoryName(Product product) {
+        if (product.getCategoryIds() == null || product.getCategoryIds().isEmpty()) {
+            return null;
+        }
+        String firstCategoryId = product.getCategoryIds().get(0);
+        return categoryRepository.findById(firstCategoryId)
+                .map(Category::getName)
+                .orElse(firstCategoryId);
+    }
+
+    private String resolveSellerName(String sellerId) {
+        if (sellerId == null || sellerId.isBlank()) {
+            return null;
+        }
+        return userRepository.findById(sellerId)
+                .map(user -> {
+                    if (user.getSellerProfile() != null
+                            && user.getSellerProfile().getBusinessName() != null
+                            && !user.getSellerProfile().getBusinessName().isBlank()) {
+                        return user.getSellerProfile().getBusinessName();
+                    }
+                    String firstName = user.getFirstName() != null ? user.getFirstName() : "";
+                    String lastName = user.getLastName() != null ? user.getLastName() : "";
+                    String fullName = (firstName + " " + lastName).trim();
+                    return fullName.isBlank() ? user.getEmail() : fullName;
+                })
+                .orElse(null);
+    }
+
+    private boolean matchesStockFilter(Product product, Boolean inStock) {
+        if (inStock == null) {
+            return true;
+        }
+        if (Boolean.TRUE.equals(inStock)) {
+            return product.getStock() > 0;
+        }
+        return product.getStock() <= 0;
     }
 
     private boolean matchesQuery(Product product, String query) {
@@ -216,7 +303,7 @@ public class ProductService {
     public ProductResponse getProductById(String id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(
-                        () -> new ProductNotFoundException("Producto no encontrado"));
+                        () -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE));
 
         return ProductResponse.from(product);
     }
@@ -227,7 +314,7 @@ public class ProductService {
             String authenticatedEmail) {
         Product product = productRepository.findById(id)
                 .orElseThrow(
-                        () -> new ProductNotFoundException("Producto no encontrado"));
+                        () -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE));
 
         if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
             throw new AccessDeniedException("Autenticación requerida");
@@ -239,8 +326,7 @@ public class ProductService {
 
         if (user.getRole() != UserRole.ADMIN
                 && !user.getId().equals(product.getSellerId())) {
-            throw new AccessDeniedException(
-                    "No tiene permisos para modificar este producto");
+            throw new AccessDeniedException(NO_PERMISSIONS_MESSAGE);
         }
 
         product.setAvailable(available);
