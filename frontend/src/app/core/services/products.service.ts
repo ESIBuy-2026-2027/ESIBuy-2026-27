@@ -30,6 +30,7 @@ export interface ProductCreateRequest {
   price: number;
   discount?: number | null;
   premiumDiscount?: number | null;
+  imageUrl?: string | null;
   available: boolean;
 }
 

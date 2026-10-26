@@ -18,6 +18,7 @@ import { SellerProfile } from './features/products/seller-profile/seller-profile
 import { SellerOrders } from './features/products/seller-orders/seller-orders';
 import { AdminProfile } from './features/admin/admin-profile/admin-profile';
 import { AdminCategoryList } from './features/admin/admin-category-list/admin-category-list';
+import { AdminProductList } from './features/admin/admin-product-list/admin-product-list';
 import { ClientCart } from './features/client/cart/cart';
 import { PasswordRecovery } from './features/identity/password-recovery/password-recovery';
 
@@ -33,6 +34,8 @@ export const routes: Routes = [
   { path: 'admin/usuarios', component: AdminUserList, canActivate: [authGuard, roleGuard('ADMIN')] },
   { path: 'admin/usuarios/:id/editar', component: AdminUserDetail, canActivate: [authGuard, roleGuard('ADMIN')] },
   { path: 'admin/categorias', component: AdminCategoryList, canActivate: [authGuard, roleGuard('ADMIN')] },
+  { path: 'admin/productos', component: AdminProductList, canActivate: [authGuard, roleGuard('ADMIN')] },
+  { path: 'admin/products', redirectTo: 'admin/productos', pathMatch: 'full' },
 
   { path: 'admin', redirectTo: 'admin/usuarios', pathMatch: 'full' },
   { path: 'admin/users', redirectTo: 'admin/usuarios', pathMatch: 'full' },

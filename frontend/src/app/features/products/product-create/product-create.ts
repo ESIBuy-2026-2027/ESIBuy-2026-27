@@ -262,17 +262,7 @@ export class ProductCreate implements OnInit {
       },
       error: (error: unknown) => {
         this.submitting.set(false);
-        if (this.productId) {
-          this.handleSubmitError(error);
-          return;
-        }
-        if (error instanceof HttpErrorResponse && error.error && typeof error.error.message === 'string') {
-          this.submitError.set(error.error.message);
-        } else if (error instanceof HttpErrorResponse && error.status === 413) {
-          this.submitError.set('La imagen supera el tamaño máximo de 5 MB.');
-        } else {
-          this.submitError.set('No se pudo guardar el producto. Comprueba los datos y la imagen e inténtalo de nuevo.');
-        }
+        this.handleSubmitError(error);
       },
     });
   }
@@ -367,6 +357,10 @@ export class ProductCreate implements OnInit {
 
     if (status === 403) {
       return 'No tienes permiso para guardar este producto.';
+    }
+
+    if (status === 413) {
+      return 'La imagen supera el tamaño máximo de 5 MB.';
     }
 
     if (status >= 500) {

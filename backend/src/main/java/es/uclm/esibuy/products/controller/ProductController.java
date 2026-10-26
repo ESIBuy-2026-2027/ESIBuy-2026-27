@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
@@ -109,6 +110,16 @@ public class ProductController {
             @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
         String email = principal.email();
         return ProductResponse.from(productService.updateProduct(id, request, email));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<Void> deleteProduct(
+            @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        String email = principal.email();
+        productService.deleteProduct(id, email);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

@@ -37,6 +37,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import es.uclm.esibuy.products.model.ProductDetails;
+import es.uclm.esibuy.products.dto.ProductSummaryDTO;
+import es.uclm.esibuy.products.dto.ProductDetailDTO;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
@@ -47,6 +49,12 @@ class ProductServiceTest {
         private static final String CATEGORY_ID = "category-id";
         private static final String PRODUCT_NAME = "Auriculares";
         private static final String PRODUCT_PRICE = "19.99";
+        private static final String OTHER_SELLER_ID = "other-seller-id";
+        private static final String ADMIN_EMAIL = "admin@example.com";
+        private static final String PRODUCT_ID = "product-id";
+        private static final String CATEGORY_NAME_ELECTRONICS = "Electrónica";
+        private static final String UNKNOWN_ID = "unknown";
+        private static final String DESC_TEXT = "Descripción";
 
         @Mock
         private ProductRepository productRepository;
@@ -138,7 +146,7 @@ class ProductServiceTest {
                 when(seller.getRole()).thenReturn(UserRole.SELLER);
                 when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(seller));
                 when(categoryRepository.findAllById(List.of(CATEGORY_ID)))
-                                .thenReturn(List.of(new Category(CATEGORY_ID, "Electrónica")));
+                                .thenReturn(List.of(new Category(CATEGORY_ID, "Electr├│nica")));
                 when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
                 Product result = productService.createProduct(request, SELLER_EMAIL);
@@ -155,7 +163,7 @@ class ProductServiceTest {
                 Product product = new Product(new ProductDetails(
                                 PRODUCT_NAME,
                                 List.of(CATEGORY_ID),
-                                1,
+                                3,
                                 null,
                                 new BigDecimal(PRODUCT_PRICE),
                                 null,
@@ -184,7 +192,7 @@ class ProductServiceTest {
                 when(seller.getRole()).thenReturn(UserRole.SELLER);
                 when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(seller));
                 when(categoryRepository.findAllById(List.of(CATEGORY_ID)))
-                                .thenReturn(List.of(new Category(CATEGORY_ID, "Electrónica")));
+                                .thenReturn(List.of(new Category(CATEGORY_ID, "Electr├│nica")));
                 when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
                 Product result = productService.createProduct(request, SELLER_EMAIL);
@@ -260,7 +268,7 @@ class ProductServiceTest {
                 when(productRepository.findAllBySellerId(SELLER_ID)).thenReturn(List.of(new Product(new ProductDetails(
                                 PRODUCT_NAME,
                                 List.of(CATEGORY_ID),
-                                1,
+                                3,
                                 null,
                                 new BigDecimal(PRODUCT_PRICE),
                                 null,
@@ -296,13 +304,13 @@ class ProductServiceTest {
                                 SELLER_ID));
                 when(productRepository.findById("product-id")).thenReturn(Optional.of(product));
                 when(categoryRepository.findAllById(List.of(CATEGORY_ID)))
-                                .thenReturn(List.of(new Category(CATEGORY_ID, "Electrónica")));
+                                .thenReturn(List.of(new Category(CATEGORY_ID, "Electr├│nica")));
                 when(productRepository.save(product)).thenReturn(product);
 
                 ProductCreateRequest request = validRequest();
                 request.setName("  Nuevo nombre  ");
                 request.setStock(8);
-                request.setDescription("Nueva descripción");
+                request.setDescription("Nueva descripci├│n");
                 request.setPrice(new BigDecimal("25.50"));
                 request.setAvailable(false);
 
@@ -310,7 +318,7 @@ class ProductServiceTest {
 
                 assertEquals("Nuevo nombre", result.getName());
                 assertEquals(8, result.getStock());
-                assertEquals("Nueva descripción", result.getDescription());
+                assertEquals("Nueva descripci├│n", result.getDescription());
                 assertEquals(new BigDecimal("25.50"), result.getPrice());
                 assertEquals(false, result.isAvailable());
                 assertEquals(SELLER_ID, result.getSellerId());
@@ -333,7 +341,7 @@ class ProductServiceTest {
                                 null,
                                 null,
                                 true,
-                                SELLER_ID))));
+                                OTHER_SELLER_ID))));
 
                 assertThrows(ProductNotFoundException.class,
                                 () -> productService.getProduct("product-id", SELLER_EMAIL));
@@ -383,5 +391,183 @@ class ProductServiceTest {
                 request.setPrice(new BigDecimal(PRODUCT_PRICE));
                 request.setAvailable(true);
                 return request;
+        }
+
+        @Test
+        void shouldAllowAdminToQueryProductsFilteredBySeller() {
+                Product product1 = new Product(new ProductDetails(
+                                PRODUCT_NAME, List.of(CATEGORY_ID), 10, DESC_TEXT,
+                                new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID));
+
+                when(productRepository.findAllBySellerId(SELLER_ID)).thenReturn(List.of(product1));
+                User seller = org.mockito.Mockito.mock(User.class);
+                when(seller.getFirstName()).thenReturn("TechStore");
+                when(seller.getLastName()).thenReturn("");
+                when(userRepository.findById(SELLER_ID)).thenReturn(Optional.of(seller));
+                when(categoryRepository.findById(CATEGORY_ID))
+                                .thenReturn(Optional.of(new Category(CATEGORY_ID, CATEGORY_NAME_ELECTRONICS)));
+
+                List<ProductSummaryDTO> results = productService.getProductsForAdmin(SELLER_ID, null, null);
+
+                assertEquals(1, results.size());
+                assertEquals(PRODUCT_NAME, results.get(0).name());
+                assertEquals("TechStore", results.get(0).sellerName());
+                assertEquals(CATEGORY_NAME_ELECTRONICS, results.get(0).category());
+        }
+
+        @Test
+        void shouldAllowAdminToQueryProductsFilteredByCategory() {
+                Product product = new Product(new ProductDetails(
+                                PRODUCT_NAME, List.of(CATEGORY_ID), 10, DESC_TEXT,
+                                new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID));
+
+                when(productRepository.findAll()).thenReturn(List.of(product));
+                User seller = org.mockito.Mockito.mock(User.class);
+                when(seller.getFirstName()).thenReturn("TechStore");
+                when(seller.getLastName()).thenReturn("");
+                when(userRepository.findById(SELLER_ID)).thenReturn(Optional.of(seller));
+                when(categoryRepository.findById(CATEGORY_ID))
+                                .thenReturn(Optional.of(new Category(CATEGORY_ID, CATEGORY_NAME_ELECTRONICS)));
+
+                List<ProductSummaryDTO> results = productService.getProductsForAdmin(null, CATEGORY_ID, null);
+
+                assertEquals(1, results.size());
+                assertEquals(PRODUCT_NAME, results.get(0).name());
+        }
+
+        @Test
+        void shouldAllowAdminToQueryProductsFilteredByStockStatus() {
+                Product inStock = new Product(new ProductDetails(
+                                PRODUCT_NAME, List.of(CATEGORY_ID), 10, DESC_TEXT,
+                                new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID));
+                Product outOfStock = new Product(new ProductDetails(
+                                "Agotado", List.of(CATEGORY_ID), 0, DESC_TEXT,
+                                new BigDecimal("9.99"), null, null, null, true, SELLER_ID));
+
+                when(productRepository.findAll()).thenReturn(List.of(inStock, outOfStock));
+                User seller = org.mockito.Mockito.mock(User.class);
+                when(seller.getFirstName()).thenReturn("TechStore");
+                when(seller.getLastName()).thenReturn("");
+                when(userRepository.findById(SELLER_ID)).thenReturn(Optional.of(seller));
+                when(categoryRepository.findById(CATEGORY_ID))
+                                .thenReturn(Optional.of(new Category(CATEGORY_ID, CATEGORY_NAME_ELECTRONICS)));
+
+                List<ProductSummaryDTO> resultsInStock = productService.getProductsForAdmin(null, null, true);
+                assertEquals(1, resultsInStock.size());
+                assertEquals(PRODUCT_NAME, resultsInStock.get(0).name());
+
+                List<ProductSummaryDTO> resultsOutOfStock = productService.getProductsForAdmin(null, null, false);
+                assertEquals(1, resultsOutOfStock.size());
+                assertEquals("Agotado", resultsOutOfStock.get(0).name());
+        }
+
+        @Test
+        void shouldAllowAdminToGetProductDetailById() {
+                Product product = new Product(new ProductDetails(
+                                PRODUCT_NAME, List.of(CATEGORY_ID), 15, DESC_TEXT,
+                                new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID));
+
+                when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
+                User seller = org.mockito.Mockito.mock(User.class);
+                when(seller.getFirstName()).thenReturn("TechStore");
+                when(seller.getLastName()).thenReturn("");
+                when(userRepository.findById(SELLER_ID)).thenReturn(Optional.of(seller));
+                when(categoryRepository.findById(CATEGORY_ID))
+                                .thenReturn(Optional.of(new Category(CATEGORY_ID, CATEGORY_NAME_ELECTRONICS)));
+
+                ProductDetailDTO detail = productService.getProductDetailForAdmin(PRODUCT_ID);
+
+                assertEquals(PRODUCT_NAME, detail.name());
+                assertEquals("TechStore", detail.sellerName());
+                assertEquals(CATEGORY_NAME_ELECTRONICS, detail.category());
+                assertEquals(15, detail.stock());
+                assertEquals(new BigDecimal(PRODUCT_PRICE), detail.price());
+        }
+
+        @Test
+        void shouldThrowProductNotFoundWhenAdminGetsDetailOfNonExistentProduct() {
+                when(productRepository.findById(UNKNOWN_ID)).thenReturn(Optional.empty());
+
+                assertThrows(ProductNotFoundException.class,
+                                () -> productService.getProductDetailForAdmin(UNKNOWN_ID));
+        }
+
+        @Test
+        void shouldRejectAdminAttemptingToCreateProduct() {
+                User admin = org.mockito.Mockito.mock(User.class);
+                when(admin.getRole()).thenReturn(UserRole.ADMIN);
+                when(userRepository.findByEmailIgnoreCase(ADMIN_EMAIL)).thenReturn(Optional.of(admin));
+
+                assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                                () -> productService.createProduct(validRequest(), ADMIN_EMAIL));
+                verify(productRepository, never()).save(any(Product.class));
+        }
+
+        @Test
+        void shouldRejectAdminAttemptingToUpdateProduct() {
+                User admin = org.mockito.Mockito.mock(User.class);
+                when(admin.getRole()).thenReturn(UserRole.ADMIN);
+                when(userRepository.findByEmailIgnoreCase(ADMIN_EMAIL)).thenReturn(Optional.of(admin));
+
+                assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                                () -> productService.updateProduct(PRODUCT_ID, validRequest(), ADMIN_EMAIL));
+                verify(productRepository, never()).save(any(Product.class));
+        }
+
+        @Test
+        void shouldRejectAdminAttemptingToDeleteProduct() {
+                User admin = org.mockito.Mockito.mock(User.class);
+                when(admin.getRole()).thenReturn(UserRole.ADMIN);
+                when(userRepository.findByEmailIgnoreCase(ADMIN_EMAIL)).thenReturn(Optional.of(admin));
+
+                assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                                () -> productService.deleteProduct(PRODUCT_ID, ADMIN_EMAIL));
+                verify(productRepository, never()).delete(any(Product.class));
+        }
+
+        @Test
+        void shouldAllowSellerToDeleteOwnedProduct() {
+                User seller = org.mockito.Mockito.mock(User.class);
+                when(seller.getId()).thenReturn(SELLER_ID);
+                when(seller.getRole()).thenReturn(UserRole.SELLER);
+                when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(seller));
+
+                Product product = new Product(new ProductDetails(
+                                PRODUCT_NAME, List.of(CATEGORY_ID), 5, DESC_TEXT,
+                                new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID));
+                when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
+
+                productService.deleteProduct(PRODUCT_ID, SELLER_EMAIL);
+
+                verify(productRepository).delete(product);
+        }
+
+        @Test
+        void shouldRejectSellerAttemptingToDeleteProductOwnedByAnotherSeller() {
+                User seller = org.mockito.Mockito.mock(User.class);
+                when(seller.getId()).thenReturn(SELLER_ID);
+                when(seller.getRole()).thenReturn(UserRole.SELLER);
+                when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(seller));
+
+                Product otherProduct = new Product(new ProductDetails(
+                                PRODUCT_NAME, List.of(CATEGORY_ID), 5, DESC_TEXT,
+                                new BigDecimal(PRODUCT_PRICE), null, null, null, true, OTHER_SELLER_ID));
+                when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(otherProduct));
+
+                assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                                () -> productService.deleteProduct(PRODUCT_ID, SELLER_EMAIL));
+                verify(productRepository, never()).delete(any(Product.class));
+        }
+
+        @Test
+        void shouldRejectDeletingNonExistentProduct() {
+                User seller = org.mockito.Mockito.mock(User.class);
+                when(seller.getRole()).thenReturn(UserRole.SELLER);
+                when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(seller));
+                when(productRepository.findById(UNKNOWN_ID)).thenReturn(Optional.empty());
+
+                assertThrows(ProductNotFoundException.class,
+                                () -> productService.deleteProduct(UNKNOWN_ID, SELLER_EMAIL));
+                verify(productRepository, never()).delete(any(Product.class));
         }
 }

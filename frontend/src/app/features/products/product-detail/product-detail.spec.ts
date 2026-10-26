@@ -9,6 +9,7 @@ import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService, AuthenticatedUser } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
+import { ADMIN_READONLY_ERROR_MESSAGE } from '../../../core/services/admin-product.service';
 
 describe('ProductDetail', () => {
   let component: ProductDetail;
@@ -124,7 +125,7 @@ describe('ProductDetail', () => {
     expect(buyBtn?.disabled).toBe(true);
   });
 
-  it('should display admin read-only pill when logged in as admin', () => {
+  it('should display admin read-only pill when logged in as admin and hide interactive action buttons', () => {
     currentUserSignal.set({
       id: 'admin-1',
       email: 'admin@example.com',
@@ -135,6 +136,30 @@ describe('ProductDetail', () => {
 
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('.admin-mode-pill')?.textContent).toContain('Modo Administrador (Solo lectura)');
+    expect(el.querySelector('.admin-mode-pill')?.textContent).toContain('Modo supervisión: solo lectura');
+    expect(el.querySelector('.heart-toggle-btn')).toBeNull();
+    expect(el.querySelector('.admin-readonly-box')).not.toBeNull();
+    expect(el.querySelector('.admin-readonly-box')?.textContent).toContain('Modo supervisión: solo lectura');
+    expect(el.querySelector('.primary-buy-btn')).toBeNull();
+    expect(el.querySelector('.detail-quantity-picker')).toBeNull();
+  });
+
+  it('should reject buy and favorite mutations when logged in as admin with clear error message', () => {
+    currentUserSignal.set({
+      id: 'admin-1',
+      email: 'admin@example.com',
+      role: 'ADMIN',
+      active: true,
+    });
+    fixture.detectChanges();
+
+    component.addToCart();
+    expect(toastServiceMock.show).toHaveBeenCalledWith(ADMIN_READONLY_ERROR_MESSAGE, 'error');
+    expect(cartServiceMock.addItem).not.toHaveBeenCalled();
+
+    component.toggleFavorite();
+    expect(toastServiceMock.show).toHaveBeenCalledWith(ADMIN_READONLY_ERROR_MESSAGE, 'error');
+    expect(wishlistServiceMock.toggleWishlist).not.toHaveBeenCalled();
   });
 
   it('should toggle favorite when heart button is clicked', () => {

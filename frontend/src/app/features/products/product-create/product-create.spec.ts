@@ -11,7 +11,7 @@ describe('ProductCreate', () => {
     { id: 'category-home', name: 'Hogar' },
   ];
   let fixture: ComponentFixture<ProductCreateComponent>;
-  let productService: Pick<ProductsService, 'getCategories' | 'createProduct' | 'getProduct' | 'updateProduct' | 'uploadProductImage'>;
+  let productService: Pick<ProductsService, 'getCategories' | 'createProduct' | 'createProductWithImage' | 'getProduct' | 'updateProduct' | 'updateProductWithImage' | 'uploadProductImage'>;
   let createProduct: ReturnType<typeof vi.fn<(request: ProductCreateRequest) => Observable<CreatedProduct>>>;
   let getProduct: ReturnType<typeof vi.fn<(id: string) => Observable<ProductDetails>>>;
   let updateProduct: ReturnType<typeof vi.fn<
@@ -62,8 +62,10 @@ describe('ProductCreate', () => {
     productService = {
       getCategories: () => categoriesResponse,
       createProduct,
+      createProductWithImage: vi.fn((req, img) => createProduct(req)),
       getProduct,
       updateProduct,
+      updateProductWithImage: vi.fn((id, req, img) => updateProduct(id, req)),
       uploadProductImage,
     };
 
