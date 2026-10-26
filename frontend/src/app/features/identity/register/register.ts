@@ -96,9 +96,13 @@ export class Register {
       .pipe(takeUntilDestroyed())
       .subscribe({
         next: (categories) => {
-          this.categories = categories;
+          this.categories = [...categories].sort((first, second) => {
+            const firstIsOther = first.name.trim().toLocaleLowerCase() === 'otros';
+            const secondIsOther = second.name.trim().toLocaleLowerCase() === 'otros';
+            return Number(firstIsOther) - Number(secondIsOther);
+          });
           this.categoriesLoading = false;
-          this.form.get('defaultCategory')?.setValue(categories[0]?.name ?? '');
+          this.form.get('defaultCategory')?.setValue(this.categories[0]?.name ?? '');
         },
         error: () => {
           this.categoriesLoading = false;
