@@ -30,7 +30,6 @@ export interface ProductCreateRequest {
   price: number;
   discount?: number | null;
   premiumDiscount?: number | null;
-  imageUrl?: string | null;
   available: boolean;
 }
 
@@ -76,12 +75,32 @@ export class ProductsService {
     return this.http.post<CreatedProduct>('/api/products', request);
   }
 
+  createProductWithImage(request: ProductCreateRequest, image?: File | null): Observable<CreatedProduct> {
+    const formData = new FormData();
+    formData.append('product', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+    if (image) formData.append('image', image, image.name);
+    return this.http.post<CreatedProduct>('/api/products', formData);
+  }
+
   getProduct(id: string): Observable<ProductDetails> {
     return this.http.get<ProductDetails>(`/api/products/${id}`);
   }
 
   updateProduct(id: string, request: ProductCreateRequest): Observable<ProductDetails> {
     return this.http.put<ProductDetails>(`/api/products/${id}`, request);
+  }
+
+  updateProductWithImage(id: string, request: ProductCreateRequest, image?: File | null): Observable<ProductDetails> {
+    const formData = new FormData();
+    formData.append('product', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+    if (image) formData.append('image', image, image.name);
+    return this.http.put<ProductDetails>(`/api/products/${id}`, formData);
+  }
+
+  uploadProductImage(id: string, image: File): Observable<ProductDetails> {
+    const formData = new FormData();
+    formData.append('image', image, image.name);
+    return this.http.post<ProductDetails>(`/api/products/${id}/image`, formData);
   }
 
   getAvailableProducts(): Observable<AvailableProduct[]> {

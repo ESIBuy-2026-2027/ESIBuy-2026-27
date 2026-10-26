@@ -20,6 +20,8 @@ public class Product {
     private BigDecimal discount;
     private BigDecimal premiumDiscount;
     private String imageUrl;
+    private String imageFileId;
+    private String imageContentType;
     private boolean available;
     private String sellerId;
     private Double rating = 5.0;
@@ -84,6 +86,22 @@ public class Product {
 
     public String getImageUrl() {
         return imageUrl;
+    }
+
+    public String getImageFileId() {
+        return imageFileId;
+    }
+
+    public void setImageFileId(String imageFileId) {
+        this.imageFileId = imageFileId;
+    }
+
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public void setImageContentType(String imageContentType) {
+        this.imageContentType = imageContentType;
     }
 
     public boolean isAvailable() {

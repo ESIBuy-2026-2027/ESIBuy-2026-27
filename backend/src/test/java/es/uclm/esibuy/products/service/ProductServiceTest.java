@@ -1,6 +1,10 @@
 package es.uclm.esibuy.products.service;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
+import javax.imageio.ImageIO;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +20,10 @@ import es.uclm.esibuy.products.repository.ProductRepository;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.bson.types.ObjectId;
+import org.springframework.web.server.ResponseStatusException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,11 +56,67 @@ class ProductServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private GridFsTemplate gridFsTemplate;
+
     private ProductService productService;
 
     @BeforeEach
     void setUp() {
-        productService = new ProductService(productRepository, categoryRepository, userRepository);
+        productService = new ProductService(productRepository, categoryRepository, userRepository, gridFsTemplate);
+    }
+
+    @Test
+    void shouldRejectImageWhenMimeDoesNotMatchBinarySignature() {
+        stubSellerAndOwnedProduct();
+        MockMultipartFile image = new MockMultipartFile(
+                "image", "photo.png", "image/png", "not an image".getBytes());
+
+        assertThrows(ResponseStatusException.class,
+                () -> productService.uploadProductImage("product-id", image, SELLER_EMAIL));
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    void shouldRejectImagesLargerThanFiveMegabytes() {
+        stubSellerAndOwnedProduct();
+        MockMultipartFile image = new MockMultipartFile(
+                "image", "photo.png", "image/png", new byte[5 * 1024 * 1024 + 1]);
+
+        assertThrows(ResponseStatusException.class,
+                () -> productService.uploadProductImage("product-id", image, SELLER_EMAIL));
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    void shouldNormalizeAndStoreValidPngImage() throws IOException {
+        stubSellerAndOwnedProduct();
+        BufferedImage source = new BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB);
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        ImageIO.write(source, "png", bytes);
+        MockMultipartFile image = new MockMultipartFile(
+                "image", "photo.png", "image/png", bytes.toByteArray());
+        when(gridFsTemplate.store(any(java.io.InputStream.class), any(String.class), any(String.class)))
+                .thenReturn(new ObjectId("507f1f77bcf86cd799439011"));
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Product result = productService.uploadProductImage("product-id", image, SELLER_EMAIL);
+
+        assertEquals("/api/products/product-id/image", result.getImageUrl());
+        assertEquals("image/png", result.getImageContentType());
+        org.junit.jupiter.api.Assertions.assertNotNull(result.getImageFileId());
+        verify(productRepository).save(any(Product.class));
+    }
+
+    private void stubSellerAndOwnedProduct() {
+        User seller = org.mockito.Mockito.mock(User.class);
+        when(seller.getId()).thenReturn(SELLER_ID);
+        when(seller.getRole()).thenReturn(UserRole.SELLER);
+        when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(seller));
+        Product product = new Product(PRODUCT_NAME, List.of(CATEGORY_ID), 1, null,
+                new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID);
+        product.setId("product-id");
+        when(productRepository.findById("product-id")).thenReturn(Optional.of(product));
     }
 
     @Test

@@ -15,7 +15,6 @@ interface ProductFormControls {
   precio: FormControl<number | null>;
   descuento: FormControl<number | null>;
   descuentoPremium: FormControl<number | null>;
-  imagen: FormControl<string>;
   disponible: FormControl<boolean | null>;
 }
 
@@ -35,8 +34,6 @@ const SERVER_FIELD_TO_FORM_FIELD: Readonly<Partial<Record<string, ProductFormFie
   descuento: 'descuento',
   premiumDiscount: 'descuentoPremium',
   descuentoPremium: 'descuentoPremium',
-  imageUrl: 'imagen',
-  imagen: 'imagen',
   available: 'disponible',
   disponible: 'disponible',
 };
@@ -92,13 +89,6 @@ export class ProductCreate implements OnInit {
       Validators.min(0),
       Validators.max(100),
     ]),
-    imagen: new FormControl('', {
-      nonNullable: true,
-      validators: [
-        Validators.maxLength(2000),
-        Validators.pattern(/^$|^https?:\/\/\S+$/i),
-      ],
-    }),
     disponible: new FormControl<boolean | null>(true, [Validators.required]),
   });
 
@@ -112,13 +102,57 @@ export class ProductCreate implements OnInit {
   productLoading = signal(false);
   productLoadError = signal<string | null>(null);
   imageError = signal(false);
+  selectedImagePreview = signal<string | null>(null);
+  existingImageUrl = signal<string | null>(null);
+  imageValidationError = signal<string | null>(null);
+  selectedImage: File | null = null;
 
   serverFieldErrors: Partial<Record<ProductFormField, string>> = {};
 
   get previewUrl(): string {
-    const control = this.form.controls.imagen;
-    const value = (control.value ?? '').trim();
-    return value && !control.hasError('pattern') ? value : '';
+    return this.selectedImagePreview() ?? this.existingImageUrl() ?? '';
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    const previousPreview = this.selectedImagePreview();
+    if (previousPreview?.startsWith('blob:')) {
+      URL.revokeObjectURL(previousPreview);
+    }
+    this.imageValidationError.set(null);
+    this.imageError.set(false);
+    this.submitError.set(null);
+
+    if (!file) {
+      this.selectedImage = null;
+      this.selectedImagePreview.set(null);
+      return;
+    }
+
+    const allowedMime = file.type === 'image/jpeg' || file.type === 'image/png';
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    const allowedExtension = file.type === 'image/png'
+      ? extension === 'png'
+      : extension === 'jpg' || extension === 'jpeg';
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.imageValidationError.set('La imagen no puede superar los 5 MB.');
+      input.value = '';
+      this.selectedImage = null;
+      this.selectedImagePreview.set(null);
+      return;
+    }
+    if (!allowedMime || !allowedExtension) {
+      this.imageValidationError.set('Selecciona una imagen JPEG o PNG con una extensión coherente.');
+      input.value = '';
+      this.selectedImage = null;
+      this.selectedImagePreview.set(null);
+      return;
+    }
+
+    this.selectedImage = file;
+    this.selectedImagePreview.set(URL.createObjectURL(file));
   }
 
   ngOnInit(): void {
@@ -189,10 +223,10 @@ export class ProductCreate implements OnInit {
             precio: product.price,
             descuento: product.discount,
             descuentoPremium: product.premiumDiscount,
-            imagen: product.imageUrl ?? '',
             disponible: product.available,
           });
 
+          this.existingImageUrl.set(product.imageUrl ?? null);
           this.productLoading.set(false);
         },
         error: (error: unknown) => {
@@ -207,38 +241,40 @@ export class ProductCreate implements OnInit {
     this.submitError.set(null);
 
     if (
-      this.form.invalid ||
-      this.productLoading() ||
-      this.productLoadError() ||
-      this.categoriesLoading ||
-      this.categoriesError ||
-      this.categories.length === 0 ||
-      this.submitting()
+      this.form.invalid || this.productLoading() || this.productLoadError() ||
+      this.categoriesLoading || this.categoriesError || this.categories.length === 0 || this.submitting()
     ) {
       this.form.markAllAsTouched();
       return;
     }
 
     this.submitting.set(true);
-
     const request = this.toRequest();
     const saveRequest = this.productId
-      ? this.productsService.updateProduct(this.productId, request)
-      : this.productsService.createProduct(request);
+      ? this.productsService.updateProductWithImage(this.productId, request, this.selectedImage)
+      : this.productsService.createProductWithImage(request, this.selectedImage);
 
-    saveRequest
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.submitting.set(false);
-          this.submitSuccess.set(true);
-          this.router.navigate(['/seller/catalog']);
-        },
-        error: (error: unknown) => {
-          this.submitting.set(false);
+    saveRequest.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.submitting.set(false);
+        this.submitSuccess.set(true);
+        this.router.navigate(['/seller/catalog']);
+      },
+      error: (error: unknown) => {
+        this.submitting.set(false);
+        if (this.productId) {
           this.handleSubmitError(error);
-        },
-      });
+          return;
+        }
+        if (error instanceof HttpErrorResponse && error.error && typeof error.error.message === 'string') {
+          this.submitError.set(error.error.message);
+        } else if (error instanceof HttpErrorResponse && error.status === 413) {
+          this.submitError.set('La imagen supera el tamaño máximo de 5 MB.');
+        } else {
+          this.submitError.set('No se pudo guardar el producto. Comprueba los datos y la imagen e inténtalo de nuevo.');
+        }
+      },
+    });
   }
 
   private handleSubmitError(error: unknown): void {
@@ -393,10 +429,6 @@ export class ProductCreate implements OnInit {
 
     if (value.descuentoPremium !== null) {
       request.premiumDiscount = value.descuentoPremium;
-    }
-
-    if (value.imagen.trim()) {
-      request.imageUrl = value.imagen.trim();
     }
 
     return request;
