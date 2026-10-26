@@ -1,8 +1,6 @@
 package es.uclm.esibuy.products.service;
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import org.bson.types.ObjectId;
@@ -18,6 +16,8 @@ import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import java.util.Arrays;
+import es.uclm.esibuy.products.model.ProductDetails;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -46,6 +46,10 @@ public class ProductService {
     private static final int MAX_IMAGE_DIMENSION = 8000;
     private static final long MAX_IMAGE_PIXELS = 25_000_000L;
 
+    private static final String IMAGE_API_KEY = "/api/products/";
+    private static final String IMAGE_ENDPOINT = "/image";
+    private static final String PRODUCTO_NO_ENCONTRADO_KEY = "Producto no encontrado";
+
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
@@ -68,7 +72,7 @@ public class ProductService {
         User seller = findSeller(authenticatedEmail);
         List<String> categoryIds = validateCategories(request);
 
-        Product product = new Product(
+        Product product = new Product(new ProductDetails(
                 request.getName().trim(),
                 categoryIds,
                 request.getStock() == null ? 0 : request.getStock(),
@@ -78,49 +82,80 @@ public class ProductService {
                 request.getPremiumDiscount(),
                 null,
                 Boolean.TRUE.equals(request.getAvailable()),
-                seller.getId());
+                seller.getId()));
 
         return productRepository.save(product);
     }
 
-    /** Crea producto e imagen en una única petición; valida la imagen antes de persistir el producto. */
-    public Product createProductWithImage(ProductCreateRequest request, MultipartFile file, String authenticatedEmail) {
-        ImagePayload image = file == null || file.isEmpty() ? null : validateAndNormalizeImage(file);
+    public Product createProductWithImage(
+            ProductCreateRequest request,
+            MultipartFile file,
+            String authenticatedEmail) {
+
+        // Validar la imagen antes de crear el producto.
+        ImagePayload image = file == null || file.isEmpty()
+                ? null
+                : validateAndNormalizeImage(file);
+
         User seller = findSeller(authenticatedEmail);
         List<String> categoryIds = validateCategories(request);
-        Product product = new Product(
-                request.getName().trim(), categoryIds,
-                request.getStock() == null ? 0 : request.getStock(), request.getDescription(),
-                request.getPrice(), request.getDiscount(), request.getPremiumDiscount(), null,
-                Boolean.TRUE.equals(request.getAvailable()), seller.getId());
+
+        Product product = new Product(new ProductDetails(
+                request.getName().trim(),
+                categoryIds,
+                request.getStock() == null ? 0 : request.getStock(),
+                request.getDescription(),
+                request.getPrice(),
+                request.getDiscount(),
+                request.getPremiumDiscount(),
+                null,
+                Boolean.TRUE.equals(request.getAvailable()),
+                seller.getId()));
+
+        // Preparar el ID antes del guardado para no guardar dos veces.
+        String productId = new ObjectId().toHexString();
+        product.setId(productId);
+
         String fileId = null;
+
         try {
             if (image != null) {
                 fileId = storeImage(image, file.getOriginalFilename());
+
                 product.setImageFileId(fileId);
                 product.setImageContentType(image.contentType());
+                product.setImageUrl(IMAGE_API_KEY + productId + IMAGE_ENDPOINT);
             }
-            Product saved = productRepository.save(product);
-            if (fileId != null) {
-                saved.setImageUrl("/api/products/" + saved.getId() + "/image");
-                saved = productRepository.save(saved);
-            }
-            return saved;
+
+            // Una única escritura del producto.
+            return productRepository.save(product);
+
         } catch (RuntimeException exception) {
             if (product.getId() != null) {
-                try { productRepository.deleteById(product.getId()); }
-                catch (RuntimeException cleanup) { exception.addSuppressed(cleanup); }
+                try {
+                    productRepository.deleteById(product.getId());
+                } catch (RuntimeException cleanup) {
+                    exception.addSuppressed(cleanup);
+                }
             }
+
             if (fileId != null) {
-                try { deleteStoredImage(fileId); }
-                catch (RuntimeException cleanup) { exception.addSuppressed(cleanup); }
+                try {
+                    deleteStoredImage(fileId);
+                } catch (RuntimeException cleanup) {
+                    exception.addSuppressed(cleanup);
+                }
             }
+
             throw exception;
         }
     }
 
-    /** Actualiza producto e imagen; si la imagen no se envía, conserva la actual. */
-    public Product updateProductWithImage(String id, ProductCreateRequest request, MultipartFile file, String authenticatedEmail) {
+    /**
+     * Actualiza producto e imagen; si la imagen no se envía, conserva la actual.
+     */
+    public Product updateProductWithImage(String id, ProductCreateRequest request, MultipartFile file,
+            String authenticatedEmail) {
         ImagePayload image = file == null || file.isEmpty() ? null : validateAndNormalizeImage(file);
         Product product = getProduct(id, authenticatedEmail);
         List<String> categoryIds = validateCategories(request);
@@ -130,7 +165,7 @@ public class ProductService {
             newFileId = storeImage(image, file.getOriginalFilename());
             product.setImageFileId(newFileId);
             product.setImageContentType(image.contentType());
-            product.setImageUrl("/api/products/" + id + "/image");
+            product.setImageUrl(IMAGE_API_KEY + id + IMAGE_ENDPOINT);
         }
         product.setName(request.getName().trim());
         product.setCategoryIds(categoryIds);
@@ -145,14 +180,19 @@ public class ProductService {
             saved = productRepository.save(product);
         } catch (RuntimeException exception) {
             if (newFileId != null) {
-                try { deleteStoredImage(newFileId); }
-                catch (RuntimeException cleanup) { exception.addSuppressed(cleanup); }
+                try {
+                    deleteStoredImage(newFileId);
+                } catch (RuntimeException cleanup) {
+                    exception.addSuppressed(cleanup);
+                }
             }
             throw exception;
         }
         if (newFileId != null && oldFileId != null) {
-            try { deleteStoredImage(oldFileId); }
-            catch (RuntimeException cleanup) { /* La imagen antigua puede limpiarse posteriormente. */ }
+            try {
+                deleteStoredImage(oldFileId);
+            } catch (RuntimeException cleanup) {
+                /* La imagen antigua puede limpiarse posteriormente. */ }
         }
         return saved;
     }
@@ -166,7 +206,8 @@ public class ProductService {
     }
 
     private void deleteStoredImage(String fileId) {
-        if (fileId == null || fileId.isBlank()) return;
+        if (fileId == null || fileId.isBlank())
+            return;
         gridFsTemplate.delete(Query.query(Criteria.where("_id").is(new ObjectId(fileId))));
     }
 
@@ -178,30 +219,37 @@ public class ProductService {
         String newFileId = storeImage(image, file.getOriginalFilename());
         product.setImageFileId(newFileId);
         product.setImageContentType(image.contentType());
-        product.setImageUrl("/api/products/" + id + "/image");
+        product.setImageUrl(IMAGE_API_KEY + id + IMAGE_ENDPOINT);
         Product saved;
         try {
             saved = productRepository.save(product);
         } catch (RuntimeException exception) {
-            try { deleteStoredImage(newFileId); }
-            catch (RuntimeException cleanup) { exception.addSuppressed(cleanup); }
+            try {
+                deleteStoredImage(newFileId);
+            } catch (RuntimeException cleanup) {
+                exception.addSuppressed(cleanup);
+            }
             throw exception;
         }
         if (oldFileId != null) {
-            try { deleteStoredImage(oldFileId); }
-            catch (RuntimeException cleanup) { /* La imagen antigua puede limpiarse posteriormente. */ }
+            try {
+                deleteStoredImage(oldFileId);
+            } catch (RuntimeException cleanup) {
+                /* La imagen antigua puede limpiarse posteriormente. */ }
         }
         return saved;
     }
 
     public ProductImage getProductImage(String id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Producto no encontrado"));
+                .orElseThrow(() -> new ProductNotFoundException(PRODUCTO_NO_ENCONTRADO_KEY));
         if (product.getImageFileId() == null || product.getImageContentType() == null) {
             throw new ProductNotFoundException("El producto no tiene imagen");
         }
-        GridFSFile file = gridFsTemplate.findOne(Query.query(Criteria.where("_id").is(new ObjectId(product.getImageFileId()))));
-        if (file == null) throw new ProductNotFoundException("La imagen del producto no existe");
+        GridFSFile file = gridFsTemplate
+                .findOne(Query.query(Criteria.where("_id").is(new ObjectId(product.getImageFileId()))));
+        if (file == null)
+            throw new ProductNotFoundException("La imagen del producto no existe");
         try {
             GridFsResource resource = gridFsTemplate.getResource(file);
             return new ProductImage(resource.getInputStream().readAllBytes(), product.getImageContentType());
@@ -210,78 +258,170 @@ public class ProductService {
         }
     }
 
-    public record ProductImage(byte[] bytes, String contentType) { }
+    public record ProductImage(byte[] bytes, String contentType) {
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) {
+                return true;
+            }
+            if (!(object instanceof ProductImage(byte[] otherBytes, String otherContentType))) {
+                return false;
+            }
+            return Arrays.equals(bytes, otherBytes)
+                    && java.util.Objects.equals(contentType, otherContentType);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * Arrays.hashCode(bytes)
+                    + java.util.Objects.hashCode(contentType);
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName()
+                    + "[bytes.length=" + (bytes == null ? 0 : bytes.length)
+                    + ", contentType=" + contentType + "]";
+        }
+    }
+
+    private record ImagePayload(byte[] bytes, String contentType) {
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) {
+                return true;
+            }
+            if (!(object instanceof ImagePayload(byte[] otherBytes, String otherContentType))) {
+                return false;
+            }
+            return Arrays.equals(bytes, otherBytes)
+                    && java.util.Objects.equals(contentType, otherContentType);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * Arrays.hashCode(bytes)
+                    + java.util.Objects.hashCode(contentType);
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName()
+                    + "[bytes.length=" + (bytes == null ? 0 : bytes.length)
+                    + ", contentType=" + contentType + "]";
+        }
+    }
 
     private ImagePayload validateAndNormalizeImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecciona una imagen.");
+            throw badImageRequest("Selecciona una imagen.");
         }
+
         if (file.getSize() > MAX_IMAGE_SIZE) {
-            throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE,
+            throw new ResponseStatusException(
+                    org.springframework.http.HttpStatusCode.valueOf(413),
                     "La imagen no puede superar los 5 MB.");
         }
 
-        String filename = file.getOriginalFilename();
-        String extension = filename == null || filename.lastIndexOf('.') < 0
-                ? "" : filename.substring(filename.lastIndexOf('.') + 1).toLowerCase(java.util.Locale.ROOT);
-        String declaredMime = file.getContentType();
-        if (declaredMime == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El tipo MIME de la imagen es obligatorio.");
-        }
-        declaredMime = declaredMime.split(";", 2)[0].trim().toLowerCase(java.util.Locale.ROOT);
+        String declaredMime = getDeclaredMime(file);
+        String extension = getExtension(file.getOriginalFilename());
 
         try {
             byte[] original = file.getBytes();
             String detectedMime = detectImageMime(original);
-            if (detectedMime == null || !detectedMime.equals(declaredMime)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "El contenido de la imagen no coincide con su tipo MIME.");
-            }
-            boolean extensionMatches = "image/png".equals(detectedMime)
-                    ? "png".equals(extension)
-                    : ("jpg".equals(extension) || "jpeg".equals(extension));
-            if (!extensionMatches) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "La extensión del archivo no coincide con el formato de imagen permitido.");
+
+            validateImageFormat(detectedMime, declaredMime, extension);
+            validateImageContent(original);
+
+            return new ImagePayload(original, detectedMime);
+        } catch (IOException ex) {
+            throw badImageRequest("La imagen no es válida o está dañada.");
+        }
+    }
+
+    private String getDeclaredMime(MultipartFile file) {
+        String mime = file.getContentType();
+
+        if (mime == null || mime.isBlank()) {
+            throw badImageRequest("El tipo MIME de la imagen es obligatorio.");
+        }
+
+        return mime.split(";", 2)[0].trim().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    private String getExtension(String filename) {
+        if (filename == null || filename.lastIndexOf('.') < 0) {
+            return "";
+        }
+
+        return filename.substring(filename.lastIndexOf('.') + 1)
+                .toLowerCase(java.util.Locale.ROOT);
+    }
+
+    private void validateImageFormat(
+            String detectedMime,
+            String declaredMime,
+            String extension) {
+
+        if (detectedMime == null || !detectedMime.equals(declaredMime)) {
+            throw badImageRequest(
+                    "El contenido de la imagen no coincide con su tipo MIME.");
+        }
+
+        boolean validExtension = "image/png".equals(detectedMime)
+                ? "png".equals(extension)
+                : "jpg".equals(extension) || "jpeg".equals(extension);
+
+        if (!validExtension) {
+            throw badImageRequest(
+                    "La extensión del archivo no coincide con el formato de imagen permitido.");
+        }
+    }
+
+    private void validateImageContent(byte[] original) throws IOException {
+        try (ImageInputStream input = ImageIO.createImageInputStream(
+                new ByteArrayInputStream(original))) {
+
+            if (input == null) {
+                throw badImageRequest("La imagen no es válida.");
             }
 
-            try (ImageInputStream input = ImageIO.createImageInputStream(new ByteArrayInputStream(original))) {
-                if (input == null) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La imagen no es válida.");
-                }
-                Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
-                if (!readers.hasNext()) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La imagen no es válida o está dañada.");
-                }
-                ImageReader reader = readers.next();
-                try {
-                    reader.setInput(input, true, true);
-                    int width = reader.getWidth(0);
-                    int height = reader.getHeight(0);
-                    if (width <= 0 || height <= 0 || width > MAX_IMAGE_DIMENSION
-                            || height > MAX_IMAGE_DIMENSION || (long) width * height > MAX_IMAGE_PIXELS) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                "Las dimensiones de la imagen superan el límite permitido.");
-                    }
-                    BufferedImage decoded = reader.read(0);
-                    if (decoded == null) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La imagen no se puede decodificar.");
-                    }
-                    String format = "image/png".equals(detectedMime) ? "png" : "jpeg";
-                    try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-                        if (!ImageIO.write(decoded, format, output)) {
-                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                    "No se pudo procesar la imagen.");
-                        }
-                        return new ImagePayload(output.toByteArray(), detectedMime);
-                    }
-                } finally {
-                    reader.dispose();
-                }
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
+
+            if (!readers.hasNext()) {
+                throw badImageRequest("La imagen no es válida o está dañada.");
             }
-        } catch (IOException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La imagen no es válida o está dañada.");
+
+            ImageReader reader = readers.next();
+
+            try {
+                reader.setInput(input, true, true);
+
+                int width = reader.getWidth(0);
+                int height = reader.getHeight(0);
+
+                if (width <= 0 || height <= 0
+                        || width > MAX_IMAGE_DIMENSION
+                        || height > MAX_IMAGE_DIMENSION
+                        || (long) width * height > MAX_IMAGE_PIXELS) {
+                    throw badImageRequest(
+                            "Las dimensiones de la imagen superan el límite permitido.");
+                }
+
+                if (reader.read(0) == null) {
+                    throw badImageRequest(
+                            "La imagen no se puede decodificar.");
+                }
+            } finally {
+                reader.dispose();
+            }
         }
+    }
+
+    private ResponseStatusException badImageRequest(String message) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
     }
 
     private String detectImageMime(byte[] bytes) {
@@ -297,8 +437,6 @@ public class ProductService {
         }
         return null;
     }
-
-    private record ImagePayload(byte[] bytes, String contentType) { }
 
     public ProductSummaryResponse getSummary(String authenticatedEmail) {
         String sellerId = findSeller(authenticatedEmail).getId();
@@ -451,7 +589,7 @@ public class ProductService {
     public ProductResponse getProductById(String id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(
-                        () -> new ProductNotFoundException("Producto no encontrado"));
+                        () -> new ProductNotFoundException(PRODUCTO_NO_ENCONTRADO_KEY));
 
         return ProductResponse.from(product);
     }
@@ -462,7 +600,7 @@ public class ProductService {
             String authenticatedEmail) {
         Product product = productRepository.findById(id)
                 .orElseThrow(
-                        () -> new ProductNotFoundException("Producto no encontrado"));
+                        () -> new ProductNotFoundException(PRODUCTO_NO_ENCONTRADO_KEY));
 
         if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
             throw new AccessDeniedException("Autenticación requerida");

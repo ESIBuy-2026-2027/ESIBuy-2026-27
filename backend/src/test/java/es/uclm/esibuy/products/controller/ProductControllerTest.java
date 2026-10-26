@@ -37,6 +37,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import es.uclm.esibuy.products.model.ProductDetails;
 
 @WebMvcTest(ProductController.class)
 @Import({ ApiExceptionHandler.class, SecurityConfig.class })
@@ -64,9 +65,17 @@ class ProductControllerTest {
 
         @Test
         void shouldReturnCreatedProductAndUseAuthenticatedIdentity() throws Exception {
-                Product product = new Product(
-                                PRODUCT_NAME, List.of(CATEGORY_ID), 0, null,
-                                new BigDecimal("19.99"), null, null, null, true, SELLER_ID);
+                Product product = new Product(new ProductDetails(
+                                PRODUCT_NAME,
+                                List.of(CATEGORY_ID),
+                                0,
+                                null,
+                                new BigDecimal("19.99"),
+                                null,
+                                null,
+                                null,
+                                true,
+                                SELLER_ID));
                 when(productService.createProduct(any(ProductCreateRequest.class), eq(SELLER_EMAIL)))
                                 .thenReturn(product);
 
@@ -149,9 +158,18 @@ class ProductControllerTest {
 
         @Test
         void shouldReturnProductDetailsForEditing() throws Exception {
-                when(productService.getProduct("product-1", SELLER_EMAIL)).thenReturn(new Product(
-                                PRODUCT_NAME, List.of(CATEGORY_ID), 3, "Descripción",
-                                new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID));
+                when(productService.getProduct("product-1", SELLER_EMAIL))
+                                .thenReturn(new Product(new ProductDetails(
+                                                PRODUCT_NAME,
+                                                List.of(CATEGORY_ID),
+                                                3,
+                                                "Descripción",
+                                                new BigDecimal(PRODUCT_PRICE),
+                                                null,
+                                                null,
+                                                null,
+                                                true,
+                                                SELLER_ID)));
 
                 mockMvc.perform(get(PRODUCTS_API + "/product-1")
                                 .with(authentication(authenticationForSeller())))
@@ -179,9 +197,17 @@ class ProductControllerTest {
         void shouldUpdateProductForAuthenticatedSeller() throws Exception {
                 when(productService.updateProduct(
                                 eq("product-1"), any(ProductCreateRequest.class), eq(SELLER_EMAIL)))
-                                .thenReturn(new Product(
-                                                "Producto actualizado", List.of(CATEGORY_ID), 4, null,
-                                                new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID));
+                                .thenReturn(new Product(new ProductDetails(
+                                                "Producto actualizado",
+                                                List.of(CATEGORY_ID),
+                                                4,
+                                                null,
+                                                new BigDecimal(PRODUCT_PRICE),
+                                                null,
+                                                null,
+                                                null,
+                                                true,
+                                                SELLER_ID)));
 
                 mockMvc.perform(put(PRODUCTS_API + "/product-1")
                                 .with(authentication(authenticationForSeller()))
