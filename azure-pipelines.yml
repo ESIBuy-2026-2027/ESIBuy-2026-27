@@ -95,10 +95,10 @@ stages:
       - job: Frontend_CI
         displayName: 'Frontend CI (Node 22 / Angular / Vitest / SonarQube)'
         steps:
-          - task: NodeTool@0
+          - task: UseNode@1
             displayName: 'Configurar Node.js 22.x'
             inputs:
-              versionSpec: '22.x'
+              version: '22.x'
 
           - script: |
               cd frontend
@@ -152,10 +152,10 @@ stages:
               jdkArchitectureOption: 'x64'
               jdkSourceOption: 'PreInstalled'
 
-          - task: NodeTool@0
+          - task: UseNode@1
             displayName: 'Configurar Node.js 22.x'
             inputs:
-              versionSpec: '22.x'
+              version: '22.x'
 
           # --------------------------------------------------------------------
           # Tarea 498: Validación estricta de variables de entorno y secrets
@@ -231,7 +231,7 @@ stages:
           - script: |
               cd frontend
               echo "Desplegando SPA Angular en Firebase Hosting..."
-              npx --yes firebase-tools deploy --only hosting --token "$FIREBASE_TOKEN"
+              npx --yes firebase-tools deploy --only hosting --project esibuy-2026-27 --token "$FIREBASE_TOKEN" --non-interactive
             displayName: 'Desplegar Frontend en Firebase Hosting'
             env:
               FIREBASE_TOKEN: $(FIREBASE_TOKEN)
