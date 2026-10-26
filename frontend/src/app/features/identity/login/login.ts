@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, Input, OnDestroy, computed } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, computed, inject } from '@angular/core';
+import { ToastService } from '../../../core/services/toast.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -15,6 +16,8 @@ import { AuthService, AuthenticatedUser, UserRole } from '../../../core/services
 })
 export class Login implements OnDestroy {
   @Input() embedded = false;
+
+  readonly toastService = inject(ToastService);
 
   readonly currentUser = computed<AuthenticatedUser | null>(() => {
     if (typeof this.authService?.currentUser === 'function') {

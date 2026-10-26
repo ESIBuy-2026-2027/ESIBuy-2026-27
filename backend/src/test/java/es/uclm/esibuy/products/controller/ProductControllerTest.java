@@ -178,12 +178,12 @@ class ProductControllerTest {
                                 .andExpect(jsonPath("$.categoryIds[0]").value(CATEGORY_ID))
                                 .andExpect(jsonPath("$.stock").value(3));
 
-                verify(productService).getProduct("product-1", SELLER_EMAIL);
+                verify(productService).getProductById("product-1");
         }
 
         @Test
-        void shouldReturnNotFoundWhenProductDoesNotExistOrBelongToAnotherSeller() throws Exception {
-                when(productService.getProduct("product-1", SELLER_EMAIL))
+        void shouldReturnNotFoundWhenProductDoesNotExist() throws Exception {
+                when(productService.getProductById("product-1"))
                                 .thenThrow(new ProductNotFoundException());
 
                 mockMvc.perform(get(PRODUCTS_API + "/product-1")

@@ -21,7 +21,7 @@ export class Home implements OnInit {
   readonly authService = inject(AuthService);
   private readonly productsService = inject(ProductsService);
   readonly wishlistService = inject(WishlistService);
-  private readonly toastService = inject(ToastService);
+  readonly toastService = inject(ToastService);
   readonly cartService = inject(CartService);
 
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
@@ -51,6 +51,10 @@ export class Home implements OnInit {
   });
 
   ngOnInit(): void {
+    if (this.authService.currentUser()?.role === 'CLIENT') {
+      void this.router.navigate(['/client/catalog'], { replaceUrl: true });
+      return;
+    }
     this.loadCategories();
     this.loadProducts();
     this.wishlistService.refreshIfClient();
