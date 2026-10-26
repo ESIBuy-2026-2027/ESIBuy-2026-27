@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
@@ -58,8 +59,11 @@ describe('ClientCatalog', () => {
       toggleWishlist: vi.fn(() => of({ message: 'Lista actualizada', inWishlist: true })),
     };
 
+    const toastSignal = signal<any>(null);
     toastServiceMock = {
-      show: vi.fn(),
+      toast: toastSignal,
+      show: vi.fn((text, type = 'success') => toastSignal.set({ text, type })),
+      clear: vi.fn(() => toastSignal.set(null)),
     };
 
     cartServiceMock = {

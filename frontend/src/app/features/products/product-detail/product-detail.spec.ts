@@ -55,8 +55,11 @@ describe('ProductDetail', () => {
       toggleWishlist: vi.fn(() => of({ message: 'Guardado', inWishlist: true })),
     };
 
+    const toastSignal = signal<any>(null);
     toastServiceMock = {
-      show: vi.fn(),
+      toast: toastSignal,
+      show: vi.fn((text, type = 'success') => toastSignal.set({ text, type })),
+      clear: vi.fn(() => toastSignal.set(null)),
     };
 
     cartServiceMock = {

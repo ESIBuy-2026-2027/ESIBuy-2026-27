@@ -15,7 +15,7 @@ import { ProductItem } from '../../../core/services/products.service';
 })
 export class ClientWishlist implements OnInit {
   private readonly wishlistService = inject(WishlistService);
-  private readonly toastService = inject(ToastService);
+  readonly toastService = inject(ToastService);
   readonly cartService = inject(CartService);
 
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {

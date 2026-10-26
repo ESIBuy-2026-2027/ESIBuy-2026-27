@@ -64,12 +64,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ProductResponse getProduct(
-            @PathVariable String id,
-            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
-        if (principal != null && principal.role() == UserRole.SELLER) {
-            return ProductResponse.from(productService.getProduct(id, principal.email()));
-        }
+    public ProductResponse getProduct(@PathVariable String id) {
         return productService.getProductById(id);
     }
 

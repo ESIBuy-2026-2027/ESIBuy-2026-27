@@ -18,7 +18,7 @@ const LOW_STOCK_THRESHOLD = 5;
 export class ClientCatalog implements OnInit {
   private readonly productsService = inject(ProductsService);
   readonly wishlistService = inject(WishlistService);
-  private readonly toastService = inject(ToastService);
+  readonly toastService = inject(ToastService);
   readonly cartService = inject(CartService);
 
   readonly sidebarCollapsed = signal(false);

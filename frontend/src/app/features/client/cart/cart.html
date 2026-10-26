@@ -5,7 +5,7 @@
       <h1>Mi carrito</h1>
       <p>Revisa los artículos y el importe de tu compra.</p>
     </div>
-    <a routerLink="/client/dashboard" class="secondary-action">Seguir comprando</a>
+    <a routerLink="/client/catalog" class="secondary-action">Seguir comprando</a>
   </header>
 
   @if (cartService.loading()) {
@@ -26,7 +26,7 @@
     <p class="order-total">
       Total pagado: <strong>{{ formatPrice(order.precioTotal) }}</strong>
     </p>
-    <a routerLink="/client/dashboard" class="primary-action">Volver al catálogo</a>
+    <a routerLink="/client/catalog" class="primary-action">Volver al catálogo</a>
   </section>
   } @else if (cartService.cart(); as cart) {
   @if (actionError(); as error) {
@@ -113,7 +113,7 @@
   <section class="empty-cart">
     <h2>Tu carrito está vacío</h2>
     <p>Explora el catálogo para encontrar algo que te guste.</p>
-    <a routerLink="/client/dashboard" class="primary-action">Ver productos</a>
+    <a routerLink="/client/catalog" class="primary-action">Ver productos</a>
   </section>
   } @else {
   <section class="cart-content" aria-label="Contenido del carrito">

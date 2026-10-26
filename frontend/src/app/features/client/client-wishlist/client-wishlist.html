@@ -2,7 +2,7 @@
   <aside class="sidebar app-sidebar" aria-label="Panel del cliente">
     <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral"><span
         aria-hidden="true">‹</span></button>
-    <a class="brand" routerLink="/" aria-label="ESIBuy">
+    <a class="brand" routerLink="/client/catalog" aria-label="ESIBuy">
       <span class="brand-mark" aria-hidden="true">E</span>
       <span>ESI<span class="brand-accent">Buy</span></span>
     </a>
@@ -70,6 +70,26 @@
           <p class="page-description">Consulta y gestiona los productos que has guardado como favoritos.</p>
         </div>
       </section>
+
+      <!-- MENSAJE DE AVISO (ÉXITO / ERROR) ESTILO BANNER -->
+      @if (toastService.toast(); as t) {
+      <output class="catalog-alert" [class.is-success]="t.type === 'success'"
+        [class.is-error]="t.type === 'error' || t.type === 'info'" aria-live="polite">
+        @if (t.type === 'success') {
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m5 12 4 4L19 6"></path>
+        </svg>
+        } @else {
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        }
+        <span class="alert-text">{{ t.text }}</span>
+        <button type="button" class="alert-close" (click)="toastService.clear()" aria-label="Cerrar aviso">×</button>
+      </output>
+      }
 
       <section class="wishlist-region" aria-label="Listado de favoritos">
         @if (loading()) {
