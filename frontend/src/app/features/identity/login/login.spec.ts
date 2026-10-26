@@ -10,17 +10,19 @@ describe('Login', () => {
   let component: Login;
   let fixture: ComponentFixture<Login>;
   let login: ReturnType<typeof vi.fn>;
+  let verifyLoginOtp: ReturnType<typeof vi.fn>;
   let navigate: ReturnType<typeof vi.fn>;
   let routeSnapshot: { queryParamMap: ParamMap };
 
   beforeEach(async () => {
     login = vi.fn();
+    verifyLoginOtp = vi.fn();
     navigate = vi.fn().mockResolvedValue(true);
     routeSnapshot = { queryParamMap: convertToParamMap({}) };
     await TestBed.configureTestingModule({
       imports: [Login],
       providers: [
-        { provide: AuthService, useValue: { login } },
+        { provide: AuthService, useValue: { login, verifyLoginOtp } },
         { provide: Router, useValue: { navigate } },
         {
           provide: ActivatedRoute,
@@ -96,6 +98,64 @@ describe('Login', () => {
     component.onSubmit();
 
     expect(navigate).toHaveBeenCalledWith(['/client/catalog']);
+  });
+
+  it('shows the email code entry step after the backend requires 3FA', () => {
+    login.mockReturnValue(of({ requires3fa: true, expiresInSeconds: 600 }));
+    component.loginForm.patchValue({
+      email: 'seller@example.com',
+      password: 'Password123!',
+    });
+
+    component.onSubmit();
+    fixture.detectChanges();
+
+    expect(component.requires3FA).toBe(true);
+    expect(component.requires2FA).toBe(false);
+    expect(fixture.nativeElement.textContent).toContain('código de seis dígitos enviado al correo');
+    expect(fixture.nativeElement.querySelector('#totpCode')).not.toBeNull();
+  });
+
+  it('submits the 3FA email code to the OTP endpoint and routes the authenticated seller', () => {
+    login.mockReturnValue(of({ requires3fa: true, expiresInSeconds: 600 }));
+    verifyLoginOtp.mockReturnValue(of({
+      id: 'seller-1',
+      email: 'seller@example.com',
+      role: 'SELLER',
+      active: true,
+    }));
+    component.loginForm.patchValue({
+      email: 'seller@example.com',
+      password: 'Password123!',
+    });
+    component.onSubmit();
+    component.loginForm.controls['totpCode'].setValue('123456');
+
+    component.onSubmit();
+
+    expect(verifyLoginOtp).toHaveBeenCalledWith('123456');
+    expect(login).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledWith(['/seller/catalog']);
+    expect(component.requires3FA).toBe(false);
+  });
+
+  it('moves from TOTP verification to email OTP verification', () => {
+    login.mockReturnValueOnce(of({ requires2fa: true }))
+      .mockReturnValueOnce(of({ requires3fa: true, expiresInSeconds: 600 }));
+    component.loginForm.patchValue({
+      email: 'seller@example.com',
+      password: 'Password123!',
+    });
+
+    component.onSubmit();
+    component.loginForm.controls['totpCode'].setValue('123456');
+    component.onSubmit();
+    fixture.detectChanges();
+
+    expect(login).toHaveBeenCalledTimes(2);
+    expect(component.requires2FA).toBe(false);
+    expect(component.requires3FA).toBe(true);
+    expect(component.loginForm.controls['totpCode'].value).toBe('');
   });
 
   it('shows the session-expired message from the redirect query parameter', () => {

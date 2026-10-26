@@ -33,6 +33,7 @@ export class Login implements OnDestroy {
   loading = false;
   showPassword = false;
   requires2FA = false;
+  requires3FA = false;
 
   private retryCountdownId: ReturnType<typeof setInterval> | null = null;
   private retryBaseMessage: string | null = null;
@@ -71,10 +72,16 @@ export class Login implements OnDestroy {
       return;
     }
 
-    if (this.requires2FA) {
+    if (this.requires2FA || this.requires3FA) {
       const codeVal = this.loginForm.get('totpCode')?.value;
       if (!codeVal || codeVal.trim().length === 0) {
         this.loginForm.get('totpCode')?.setErrors({ required: true });
+        this.loginForm.markAllAsTouched();
+        return;
+      }
+
+      if (this.requires3FA && !/^\d{6}$/.test(codeVal.trim())) {
+        this.loginForm.get('totpCode')?.setErrors({ pattern: true });
         this.loginForm.markAllAsTouched();
         return;
       }
@@ -83,7 +90,12 @@ export class Login implements OnDestroy {
     this.serverError = null;
     this.loading = true;
 
-    this.authService.login(this.loginForm.value).pipe(
+    const code = String(this.loginForm.get('totpCode')?.value ?? '').trim();
+    const request = this.requires3FA
+      ? this.authService.verifyLoginOtp(code)
+      : this.authService.login(this.loginForm.value);
+
+    request.pipe(
       finalize(() => {
         this.loading = false;
         this.changeDetectorRef.markForCheck();
@@ -100,6 +112,20 @@ export class Login implements OnDestroy {
           return;
         }
 
+        if (response.requires3fa) {
+          this.requires2FA = false;
+          this.requires3FA = true;
+          this.successMessage = 'Hemos enviado un código de verificación a tu correo electrónico.';
+          const otpControl = this.loginForm.get('totpCode');
+          otpControl?.setValue('');
+          otpControl?.setValidators([Validators.required, Validators.pattern(/^\d{6}$/)]);
+          otpControl?.updateValueAndValidity();
+          this.changeDetectorRef.markForCheck();
+          return;
+        }
+
+        this.requires2FA = false;
+        this.requires3FA = false;
         if (response.role === 'ADMIN') {
           void this.router.navigate(['/admin/usuarios']);
         } else if (response.role === 'SELLER') {
@@ -132,6 +158,8 @@ export class Login implements OnDestroy {
 
   cancel2FA() {
     this.requires2FA = false;
+    this.requires3FA = false;
+    this.successMessage = null;
     this.loginForm.get('totpCode')?.setValue('');
     this.loginForm.get('totpCode')?.clearValidators();
     this.loginForm.get('totpCode')?.updateValueAndValidity();

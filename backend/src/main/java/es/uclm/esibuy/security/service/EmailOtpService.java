@@ -26,13 +26,13 @@ public class EmailOtpService {
 
     private final EmailOtpChallengeRepository repository;
     private final PasswordEncoder passwordEncoder;
-    private final OtpMailSender otpMailSender;
+    private final EmailOtpSender otpMailSender;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public EmailOtpService(
             EmailOtpChallengeRepository repository,
             PasswordEncoder passwordEncoder,
-            OtpMailSender otpMailSender) {
+            EmailOtpSender otpMailSender) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.otpMailSender = otpMailSender;

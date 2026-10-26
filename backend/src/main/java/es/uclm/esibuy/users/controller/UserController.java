@@ -378,6 +378,7 @@ public class UserController {
 
         return ResponseEntity.ok(Map.of(
                 ENABLED_KEY, user.isEmailOtpEnabled(),
+                "totpEnabled", user.isTotpEnabled(),
                 EMAIL_KEY, user.getEmail()));
     }
 
@@ -402,6 +403,12 @@ public class UserController {
             return ResponseEntity.badRequest()
                     .body(Map.of(MESSAGE_KEY,
                             "Para desactivar la verificación debes confirmar el código enviado a tu correo."));
+        }
+
+        if (!user.isTotpEnabled()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of(MESSAGE_KEY,
+                            "Activa primero la verificación en dos pasos con una aplicación Authenticator."));
         }
 
         user.setEmailOtpEnabled(true);
