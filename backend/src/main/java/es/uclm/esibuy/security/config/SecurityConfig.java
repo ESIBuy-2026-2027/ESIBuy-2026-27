@@ -114,8 +114,10 @@ public class SecurityConfig {
                                                         .hasRole(ROLE_SELLER)
                                                         .requestMatchers(HttpMethod.PATCH, "/api/products/*/status")
                                                         .hasAnyRole(ROLE_SELLER, ROLE_ADMIN)
-                                                        .requestMatchers(HttpMethod.GET, "/api/products",
-                                                                        "/api/products/*")
+                                                        .requestMatchers(HttpMethod.GET,
+                                                                        "/api/products",
+                                                                        "/api/products/*",
+                                                                        "/api/products/*/image")
                                                         .permitAll()
                                                         .requestMatchers("/api/catalog/**").hasRole(ROLE_CLIENT)
                                                         .requestMatchers("/api/products/**").hasRole(ROLE_SELLER)

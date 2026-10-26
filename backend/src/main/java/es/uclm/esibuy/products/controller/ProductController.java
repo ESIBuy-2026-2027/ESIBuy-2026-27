@@ -8,7 +8,6 @@ import es.uclm.esibuy.products.dto.ProductResponse;
 import es.uclm.esibuy.products.dto.ProductSummaryResponse;
 import es.uclm.esibuy.products.service.ProductService;
 import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
-import es.uclm.esibuy.users.model.UserRole;
 import jakarta.validation.Valid;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
