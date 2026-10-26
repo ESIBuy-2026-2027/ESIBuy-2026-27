@@ -6,6 +6,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService, UpdateUserRequest, UserResponse } from '../../../core/services/auth.service';
 import { isAdultValidator } from '../../identity/register/register';
 import { Category, ProductsService } from '../../../core/services/products.service';
+import { ADMIN_AVATARS, CLIENT_AVATARS, SELLER_AVATARS } from '../../../core/constants/avatars';
 
 @Component({
   selector: 'app-admin-user-detail',
@@ -47,21 +48,10 @@ export class AdminUserDetail implements OnInit {
   private email = '';
   private role = '';
 
-  clientAvatars: string[] = [
-    'assets/images/avatars/av_client_1.jpeg',
-    'assets/images/avatars/av_client_2.jpeg',
-    'assets/images/avatars/av_client_3.jpeg',
-    'assets/images/avatars/av_client_4.jpeg',
-    'assets/images/avatars/av_client_5.jpeg'
-  ];
+  sellerAvatars: string[] = SELLER_AVATARS.map((path) => path.replace(/^\/+/, ''));
+  clientAvatars: string[] = CLIENT_AVATARS.map((path) => path.replace(/^\/+/, ''));
+  adminAvatars: string[] = ADMIN_AVATARS.map((path) => path.replace(/^\/+/, ''));
 
-  sellerAvatars: string[] = [
-    'assets/images/avatars/av_seller_1.jpeg',
-    'assets/images/avatars/av_seller_2.jpeg',
-    'assets/images/avatars/av_seller_3.jpeg',
-    'assets/images/avatars/av_seller_4.jpeg',
-    'assets/images/avatars/av_seller_5.jpeg'
-  ];
 
   selectedAvatar = '';
 
@@ -72,6 +62,8 @@ export class AdminUserDetail implements OnInit {
       list = [...this.sellerAvatars];
     } else if (r === 'CLIENT' || r === 'CLIENTE') {
       list = [...this.clientAvatars];
+    } else if (r === 'ADMIN' || r === 'ADMINISTRADOR') {
+      list = [...this.adminAvatars];
     } else {
       list = [...this.clientAvatars, ...this.sellerAvatars];
     }

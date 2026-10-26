@@ -161,13 +161,10 @@
 
                                             @if (
                                             user.role === 'SELLER' &&
-                                            (user.sellerProfile?.headquarters ||
-                                            user.sellerProfile?.businessName)
+                                            user.sellerProfile?.businessName
                                             ) {
-                                            <span class="user-site" [title]="user.sellerProfile?.headquarters ||
-                                                                user.sellerProfile?.businessName">
-                                                Sede: {{ user.sellerProfile?.headquarters ||
-                                                user.sellerProfile?.businessName }}
+                                            <span class="user-site" [title]="user.sellerProfile.businessName">
+                                                {{ user.sellerProfile.businessName }}
                                             </span>
                                             }
                                         </div>

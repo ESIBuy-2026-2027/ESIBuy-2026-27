@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import es.uclm.esibuy.products.model.Product;
+import es.uclm.esibuy.products.model.ProductDetails;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -191,7 +192,7 @@ class ProductSummaryDTOTest {
 
     @Test
     void shouldCreateFromProductWithCategoryAndSeller() {
-        Product product = new Product(
+        Product product = new Product(new ProductDetails(
                 DEFAULT_NAME,
                 List.of("cat-1"),
                 DEFAULT_STOCK,
@@ -201,7 +202,7 @@ class ProductSummaryDTOTest {
                 null,
                 "https://example.com/img.jpg",
                 true,
-                DEFAULT_SELLER_ID);
+                DEFAULT_SELLER_ID));
         product.setId(DEFAULT_ID);
 
         ProductSummaryDTO dto = ProductSummaryDTO.from(product, DEFAULT_CATEGORY, DEFAULT_SELLER_NAME);
@@ -219,7 +220,7 @@ class ProductSummaryDTOTest {
 
     @Test
     void shouldCreateFromProductDefaults() {
-        Product product = new Product(
+        Product product = new Product(new ProductDetails(
                 DEFAULT_NAME,
                 List.of("cat-1"),
                 DEFAULT_STOCK,
@@ -229,7 +230,7 @@ class ProductSummaryDTOTest {
                 null,
                 null,
                 false,
-                DEFAULT_SELLER_ID);
+                DEFAULT_SELLER_ID));
         product.setId(DEFAULT_ID);
 
         ProductSummaryDTO dto = ProductSummaryDTO.from(product);

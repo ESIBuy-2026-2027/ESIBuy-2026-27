@@ -282,25 +282,27 @@
               <div class="section-heading">
                 <div>
                   <h2 id="visibility-heading">Imagen y visibilidad</h2>
-                  <p>La imagen es opcional. Puedes añadir una URL pública.</p>
+                  <p>La imagen es opcional. Puedes subir un archivo JPEG o PNG.</p>
                 </div>
               </div>
 
               <div class="form-grid">
                 <div class="form-field full-width">
-                  <label for="imagen">URL de la imagen</label>
-                  <input id="imagen" type="url" formControlName="imagen" maxlength="2000"
-                    placeholder="https://ejemplo.com/imagen.jpg" autocomplete="url" />
-
-                  <span class="field-hint">
-                    Introduce una URL http o https; si no se indica, el producto se guardará sin imagen.
+                  <label for="imagen">Imagen del producto</label>
+                  <input id="imagen" type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+                    (change)="onImageSelected($event)" aria-describedby="image-upload-hint" />
+                  <span id="image-upload-hint" class="field-hint">
+                    Formatos permitidos: JPEG y PNG. Tamaño máximo: 5 MB. Si no seleccionas otra imagen, se conserva la actual.
                   </span>
+
+                  @if (imageValidationError()) {
+                  <span class="field-error" role="alert">{{ imageValidationError() }}</span>
+                  }
 
                   <div class="image-preview" [class.has-error]="previewUrl && imageError()">
                     @if (previewUrl) {
                     <img [src]="previewUrl" alt="Vista previa del producto" [hidden]="imageError()"
                       (load)="imageError.set(false)" (error)="imageError.set(true)" />
-
                     @if (imageError()) {
                     <span class="image-preview-text">No se pudo cargar la imagen</span>
                     }
@@ -308,22 +310,6 @@
                     <span class="image-preview-text">Vista previa</span>
                     }
                   </div>
-
-                  @if (form.controls.imagen.touched && form.controls.imagen.hasError('pattern')) {
-                  <span class="field-error">
-                    Introduce una URL válida que empiece por http:// o https://.
-                  </span>
-                  } @else if (form.controls.imagen.touched && form.controls.imagen.hasError('maxlength')) {
-                  <span class="field-error">
-                    La URL no puede superar los 2000 caracteres.
-                  </span>
-                  }
-
-                  @if (serverFieldErrors.imagen) {
-                  <span class="field-error" role="alert">
-                    {{ serverFieldErrors.imagen }}
-                  </span>
-                  }
                 </div>
 
                 <label class="visibility-toggle" for="disponible">
@@ -331,11 +317,8 @@
                   <span class="visibility-copy">
                     <strong>Producto visible en la tienda</strong>
                     <small>Los clientes podrán encontrar este producto en ESIBuy.</small>
-
                     @if (serverFieldErrors.disponible) {
-                    <small class="field-error" role="alert">
-                      {{ serverFieldErrors.disponible }}
-                    </small>
+                    <small class="field-error" role="alert">{{ serverFieldErrors.disponible }}</small>
                     }
                   </span>
                 </label>

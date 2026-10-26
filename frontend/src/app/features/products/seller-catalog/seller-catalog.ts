@@ -242,30 +242,34 @@ export class SellerCatalog implements OnInit {
     product: SellerProduct,
     field: InlineField | null,
     value: number | null,
-    available: boolean): ProductCreateRequest {
+    available: boolean,
+  ): ProductCreateRequest {
     const request: ProductCreateRequest = {
       name: product.name,
       categoryIds: product.categoryIds,
       price: field === 'price' && value !== null ? value : product.price,
       available,
     };
+
     if (product.stock !== null) {
       request.stock = field === 'stock' && value !== null ? value : product.stock;
     }
+
     if (product.description) {
       request.description = product.description;
     }
+
     if (product.discount !== null) {
       request.discount = product.discount;
     }
+
     if (product.premiumDiscount !== null) {
       request.premiumDiscount = product.premiumDiscount;
     }
-    if (product.imageUrl) {
-      request.imageUrl = product.imageUrl;
-    }
+
     return request;
   }
+
 
   private getInlineErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse) {

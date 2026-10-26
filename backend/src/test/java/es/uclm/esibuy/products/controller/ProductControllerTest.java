@@ -39,6 +39,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import es.uclm.esibuy.products.model.ProductDetails;
 
 @WebMvcTest(ProductController.class)
 @Import({ ApiExceptionHandler.class, SecurityConfig.class })
@@ -68,9 +69,17 @@ class ProductControllerTest {
 
         @Test
         void shouldReturnCreatedProductAndUseAuthenticatedIdentity() throws Exception {
-                Product product = new Product(
-                                PRODUCT_NAME, List.of(CATEGORY_ID), 0, null,
-                                new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID);
+                Product product = new Product(new ProductDetails(
+                                PRODUCT_NAME,
+                                List.of(CATEGORY_ID),
+                                0,
+                                null,
+                                new BigDecimal(PRODUCT_PRICE),
+                                null,
+                                null,
+                                null,
+                                true,
+                                SELLER_ID));
                 when(productService.createProduct(any(ProductCreateRequest.class), eq(SELLER_EMAIL)))
                                 .thenReturn(product);
 
@@ -148,7 +157,89 @@ class ProductControllerTest {
         }
 
         @Test
-        void shouldReturnForbiddenForClientAccessingSellerProducts() throws Exception {
+        void shouldReturnProductDetailsForEditing() throws Exception {
+                when(productService.getProductById("product-1")).thenReturn(new ProductResponse(
+                                "product-1",
+                                PRODUCT_NAME,
+                                List.of(CATEGORY_ID),
+                                3,
+                                "Descripción",
+                                new BigDecimal(PRODUCT_PRICE),
+                                null,
+                                null,
+                                null,
+                                true,
+                                SELLER_ID));
+
+                mockMvc.perform(get(PRODUCTS_API + "/product-1")
+                                .with(authentication(authenticationForSeller())))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.name").value(PRODUCT_NAME))
+                                .andExpect(jsonPath("$.categoryIds[0]").value(CATEGORY_ID))
+                                .andExpect(jsonPath("$.stock").value(3));
+
+                verify(productService).getProductById("product-1");
+        }
+
+        @Test
+        void shouldReturnNotFoundWhenProductDoesNotExist() throws Exception {
+                when(productService.getProductById("product-1"))
+                                .thenThrow(new ProductNotFoundException());
+
+                mockMvc.perform(get(PRODUCTS_API + "/product-1")
+                                .with(authentication(authenticationForSeller())))
+                                .andExpect(status().isNotFound())
+                                .andExpect(jsonPath("$.message").value("Producto no encontrado"))
+                                .andExpect(jsonPath("$.correlationId").isNotEmpty());
+        }
+
+        @Test
+        void shouldUpdateProductForAuthenticatedSeller() throws Exception {
+                when(productService.updateProduct(
+                                eq("product-1"), any(ProductCreateRequest.class), eq(SELLER_EMAIL)))
+                                .thenReturn(new Product(new ProductDetails(
+                                                "Producto actualizado",
+                                                List.of(CATEGORY_ID),
+                                                4,
+                                                null,
+                                                new BigDecimal(PRODUCT_PRICE),
+                                                null,
+                                                null,
+                                                null,
+                                                true,
+                                                SELLER_ID)));
+
+                mockMvc.perform(put(PRODUCTS_API + "/product-1")
+                                .with(authentication(authenticationForSeller()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(validRequest()))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.name").value("Producto actualizado"))
+                                .andExpect(jsonPath("$.sellerId").value(SELLER_ID));
+
+                verify(productService).updateProduct(
+                                eq("product-1"), any(ProductCreateRequest.class), eq(SELLER_EMAIL));
+        }
+
+        @Test
+        void shouldValidateProductUpdates() throws Exception {
+                mockMvc.perform(put(PRODUCTS_API + "/product-1")
+                                .with(authentication(authenticationForSeller()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"name":"","categoryIds":[],"price":0,"available":null}
+                                                """))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.errors.name").isNotEmpty())
+                                .andExpect(jsonPath("$.errors.categoryIds").isNotEmpty())
+                                .andExpect(jsonPath("$.errors.price").isNotEmpty())
+                                .andExpect(jsonPath("$.errors.available").isNotEmpty());
+        }
+
+        @Test
+        void shouldRejectClientFromProductEndpoints() throws Exception {
                 mockMvc.perform(get(PRODUCTS_API + "/mine")
                                 .with(user("client@example.com").roles("CLIENT")))
                                 .andExpect(status().isForbidden());
@@ -163,9 +254,9 @@ class ProductControllerTest {
 
         @Test
         void shouldAllowSellerToAccessOwnedProduct() throws Exception {
-                when(productService.getProduct(PROD_1_ID, SELLER_EMAIL))
-                                .thenReturn(new Product(
-                                                PRODUCT_NAME, List.of(CATEGORY_ID), 3, "Desc",
+                when(productService.getProductById(PROD_1_ID))
+                                .thenReturn(new ProductResponse(
+                                                PROD_1_ID, PRODUCT_NAME, List.of(CATEGORY_ID), 3, "Desc",
                                                 new BigDecimal(PRODUCT_PRICE), null, null, null, true,
                                                 SELLER_ID));
 
@@ -177,9 +268,9 @@ class ProductControllerTest {
 
         @Test
         void shouldAllowSellerToUpdateOwnedProduct() throws Exception {
-                Product product = new Product(
+                Product product = new Product(new ProductDetails(
                                 PRODUCT_NAME, List.of(CATEGORY_ID), 8, "Updated",
-                                new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID);
+                                new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID));
                 when(productService.updateProduct(eq(PROD_1_ID), any(ProductCreateRequest.class), eq(SELLER_EMAIL)))
                                 .thenReturn(product);
 
@@ -194,7 +285,7 @@ class ProductControllerTest {
 
         @Test
         void shouldReturnNotFoundWhenSellerAccessesMissingProduct() throws Exception {
-                when(productService.getProduct("missing", SELLER_EMAIL))
+                when(productService.getProductById("missing"))
                                 .thenThrow(new ProductNotFoundException());
 
                 mockMvc.perform(get(PRODUCTS_API + "/missing")
