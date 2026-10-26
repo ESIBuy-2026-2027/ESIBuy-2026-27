@@ -6,6 +6,7 @@ import { Observable } from 'rxjs';
 export interface EmailOtpSettings {
     enabled: boolean;
     email: string;
+    totpEnabled: boolean;
 }
 
 export interface UpdateEmailOtpSettingsResponse {

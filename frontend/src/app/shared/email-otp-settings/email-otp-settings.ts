@@ -30,6 +30,7 @@ export class EmailOtpSettingsComponent implements OnInit {
 
     email = '';
     enabled = false;
+    totpEnabled = false;
     loading = true;
     saving = false;
     requestingCode = false;
@@ -55,6 +56,7 @@ export class EmailOtpSettingsComponent implements OnInit {
                 next: (settings) => {
                     this.email = settings.email ?? '';
                     this.enabled = settings.enabled;
+                    this.totpEnabled = settings.totpEnabled === true;
                     this.cdr.detectChanges();
                 },
                 error: (err: EmailOtpHttpError) => {
@@ -66,6 +68,12 @@ export class EmailOtpSettingsComponent implements OnInit {
 
     enableEmailOtp(): void {
         if (this.loading || this.saving || this.enabled) return;
+        if (!this.totpEnabled) {
+            this.error = 'Activa primero la verificación en dos pasos con una aplicación Authenticator.';
+            this.success = '';
+            return;
+        }
+
         this.error = '';
         this.success = '';
         this.saving = true;

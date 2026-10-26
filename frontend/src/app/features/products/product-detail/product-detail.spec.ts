@@ -100,6 +100,16 @@ describe('ProductDetail', () => {
     expect(el.querySelector('.offers-panel')).not.toBeNull();
   });
 
+  it('shows low positive stock with the warning color', () => {
+    component.product.set({ ...mockProduct, stock: 1 });
+    fixture.detectChanges();
+
+    const status = (fixture.nativeElement as HTMLElement).querySelector('.status-pill');
+    expect(status?.classList.contains('status-low')).toBe(true);
+    expect(status?.classList.contains('status-available')).toBe(false);
+    expect(status?.textContent).toContain('En stock (1 disponibles)');
+  });
+
   it('should block purchase and show warning if product is deactivated', () => {
     component.product.set({
       ...mockProduct,
