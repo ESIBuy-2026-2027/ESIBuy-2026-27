@@ -137,7 +137,7 @@ describe('App', () => {
     expect(registerLink?.getAttribute('href')).toBe('/register');
   });
 
-  it('should render "Catálogo" button linking to /client/catalog for CLIENT', () => {
+  it('should not render session-nav-button for CLIENT and brand should link to client catalog', () => {
     currentUser.set({
       id: 'client-1',
       email: 'client@example.com',
@@ -149,10 +149,10 @@ describe('App', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     const roleButton = compiled.querySelector<HTMLAnchorElement>('.session-nav-button');
+    const brandLink = compiled.querySelector<HTMLAnchorElement>('.app-brand');
 
-    expect(roleButton).not.toBeNull();
-    expect(roleButton?.textContent?.trim()).toBe('Catálogo');
-    expect(roleButton?.getAttribute('href')).toBe('/client/catalog');
+    expect(roleButton).toBeNull();
+    expect(brandLink?.getAttribute('href')).toBe('/client/catalog');
   });
 
   it('should render "Catálogo" button linking to /seller/catalog for SELLER', () => {

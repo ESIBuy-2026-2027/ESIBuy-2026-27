@@ -19,7 +19,7 @@ export class ProductDetail implements OnInit {
   private readonly router = inject(Router);
   private readonly productsService = inject(ProductsService);
   readonly wishlistService = inject(WishlistService);
-  private readonly toastService = inject(ToastService);
+  readonly toastService = inject(ToastService);
   readonly authService = inject(AuthService);
   readonly cartService = inject(CartService);
 

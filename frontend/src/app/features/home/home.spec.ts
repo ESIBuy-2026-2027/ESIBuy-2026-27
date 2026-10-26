@@ -39,6 +39,7 @@ describe('Home', () => {
   ];
 
   beforeEach(async () => {
+    currentUserSignal.set(null);
     currentUserSignal = signal<AuthenticatedUser | null>(null);
 
     productsServiceMock = {
@@ -52,8 +53,11 @@ describe('Home', () => {
       toggleWishlist: vi.fn(() => of({ message: 'Añadido a favoritos', inWishlist: true })),
     };
 
+    const toastSignal = signal<any>(null);
     toastServiceMock = {
-      show: vi.fn(),
+      toast: toastSignal,
+      show: vi.fn((text, type = 'success') => toastSignal.set({ text, type })),
+      clear: vi.fn(() => toastSignal.set(null)),
     };
 
     cartServiceMock = {
@@ -159,5 +163,19 @@ describe('Home', () => {
     expect(wishlistServiceMock.toggleWishlist).toHaveBeenCalledWith('p-1');
     expect(toastServiceMock.show).toHaveBeenCalledWith('Añadido a favoritos', 'success');
   });
-});
+  it('should redirect logged in CLIENT to /client/catalog on initialization', () => {
+    currentUserSignal.set({
+      id: 'c-1',
+      email: 'client@example.com',
+      role: 'CLIENT',
+      active: true,
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
+    const testFixture = TestBed.createComponent(Home);
+    testFixture.componentInstance.ngOnInit();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/client/catalog'], { replaceUrl: true });
+  });
+});

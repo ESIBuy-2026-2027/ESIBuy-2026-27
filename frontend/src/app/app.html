@@ -1,12 +1,10 @@
 <header class="app-header">
-  <a class="app-brand" routerLink="/">
+  <a class="app-brand" [routerLink]="brandDestination()">
     <span class="brand-text">ESI<span class="brand-accent">Buy</span></span>
   </a>
   @if (authService.currentUser(); as user) {
   <div class="app-session">
-    @if (user.role === 'CLIENT') {
-    <a routerLink="/client/catalog" class="session-nav-button" (click)="closeProfileMenu()">Catálogo</a>
-    } @else if (user.role === 'SELLER') {
+    @if (user.role === 'SELLER') {
     <a routerLink="/seller/catalog" class="session-nav-button" (click)="closeProfileMenu()">Catálogo</a>
     } @else if (user.role === 'ADMIN') {
     <a routerLink="/admin/usuarios" class="session-nav-button" (click)="closeProfileMenu()">Gestión Usuarios</a>
@@ -76,18 +74,6 @@
 
 @if (logoutError(); as error) {
 <p class="logout-error" role="alert">{{ error }}</p>
-}
-
-@if (toastService.toast(); as t) {
-<div class="app-toast" [class.is-success]="t.type === 'success'" [class.is-error]="t.type === 'error'"
-  [class.is-info]="t.type === 'info'" aria-live="polite" aria-atomic="true">
-  <output>
-    {{ t.text }}
-  </output>
-  <button type="button" class="toast-close" (click)="toastService.clear()" aria-label="Cerrar notificación">
-    ×
-  </button>
-</div>
 }
 
 <router-outlet />

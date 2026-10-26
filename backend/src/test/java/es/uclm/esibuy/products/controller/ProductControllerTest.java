@@ -149,8 +149,8 @@ class ProductControllerTest {
 
         @Test
         void shouldReturnProductDetailsForEditing() throws Exception {
-                when(productService.getProduct("product-1", SELLER_EMAIL)).thenReturn(new Product(
-                                PRODUCT_NAME, List.of(CATEGORY_ID), 3, "Descripción",
+                when(productService.getProductById("product-1")).thenReturn(new ProductResponse(
+                                "product-1", PRODUCT_NAME, List.of(CATEGORY_ID), 3, "Descripción",
                                 new BigDecimal(PRODUCT_PRICE), null, null, null, true, SELLER_ID));
 
                 mockMvc.perform(get(PRODUCTS_API + "/product-1")
@@ -160,12 +160,12 @@ class ProductControllerTest {
                                 .andExpect(jsonPath("$.categoryIds[0]").value(CATEGORY_ID))
                                 .andExpect(jsonPath("$.stock").value(3));
 
-                verify(productService).getProduct("product-1", SELLER_EMAIL);
+                verify(productService).getProductById("product-1");
         }
 
         @Test
-        void shouldReturnNotFoundWhenProductDoesNotExistOrBelongToAnotherSeller() throws Exception {
-                when(productService.getProduct("product-1", SELLER_EMAIL))
+        void shouldReturnNotFoundWhenProductDoesNotExist() throws Exception {
+                when(productService.getProductById("product-1"))
                                 .thenThrow(new ProductNotFoundException());
 
                 mockMvc.perform(get(PRODUCTS_API + "/product-1")
