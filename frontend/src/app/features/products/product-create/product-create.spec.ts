@@ -11,18 +11,23 @@ describe('ProductCreate', () => {
     { id: 'category-home', name: 'Hogar' },
   ];
   let fixture: ComponentFixture<ProductCreateComponent>;
-  let productService: Pick<ProductsService, 'getCategories' | 'createProduct' | 'getProduct' | 'updateProduct'>;
+  let productService: Pick<ProductsService, 'getCategories' | 'createProduct' | 'getProduct' | 'updateProduct' | 'uploadProductImage'>;
   let createProduct: ReturnType<typeof vi.fn<(request: ProductCreateRequest) => Observable<CreatedProduct>>>;
   let getProduct: ReturnType<typeof vi.fn<(id: string) => Observable<ProductDetails>>>;
   let updateProduct: ReturnType<typeof vi.fn<
     (id: string, request: ProductCreateRequest) => Observable<ProductDetails>
   >>;
+  let uploadProductImage: ReturnType<typeof vi.fn<(id: string, image: File) => Observable<ProductDetails>>>;
   let categoriesResponse: Observable<Category[]>;
   let routeProductId: string | null;
 
   beforeEach(async () => {
     categoriesResponse = of(categories);
     routeProductId = null;
+    uploadProductImage = vi.fn<(id: string, image: File) => Observable<ProductDetails>>(() => of({
+      id: 'product-1', name: 'Auriculares', categoryIds: ['category-tech'], stock: 3, description: 'Inalámbricos',
+      price: 19.99, discount: 5, premiumDiscount: 10, imageUrl: '/api/products/product-1/image', available: true, sellerId: 'seller-1',
+    }));
     createProduct = vi.fn<(request: ProductCreateRequest) => Observable<CreatedProduct>>(
       () => of({ id: 'product-1' }),
     );
@@ -59,6 +64,7 @@ describe('ProductCreate', () => {
       createProduct,
       getProduct,
       updateProduct,
+      uploadProductImage,
     };
 
     await TestBed.configureTestingModule({
@@ -96,7 +102,6 @@ describe('ProductCreate', () => {
       'precio',
       'descuento',
       'descuentoPremium',
-      'imagen',
       'disponible',
     ]) {
       expect(element.querySelector(`[formControlName="${field}"]`)).not.toBeNull();
@@ -112,7 +117,6 @@ describe('ProductCreate', () => {
       precio: 0,
       descuento: 101,
       descuentoPremium: -1,
-      imagen: 'not-a-url',
       disponible: null,
     });
 
@@ -127,7 +131,6 @@ describe('ProductCreate', () => {
     expect(fixture.componentInstance.form.controls.precio.hasError('min')).toBe(true);
     expect(fixture.componentInstance.form.controls.descuento.hasError('max')).toBe(true);
     expect(fixture.componentInstance.form.controls.descuentoPremium.hasError('min')).toBe(true);
-    expect(fixture.componentInstance.form.controls.imagen.hasError('pattern')).toBe(true);
     expect(fixture.componentInstance.form.controls.disponible.hasError('required')).toBe(true);
     expect(createProduct).not.toHaveBeenCalled();
   });
@@ -141,7 +144,6 @@ describe('ProductCreate', () => {
       precio: 19.99,
       descuento: null,
       descuentoPremium: 15,
-      imagen: 'https://example.com/auriculares.png',
       disponible: true,
     });
 
@@ -155,7 +157,6 @@ describe('ProductCreate', () => {
       description: 'Auriculares inalámbricos',
       price: 19.99,
       premiumDiscount: 15,
-      imageUrl: 'https://example.com/auriculares.png',
       available: true,
     } satisfies ProductCreateRequest);
     expect(fixture.componentInstance.submitting()).toBe(false);
@@ -181,7 +182,6 @@ describe('ProductCreate', () => {
       precio: 19.99,
       descuento: 5,
       descuentoPremium: 10,
-      imagen: 'https://example.com/auriculares.png',
       disponible: true,
     });
 
@@ -218,7 +218,6 @@ describe('ProductCreate', () => {
       precio: 5,
       descuento: null,
       descuentoPremium: null,
-      imagen: '',
       disponible: true,
     });
 
@@ -248,7 +247,6 @@ describe('ProductCreate', () => {
       precio: 5,
       descuento: null,
       descuentoPremium: null,
-      imagen: '',
       disponible: true,
     });
 
@@ -268,7 +266,6 @@ describe('ProductCreate', () => {
       precio: 5,
       descuento: null,
       descuentoPremium: null,
-      imagen: '',
       disponible: true,
     });
 
