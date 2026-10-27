@@ -59,6 +59,42 @@ export interface SellerOrder {
   estado: SellerOrderStatus;
 }
 
+export interface CustomerOrderItem {
+  productoId: string;
+  nombre: string;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+  imageUrl: string | null;
+}
+
+export type CustomerOrderStatus = SellerOrderStatus | 'PAGADO';
+
+export interface CustomerOrder {
+  pedidoId: string;
+  fechaCreacion: string;
+  items: CustomerOrderItem[];
+  total: number;
+  estado: CustomerOrderStatus;
+  direccionEnvio: CustomerShippingAddress | null;
+  metodoPago: CustomerPaymentMethod | null;
+}
+
+export interface CustomerShippingAddress {
+  recipientName: string;
+  street: string;
+  additionalInfo: string | null;
+  postalCode: string;
+  city: string;
+  province: string;
+  phone: string | null;
+}
+
+export interface CustomerPaymentMethod {
+  tipo: 'CARD' | 'PAYPAL' | 'BIZUM';
+  lastFourDigits: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PedidoService {
   private readonly http = inject(HttpClient);
@@ -69,6 +105,14 @@ export class PedidoService {
 
   crearPedido(direccionId: string, metodoPagoId: string): Observable<ConfirmedOrder> {
     return this.http.post<ConfirmedOrder>('/api/pedidos', { direccionId, metodoPagoId });
+  }
+
+  obtenerPedidosDelCliente(): Observable<CustomerOrder[]> {
+    return this.http.get<CustomerOrder[]>('/api/pedidos');
+  }
+
+  obtenerPedidoDelCliente(pedidoId: string): Observable<CustomerOrder> {
+    return this.http.get<CustomerOrder>(`/api/pedidos/${pedidoId}`);
   }
 
   obtenerPedidosDelVendedor(): Observable<SellerOrder[]> {

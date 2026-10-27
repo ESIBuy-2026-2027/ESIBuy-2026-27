@@ -53,4 +53,24 @@ describe('PedidoService', () => {
     });
     expect(response).toEqual(expect.objectContaining({ pedidoId: 'pedido-123' }));
   });
+
+  it('should request the signed-in customer order history', () => {
+    let response: unknown;
+    service.obtenerPedidosDelCliente().subscribe((result) => response = result);
+
+    const request = httpTesting.expectOne('/api/pedidos');
+    expect(request.request.method).toBe('GET');
+    request.flush([]);
+    expect(response).toEqual([]);
+  });
+
+  it('should request a customer order detail by id', () => {
+    let response: unknown;
+    service.obtenerPedidoDelCliente('pedido-123').subscribe((result) => response = result);
+
+    const request = httpTesting.expectOne('/api/pedidos/pedido-123');
+    expect(request.request.method).toBe('GET');
+    request.flush({ pedidoId: 'pedido-123' });
+    expect(response).toEqual({ pedidoId: 'pedido-123' });
+  });
 });
