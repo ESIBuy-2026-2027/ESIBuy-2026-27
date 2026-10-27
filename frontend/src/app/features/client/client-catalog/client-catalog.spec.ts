@@ -167,7 +167,7 @@ describe('ClientCatalog', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('.admin-mode-pill')?.textContent).toContain('Modo Administrador (Solo lectura)');
+    expect(el.querySelector('.admin-readonly-badge, .admin-mode-pill')?.textContent).toContain('Modo Administrador (Solo lectura)');
     expect(el.querySelector('.heart-center-button')).toBeNull();
     expect(el.querySelector('.add-to-cart-action-btn')).toBeNull();
 
