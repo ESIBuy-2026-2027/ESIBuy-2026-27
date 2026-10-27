@@ -253,13 +253,9 @@ export class AuthService {
 
   loadCurrentUser(): Observable<AuthenticatedUser | null> {
     return this.me().pipe(
-      catchError((error: unknown) => {
-        if (error instanceof HttpErrorResponse && error.status === 401) {
-          this.clearCurrentUser();
-          return of(null);
-        }
-
-        return throwError(() => error);
+      catchError(() => {
+        this.clearCurrentUser();
+        return of(null);
       }),
     );
   }
