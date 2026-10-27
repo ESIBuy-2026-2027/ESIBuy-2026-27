@@ -39,6 +39,28 @@ describe('Register', () => {
         expect(component).toBeTruthy();
     });
 
+    it('places the Other category last in the seller registration options', async () => {
+        getCategories.mockReturnValue(of([
+            { id: 'other', name: 'Otros' },
+            { id: 'fashion', name: 'Moda' },
+            { id: 'home', name: 'Hogar' },
+        ]));
+        const categoryFixture = TestBed.createComponent(Register);
+        categoryFixture.detectChanges();
+        categoryFixture.nativeElement.querySelectorAll('.role-selector button')[1].click();
+        categoryFixture.detectChanges();
+        await categoryFixture.whenStable();
+
+        const rendered = categoryFixture.nativeElement as HTMLElement;
+        const options = Array.from(
+            rendered.querySelectorAll<HTMLOptionElement>('#defaultCategory option')
+        );
+
+        expect(options.map((option) => option.textContent?.trim())).toEqual(['Moda', 'Hogar', 'Otros']);
+        expect(categoryFixture.componentInstance.form.controls['defaultCategory'].value).toBe('Moda');
+        categoryFixture.destroy();
+    });
+
     it('asks for confirmation before cancelling registration and returning home', async () => {
         component.cancelRegistration();
         fixture.detectChanges();

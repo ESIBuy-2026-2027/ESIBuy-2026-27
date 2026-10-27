@@ -13,6 +13,7 @@ import {
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { Category, ProductsService } from '../../../core/services/products.service';
+import { CLIENT_AVATARS, SELLER_AVATARS } from '../../../core/constants/avatars';
 
 export function isAdultValidator(control: AbstractControl): ValidationErrors | null {
   if (!control.value) return null;
@@ -71,28 +72,12 @@ export class Register {
   showCancelConfirmation = false;
   showPassword = false;
 
-  clientAvatars = [
-    'assets/images/avatars/av_client_1.jpeg',
-    'assets/images/avatars/av_client_2.jpeg',
-    'assets/images/avatars/av_client_3.jpeg',
-    'assets/images/avatars/av_client_4.jpeg',
-    'assets/images/avatars/av_client_5.jpeg'
-  ];
-
-  sellerAvatars = [
-    'assets/images/avatars/av_seller_1.jpeg',
-    'assets/images/avatars/av_seller_2.jpeg',
-    'assets/images/avatars/av_seller_3.jpeg',
-    'assets/images/avatars/av_seller_4.jpeg',
-    'assets/images/avatars/av_seller_5.jpeg'
-  ];
-
-  selectedAvatar: string = this.clientAvatars[0];
+  clientAvatars = CLIENT_AVATARS.map((path) => path.replace(/^\/+/, ''));
+  sellerAvatars = SELLER_AVATARS.map((path) => path.replace(/^\/+/, ''));
+  selectedAvatar = this.clientAvatars[0];
 
   categories: Category[] = [];
-
   categoriesLoading = true;
-
   categoriesError = false;
 
   constructor(
@@ -111,9 +96,13 @@ export class Register {
       .pipe(takeUntilDestroyed())
       .subscribe({
         next: (categories) => {
-          this.categories = categories;
+          this.categories = [...categories].sort((first, second) => {
+            const firstIsOther = first.name.trim().toLocaleLowerCase() === 'otros';
+            const secondIsOther = second.name.trim().toLocaleLowerCase() === 'otros';
+            return Number(firstIsOther) - Number(secondIsOther);
+          });
           this.categoriesLoading = false;
-          this.form.get('defaultCategory')?.setValue(categories[0]?.name ?? '');
+          this.form.get('defaultCategory')?.setValue(this.categories[0]?.name ?? '');
         },
         error: () => {
           this.categoriesLoading = false;

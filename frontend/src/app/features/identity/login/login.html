@@ -76,12 +76,37 @@
         </div>
       </div>
       } @else {
+      <!-- MENSAJE DE AVISO (ÉXITO / ERROR) ESTILO BANNER ENCIMA DE INICIAR SESIÓN -->
+      @if (toastService.toast(); as t) {
+      <output class="catalog-alert" [class.is-success]="t.type === 'success'"
+        [class.is-error]="t.type === 'error' || t.type === 'info'" aria-live="polite">
+        @if (t.type === 'success') {
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m5 12 4 4L19 6"></path>
+        </svg>
+        } @else {
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        }
+        <span class="alert-text">{{ t.text }}</span>
+        <button type="button" class="alert-close" (click)="toastService.clear()" aria-label="Cerrar aviso">×</button>
+      </output>
+      }
+
       <header class="login-header" *ngIf="!embedded">
-        <h1 id="login-title">{{ requires2FA ? 'Autenticación en dos pasos' : 'Iniciar sesión' }}</h1>
+        <h1 id="login-title">
+          {{ requires3FA ? 'Verificación por correo' : requires2FA ? 'Autenticación en dos pasos' : 'Iniciar sesión' }}
+        </h1>
 
         <p class="login-subtitle">
-          {{ requires2FA ? 'Introduce el código de tu aplicación Authenticator o un código de respaldo.' : 'Accede a tu
-          cuenta para continuar.' }}
+          {{ requires3FA
+            ? 'Introduce el código de seis dígitos enviado al correo asociado a tu cuenta.'
+            : requires2FA
+              ? 'Introduce el código de tu aplicación Authenticator o un código de respaldo.'
+              : 'Accede a tu cuenta para continuar.' }}
         </p>
       </header>
 
@@ -99,7 +124,7 @@
 
         <fieldset class="form-section" [disabled]="loading || retryAfterSeconds > 0">
 
-          @if (!requires2FA) {
+          @if (!requires2FA && !requires3FA) {
           <div class="form-group">
             <label for="email">Email</label>
 
@@ -161,14 +186,25 @@
           </div>
           } @else {
           <div class="form-group">
-            <label for="totpCode">Código de verificación (6 dígitos o Respaldo)</label>
-            <input id="totpCode" type="text" formControlName="totpCode" placeholder="ej. 123456" autofocus
-              autocomplete="one-time-code" maxlength="8" />
+            <label for="totpCode">
+              {{ requires3FA ? 'Código de verificación por correo' : 'Código de verificación (6 dígitos o Respaldo)' }}
+            </label>
+            <input id="totpCode" type="text" formControlName="totpCode"
+              [placeholder]="requires3FA ? '123456' : 'ej. 123456'" autofocus
+              autocomplete="one-time-code" [attr.inputmode]="requires3FA ? 'numeric' : 'text'"
+              [attr.maxlength]="requires3FA ? 6 : 8" />
             <span class="error" *ngIf="
                   loginForm.get('totpCode')?.touched &&
                   loginForm.get('totpCode')?.hasError('required')
                 ">
-              Introduce el código TOTP o de respaldo
+              {{ requires3FA ? 'Introduce el código enviado a tu correo' : 'Introduce el código TOTP o de respaldo' }}
+            </span>
+            <span class="error" *ngIf="
+                  requires3FA &&
+                  loginForm.get('totpCode')?.touched &&
+                  loginForm.get('totpCode')?.hasError('pattern')
+                ">
+              El código debe contener seis dígitos.
             </span>
           </div>
           }
@@ -176,24 +212,24 @@
         </fieldset>
 
         <button type="submit" class="btn-submit" [disabled]="loading || retryAfterSeconds > 0">
-          {{ loading ? 'Verificando...' : requires2FA ? 'Confirmar código' : retryAfterSeconds > 0 ? 'Espera para
+          {{ loading ? 'Verificando...' : (requires2FA || requires3FA) ? 'Confirmar código' : retryAfterSeconds > 0 ? 'Espera para
           reintentar' : 'Entrar' }}
         </button>
 
-        <button *ngIf="requires2FA" type="button" class="btn-logout-session" (click)="cancel2FA()"
+        <button *ngIf="requires2FA || requires3FA" type="button" class="btn-logout-session" (click)="cancel2FA()"
           style="margin-top: 10px;">
           Volver a introducir credenciales
         </button>
 
       </form>
 
-      <div class="forgot-password" *ngIf="!requires2FA">
+      <div class="forgot-password" *ngIf="!requires2FA && !requires3FA">
         <a routerLink="/recuperar-password" class="forgot-password-link">
           ¿Has olvidado tu contraseña?
         </a>
       </div>
 
-      <div class="auth-links" *ngIf="!embedded && !requires2FA">
+      <div class="auth-links" *ngIf="!embedded && !requires2FA && !requires3FA">
         <span>¿Todavía no tienes una cuenta?</span>
         <a routerLink="/register" class="auth-link">Regístrate</a>
       </div>

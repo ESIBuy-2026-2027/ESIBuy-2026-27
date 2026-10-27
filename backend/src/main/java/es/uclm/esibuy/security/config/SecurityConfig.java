@@ -110,12 +110,20 @@ public class SecurityConfig {
                                                                         "/api/products/summary",
                                                                         "/api/products/resumen")
                                                         .hasRole(ROLE_SELLER)
-                                                        .requestMatchers(HttpMethod.POST, "/api/products")
+                                                        .requestMatchers(HttpMethod.POST, "/api/products",
+                                                                        "/api/products/**")
+                                                        .hasRole(ROLE_SELLER)
+                                                        .requestMatchers(HttpMethod.PUT, "/api/products/**")
+                                                        .hasRole(ROLE_SELLER)
+                                                        .requestMatchers(HttpMethod.DELETE, "/api/products/**")
                                                         .hasRole(ROLE_SELLER)
                                                         .requestMatchers(HttpMethod.PATCH, "/api/products/*/status")
                                                         .hasAnyRole(ROLE_SELLER, ROLE_ADMIN)
-                                                        .requestMatchers(HttpMethod.GET, "/api/products",
-                                                                        "/api/products/*")
+                                                        .requestMatchers(HttpMethod.GET,
+                                                                        "/api/products",
+                                                                        "/api/products/*",
+                                                                        "/api/products/*/image",
+                                                                        "/api/products/**")
                                                         .permitAll()
                                                         .requestMatchers("/api/catalog/**").hasRole(ROLE_CLIENT)
                                                         .requestMatchers("/api/products/**").hasRole(ROLE_SELLER)

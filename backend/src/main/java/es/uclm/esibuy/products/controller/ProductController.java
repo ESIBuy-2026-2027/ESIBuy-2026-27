@@ -8,13 +8,17 @@ import es.uclm.esibuy.products.dto.ProductResponse;
 import es.uclm.esibuy.products.dto.ProductSummaryResponse;
 import es.uclm.esibuy.products.service.ProductService;
 import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
-import es.uclm.esibuy.users.model.UserRole;
 import jakarta.validation.Valid;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,6 +49,36 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<ProductResponse> createProductWithImage(
+            @Valid @RequestPart("product") ProductCreateRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        ProductResponse response = ProductResponse.from(
+                productService.createProductWithImage(request, image, principal.email()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('SELLER')")
+    public ProductResponse uploadProductImage(
+            @PathVariable String id,
+            @RequestPart("image") MultipartFile image,
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        return ProductResponse.from(productService.uploadProductImage(id, image, principal.email()));
+    }
+
+    @GetMapping("/{id}/image")
+    public ResponseEntity<byte[]> getProductImage(@PathVariable String id) {
+        ProductService.ProductImage image = productService.getProductImage(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(image.contentType()))
+                .header("X-Content-Type-Options", "nosniff")
+                .cacheControl(CacheControl.noCache())
+                .body(image.bytes());
+    }
+
     @GetMapping
     public List<ProductResponse> getPublicCatalog(
             @RequestParam(required = false) String query,
@@ -64,12 +98,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ProductResponse getProduct(
-            @PathVariable String id,
-            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
-        if (principal != null && principal.role() == UserRole.SELLER) {
-            return ProductResponse.from(productService.getProduct(id, principal.email()));
-        }
+    public ProductResponse getProduct(@PathVariable String id) {
         return productService.getProductById(id);
     }
 
@@ -81,6 +110,27 @@ public class ProductController {
             @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
         String email = principal.email();
         return ProductResponse.from(productService.updateProduct(id, request, email));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<Void> deleteProduct(
+            @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        String email = principal.email();
+        productService.deleteProduct(id, email);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('SELLER')")
+    public ProductResponse updateProductWithImage(
+            @PathVariable String id,
+            @Valid @RequestPart("product") ProductCreateRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        return ProductResponse.from(
+                productService.updateProductWithImage(id, request, image, principal.email()));
     }
 
     @GetMapping({ "/summary", "/resumen" })

@@ -106,6 +106,12 @@
     } @else {
     <div class="setup-instructions">
         <h3>Activar verificación por correo</h3>
+        @if (!totpEnabled) {
+        <p class="form-error" role="alert">
+            Activa primero la verificación en dos pasos con una aplicación Authenticator para poder activar la
+            verificación por correo.
+        </p>
+        }
         <p>
             Al activar esta opción, se solicitará un código temporal
             enviado a la dirección asociada a tu cuenta cuando el inicio
@@ -118,7 +124,8 @@
         </div>
 
         <div class="form-actions">
-            <button type="button" class="primary-button" (click)="enableEmailOtp()" [disabled]="saving || !email">
+            <button type="button" class="primary-button" (click)="enableEmailOtp()"
+                [disabled]="saving || !email || !totpEnabled">
                 {{ saving ? 'Activando...' : 'Activar verificación' }}
             </button>
         </div>

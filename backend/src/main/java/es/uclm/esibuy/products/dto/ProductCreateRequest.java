@@ -38,9 +38,6 @@ public class ProductCreateRequest {
     @DecimalMax(value = "100.0", message = "El descuento premium no puede superar el 100")
     private BigDecimal premiumDiscount;
 
-    @Size(max = 2000, message = "La imagen no puede superar los 2000 caracteres")
-    private String imageUrl;
-
     @NotNull(message = "Debe indicar si el producto está disponible")
     private Boolean available;
 
@@ -98,14 +95,6 @@ public class ProductCreateRequest {
 
     public void setPremiumDiscount(BigDecimal premiumDiscount) {
         this.premiumDiscount = premiumDiscount;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
     }
 
     public Boolean getAvailable() {

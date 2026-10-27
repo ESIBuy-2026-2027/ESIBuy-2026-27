@@ -209,6 +209,31 @@ p {
   opacity: 1;
 }
 
+.form-field input[type="file"] {
+  padding: 6px;
+  color: #526a79;
+  cursor: pointer;
+}
+
+.form-field input[type="file"]::file-selector-button {
+  min-height: 32px;
+  margin-right: 12px;
+  padding: 0 13px;
+  border: 1px solid #42d6b2;
+  border-radius: 7px;
+  color: var(--color-brand-dark);
+  background: #e5faf4;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.form-field input[type="file"]::file-selector-button:hover {
+  border-color: #2bc4a2;
+  background: #d4f5ec;
+}
+
 .form-field textarea {
   min-height: 115px;
   resize: vertical;

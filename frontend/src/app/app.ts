@@ -15,7 +15,6 @@ import { CartService } from './core/services/cart.service';
 export class App {
   readonly authService = inject(AuthService);
   readonly cartService = inject(CartService);
-  readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
   readonly logoutError = signal<string | null>(null);
   readonly profileMenuOpen = signal(false);
@@ -29,6 +28,21 @@ export class App {
       }
     });
   }
+
+  brandDestination(): string {
+    const role = this.authService.currentUser()?.role;
+    if (role === 'CLIENT') {
+      return '/client/catalog';
+    }
+    if (role === 'SELLER') {
+      return '/seller/catalog';
+    }
+    if (role === 'ADMIN') {
+      return '/admin/usuarios';
+    }
+    return '/';
+  }
+
 
   toggleProfileMenu(): void {
     this.profileMenuOpen.update((isOpen) => !isOpen);
