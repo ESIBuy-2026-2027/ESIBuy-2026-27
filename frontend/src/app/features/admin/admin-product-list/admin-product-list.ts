@@ -138,7 +138,7 @@ export class AdminProductList implements OnInit {
   loadCategories(): void {
     this.productsService.getCategories().subscribe({
       next: (data) => this.categories.set(data),
-      error: () => {},
+      error: () => { },
     });
   }
 
@@ -147,12 +147,13 @@ export class AdminProductList implements OnInit {
     this.error.set('');
     this.cdr.markForCheck();
 
-    const inStock =
-      this.stockFilter() === 'IN_STOCK'
-        ? true
-        : this.stockFilter() === 'OUT_OF_STOCK'
-        ? false
-        : undefined;
+    let inStock: boolean | undefined;
+
+    if (this.stockFilter() === 'IN_STOCK') {
+      inStock = true;
+    } else if (this.stockFilter() === 'OUT_OF_STOCK') {
+      inStock = false;
+    }
 
     const categoryId = this.categoryFilter() === 'ALL' ? undefined : this.categoryFilter();
 
@@ -186,7 +187,7 @@ export class AdminProductList implements OnInit {
 
   attemptUnauthorizedAction(productId: string): void {
     this.adminProductService.deleteProductAsAdmin(productId).subscribe({
-      next: () => {},
+      next: () => { },
       error: (err: unknown) => {
         if (err instanceof HttpErrorResponse && err.status === 403) {
           this.error.set(ADMIN_READONLY_ERROR_MESSAGE);
