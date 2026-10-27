@@ -3,6 +3,8 @@ import { provideRouter } from '@angular/router';
 import { describe, beforeEach, it, expect } from 'vitest';
 import { ClientOrders } from './client-orders';
 import { CartService } from '../../../core/services/cart.service';
+import { PedidoService } from '../../../core/services/pedido.service';
+import { of } from 'rxjs';
 
 describe('ClientOrders', () => {
   let component: ClientOrders;
@@ -14,6 +16,7 @@ describe('ClientOrders', () => {
       providers: [
         provideRouter([]),
         { provide: CartService, useValue: { itemCount: () => 0 } },
+        { provide: PedidoService, useValue: { obtenerPedidosDelCliente: () => of([]) } },
       ],
     }).compileComponents();
 
@@ -27,7 +30,9 @@ describe('ClientOrders', () => {
     expect(component).toBeTruthy();
     const el: HTMLElement = fixture.nativeElement;
 
-    expect(el.querySelector('#orders-title')?.textContent).toContain('Mis compras');
+    expect(el.querySelector('#orders-title')?.textContent).toContain('Mis pedidos');
+    expect(el.querySelector('#orders-search-input')).toBeTruthy();
+    expect(el.querySelector('.orders-tabs')?.textContent).toContain('Pendiente de envío');
 
     const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
     expect(navLinks.length).toBe(5);

@@ -99,6 +99,30 @@ describe('App', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('#profile-menu')).toBeNull();
   });
 
+  it('should render only Perfil and Cerrar sesión in the profile menu without Catálogo or Gestión Usuarios', () => {
+    currentUser.set({
+      id: 'seller-1',
+      email: 'seller@example.com',
+      role: 'SELLER',
+      active: true,
+    });
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const profileButton = (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('.profile-button');
+    profileButton?.click();
+    fixture.detectChanges();
+
+    const menu = (fixture.nativeElement as HTMLElement).querySelector('#profile-menu');
+    const buttonTexts = Array.from(menu?.querySelectorAll<HTMLButtonElement>('button') ?? [])
+      .map(b => b.textContent?.trim());
+
+    expect(buttonTexts).toEqual(['Perfil', 'Cerrar sesión']);
+    expect(buttonTexts).not.toContain('Catálogo');
+    expect(buttonTexts).not.toContain('Gestión Usuarios');
+  });
+
   it('should close the account menu before navigating to the seller catalog', () => {
     currentUser.set({
       id: 'seller-1',

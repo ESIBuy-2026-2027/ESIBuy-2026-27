@@ -4,6 +4,7 @@ import es.uclm.esibuy.pedidos.dto.ActualizarEstadoPedidoDTO;
 import es.uclm.esibuy.pedidos.dto.CheckoutResumenDTO;
 import es.uclm.esibuy.pedidos.dto.CrearPedidoDTO;
 import es.uclm.esibuy.pedidos.dto.PedidoConfirmadoDTO;
+import es.uclm.esibuy.pedidos.dto.PedidoClienteDTO;
 import es.uclm.esibuy.pedidos.dto.PedidoVendedorDTO;
 import es.uclm.esibuy.pedidos.service.PedidoService;
 import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
@@ -44,6 +45,21 @@ public class PedidoController {
             @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
             @Valid @RequestBody CrearPedidoDTO request) {
         return ResponseEntity.ok(pedidoService.crearPedido(principal.id(), request));
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('CLIENTE', 'CLIENT')")
+    public ResponseEntity<List<PedidoClienteDTO>> obtenerPedidosDelCliente(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal) {
+        return ResponseEntity.ok(pedidoService.obtenerPedidosDelCliente(principal.id()));
+    }
+
+    @GetMapping("/{pedidoId}")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'CLIENT')")
+    public ResponseEntity<PedidoClienteDTO> obtenerPedidoDelCliente(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
+            @PathVariable String pedidoId) {
+        return ResponseEntity.ok(pedidoService.obtenerPedidoDelCliente(principal.id(), pedidoId));
     }
 
     @GetMapping({"/vendedor", "/seller"})
