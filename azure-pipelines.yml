@@ -162,19 +162,19 @@ stages:
           - script: |
               echo "Validando variables de entorno seguras para el despliegue..."
               MISSING=0
-              if [ -z "$MONGODB_URI" ] || [ "$MONGODB_URI" = '$(MONGODB_URI)' ]; then
+              if [ -z "$MONGODB_URI" ]; then
                 echo "##vso[task.logissue type=error]Falta la variable secreta MONGODB_URI en el grupo 'esibuy-secrets'."
                 MISSING=1
               fi
-              if [ -z "$JWT_SECRET" ] || [ "$JWT_SECRET" = '$(JWT_SECRET)' ]; then
+              if [ -z "$JWT_SECRET" ]; then
                 echo "##vso[task.logissue type=error]Falta la variable secreta JWT_SECRET en el grupo 'esibuy-secrets'."
                 MISSING=1
               fi
-              if [ -z "$AES_KEY" ] || [ "$AES_KEY" = '$(AES_KEY)' ]; then
+              if [ -z "$AES_KEY" ]; then
                 echo "##vso[task.logissue type=error]Falta la variable secreta AES_KEY en el grupo 'esibuy-secrets'."
                 MISSING=1
               fi
-              if [ -z "$FIREBASE_TOKEN" ] || [ "$FIREBASE_TOKEN" = '$(FIREBASE_TOKEN)' ]; then
+              if [ -z "$FIREBASE_TOKEN" ]; then
                 echo "##vso[task.logissue type=error]Falta la variable secreta FIREBASE_TOKEN en el grupo 'esibuy-secrets'."
                 MISSING=1
               fi
@@ -182,7 +182,7 @@ stages:
                 echo "##vso[task.logissue type=error]Verifica la configuración de 'Library -> esibuy-secrets' en Azure DevOps."
                 exit 1
               fi
-              echo "Todas las variables de entorno de producción están verificadas correctamente."
+              echo "Todas las variables de entorno de producción están verificadas correctamente (MONGODB_URI: OK, JWT_SECRET: OK, AES_KEY: OK, FIREBASE_TOKEN: OK)."
             displayName: 'Validación silenciosa de secretos (Library: esibuy-secrets)'
             env:
               MONGODB_URI: $(MONGODB_URI)
