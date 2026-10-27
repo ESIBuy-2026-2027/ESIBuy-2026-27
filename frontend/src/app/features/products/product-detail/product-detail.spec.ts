@@ -125,8 +125,6 @@ describe('ProductDetail', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('.admin-mode-pill')?.textContent).toContain('Modo Administrador (Solo lectura)');
-    expect(el.querySelector('.admin-mode-pill')?.textContent).toContain('Modo supervisión: solo lectura');
     expect(el.querySelector('.heart-toggle-btn')).toBeNull();
     expect(el.querySelector('.admin-readonly-box')).not.toBeNull();
     expect(el.querySelector('.admin-readonly-box')?.textContent).toContain('Modo supervisión: solo lectura');

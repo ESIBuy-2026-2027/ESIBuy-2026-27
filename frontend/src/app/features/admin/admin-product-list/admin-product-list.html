@@ -70,10 +70,13 @@
         </section>
 
         <aside class="readonly-banner" role="status" aria-label="Aviso de supervisión">
-          <svg viewBox="0 0 24 24" class="banner-icon" aria-hidden="true">
-            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
+          <div class="banner-icon-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="banner-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              <circle cx="12" cy="16" r="1.2" fill="currentColor"></circle>
+            </svg>
+          </div>
           <div class="banner-text">
             <strong>Modo supervisión: solo lectura</strong>
             <span>Acceso de auditoría y consulta. Las acciones de compra, modificación, valoración y favoritos están deshabilitadas.</span>
