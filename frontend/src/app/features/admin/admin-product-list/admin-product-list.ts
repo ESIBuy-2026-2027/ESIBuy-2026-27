@@ -37,43 +37,25 @@ export class AdminProductList implements OnInit {
   searchTerm = signal('');
   stockFilter = signal<string>('ALL');
   categoryFilter = signal<string>('ALL');
-  sellerFilter = signal<string>('ALL');
+  sellerSort = signal<'ASC' | 'DESC' | null>(null);
 
-  availableSellers = computed(() => {
-    const map = new Map<string, string>();
-    for (const p of this.products()) {
-      if (p.sellerId && !map.has(p.sellerId)) {
-        map.set(p.sellerId, p.sellerName || p.sellerId);
-      }
+  sellerSortTitle = computed(() => {
+    const sort = this.sellerSort();
+    if (sort === 'ASC') {
+      return 'Ordenar por vendedor (actual: A-Z, clic para Z-A)';
     }
-    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
-  });
-
-  currentSellerName = computed(() => {
-    const current = this.sellerFilter();
-    if (current === 'ALL') {
-      return 'Todos';
+    if (sort === 'DESC') {
+      return 'Ordenar por vendedor (actual: Z-A, clic para A-Z)';
     }
-    const found = this.availableSellers().find(
-      (s) => s.id === current || s.name.toLowerCase() === current.toLowerCase(),
-    );
-    return found ? found.name : current;
-  });
-
-  sellerFilterTitle = computed(() => {
-    if (this.sellerFilter() === 'ALL') {
-      return 'Filtrar por vendedor (clic para cambiar)';
-    }
-    return `Filtrando por ${this.currentSellerName()} (clic para cambiar)`;
+    return 'Ordenar por vendedor alfabéticamente (clic para ordenar)';
   });
 
   filteredProducts = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
     const stock = this.stockFilter();
     const cat = this.categoryFilter();
-    const seller = this.sellerFilter();
 
-    return this.products().filter((p) => {
+    const filtered = this.products().filter((p) => {
       const matchesSearch =
         !term ||
         p.name.toLowerCase().includes(term) ||
@@ -88,42 +70,29 @@ export class AdminProductList implements OnInit {
         cat === 'ALL' ||
         p.category === cat;
 
-      const matchesSeller =
-        seller === 'ALL' ||
-        p.sellerId === seller ||
-        p.sellerName.toLowerCase() === seller.toLowerCase();
-
-      return matchesSearch && matchesStock && matchesCategory && matchesSeller;
+      return matchesSearch && matchesStock && matchesCategory;
     });
+
+    const sort = this.sellerSort();
+    if (sort) {
+      return [...filtered].sort((a, b) => {
+        const nameA = (a.sellerName || '').trim();
+        const nameB = (b.sellerName || '').trim();
+        const comparison = nameA.localeCompare(nameB, 'es', { sensitivity: 'base', numeric: true });
+        return sort === 'ASC' ? comparison : -comparison;
+      });
+    }
+
+    return filtered;
   });
 
-  cycleSellerFilter(): void {
-    const sellers = this.availableSellers();
-    if (sellers.length === 0) {
-      return;
-    }
-
-    const current = this.sellerFilter();
-    if (current === 'ALL') {
-      this.sellerFilter.set(sellers[0].id);
+  toggleSellerSort(): void {
+    const current = this.sellerSort();
+    if (current === 'ASC') {
+      this.sellerSort.set('DESC');
     } else {
-      const currentIndex = sellers.findIndex(
-        (s) => s.id === current || s.name.toLowerCase() === current.toLowerCase(),
-      );
-      if (currentIndex >= 0 && currentIndex < sellers.length - 1) {
-        this.sellerFilter.set(sellers[currentIndex + 1].id);
-      } else {
-        this.sellerFilter.set('ALL');
-      }
+      this.sellerSort.set('ASC');
     }
-  }
-
-  setSellerFilter(sellerId: string): void {
-    this.sellerFilter.set(sellerId);
-  }
-
-  clearSellerFilter(): void {
-    this.sellerFilter.set('ALL');
   }
 
   ngOnInit(): void {
