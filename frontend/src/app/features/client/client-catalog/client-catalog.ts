@@ -58,18 +58,56 @@ export class ClientCatalog implements OnInit {
     currency: 'EUR',
   });
 
-  products = signal<ProductItem[]>([]);
+  private readonly catalogProducts = signal<ProductItem[]>([]);
   categories = signal<Category[]>([]);
   loading = signal(true);
   error = signal(false);
 
-  // Filters
+  products = computed(() => {
+    let result = [...this.catalogProducts()];
+
+    if (this.onlyOffers()) {
+      result = result.filter(
+        (product) =>
+          (product.discount ?? 0) > 0 ||
+          (product.premiumDiscount ?? 0) > 0
+      );
+    }
+
+    switch (this.sortOrder()) {
+      case 'rating-desc':
+        result.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+        break;
+      case 'rating-asc':
+        result.sort((a, b) => (a.rating ?? 0) - (b.rating ?? 0));
+        break;
+      case 'price-asc':
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        result.sort((a, b) => b.price - a.price);
+        break;
+    }
+
+    return result;
+  });
+
+  // Filtros del catálogo
   searchQuery = signal('');
   selectedCategory = signal('');
   minPrice = signal<number | null>(null);
   maxPrice = signal<number | null>(null);
   minRating = signal<number | null>(null);
   onlyInStock = signal(false);
+  onlyOffers = signal(false);
+
+  sortOrder = signal<
+    'recommended' | 'rating-desc' | 'rating-asc' | 'price-asc' | 'price-desc'
+  >('recommended');
+
+  // Límite superior del rango de precios
+  priceLimit = signal(1);
+  private priceLimitInitialized = false;
 
   ngOnInit(): void {
     this.loadCategories();
@@ -97,7 +135,17 @@ export class ClientCatalog implements OnInit {
       inStock: this.onlyInStock() || undefined,
     }).subscribe({
       next: (items) => {
-        this.products.set(items);
+        if (!this.priceLimitInitialized) {
+          const highestPrice = items.reduce(
+            (highest, product) => Math.max(highest, product.price),
+            0
+          );
+
+          this.priceLimit.set(Math.max(1, Math.ceil(highestPrice)));
+          this.priceLimitInitialized = true;
+        }
+
+        this.catalogProducts.set(items);
         this.loading.set(false);
       },
       error: () => {
@@ -107,10 +155,42 @@ export class ClientCatalog implements OnInit {
     });
   }
 
-
-
   onFilterChange(): void {
     this.loadProducts();
+  }
+
+  minPricePercent(): number {
+    return ((this.minPrice() ?? 0) / this.priceLimit()) * 100;
+  }
+
+  maxPricePercent(): number {
+    return ((this.maxPrice() ?? this.priceLimit()) / this.priceLimit()) * 100;
+  }
+
+  setMinPrice(value: number): void {
+    const normalized = Math.max(
+      0,
+      Math.min(Math.trunc(Number(value) || 0), this.priceLimit())
+    );
+
+    const currentMax = this.maxPrice() ?? this.priceLimit();
+    const newMin = Math.min(normalized, currentMax);
+
+    this.minPrice.set(newMin === 0 ? null : newMin);
+  }
+
+  setMaxPrice(value: number): void {
+    const normalized = Math.max(
+      0,
+      Math.min(Math.trunc(Number(value) || 0), this.priceLimit())
+    );
+
+    const currentMin = this.minPrice() ?? 0;
+    const newMax = Math.max(normalized, currentMin);
+
+    this.maxPrice.set(
+      newMax >= this.priceLimit() ? null : newMax
+    );
   }
 
   resetFilters(): void {
@@ -120,6 +200,9 @@ export class ClientCatalog implements OnInit {
     this.maxPrice.set(null);
     this.minRating.set(null);
     this.onlyInStock.set(false);
+    this.onlyOffers.set(false);
+    this.sortOrder.set('recommended');
+
     this.loadProducts();
   }
 

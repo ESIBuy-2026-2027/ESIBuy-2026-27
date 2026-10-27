@@ -1,4 +1,5 @@
-<div class="seller-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed() || isAdmin()" [class.admin-catalog-view]="isAdmin()">
+<div class="seller-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed() || isAdmin()"
+  [class.admin-catalog-view]="isAdmin()">
   @if (!isAdmin()) {
   <aside class="sidebar app-sidebar" aria-label="Panel del cliente">
     <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral"><span
@@ -9,7 +10,8 @@
     </a>
 
     <div class="sidebar-caption">{{ isAdmin() ? 'GESTIÓN DE ADMINISTRACIÓN' : 'ÁREA DE CLIENTE' }}</div>
-    <nav class="seller-navigation" [attr.aria-label]="isAdmin() ? 'Navegación de administración' : 'Navegación del cliente'">
+    <nav class="seller-navigation"
+      [attr.aria-label]="isAdmin() ? 'Navegación de administración' : 'Navegación del cliente'">
       <a class="navigation-link is-active" routerLink="/client/catalog" aria-current="page">
         <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -151,12 +153,26 @@
 
           <div class="filter-control price-control">
             <span class="filter-label">Precio (€)</span>
+
             <div class="price-inputs">
-              <input type="number" min="0" placeholder="Mín" [ngModel]="minPrice()"
-                (ngModelChange)="minPrice.set($event); onFilterChange()" aria-label="Precio mínimo" />
+              <input type="number" min="0" [max]="maxPrice() ?? priceLimit()" step="1" placeholder="Mín"
+                [ngModel]="minPrice() ?? 0" (ngModelChange)="setMinPrice($event)" (change)="onFilterChange()"
+                aria-label="Precio mínimo" />
               <span class="price-sep">-</span>
-              <input type="number" min="0" placeholder="Máx" [ngModel]="maxPrice()"
-                (ngModelChange)="maxPrice.set($event); onFilterChange()" aria-label="Precio máximo" />
+              <input type="number" [min]="minPrice() ?? 0" [max]="priceLimit()" step="1" placeholder="Máx"
+                [ngModel]="maxPrice() ?? priceLimit()" (ngModelChange)="setMaxPrice($event)" (change)="onFilterChange()"
+                aria-label="Precio máximo" />
+            </div>
+
+            <div class="price-range-slider">
+              <div class="price-range-track"></div>
+              <div class="price-range-selection" [style.left.%]="minPricePercent()"
+                [style.width.%]="maxPricePercent() - minPricePercent()">
+              </div>
+              <input type="range" min="0" [max]="priceLimit()" step="1" [ngModel]="minPrice() ?? 0"
+                (ngModelChange)="setMinPrice($event)" (change)="onFilterChange()" aria-label="Ajustar precio mínimo" />
+              <input type="range" min="0" [max]="priceLimit()" step="1" [ngModel]="maxPrice() ?? priceLimit()"
+                (ngModelChange)="setMaxPrice($event)" (change)="onFilterChange()" aria-label="Ajustar precio máximo" />
             </div>
           </div>
 
@@ -172,17 +188,33 @@
             </select>
           </div>
 
-          <div class="filter-control checkbox-control">
+          <div class="filter-control">
+            <label for="filter-sort" class="filter-label">Ordenar por</label>
+            <select id="filter-sort" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event)">
+              <option value="recommended">Recomendados</option>
+              <option value="rating-desc">Mejor valorados</option>
+              <option value="rating-asc">Peor valorados</option>
+              <option value="price-asc">Precio: menor a mayor</option>
+              <option value="price-desc">Precio: mayor a menor</option>
+            </select>
+          </div>
+
+          <div class="filter-actions-group">
             <label class="checkbox-label">
               <input type="checkbox" [ngModel]="onlyInStock()"
                 (ngModelChange)="onlyInStock.set($event); onFilterChange()" />
               <span>Solo en stock</span>
             </label>
-          </div>
 
-          <button type="button" class="reset-filter-btn" (click)="resetFilters()" title="Limpiar todos los filtros">
-            Limpiar filtros
-          </button>
+            <label class="checkbox-label">
+              <input type="checkbox" [ngModel]="onlyOffers()" (ngModelChange)="onlyOffers.set($event)" />
+              <span>Solo ofertas</span>
+            </label>
+
+            <button type="button" class="reset-filter-btn" (click)="resetFilters()" title="Limpiar todos los filtros">
+              Limpiar filtros
+            </button>
+          </div>
         </div>
       </section>
 
