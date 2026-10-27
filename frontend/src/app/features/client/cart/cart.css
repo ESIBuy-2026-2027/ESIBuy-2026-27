@@ -579,3 +579,33 @@
   color: #94a3b8;
   font-size: 1.25rem;
 }
+
+.seller-checkbox:disabled,
+.item-checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.seller-accordion.is-disabled-seller {
+  opacity: 0.55;
+  border-color: #e2e8f0;
+}
+
+.cart-item.is-disabled-item {
+  opacity: 0.5;
+  background-color: #f8fafc;
+}
+
+.cart-item.is-disabled-item:hover {
+  opacity: 0.5;
+}
+
+.seller-disabled-hint {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-left: auto;
+  padding: 2px 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+}

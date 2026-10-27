@@ -469,6 +469,12 @@ describe('ClientCart', () => {
     expect(element.querySelector('.total-line')?.textContent).toContain('8,50');
     expect(element.querySelector('.total-line')?.textContent).not.toContain('16,50');
 
+    // McDonalds seller is disabled because Burger King has active selection
+    expect(fixture.componentInstance.isSellerDisabled('seller-mcd')).toBe(true);
+    const mcdCheckboxes = element.querySelectorAll('.seller-accordion')[1].querySelectorAll('input[type="checkbox"]');
+    expect((mcdCheckboxes[0] as HTMLInputElement).disabled).toBe(true);
+    expect((mcdCheckboxes[1] as HTMLInputElement).disabled).toBe(true);
+
     // Attempting to select product from McDonalds while Burger King is selected
     const secondGroup = fixture.componentInstance.sellerGroups()[1];
     fixture.componentInstance.toggleProductSelection(items[1], secondGroup);

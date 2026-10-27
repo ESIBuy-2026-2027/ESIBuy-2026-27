@@ -119,7 +119,7 @@
   <section class="cart-content" aria-label="Contenido del carrito">
     <div class="cart-items">
       @for (group of sellerGroups(); track group.vendedorId) {
-      <details class="seller-accordion" open>
+      <details class="seller-accordion" [class.is-disabled-seller]="isSellerDisabled(group.vendedorId)" open>
         <summary class="seller-accordion-summary">
           <div class="seller-summary-info">
             <label class="seller-checkbox-wrapper" (click)="$event.stopPropagation()">
@@ -127,22 +127,29 @@
                 [checked]="isSellerFullySelected(group)"
                 [indeterminate]="isSellerPartiallySelected(group)"
                 (change)="toggleSellerSelection(group)"
+                [disabled]="isSellerDisabled(group.vendedorId)"
                 [attr.aria-label]="'Seleccionar todos los productos de ' + group.vendedorNombre">
             </label>
             <span class="seller-summary-icon" aria-hidden="true">🏪</span>
             <span class="seller-summary-name">Vendedor: <strong>{{ group.vendedorNombre }}</strong></span>
             <span class="seller-summary-count">({{ group.totalCount }} {{ group.totalCount === 1 ? 'artículo' : 'artículos' }})</span>
+            @if (isSellerDisabled(group.vendedorId)) {
+            <span class="seller-disabled-hint">Deselecciona "{{ selectedVendor()?.vendedorNombre }}" para cambiar</span>
+            }
           </div>
           <span class="seller-summary-subtotal">Subtotal vendedor: <strong>{{ formatPrice(group.subtotal) }}</strong></span>
         </summary>
 
         <div class="seller-items-container">
           @for (item of group.items; track item.productoId) {
-          <article class="cart-item" [class.is-deselected]="!isProductSelected(item.productoId)">
+          <article class="cart-item"
+            [class.is-deselected]="!isProductSelected(item.productoId)"
+            [class.is-disabled-item]="isSellerDisabled(group.vendedorId)">
             <label class="item-checkbox-wrapper" (click)="$event.stopPropagation()">
               <input type="checkbox" class="item-checkbox"
                 [checked]="isProductSelected(item.productoId)"
                 (change)="toggleProductSelection(item, group)"
+                [disabled]="isSellerDisabled(group.vendedorId)"
                 [attr.aria-label]="'Seleccionar ' + item.nombre">
             </label>
 
@@ -211,9 +218,9 @@
         }
       </p>
 
-      @if (hasMixedSelection()) {
+      @if (hasMixedSelection() || selectedSellerIds().size > 1) {
       <p class="checkout-disabled-notice" role="alert">
-        ⚠️ Se ha quitado el precio porque hay productos de diferentes vendedores seleccionados.
+        ⚠️ No se puede tramitar un pedido con productos de diferentes vendedores. Deselecciona los productos de otros vendedores para continuar.
       </p>
       } @else if (selectedVendor(); as vendor) {
       <p class="selected-vendor-badge">
@@ -226,7 +233,7 @@
       }
 
       <button class="primary-action checkout-action" type="button"
-        [disabled]="checkoutLoading() || selectedItemCount() === 0 || hasMixedSelection()"
+        [disabled]="!canCheckout()"
         (click)="iniciarCheckout()">
         {{ checkoutLoading() ? 'Cargando checkout…' : 'Continuar con la compra' }}
       </button>

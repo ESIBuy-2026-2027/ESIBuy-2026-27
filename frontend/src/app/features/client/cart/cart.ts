@@ -148,6 +148,27 @@ export class ClientCart {
     return this.selectedProductIds().has(productoId);
   }
 
+  isSellerDisabled(vendedorId: string): boolean {
+    const selectedSellers = this.selectedSellerIds();
+    if (selectedSellers.size === 0) {
+      return false;
+    }
+    return !selectedSellers.has(vendedorId);
+  }
+
+  readonly canCheckout = computed<boolean>(() => {
+    const count = this.selectedItemCount();
+    const sellerIds = this.selectedSellerIds();
+    return (
+      !this.checkoutLoading() &&
+      !this.processingOrder() &&
+      count !== null &&
+      count > 0 &&
+      sellerIds.size === 1 &&
+      !this.hasMixedSelection()
+    );
+  });
+
   isSellerFullySelected(group: SellerCartGroup): boolean {
     if (group.items.length === 0) {
       return false;
@@ -163,22 +184,21 @@ export class ClientCart {
   }
 
   toggleProductSelection(item: CartItem, group: SellerCartGroup): void {
+    if (this.isSellerDisabled(group.vendedorId)) {
+      const currentSellerNames = this.sellerGroups()
+        .filter((g) => this.selectedSellerIds().has(g.vendedorId))
+        .map((g) => g.vendedorNombre)
+        .join(', ');
+      this.actionError.set(
+        `No puedes realizar pedidos de diferente vendedor a la vez. Deselecciona primero los productos de "${currentSellerNames}" si deseas comprar a "${group.vendedorNombre}".`,
+      );
+      return;
+    }
+
     const selected = new Set(this.selectedProductIds());
     const isCurrentlySelected = selected.has(item.productoId);
 
     if (!isCurrentlySelected) {
-      // Trying to select this product: check if already selecting from another seller
-      const currentSellers = this.selectedSellerIds();
-      if (currentSellers.size > 0 && !currentSellers.has(group.vendedorId)) {
-        const currentSellerNames = this.sellerGroups()
-          .filter((g) => currentSellers.has(g.vendedorId))
-          .map((g) => g.vendedorNombre)
-          .join(', ');
-        this.actionError.set(
-          `No puedes realizar pedidos de diferente vendedor a la vez. Deselecciona primero los productos de "${currentSellerNames}" si deseas comprar a "${group.vendedorNombre}".`,
-        );
-        return; // No le deja seleccionarlo
-      }
       this.actionError.set(null);
       selected.add(item.productoId);
     } else {
@@ -189,22 +209,21 @@ export class ClientCart {
   }
 
   toggleSellerSelection(group: SellerCartGroup): void {
+    if (this.isSellerDisabled(group.vendedorId)) {
+      const currentSellerNames = this.sellerGroups()
+        .filter((g) => this.selectedSellerIds().has(g.vendedorId))
+        .map((g) => g.vendedorNombre)
+        .join(', ');
+      this.actionError.set(
+        `No puedes realizar pedidos de diferente vendedor a la vez. Deselecciona primero los productos de "${currentSellerNames}" si deseas comprar a "${group.vendedorNombre}".`,
+      );
+      return;
+    }
+
     const selected = new Set(this.selectedProductIds());
     const isSelected = this.isSellerFullySelected(group);
 
     if (!isSelected) {
-      // Trying to select all items of this seller
-      const currentSellers = this.selectedSellerIds();
-      if (currentSellers.size > 0 && !currentSellers.has(group.vendedorId)) {
-        const currentSellerNames = this.sellerGroups()
-          .filter((g) => currentSellers.has(g.vendedorId))
-          .map((g) => g.vendedorNombre)
-          .join(', ');
-        this.actionError.set(
-          `No puedes realizar pedidos de diferente vendedor a la vez. Deselecciona primero los productos de "${currentSellerNames}" si deseas comprar a "${group.vendedorNombre}".`,
-        );
-        return; // No le deja seleccionarlo
-      }
       this.actionError.set(null);
       group.items.forEach((item) => selected.add(item.productoId));
     } else {
@@ -233,7 +252,7 @@ export class ClientCart {
     if (this.checkoutLoading() || this.processingOrder()) {
       return;
     }
-    if (this.hasMixedSelection()) {
+    if (this.hasMixedSelection() || this.selectedSellerIds().size > 1) {
       this.actionError.set(
         'No se puede realizar un pedido con productos de diferentes vendedores en la misma compra. Debes tramitar pedidos independientes para cada vendedor.',
       );
@@ -289,7 +308,7 @@ export class ClientCart {
     if (this.processingOrder()) {
       return;
     }
-    if (this.hasMixedSelection()) {
+    if (this.hasMixedSelection() || this.selectedSellerIds().size > 1) {
       this.actionError.set(
         'No se puede realizar un pedido con productos de diferentes vendedores en la misma compra. Debes tramitar pedidos independientes para cada vendedor.',
       );
