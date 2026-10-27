@@ -7,201 +7,254 @@
       </button>
     </div>
 
-    <!-- MENSAJE DE AVISO (ÉXITO / ERROR) ESTILO BANNER ENCIMA DEL PRODUCTO -->
+    <!-- MENSAJE DE AVISO (ÉXITO / ERROR) -->
     @if (toastService.toast(); as t) {
-      <output class="catalog-alert" [class.is-success]="t.type === 'success'"
-        [class.is-error]="t.type === 'error' || t.type === 'info'" aria-live="polite">
-        @if (t.type === 'success') {
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m5 12 4 4L19 6"></path>
-          </svg>
-        } @else {
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-        }
-        <span class="alert-text">{{ t.text }}</span>
-        <button type="button" class="alert-close" (click)="toastService.clear()" aria-label="Cerrar aviso">×</button>
-      </output>
-    }
+    <output class="catalog-alert" [class.is-success]="t.type === 'success'"
+      [class.is-error]="t.type === 'error' || t.type === 'info'" aria-live="polite">
 
-    @if (loading()) {
-      <div class="detail-loading">
-        <div class="spinner"></div>
-        <span>Cargando detalle del producto…</span>
-      </div>
-    } @else if (error() || !product()) {
-      <div class="detail-error" role="alert">
-        <h2>Producto no disponible</h2>
-        <p>{{ errorMessage() || 'No se pudo encontrar el producto solicitado.' }}</p>
-        <button type="button" class="action-btn" (click)="goBack()">Regresar al catálogo</button>
-      </div>
-    } @else {
-      @let p = product()!;
-
-      <!-- AVISO PRODUCTO DESACTIVADO -->
-      @if (!p.available) {
-        <div class="deactivated-alert" role="alert">
-          <svg viewBox="0 0 24 24" class="alert-icon" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-          <div class="alert-text">
-            <strong>Producto no disponible</strong>
-            <span>Este artículo ha sido pausado o desactivado por el vendedor. Las compras se encuentran bloqueadas.</span>
-          </div>
-        </div>
+      @if (t.type === 'success') {
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m5 12 4 4L19 6"></path>
+      </svg>
+      } @else {
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
       }
 
-      <div class="product-main-view">
-        <!-- COLUMNA IMAGEN -->
-        <div class="product-gallery">
-          <div class="image-wrapper">
-            @if (p.imageUrl) {
-              <img [src]="p.imageUrl" [alt]="p.name" class="main-image" />
-            } @else {
-              <div class="image-placeholder">▦</div>
-            }
+      <span class="alert-text">{{ t.text }}</span>
 
-            <!-- BOTÓN DE FAVORITO / CORAZÓN INTERACTIVO -->
-            @if (!isAdmin()) {
-              @if (!isAdmin()) {
-            <button type="button" class="heart-toggle-btn"
-                [class.is-favorite]="isFavorite()"
-                (click)="toggleFavorite()"
-                [title]="isFavorite() ? 'Quitar de lista de deseos' : 'Añadir a lista de deseos'"
-                [attr.aria-label]="isFavorite() ? 'Quitar de lista de deseos' : 'Añadir a lista de deseos'">
-                <svg viewBox="0 0 24 24" class="heart-icon-svg" aria-hidden="true">
-                  <path
-                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                </svg>
-              </button>
-            }
-            }
-          </div>
-        </div>
+      <button type="button" class="alert-close" (click)="toastService.clear()" aria-label="Cerrar aviso">
+        ×
+      </button>
+    </output>
+    }
 
-        <!-- COLUMNA INFORMACIÓN -->
-        <div class="product-info-panel">
-          <div class="categories-strip">
-            @for (catId of p.categoryIds; track catId) {
-              <span class="category-chip">{{ categoryName(catId) }}</span>
-            }
-          </div>
+    <!-- ESTADOS DE CARGA Y ERROR -->
+    @if (loading()) {
+    <div class="detail-loading">
+      <div class="spinner"></div>
+      <span>Cargando detalle del producto…</span>
+    </div>
+    } @else if (error() || !product()) {
+    <div class="detail-error" role="alert">
+      <h2>Producto no disponible</h2>
+      <p>
+        {{ errorMessage() || 'No se pudo encontrar el producto solicitado.' }}
+      </p>
+      <button type="button" class="action-btn" (click)="goBack()">
+        Regresar al catálogo
+      </button>
+    </div>
+    } @else {
+    @let p = product()!;
 
-          <h1 class="product-heading">{{ p.name }}</h1>
+    <!-- AVISO PRODUCTO DESACTIVADO -->
+    @if (!p.available) {
+    <div class="deactivated-alert" role="alert">
+      <svg viewBox="0 0 24 24" class="alert-icon" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
 
-          <div class="rating-availability-row">
-            <div class="stars-badge">
-              <span class="star-icon">★</span>
-              <span class="rating-value">{{ (p.rating ?? 5.0).toFixed(1) }}</span>
-              <span class="rating-label">/ 5.0</span>
-            </div>
+      <div class="alert-text">
+        <strong>Producto no disponible</strong>
+        <span>
+          Este artículo ha sido pausado o desactivado por el vendedor.
+          Las compras se encuentran bloqueadas.
+        </span>
+      </div>
+    </div>
+    }
 
-            <span class="separator">·</span>
+    <div class="product-main-view">
+      <!-- COLUMNA IMAGEN -->
+      <div class="product-gallery">
+        <div class="image-wrapper">
+          @if (p.imageUrl) {
+          <img [src]="p.imageUrl" [alt]="p.name" class="main-image" />
+          } @else {
+          <div class="image-placeholder">▦</div>
+          }
 
-            @if (!p.available) {
-              <span class="status-pill status-disabled">No disponible</span>
-            } @else if (p.stock > 0) {
-              <span class="status-pill" [class.status-available]="!isLowStock(p.stock)"
-                [class.status-low]="isLowStock(p.stock)">En stock ({{ p.stock }} disponibles)</span>
-            } @else {
-              <span class="status-pill status-out">Agotado</span>
-            }
-          </div>
+          <!-- BOTÓN DE FAVORITOS -->
+          @if (!isAdmin()) {
+          <button type="button" class="heart-toggle-btn" [class.is-favorite]="isFavorite()" (click)="toggleFavorite()"
+            [title]="isFavorite() ? 'Quitar de lista de deseos' : 'Añadir a lista de deseos'"
+            [attr.aria-label]="isFavorite() ? 'Quitar de lista de deseos' : 'Añadir a lista de deseos'">
 
-          <!-- PRECIO Y OFERTAS ACTIVAS -->
-          <div class="price-section">
-            <div class="current-price-row">
-              <span class="price-value">{{ formatPrice(p.price) }}</span>
-              <span class="tax-info">IVA incluido</span>
-            </div>
-
-            @if (hasOffers()) {
-              <div class="offers-panel">
-                <span class="offer-title">Ofertas y promociones activas:</span>
-                <div class="offer-badges">
-                  @if (p.discount && p.discount > 0) {
-                    <span class="offer-badge discount-badge">
-                      Descuento general: -{{ p.discount }}%
-                    </span>
-                  }
-                  @if (p.premiumDiscount && p.premiumDiscount > 0) {
-                    <span class="offer-badge premium-offer-badge">
-                      ★ Oferta ESIBuy Premium: -{{ p.premiumDiscount }}%
-                    </span>
-                  }
-                </div>
-              </div>
-            }
-          </div>
-
-          <!-- DESCRIPCIÓN -->
-          <div class="description-section">
-            <h2>Descripción del producto</h2>
-            <p class="description-text">{{ p.description || 'El vendedor no ha incluido una descripción para este producto.' }}</p>
-          </div>
-
-          <!-- BLOQUE DE COMPRA O ESTADO BLOQUEADO -->
-          <div class="purchase-box">
-            @if (isAdmin()) {
-              <div class="admin-readonly-box" role="status">
-                <div class="supervision-badge">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    <circle cx="12" cy="16" r="1.2" fill="currentColor" />
-                  </svg>
-                  <strong>Modo supervisión: solo lectura</strong>
-                </div>
-                <p class="admin-readonly-text">
-                  Vista de supervisión de catálogo. Los botones de compra, añadir al carrito, valoración y favoritos están deshabilitados para administradores.
-                </p>
-              </div>
-            } @else if (!p.available) {
-              <div class="purchase-blocked-message">
-                <p>Este producto no se encuentra disponible para compra actualmente.</p>
-                <button type="button" class="primary-buy-btn is-disabled" disabled aria-disabled="true">
-                  Compra bloqueada
-                </button>
-              </div>
-            } @else if (p.stock <= 0) {
-              <div class="purchase-blocked-message">
-                <p>El producto está temporalmente agotado.</p>
-                <button type="button" class="primary-buy-btn is-disabled" disabled aria-disabled="true">
-                  Sin existencias
-                </button>
-              </div>
-            } @else {
-              <div class="purchase-action-group">
-                <div class="detail-quantity-picker">
-                  <label for="detail-product-quantity" class="qty-label">Cantidad:</label>
-                  <div class="qty-controls">
-                    <button type="button" class="qty-btn" (click)="decreaseQuantity()" [disabled]="quantity() <= 1" aria-label="Disminuir cantidad">-</button>
-                    <input id="detail-product-quantity" type="number" min="1" [max]="p.stock" [ngModel]="quantity()" (ngModelChange)="setQuantity($event)" />
-                    <button type="button" class="qty-btn" (click)="increaseQuantity()" [disabled]="quantity() >= p.stock" aria-label="Aumentar cantidad">+</button>
-                  </div>
-                </div>
-
-                <button type="button" class="secondary-buy-btn" (click)="toggleFavorite()">
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                  </svg>
-                  {{ isFavorite() ? 'Eliminar de favoritos' : 'Añadir a favoritos' }}
-                </button>
-              </div>
-              <div class="cart-button-container">
-                <button type="button" class="primary-buy-btn" (click)="addToCart()">
-                  Añadir al carrito
-                </button>
-              </div>
-            }
-          </div>
+            <svg viewBox="0 0 24 24" class="heart-icon-svg" aria-hidden="true">
+              <path
+                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          </button>
+          }
         </div>
       </div>
-    }
+
+      <!-- COLUMNA INFORMACIÓN -->
+      <div class="product-info-panel">
+        <div class="categories-strip">
+          @for (catId of p.categoryIds; track catId) {
+          <span class="category-chip">
+            {{ categoryName(catId) }}
+          </span>
+          }
+        </div>
+
+        <h1 class="product-heading">{{ p.name }}</h1>
+
+        <!-- VALORACIÓN Y DISPONIBILIDAD -->
+        <div class="rating-availability-row">
+          <div class="stars-badge">
+            <span class="star-icon">★</span>
+            <span class="rating-value">
+              {{ (p.rating ?? 5.0).toFixed(1) }}
+            </span>
+            <span class="rating-label">/ 5.0</span>
+          </div>
+
+          <span class="separator">·</span>
+
+          @if (!p.available) {
+          <span class="status-pill status-disabled">
+            No disponible
+          </span>
+          } @else if (p.stock > 0) {
+          <span class="status-pill" [class.status-available]="!isLowStock(p.stock)"
+            [class.status-low]="isLowStock(p.stock)">
+            En stock ({{ p.stock }} disponibles)
+          </span>
+          } @else {
+          <span class="status-pill status-out">Agotado</span>
+          }
+        </div>
+
+        <!-- PRECIO Y OFERTAS -->
+        <div class="price-section">
+          <div class="current-price-row">
+            <span class="price-value">
+              {{ formatPrice(p.price) }}
+            </span>
+            <span class="tax-info">IVA incluido</span>
+          </div>
+
+          @if (hasOffers()) {
+          <div class="offers-panel">
+            <span class="offer-title">
+              Ofertas y promociones activas:
+            </span>
+
+            <div class="offer-badges">
+              @if (p.discount && p.discount > 0) {
+              <span class="offer-badge discount-badge">
+                Descuento general: -{{ p.discount }}%
+              </span>
+              }
+
+              @if (p.premiumDiscount && p.premiumDiscount > 0) {
+              <span class="offer-badge premium-offer-badge">
+                ★ Oferta ESIBuy Premium: -{{ p.premiumDiscount }}%
+              </span>
+              }
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- DESCRIPCIÓN -->
+        <div class="description-section">
+          <h2>Descripción del producto</h2>
+          <p class="description-text">
+            {{ p.description || 'El vendedor no ha incluido una descripción para este producto.' }}
+          </p>
+        </div>
+
+        <!-- BLOQUE DE COMPRA -->
+        <div class="purchase-box">
+          @if (isAdmin()) {
+          <div class="admin-readonly-box">
+            <div class="supervision-badge">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                <circle cx="12" cy="16" r="1.2" fill="currentColor" />
+              </svg>
+
+              <strong>Modo supervisión: solo lectura</strong>
+            </div>
+
+            <p class="admin-readonly-text">
+              Vista de supervisión de catálogo. Los botones de compra,
+              añadir al carrito, valoración y favoritos están deshabilitados
+              para administradores.
+            </p>
+          </div>
+          } @else if (!p.available) {
+          <div class="purchase-blocked-message">
+            <p>
+              Este producto no se encuentra disponible para compra actualmente.
+            </p>
+
+            <button type="button" class="primary-buy-btn is-disabled" disabled aria-disabled="true">
+              Compra bloqueada
+            </button>
+          </div>
+          } @else if (p.stock <= 0) { <div class="purchase-blocked-message">
+            <p>El producto está temporalmente agotado.</p>
+
+            <button type="button" class="primary-buy-btn is-disabled" disabled aria-disabled="true">
+              Sin existencias
+            </button>
+        </div>
+        } @else {
+        <div class="purchase-action-group">
+          <div class="detail-quantity-picker">
+            <label for="detail-product-quantity" class="qty-label">
+              Cantidad:
+            </label>
+
+            <div class="qty-controls">
+              <button type="button" class="qty-btn" (click)="decreaseQuantity()" [disabled]="quantity() <= 1"
+                aria-label="Disminuir cantidad">
+                -
+              </button>
+
+              <input id="detail-product-quantity" type="number" min="1" [max]="p.stock" step="1" [value]="quantity()"
+                (input)="setQuantity($any($event.target).valueAsNumber)"
+                (blur)="$any($event.target).value = quantity()" />
+
+              <button type="button" class="qty-btn" (click)="increaseQuantity()" [disabled]="quantity() >= p.stock"
+                aria-label="Aumentar cantidad">
+                +
+              </button>
+            </div>
+          </div>
+
+          <button type="button" class="secondary-buy-btn" (click)="toggleFavorite()">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+              aria-hidden="true">
+              <path
+                d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+            </svg>
+
+            {{ isFavorite() ? 'Eliminar de favoritos' : 'Añadir a favoritos' }}
+          </button>
+        </div>
+
+        <div class="cart-button-container">
+          <button type="button" class="primary-buy-btn" (click)="addToCart()">
+            Añadir al carrito
+          </button>
+        </div>
+        }
+      </div>
+    </div>
   </div>
+  }
+</div>
 </div>
