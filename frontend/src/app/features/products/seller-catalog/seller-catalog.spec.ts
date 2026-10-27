@@ -90,11 +90,13 @@ describe('SellerCatalog', () => {
     expect(element.textContent).toContain('Audio');
     expect(element.textContent).not.toContain('INVENTARIO');
     expect(element.querySelector('.product-table caption')?.textContent).toContain('Productos de mi catálogo');
-    expect(element.querySelector('.catalog-controls .catalog-search')).not.toBeNull();
-    expect(element.querySelector('.catalog-controls .product-count')?.textContent).toContain('1 producto');
-    const filterButton = element.querySelector<HTMLButtonElement>('.catalog-filter-button');
-    expect(filterButton?.textContent).toContain('Filtrar');
-    expect(filterButton).not.toBeNull();
+    expect(element.querySelector('.filter-bar .search-input-wrapper')).not.toBeNull();
+    expect(element.querySelector('.filter-bar #seller-filter-category')).not.toBeNull();
+    expect(element.querySelector('.filter-bar #seller-filter-rating')).not.toBeNull();
+    expect(element.querySelector('.filter-bar #seller-filter-sort')).not.toBeNull();
+    expect(element.querySelector('.filter-bar .price-range-slider')).not.toBeNull();
+    expect(element.querySelector('.filter-product-count')?.textContent).toContain('1 producto');
+    expect(element.querySelector('.reset-filter-btn')?.textContent).toContain('Limpiar filtros');
     expect(element.querySelector<HTMLImageElement>('.product-image')?.alt).toBe('');
     expect(element.querySelector('input[type="search"]')?.hasAttribute('aria-label')).toBe(true);
     expect(element.querySelectorAll('.navigation-link[aria-disabled="true"]')).toHaveLength(2);

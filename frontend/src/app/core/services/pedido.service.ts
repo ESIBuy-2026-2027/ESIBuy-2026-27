@@ -45,6 +45,7 @@ export interface SellerOrderItem {
   precioUnitario: number;
   subtotal: number;
   imageUrl: string | null;
+  categoryIds: string[];
 }
 
 export type SellerOrderStatus = 'PAGADO' | 'PENDIENTE' | 'PREPARANDO' | 'ENVIADO' | 'ENTREGADO' | 'CANCELADO';
