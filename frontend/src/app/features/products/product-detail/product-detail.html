@@ -74,8 +74,8 @@
       <!-- COLUMNA IMAGEN -->
       <div class="product-gallery">
         <div class="image-wrapper">
-          @if (p.imageUrl) {
-          <img [src]="p.imageUrl" [alt]="p.name" class="main-image" />
+          @if (p.imageUrl && !imageError()) {
+          <img [src]="p.imageUrl" [alt]="p.name" class="main-image" (error)="onImageError()" />
           } @else {
           <div class="image-placeholder">▦</div>
           }
@@ -255,6 +255,5 @@
       </div>
     </div>
   </div>
-  }
 </div>
 </div>
