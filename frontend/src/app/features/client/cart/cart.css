@@ -389,3 +389,51 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Precios y descuentos de artículos en el carrito */
+.item-pricing-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0.35rem 0 0;
+  font-size: 0.875rem;
+}
+
+.item-unit-price {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.item-original-price {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  text-decoration: line-through;
+}
+
+.item-discount-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.item-discount-tag.is-premium {
+  background: #b91c1c;
+  box-shadow: 0 0 0 1px #fef08a;
+}
+
+.cart-total .discount-saving-line {
+  color: #059669;
+  font-weight: 600;
+}
+
+.cart-total .discount-saved-val {
+  color: #059669;
+  font-weight: 700;
+}

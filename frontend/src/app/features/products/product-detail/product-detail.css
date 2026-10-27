@@ -520,8 +520,7 @@
   color: #0c6654 !important;
   background: #e8fbf5;
   border: 1px solid #b5eddf;
-  border-left: 4px solid #1bb89b;
-}
+  }
 
 @keyframes alert-slide-in {
   from {
@@ -543,12 +542,17 @@
   }
 }
 
-.catalog-alert.is-error,
-.catalog-alert.is-info {
+.catalog-alert.is-error {
+
   color: #a52232 !important;
   background: #fff1f2;
-  border-color: #fecdd3;
-  border-left: 4px solid #e11d48;
+  border: 1px solid #fecdd3;
+  }
+
+.catalog-alert.is-info {
+  border: 1px solid #bae6fd;
+  background: #f0f9ff;
+  color: #0369a1 !important;
 }
 
 .catalog-alert svg {
@@ -584,4 +588,84 @@
 
 .catalog-alert .alert-close:hover {
   opacity: 1;
+}
+
+
+/* Fila del proveedor en el detalle de producto (entre valoración y precio) */
+.product-vendor-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  padding: 8px 14px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  width: fit-content;
+}
+
+.product-vendor-row .vendor-label {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.product-vendor-row .vendor-name {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+
+/* Precios tachados y precio premium en el detalle */
+.detail-strikethrough {
+  font-size: 18px;
+  color: #64748b;
+  text-decoration: line-through;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.detail-premium-price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 14px;
+  background: #fefce8;
+  border: 1px solid #fef08a;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: #713f12;
+  width: fit-content;
+}
+
+.detail-premium-price-row.is-current-plan {
+  background: #fef9c3;
+  border-color: #fde047;
+  font-weight: 600;
+}
+
+.detail-premium-price-row .premium-star {
+  color: #eab308;
+  font-size: 14px;
+}
+
+.detail-premium-label {
+  font-weight: 600;
+}
+
+.detail-premium-value {
+  color: #b91c1c;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.detail-premium-badge {
+  display: inline-flex;
+  padding: 2px 7px;
+  background: #dc2626;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
 }

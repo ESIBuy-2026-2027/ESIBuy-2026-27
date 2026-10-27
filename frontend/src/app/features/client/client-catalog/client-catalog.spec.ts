@@ -35,6 +35,9 @@ describe('ClientCatalog', () => {
       available: true,
       sellerId: 's-1',
       rating: 4.8,
+      discount: 15,
+      premiumDiscount: 25,
+      sellerName: 'AudioTech SL',
     },
     {
       id: 'p-2',
@@ -146,6 +149,23 @@ describe('ClientCatalog', () => {
 
     expect(wishlistServiceMock.toggleWishlist).toHaveBeenCalledWith('p-1');
     expect(toastServiceMock.show).toHaveBeenCalledWith('Lista actualizada', 'success');
+  });
+
+  it('should render discount badges and provider name on product cards', () => {
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    const firstCard = el.querySelector('.product-card');
+    expect(firstCard).not.toBeNull();
+
+    const standardBadge = firstCard?.querySelector('.standard-discount-badge');
+    expect(standardBadge?.textContent).toContain('-15%');
+
+    const premiumBadge = firstCard?.querySelector('.premium-discount-badge');
+    expect(premiumBadge?.textContent).toContain('-25% Premium');
+
+    const vendorInfo = firstCard?.querySelector('.product-vendor-info');
+    expect(vendorInfo?.textContent).toContain('Proveedor:');
+    expect(vendorInfo?.textContent).toContain('AudioTech SL');
   });
 
   it('should reload products when filters change', () => {

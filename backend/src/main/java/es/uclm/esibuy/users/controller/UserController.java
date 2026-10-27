@@ -1,10 +1,25 @@
 package es.uclm.esibuy.users.controller;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import es.uclm.esibuy.common.exception.InvalidCredentialsException;
+import es.uclm.esibuy.common.exception.InvalidOtpException;
 import es.uclm.esibuy.common.exception.TooManyRequestsException;
 import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
+import es.uclm.esibuy.security.service.EmailOtpService;
 import es.uclm.esibuy.security.service.LoginAttemptService;
 import es.uclm.esibuy.security.service.SessionAuthenticationService;
 import es.uclm.esibuy.security.service.TwoFactorAuthenticationService;
@@ -15,28 +30,15 @@ import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.dto.UpdateOwnProfileRequestDTO;
 import es.uclm.esibuy.users.dto.UserProfileResponse;
+import es.uclm.esibuy.users.dto.VerifyEmailOtpDisableRequest;
+import es.uclm.esibuy.users.dto.VerifyOtpRequest;
 import es.uclm.esibuy.users.model.User;
+import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import es.uclm.esibuy.common.exception.InvalidOtpException;
-import es.uclm.esibuy.security.service.EmailOtpService;
-import es.uclm.esibuy.users.dto.VerifyOtpRequest;
-import es.uclm.esibuy.users.model.UserRole;
-import es.uclm.esibuy.users.dto.VerifyEmailOtpDisableRequest;
 
 @RestController
 @RequestMapping("/api/users")
@@ -348,12 +350,16 @@ public class UserController {
     }
 
     private Map<String, Object> buildUserResponse(User user) {
-        return Map.of(
-                "id", user.getId(),
-                EMAIL_KEY, user.getEmail(),
-                "role", user.getRole(),
-                "active", user.isActive(),
-                "totpEnabled", user.isTotpEnabled());
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", user.getId());
+        response.put(EMAIL_KEY, user.getEmail());
+        response.put("role", user.getRole());
+        response.put("active", user.isActive());
+        response.put("totpEnabled", user.isTotpEnabled());
+        if (user.getRole() == UserRole.CLIENT && user.getClientProfile() != null && user.getClientProfile().getCustomerType() != null) {
+            response.put("customerType", user.getClientProfile().getCustomerType().name());
+        }
+        return response;
     }
 
     @GetMapping("/me/email-otp-settings")

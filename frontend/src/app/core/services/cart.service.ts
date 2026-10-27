@@ -10,6 +10,9 @@ export interface CartItem {
   cantidad: number;
   subtotal: number;
   imageUrl?: string;
+  precioOriginal?: number;
+  descuento?: number;
+  esDescuentoPremium?: boolean;
 }
 
 export interface CartResponse {
@@ -17,6 +20,8 @@ export interface CartResponse {
   clienteId: string;
   items: CartItem[];
   precioTotal: number;
+  totalSinDescuento?: number;
+  descuentoTotal?: number;
 }
 
 @Injectable({ providedIn: 'root' })

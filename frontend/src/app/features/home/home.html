@@ -28,16 +28,16 @@
   <section class="catalog-main" aria-label="Catálogo público">
     @if (toastService.toast(); as t) {
     <output class="catalog-alert" [class.is-success]="t.type === 'success'"
-      [class.is-error]="t.type === 'error' || t.type === 'info'" aria-live="polite">
+      [class.is-error]="t.type === 'error'" [class.is-info]="t.type === 'info'" aria-live="polite">
       @if (t.type === 'success') {
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="m5 12 4 4L19 6"></path>
       </svg>
       } @else {
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"></circle>
+        <line x1="12" y1="8" x2="12" y2="12.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line>
+        <circle cx="12" cy="16.5" r="1" fill="currentColor"></circle>
       </svg>
       }
       <span class="alert-text">{{ t.text }}</span>
@@ -140,6 +140,24 @@
                   </svg>
                 </button>
 
+                <!-- BADGES DE DESCUENTO EN ESQUINA SUPERIOR DERECHA (EN COLOR ROJO) -->
+                @if ((product.discount && product.discount > 0) || (product.premiumDiscount && product.premiumDiscount > 0)) {
+                <div class="discount-badges-wrapper">
+                  @if (product.discount && product.discount > 0) {
+                  <span class="discount-badge-pill standard-discount-badge" title="Descuento estándar">
+                    -{{ product.discount }}%
+                  </span>
+                  }
+                  @if (product.premiumDiscount && product.premiumDiscount > 0) {
+                  <span class="discount-badge-pill premium-discount-badge"
+                    [class.is-current-plan]="isPremiumUser()"
+                    title="Descuento para clientes Premium">
+                    ★ -{{ product.premiumDiscount }}% Premium
+                  </span>
+                  }
+                </div>
+                }
+
                 <span class="rating-badge">★ {{ (product.rating ?? 5.0).toFixed(1) }}</span>
               </div>
 
@@ -152,19 +170,38 @@
 
                 <h3 class="card-title">{{ product.name }}</h3>
                 <p class="card-desc">{{ product.description || 'Sin descripción' }}</p>
-                
+
+                <!-- PROVEEDOR / VENDEDOR -->
+                <div class="product-vendor-info">
+                  <span class="vendor-label">Proveedor:</span>
+                  <span class="vendor-name">{{ product.sellerName || 'Proveedor oficial' }}</span>
+                </div>
                 
                 <div class="card-price-row">
                   <div class="price-stock-wrap">
-                    <span class="card-price">{{ formatPrice(product.price) }}</span>
-                    <span class="stock-pill" [class.stock-empty]="product.stock === 0" [class.stock-low]="stockStatus(product.stock) === 'Stock bajo'">
-                      {{ stockStatus(product.stock) }}
+                    <div class="prices-container">
+                      <div class="main-price-line">
+                        <span class="card-price">{{ formatPrice(getDiscountedPrice(product)) }}</span>
+                        @if (hasStandardDiscount(product)) {
+                        <span class="strikethrough-original-price"><s>{{ formatPrice(product.price) }}</s></span>
+                        }
+                      </div>
+                      @if (hasPremiumDiscount(product)) {
+                      <div class="premium-price-line" [class.is-current-plan]="isPremiumUser()">
+                        <span class="premium-star">★</span>
+                        <span class="premium-price-val">{{ formatPrice(getPremiumPrice(product)) }}</span>
+                        <span class="premium-label">Premium</span>
+                      </div>
+                      }
+                    </div>
+                    <span class="stock-pill" [class.stock-empty]="getRemainingStock(product) === 0" [class.stock-low]="stockStatus(product) === 'Stock bajo'">
+                      {{ stockStatus(product) }}
                     </span>
                   </div>
 
                   <div class="card-btn-group">
                     <button type="button" class="add-to-cart-action-btn"
-                      [disabled]="product.stock === 0"
+                      [disabled]="getRemainingStock(product) === 0"
                       (click)="addToCart(product, $event)">
                       Añadir al carrito
                     </button>
