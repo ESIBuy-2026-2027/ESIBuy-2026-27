@@ -5,7 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-@SpringBootTest(properties = "spring.data.mongodb.auto-index-creation=false")
+@SpringBootTest(properties = {
+		"spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration,org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration"
+})
 class EsibuyApplicationTests {
 
 	@MockBean
@@ -14,10 +16,7 @@ class EsibuyApplicationTests {
 	@Test
 	void contextLoads() {
 		// Intentionally empty: this test only verifies that the Spring application
-		// context
-		// starts successfully with all required beans and configuration.
-		// If the context fails to load, the test fails automatically without needing
-		// assertions.
+		// context starts successfully with all required beans and configuration.
 	}
 
 }
