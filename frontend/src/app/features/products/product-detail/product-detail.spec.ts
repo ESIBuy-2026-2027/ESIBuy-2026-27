@@ -259,4 +259,37 @@ describe('ProductDetail', () => {
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('.status-out')?.textContent).toContain('Agotado');
   });
+
+
+  it('shows the Premium price and additional savings to a standard client', () => {
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+
+    expect(el.querySelector('.price-value')?.textContent).toContain('809,99');
+    expect(el.querySelector('.detail-premium-value')?.textContent).toContain('674,99');
+    expect(el.querySelector('.premium-savings')?.textContent).toContain('135,00');
+    expect(el.querySelector('.premium-savings')?.textContent).toContain('Ahorrarías');
+  });
+
+  it('shows the Premium price as the main price for a Premium client', () => {
+    currentUserSignal.set({
+      id: 'premium-client-1',
+      email: 'premium@example.com',
+      role: 'CLIENT',
+      active: true,
+      customerType: 'PREMIUM',
+    });
+
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+
+    expect(el.querySelector('.price-value')?.textContent).toContain('674,99');
+    expect(el.querySelector('.detail-premium-price-row')).toBeNull();
+    expect(el.querySelector('.premium-savings')).toBeNull();
+    expect(el.querySelector('.premium-active-note')).not.toBeNull();
+  });
+
+
 });

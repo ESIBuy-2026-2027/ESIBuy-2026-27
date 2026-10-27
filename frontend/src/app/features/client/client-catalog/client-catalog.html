@@ -114,8 +114,8 @@
 
       <!-- MENSAJE DE AVISO (ÉXITO / ERROR) -->
       @if (toastService.toast(); as t) {
-      <output class="catalog-alert" [class.is-success]="t.type === 'success'"
-        [class.is-error]="t.type === 'error'" [class.is-info]="t.type === 'info'" aria-live="polite">
+      <output class="catalog-alert" [class.is-success]="t.type === 'success'" [class.is-error]="t.type === 'error'"
+        [class.is-info]="t.type === 'info'" aria-live="polite">
         @if (t.type === 'success') {
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="m5 12 4 4L19 6"></path>
@@ -277,19 +277,30 @@
               }
 
               <!-- BADGES DE DESCUENTO EN ESQUINA SUPERIOR DERECHA (EN COLOR ROJO) -->
-              @if ((product.discount && product.discount > 0) || (product.premiumDiscount && product.premiumDiscount > 0)) {
+              @if (hasAnyDiscount(product)) {
               <div class="discount-badges-wrapper">
-                @if (product.discount && product.discount > 0) {
+                @if (isPremiumUser()) {
+                <span class="discount-badge-pill" [class.premium-discount-badge]="hasPremiumDiscount(product)"
+                  [class.is-current-plan]="hasPremiumDiscount(product)" title="Descuento aplicado a tu cuenta">
+                  @if (hasPremiumDiscount(product)) {
+                  ★ -{{ getTotalDiscount(product) }}% Premium
+                  } @else {
+                  -{{ product.discount }}%
+                  }
+                </span>
+                } @else {
+                @if (hasStandardDiscount(product)) {
                 <span class="discount-badge-pill standard-discount-badge" title="Descuento estándar">
                   -{{ product.discount }}%
                 </span>
                 }
-                @if (product.premiumDiscount && product.premiumDiscount > 0) {
+
+                @if (hasPremiumDiscount(product)) {
                 <span class="discount-badge-pill premium-discount-badge"
-                  [class.is-current-plan]="isPremiumUser()"
-                  title="Descuento para clientes Premium">
+                  title="Descuento adicional para clientes Premium">
                   ★ -{{ product.premiumDiscount }}% Premium
                 </span>
+                }
                 }
               </div>
               }
@@ -317,15 +328,23 @@
                 <div class="price-stock-wrap">
                   <div class="prices-container">
                     <div class="main-price-line">
-                      <span class="product-card-price">{{ formatPrice(getDiscountedPrice(product)) }}</span>
-                      @if (hasStandardDiscount(product)) {
-                      <span class="strikethrough-original-price"><s>{{ formatPrice(product.price) }}</s></span>
+                      <span class="product-card-price">
+                        {{ formatPrice(getDisplayPrice(product)) }}
+                      </span>
+
+                      @if (isPremiumUser() ? hasAnyDiscount(product) : hasStandardDiscount(product)) {
+                      <span class="strikethrough-original-price">
+                        {{ formatPrice(product.price) }}
+                      </span>
                       }
                     </div>
-                    @if (hasPremiumDiscount(product)) {
-                    <div class="premium-price-line" [class.is-current-plan]="isPremiumUser()">
+
+                    @if (!isPremiumUser() && hasPremiumDiscount(product)) {
+                    <div class="premium-price-line">
                       <span class="premium-star">★</span>
-                      <span class="premium-price-val">{{ formatPrice(getPremiumPrice(product)) }}</span>
+                      <span class="premium-price-val">
+                        {{ formatPrice(getPremiumPrice(product)) }}
+                      </span>
                       <span class="premium-label">Premium</span>
                     </div>
                     }

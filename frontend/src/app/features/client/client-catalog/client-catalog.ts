@@ -235,30 +235,40 @@ export class ClientCatalog implements OnInit {
     return Math.max(0, product.stock - inCart);
   }
 
-  getDiscountedPrice(p: ProductItem): number {
-    if (p.discount && p.discount > 0) {
-      const factor = (100 - p.discount) / 100;
-      return Math.round(p.price * factor * 100) / 100;
-    }
-    return p.price;
-  }
-
-  getPremiumPrice(p: ProductItem): number {
+  getTotalDiscount(p: ProductItem): number {
     const standardDiscount = Math.max(0, p.discount ?? 0);
     const premiumDiscount = Math.max(0, p.premiumDiscount ?? 0);
 
-    const totalDiscount = standardDiscount + premiumDiscount;
-    const factor = Math.max(0, 100 - totalDiscount) / 100;
+    return Math.min(100, standardDiscount + premiumDiscount);
+  }
 
-    return Math.round(p.price * factor * 100) / 100;
+  getDiscountedPrice(p: ProductItem): number {
+    const discount = Math.max(0, p.discount ?? 0);
+    return Math.round(p.price * (1 - discount / 100) * 100) / 100;
+  }
+
+  getPremiumPrice(p: ProductItem): number {
+    const totalDiscount = this.getTotalDiscount(p);
+
+    return Math.round(p.price * (1 - totalDiscount / 100) * 100) / 100;
   }
 
   hasStandardDiscount(p: ProductItem): boolean {
-    return Boolean(p.discount && p.discount > 0);
+    return (p.discount ?? 0) > 0;
   }
 
   hasPremiumDiscount(p: ProductItem): boolean {
-    return Boolean(p.premiumDiscount && p.premiumDiscount > 0);
+    return (p.premiumDiscount ?? 0) > 0;
+  }
+
+  hasAnyDiscount(p: ProductItem): boolean {
+    return this.hasStandardDiscount(p) || this.hasPremiumDiscount(p);
+  }
+
+  getDisplayPrice(p: ProductItem): number {
+    return this.isPremiumUser()
+      ? this.getPremiumPrice(p)
+      : this.getDiscountedPrice(p);
   }
 
   stockStatus(itemOrStock: ProductItem | number): string {
