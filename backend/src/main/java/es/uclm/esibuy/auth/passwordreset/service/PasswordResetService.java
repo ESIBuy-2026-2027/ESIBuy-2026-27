@@ -22,6 +22,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.mail.MailException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,9 @@ public class PasswordResetService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PasswordResetService.class);
 
     private static final Duration TOKEN_LIFETIME = Duration.ofMinutes(15);
+
+    private final PasswordResetEmailService passwordResetEmailService;
+    private final String passwordResetFrontendUrl;
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
@@ -47,14 +51,18 @@ public class PasswordResetService {
             PasswordResetRateLimiter rateLimiter,
             PasswordEncoder passwordEncoder,
             MongoTemplate mongoTemplate,
-            @Value("${esibuy.password-reset.log-token:false}") boolean logRawTokenInDevelopment) {
+            PasswordResetEmailService passwordResetEmailService,
+            @Value("${esibuy.password-reset.log-token:false}") boolean logRawTokenInDevelopment,
+            @Value("${esibuy.password-reset.frontend-url:http://localhost:4200}") String passwordResetFrontendUrl) {
 
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.rateLimiter = rateLimiter;
         this.passwordEncoder = passwordEncoder;
         this.mongoTemplate = mongoTemplate;
+        this.passwordResetEmailService = passwordResetEmailService;
         this.logRawTokenInDevelopment = logRawTokenInDevelopment;
+        this.passwordResetFrontendUrl = passwordResetFrontendUrl;
     }
 
     public void requestReset(String email, String ipAddress) {
@@ -105,8 +113,21 @@ public class PasswordResetService {
                 "Password reset token generated; expires in {} minutes",
                 TOKEN_LIFETIME.toMinutes());
 
-        // Cuando se integre el proveedor de correo, se enviará rawToken
-        // al usuario. En la base de datos solo se almacena su hash.
+        String frontendBaseUrl = passwordResetFrontendUrl.replaceAll("/+$", "");
+
+        String resetUrl = frontendBaseUrl
+                + "/restablecer-password?token="
+                + rawToken;
+
+        try {
+            passwordResetEmailService.sendPasswordResetEmail(user.getEmail(), resetUrl);
+        } catch (MailException exception) {
+            LOGGER.error(
+                    "No se pudo enviar el correo de recuperación de contraseña. Tipo: {}. Causa: {}",
+                    exception.getClass().getSimpleName(),
+                    exception.getMessage(),
+                    exception);
+        }
     }
 
     public void validateResetToken(String rawToken) {
