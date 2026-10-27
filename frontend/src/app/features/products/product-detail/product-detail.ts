@@ -58,31 +58,60 @@ export class ProductDetail implements OnInit {
     return Math.max(0, p.stock - inCart);
   });
 
+
+
   getDiscountedPrice(p: ProductItem): number {
-    if (p.discount && p.discount > 0) {
-      const factor = (100 - p.discount) / 100;
-      return Math.round(p.price * factor * 100) / 100;
-    }
-    return p.price;
+    const discount = Math.min(100, Math.max(0, p.discount ?? 0));
+    return this.roundPrice(p.price * (1 - discount / 100));
   }
 
   getPremiumPrice(p: ProductItem): number {
     const standardDiscount = Math.max(0, p.discount ?? 0);
     const premiumDiscount = Math.max(0, p.premiumDiscount ?? 0);
+    const totalDiscount = Math.min(100, standardDiscount + premiumDiscount);
 
-    const totalDiscount = standardDiscount + premiumDiscount;
-    const factor = Math.max(0, 100 - totalDiscount) / 100;
+    return this.roundPrice(p.price * (1 - totalDiscount / 100));
+  }
 
-    return Math.round(p.price * factor * 100) / 100;
+  getCurrentPrice(p: ProductItem): number {
+    return this.isPremiumUser()
+      ? this.getPremiumPrice(p)
+      : this.getDiscountedPrice(p);
+  }
+
+
+  hasCurrentDiscount(p: ProductItem): boolean {
+    return this.isPremiumUser()
+      ? this.hasStandardDiscount(p) || this.hasPremiumDiscount(p)
+      : this.hasStandardDiscount(p);
+  }
+
+
+  getPremiumSavings(p: ProductItem): number {
+    return this.roundPrice(
+      this.getDiscountedPrice(p) - this.getPremiumPrice(p)
+    );
+  }
+
+  getTotalDiscount(p: ProductItem): number {
+    return Math.min(
+      100,
+      Math.max(0, p.discount ?? 0) + Math.max(0, p.premiumDiscount ?? 0)
+    );
+  }
+
+  private roundPrice(price: number): number {
+    return Math.round((price + Number.EPSILON) * 100) / 100;
   }
 
   hasStandardDiscount(p: ProductItem): boolean {
-    return Boolean(p.discount && p.discount > 0);
+    return (p.discount ?? 0) > 0;
   }
 
   hasPremiumDiscount(p: ProductItem): boolean {
-    return Boolean(p.premiumDiscount && p.premiumDiscount > 0);
+    return (p.premiumDiscount ?? 0) > 0;
   }
+
 
   isFavorite = computed(() => {
     const p = this.product();
