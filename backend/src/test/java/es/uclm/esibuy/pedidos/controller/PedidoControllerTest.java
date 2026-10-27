@@ -17,13 +17,13 @@ import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.model.PaymentMethodType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -44,228 +44,231 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({ ApiExceptionHandler.class, SecurityConfig.class })
 class PedidoControllerTest {
 
-    private static final String API = "/api/pedidos";
-    private static final String CLIENTE_ID = "cliente-1";
+        private static final String API = "/api/pedidos";
+        private static final String CLIENTE_ID = "cliente-1";
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockitoBean
-    private PedidoService pedidoService;
+        @MockBean
+        private PedidoService pedidoService;
 
-    private Authentication authenticationFor(UserRole role) {
-        AuthenticatedUserPrincipal principal = new AuthenticatedUserPrincipal(
-                CLIENTE_ID, "cliente@example.com", role, true);
-        return new UsernamePasswordAuthenticationToken(principal, null,
-                List.of(new SimpleGrantedAuthority("ROLE_" + role.name())));
-    }
+        private Authentication authenticationFor(UserRole role) {
+                AuthenticatedUserPrincipal principal = new AuthenticatedUserPrincipal(
+                                CLIENTE_ID, "cliente@example.com", role, true);
+                return new UsernamePasswordAuthenticationToken(principal, null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + role.name())));
+        }
 
-    @Test
-    void shouldCreateOrderForAuthenticatedClient() throws Exception {
-        when(pedidoService.crearPedido(eq(CLIENTE_ID), any()))
-                .thenReturn(new PedidoConfirmadoDTO(
-                        "pedido-123", new BigDecimal("39.98"), PedidoEstado.PAGADO, LocalDateTime.now()));
+        @Test
+        void shouldCreateOrderForAuthenticatedClient() throws Exception {
+                when(pedidoService.crearPedido(eq(CLIENTE_ID), any()))
+                                .thenReturn(new PedidoConfirmadoDTO(
+                                                "pedido-123", new BigDecimal("39.98"), PedidoEstado.PAGADO,
+                                                LocalDateTime.now()));
 
-        mockMvc.perform(post(API)
-                .with(authentication(authenticationFor(UserRole.CLIENT)))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {"direccionId":"direccion-1","metodoPagoId":"pago-1"}
-                        """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.pedidoId").value("pedido-123"))
-                .andExpect(jsonPath("$.precioTotal").value(39.98))
-                .andExpect(jsonPath("$.estado").value("PAGADO"));
+                mockMvc.perform(post(API)
+                                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"direccionId":"direccion-1","metodoPagoId":"pago-1"}
+                                                """))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.pedidoId").value("pedido-123"))
+                                .andExpect(jsonPath("$.precioTotal").value(39.98))
+                                .andExpect(jsonPath("$.estado").value("PAGADO"));
 
-        verify(pedidoService).crearPedido(eq(CLIENTE_ID), any());
-    }
+                verify(pedidoService).crearPedido(eq(CLIENTE_ID), any());
+        }
 
-    @Test
-    void shouldRejectNonClientAndAvoidCallingService() throws Exception {
-        mockMvc.perform(post(API)
-                .with(authentication(authenticationFor(UserRole.SELLER)))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {"direccionId":"direccion-1","metodoPagoId":"pago-1"}
-                        """))
-                .andExpect(status().isForbidden());
+        @Test
+        void shouldRejectNonClientAndAvoidCallingService() throws Exception {
+                mockMvc.perform(post(API)
+                                .with(authentication(authenticationFor(UserRole.SELLER)))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"direccionId":"direccion-1","metodoPagoId":"pago-1"}
+                                                """))
+                                .andExpect(status().isForbidden());
 
-        verify(pedidoService, never()).crearPedido(any(), any());
-    }
+                verify(pedidoService, never()).crearPedido(any(), any());
+        }
 
-    @Test
-    void shouldValidateRequiredCheckoutIdentifiers() throws Exception {
-        mockMvc.perform(post(API)
-                .with(authentication(authenticationFor(UserRole.CLIENT)))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {"direccionId":" ","metodoPagoId":""}
-                        """))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.direccionId").isNotEmpty())
-                .andExpect(jsonPath("$.errors.metodoPagoId").isNotEmpty());
+        @Test
+        void shouldValidateRequiredCheckoutIdentifiers() throws Exception {
+                mockMvc.perform(post(API)
+                                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"direccionId":" ","metodoPagoId":""}
+                                                """))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.errors.direccionId").isNotEmpty())
+                                .andExpect(jsonPath("$.errors.metodoPagoId").isNotEmpty());
 
-        verify(pedidoService, never()).crearPedido(any(), any());
-    }
+                verify(pedidoService, never()).crearPedido(any(), any());
+        }
 
-    @Test
-    void shouldReturnCheckoutSummaryForAuthenticatedClient() throws Exception {
-        when(pedidoService.obtenerCheckoutResumen(CLIENTE_ID)).thenReturn(
-                new es.uclm.esibuy.pedidos.dto.CheckoutResumenDTO(
-                        List.of(),
-                        List.of(new MetodoPagoCheckoutDTO("pago-1", PaymentMethodType.CARD, "VISA", "1234", true)),
-                        List.of(),
-                        BigDecimal.ZERO));
+        @Test
+        void shouldReturnCheckoutSummaryForAuthenticatedClient() throws Exception {
+                when(pedidoService.obtenerCheckoutResumen(CLIENTE_ID)).thenReturn(
+                                new es.uclm.esibuy.pedidos.dto.CheckoutResumenDTO(
+                                                List.of(),
+                                                List.of(new MetodoPagoCheckoutDTO("pago-1", PaymentMethodType.CARD,
+                                                                "VISA", "1234", true)),
+                                                List.of(),
+                                                BigDecimal.ZERO));
 
-        mockMvc.perform(get(API + "/checkout-resumen")
-                .with(authentication(authenticationFor(UserRole.CLIENT))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.direcciones").isArray())
-                .andExpect(jsonPath("$.metodosPago").isArray())
-                .andExpect(jsonPath("$.metodosPago[0].lastFourDigits").value("1234"))
-                .andExpect(jsonPath("$.metodosPago[0].paypalEmail").doesNotExist())
-                .andExpect(jsonPath("$.items").isArray())
-                .andExpect(jsonPath("$.precioTotal").value(0));
+                mockMvc.perform(get(API + "/checkout-resumen")
+                                .with(authentication(authenticationFor(UserRole.CLIENT))))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.direcciones").isArray())
+                                .andExpect(jsonPath("$.metodosPago").isArray())
+                                .andExpect(jsonPath("$.metodosPago[0].lastFourDigits").value("1234"))
+                                .andExpect(jsonPath("$.metodosPago[0].paypalEmail").doesNotExist())
+                                .andExpect(jsonPath("$.items").isArray())
+                                .andExpect(jsonPath("$.precioTotal").value(0));
 
-        verify(pedidoService).obtenerCheckoutResumen(CLIENTE_ID);
-    }
+                verify(pedidoService).obtenerCheckoutResumen(CLIENTE_ID);
+        }
 
-    @Test
-    void shouldReturnSellerOrdersForAuthenticatedSeller() throws Exception {
-        when(pedidoService.obtenerPedidosDelVendedor(CLIENTE_ID)).thenReturn(List.of());
+        @Test
+        void shouldReturnSellerOrdersForAuthenticatedSeller() throws Exception {
+                when(pedidoService.obtenerPedidosDelVendedor(CLIENTE_ID)).thenReturn(List.of());
 
-        mockMvc.perform(get(API + "/vendedor")
-                .with(authentication(authenticationFor(UserRole.SELLER))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$").isEmpty());
+                mockMvc.perform(get(API + "/vendedor")
+                                .with(authentication(authenticationFor(UserRole.SELLER))))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$").isArray())
+                                .andExpect(jsonPath("$").isEmpty());
 
-        verify(pedidoService).obtenerPedidosDelVendedor(CLIENTE_ID);
-    }
+                verify(pedidoService).obtenerPedidosDelVendedor(CLIENTE_ID);
+        }
 
-    @Test
-    void shouldRejectSellerOrdersForAuthenticatedClient() throws Exception {
-        mockMvc.perform(get(API + "/vendedor")
-                .with(authentication(authenticationFor(UserRole.CLIENT))))
-                .andExpect(status().isForbidden());
+        @Test
+        void shouldRejectSellerOrdersForAuthenticatedClient() throws Exception {
+                mockMvc.perform(get(API + "/vendedor")
+                                .with(authentication(authenticationFor(UserRole.CLIENT))))
+                                .andExpect(status().isForbidden());
 
-        verify(pedidoService, never()).obtenerPedidosDelVendedor(any());
-    }
+                verify(pedidoService, never()).obtenerPedidosDelVendedor(any());
+        }
 
-    @Test
-    void shouldReturnOnlyAuthenticatedClientOrderHistory() throws Exception {
-        when(pedidoService.obtenerPedidosDelCliente(CLIENTE_ID)).thenReturn(List.of());
+        @Test
+        void shouldReturnOnlyAuthenticatedClientOrderHistory() throws Exception {
+                when(pedidoService.obtenerPedidosDelCliente(CLIENTE_ID)).thenReturn(List.of());
 
-        mockMvc.perform(get(API)
-                .with(authentication(authenticationFor(UserRole.CLIENT))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$").isEmpty());
+                mockMvc.perform(get(API)
+                                .with(authentication(authenticationFor(UserRole.CLIENT))))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$").isArray())
+                                .andExpect(jsonPath("$").isEmpty());
 
-        verify(pedidoService).obtenerPedidosDelCliente(CLIENTE_ID);
-    }
+                verify(pedidoService).obtenerPedidosDelCliente(CLIENTE_ID);
+        }
 
-    @Test
-    void shouldRejectClientOrderHistoryForSeller() throws Exception {
-        mockMvc.perform(get(API)
-                .with(authentication(authenticationFor(UserRole.SELLER))))
-                .andExpect(status().isForbidden());
+        @Test
+        void shouldRejectClientOrderHistoryForSeller() throws Exception {
+                mockMvc.perform(get(API)
+                                .with(authentication(authenticationFor(UserRole.SELLER))))
+                                .andExpect(status().isForbidden());
 
-        verify(pedidoService, never()).obtenerPedidosDelCliente(any());
-    }
+                verify(pedidoService, never()).obtenerPedidosDelCliente(any());
+        }
 
-    @Test
-    void shouldReturnOrderDetailForAuthenticatedClient() throws Exception {
-        when(pedidoService.obtenerPedidoDelCliente(CLIENTE_ID, "pedido-123"))
-                .thenReturn(new PedidoClienteDTO(
-                        "pedido-123", LocalDateTime.now(), List.of(), new BigDecimal("39.98"),
-                        PedidoEstado.PAGADO));
+        @Test
+        void shouldReturnOrderDetailForAuthenticatedClient() throws Exception {
+                when(pedidoService.obtenerPedidoDelCliente(CLIENTE_ID, "pedido-123"))
+                                .thenReturn(new PedidoClienteDTO(
+                                                "pedido-123", LocalDateTime.now(), List.of(), new BigDecimal("39.98"),
+                                                PedidoEstado.PAGADO));
 
-        mockMvc.perform(get(API + "/pedido-123")
-                .with(authentication(authenticationFor(UserRole.CLIENT))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.pedidoId").value("pedido-123"))
-                .andExpect(jsonPath("$.total").value(39.98))
-                .andExpect(jsonPath("$.estado").value("PAGADO"));
+                mockMvc.perform(get(API + "/pedido-123")
+                                .with(authentication(authenticationFor(UserRole.CLIENT))))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.pedidoId").value("pedido-123"))
+                                .andExpect(jsonPath("$.total").value(39.98))
+                                .andExpect(jsonPath("$.estado").value("PAGADO"));
 
-        verify(pedidoService).obtenerPedidoDelCliente(CLIENTE_ID, "pedido-123");
-    }
+                verify(pedidoService).obtenerPedidoDelCliente(CLIENTE_ID, "pedido-123");
+        }
 
-    @Test
-    void shouldUpdateSellerOrderStatusForAuthenticatedSeller() throws Exception {
-        mockMvc.perform(patch(API + "/vendedor/pedido-123/estado")
-                .with(authentication(authenticationFor(UserRole.SELLER)))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {"estado":"ENVIADO"}
-                        """))
-                .andExpect(status().isNoContent());
+        @Test
+        void shouldUpdateSellerOrderStatusForAuthenticatedSeller() throws Exception {
+                mockMvc.perform(patch(API + "/vendedor/pedido-123/estado")
+                                .with(authentication(authenticationFor(UserRole.SELLER)))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"estado":"ENVIADO"}
+                                                """))
+                                .andExpect(status().isNoContent());
 
-        verify(pedidoService).actualizarEstadoPedido(CLIENTE_ID, "pedido-123", PedidoEstado.ENVIADO, null);
-    }
+                verify(pedidoService).actualizarEstadoPedido(CLIENTE_ID, "pedido-123", PedidoEstado.ENVIADO, null);
+        }
 
-    @Test
-    void shouldRejectOrderStatusUpdateForAuthenticatedClient() throws Exception {
-        mockMvc.perform(patch(API + "/vendedor/pedido-123/estado")
-                .with(authentication(authenticationFor(UserRole.CLIENT)))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {"estado":"ENVIADO"}
-                        """))
-                .andExpect(status().isForbidden());
+        @Test
+        void shouldRejectOrderStatusUpdateForAuthenticatedClient() throws Exception {
+                mockMvc.perform(patch(API + "/vendedor/pedido-123/estado")
+                                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"estado":"ENVIADO"}
+                                                """))
+                                .andExpect(status().isForbidden());
 
-        verify(pedidoService, never()).actualizarEstadoPedido(any(), any(), any(), any());
-    }
+                verify(pedidoService, never()).actualizarEstadoPedido(any(), any(), any(), any());
+        }
 
-    @Test
-    void shouldValidateRequiredOrderStatus() throws Exception {
-        mockMvc.perform(patch(API + "/vendedor/pedido-123/estado")
-                .with(authentication(authenticationFor(UserRole.SELLER)))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {"estado":null}
-                        """))
-                .andExpect(status().isBadRequest());
+        @Test
+        void shouldValidateRequiredOrderStatus() throws Exception {
+                mockMvc.perform(patch(API + "/vendedor/pedido-123/estado")
+                                .with(authentication(authenticationFor(UserRole.SELLER)))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"estado":null}
+                                                """))
+                                .andExpect(status().isBadRequest());
 
-        verify(pedidoService, never()).actualizarEstadoPedido(any(), any(), any(), any());
-    }
+                verify(pedidoService, never()).actualizarEstadoPedido(any(), any(), any(), any());
+        }
 
-    @Test
-    void shouldReturnBadRequestWhenOrderDoesNotBelongToSeller() throws Exception {
-        doThrow(new IllegalArgumentException("El pedido no pertenece al vendedor"))
-                .when(pedidoService).actualizarEstadoPedido(CLIENTE_ID, "pedido-123", PedidoEstado.ENVIADO, null);
+        @Test
+        void shouldReturnBadRequestWhenOrderDoesNotBelongToSeller() throws Exception {
+                doThrow(new IllegalArgumentException("El pedido no pertenece al vendedor"))
+                                .when(pedidoService)
+                                .actualizarEstadoPedido(CLIENTE_ID, "pedido-123", PedidoEstado.ENVIADO, null);
 
-        mockMvc.perform(patch(API + "/vendedor/pedido-123/estado")
-                .with(authentication(authenticationFor(UserRole.SELLER)))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {"estado":"ENVIADO"}
-                        """))
-                .andExpect(status().isBadRequest());
-    }
+                mockMvc.perform(patch(API + "/vendedor/pedido-123/estado")
+                                .with(authentication(authenticationFor(UserRole.SELLER)))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"estado":"ENVIADO"}
+                                                """))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void shouldReturnPaymentRequiredWithoutExposingInternalDetails() throws Exception {
-        doThrow(new PagoFallidoException()).when(pedidoService)
-                .crearPedido(eq(CLIENTE_ID), any());
+        @Test
+        void shouldReturnPaymentRequiredWithoutExposingInternalDetails() throws Exception {
+                doThrow(new PagoFallidoException()).when(pedidoService)
+                                .crearPedido(eq(CLIENTE_ID), any());
 
-        mockMvc.perform(post(API)
-                .with(authentication(authenticationFor(UserRole.CLIENT)))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {"direccionId":"direccion-1","metodoPagoId":"pago-1"}
-                        """))
-                .andExpect(status().isPaymentRequired())
-                .andExpect(jsonPath("$.message").value(
-                        "El pago fue rechazado. No se ha realizado ningún cargo ni modificado tu carrito"))
-                .andExpect(jsonPath("$.stackTrace").doesNotExist());
-    }
+                mockMvc.perform(post(API)
+                                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"direccionId":"direccion-1","metodoPagoId":"pago-1"}
+                                                """))
+                                .andExpect(status().isPaymentRequired())
+                                .andExpect(jsonPath("$.message").value(
+                                                "El pago fue rechazado. No se ha realizado ningún cargo ni modificado tu carrito"))
+                                .andExpect(jsonPath("$.stackTrace").doesNotExist());
+        }
 }

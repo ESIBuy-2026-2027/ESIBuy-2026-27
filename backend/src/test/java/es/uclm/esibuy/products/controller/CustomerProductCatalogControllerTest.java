@@ -11,11 +11,11 @@ import es.uclm.esibuy.security.config.SecurityConfig;
 import es.uclm.esibuy.users.model.UserRole;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.verify;
@@ -29,43 +29,43 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @Import({ ApiExceptionHandler.class, SecurityConfig.class })
 class CustomerProductCatalogControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockitoBean
-    private ProductService productService;
+        @MockBean
+        private ProductService productService;
 
-    @Test
-    void shouldReturnAvailableProductsForClients() throws Exception {
-        when(productService.getAvailableProducts()).thenReturn(List.of(new ProductResponse(
-                "product-1", "Auriculares", List.of("category-1"), 2, null, new BigDecimal("19.99"),
-                null, null, null, true, "seller-1")));
+        @Test
+        void shouldReturnAvailableProductsForClients() throws Exception {
+                when(productService.getAvailableProducts()).thenReturn(List.of(new ProductResponse(
+                                "product-1", "Auriculares", List.of("category-1"), 2, null, new BigDecimal("19.99"),
+                                null, null, null, true, "seller-1")));
 
-        mockMvc.perform(get("/api/catalog/products")
-                .with(authentication(authenticationFor(UserRole.CLIENT))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value("product-1"))
-                .andExpect(jsonPath("$[0].name").value("Auriculares"))
-                .andExpect(jsonPath("$[0].stock").value(2))
-                .andExpect(jsonPath("$[0].available").value(true));
+                mockMvc.perform(get("/api/catalog/products")
+                                .with(authentication(authenticationFor(UserRole.CLIENT))))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$[0].id").value("product-1"))
+                                .andExpect(jsonPath("$[0].name").value("Auriculares"))
+                                .andExpect(jsonPath("$[0].stock").value(2))
+                                .andExpect(jsonPath("$[0].available").value(true));
 
-        verify(productService).getAvailableProducts();
-    }
+                verify(productService).getAvailableProducts();
+        }
 
-    @Test
-    void shouldRejectSellerAndUnauthenticatedCatalogRequests() throws Exception {
-        mockMvc.perform(get("/api/catalog/products")
-                .with(authentication(authenticationFor(UserRole.SELLER))))
-                .andExpect(status().isForbidden());
+        @Test
+        void shouldRejectSellerAndUnauthenticatedCatalogRequests() throws Exception {
+                mockMvc.perform(get("/api/catalog/products")
+                                .with(authentication(authenticationFor(UserRole.SELLER))))
+                                .andExpect(status().isForbidden());
 
-        mockMvc.perform(get("/api/catalog/products"))
-                .andExpect(status().isUnauthorized());
-    }
+                mockMvc.perform(get("/api/catalog/products"))
+                                .andExpect(status().isUnauthorized());
+        }
 
-    private UsernamePasswordAuthenticationToken authenticationFor(UserRole role) {
-        AuthenticatedUserPrincipal principal = new AuthenticatedUserPrincipal(
-                "user-1", "user@example.com", role, true);
-        return new UsernamePasswordAuthenticationToken(principal, null,
-                List.of(new SimpleGrantedAuthority("ROLE_" + role.name())));
-    }
+        private UsernamePasswordAuthenticationToken authenticationFor(UserRole role) {
+                AuthenticatedUserPrincipal principal = new AuthenticatedUserPrincipal(
+                                "user-1", "user@example.com", role, true);
+                return new UsernamePasswordAuthenticationToken(principal, null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + role.name())));
+        }
 }

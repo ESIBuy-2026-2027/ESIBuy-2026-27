@@ -23,12 +23,12 @@ import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -48,22 +48,22 @@ class UserProfileControllerTest {
         @Autowired
         private MockMvc mockMvc;
 
-        @MockitoBean
+        @MockBean
         private UserService userService;
 
-        @MockitoBean
+        @MockBean
         private LoginAttemptService loginAttemptService;
 
-        @MockitoBean
+        @MockBean
         private TotpService totpService;
 
-        @MockitoBean
+        @MockBean
         private EncryptionService encryptionService;
 
-        @MockitoBean
+        @MockBean
         private TwoFactorAuthenticationService twoFactorAuthenticationService;
 
-        @MockitoBean
+        @MockBean
         private EmailOtpService emailOtpService;
 
         private Authentication authenticationFor(UserRole role) {
