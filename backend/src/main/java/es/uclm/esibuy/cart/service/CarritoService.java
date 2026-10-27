@@ -1,7 +1,14 @@
 package es.uclm.esibuy.cart.service;
 
-import es.uclm.esibuy.cart.dto.AnadirItemCarritoDTO;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import es.uclm.esibuy.cart.dto.ActualizarCantidadItemDTO;
+import es.uclm.esibuy.cart.dto.AnadirItemCarritoDTO;
 import es.uclm.esibuy.cart.dto.CarritoDTO;
 import es.uclm.esibuy.cart.dto.ItemCarritoDTO;
 import es.uclm.esibuy.cart.model.Carrito;
@@ -12,20 +19,31 @@ import es.uclm.esibuy.common.exception.ProductoNoDisponibleException;
 import es.uclm.esibuy.common.exception.StockInsuficienteException;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
-import org.springframework.stereotype.Service;
+import es.uclm.esibuy.users.model.CustomerType;
+import es.uclm.esibuy.users.repository.UserRepository;
 
 @Service
 public class CarritoService {
 
     private final ProductRepository productRepository;
     private final CarritoRepository carritoRepository;
+    private final UserRepository userRepository;
 
     private static final String CLIENTE_ID_OBLIGATORIO = "El identificador del cliente es obligatorio";
     private static final String PRODUCTO_ID_OBLIGATORIO = "El identificador del producto es obligatorio";
 
-    public CarritoService(ProductRepository productRepository, CarritoRepository carritoRepository) {
+    @Autowired
+    public CarritoService(
+            ProductRepository productRepository,
+            CarritoRepository carritoRepository,
+            UserRepository userRepository) {
         this.productRepository = productRepository;
         this.carritoRepository = carritoRepository;
+        this.userRepository = userRepository;
+    }
+
+    public CarritoService(ProductRepository productRepository, CarritoRepository carritoRepository) {
+        this(productRepository, carritoRepository, null);
     }
 
     public CarritoDTO anadirItem(String clienteId, AnadirItemCarritoDTO request) {
@@ -37,10 +55,12 @@ public class CarritoService {
         Carrito carrito = carritoRepository.findByClienteId(clienteId)
                 .orElseGet(() -> new Carrito(clienteId));
         validarStock(product, carrito, request.cantidad());
+        boolean isPremium = isPremiumClient(clienteId);
+        BigDecimal effectivePrice = calculateEffectivePrice(product, isPremium);
         carrito.addOrIncrementItem(
                 product.getId(),
                 product.getName(),
-                product.getPrice(),
+                effectivePrice,
                 request.cantidad(),
                 product.getImageUrl());
         return toDto(carritoRepository.save(carrito));
@@ -144,26 +164,94 @@ public class CarritoService {
     }
 
     private CarritoDTO toDto(Carrito carrito) {
+        boolean isPremium = isPremiumClient(carrito.getClienteId());
+        List<ItemCarritoDTO> items = carrito.getItems().stream()
+                .map(item -> toDto(item, isPremium))
+                .toList();
+
+        BigDecimal totalSinDescuento = items.stream()
+                .map(item -> (item.precioOriginal() != null ? item.precioOriginal() : item.precioUnitario())
+                        .multiply(BigDecimal.valueOf(item.cantidad())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal precioTotal = carrito.getPrecioTotal();
+        BigDecimal descuentoTotal = totalSinDescuento.compareTo(precioTotal) > 0
+                ? totalSinDescuento.subtract(precioTotal)
+                : BigDecimal.ZERO;
+
         return new CarritoDTO(
                 carrito.getId(),
                 carrito.getClienteId(),
-                carrito.getItems().stream().map(this::toDto).toList(),
-                carrito.getPrecioTotal());
+                items,
+                precioTotal,
+                totalSinDescuento,
+                descuentoTotal);
     }
 
-    private ItemCarritoDTO toDto(ItemCarrito item) {
+    private ItemCarritoDTO toDto(ItemCarrito item, boolean isPremium) {
         String imageUrl = item.getImageUrl();
-        if ((imageUrl == null || imageUrl.isBlank()) && item.getProductoId() != null) {
-            imageUrl = productRepository.findById(item.getProductoId())
-                    .map(Product::getImageUrl)
-                    .orElse(null);
+        BigDecimal precioOriginal = item.getPrecioUnitario();
+        BigDecimal descuento = BigDecimal.ZERO;
+        boolean esDescuentoPremium = false;
+
+        if (item.getProductoId() != null) {
+            Product product = productRepository.findById(item.getProductoId()).orElse(null);
+            if (product != null) {
+                if (imageUrl == null || imageUrl.isBlank()) {
+                    imageUrl = product.getImageUrl();
+                }
+                precioOriginal = product.getPrice();
+                if (isPremium && product.getPremiumDiscount() != null
+                        && product.getPremiumDiscount().compareTo(BigDecimal.ZERO) > 0) {
+                    descuento = product.getPremiumDiscount();
+                    esDescuentoPremium = true;
+                } else if (product.getDiscount() != null
+                        && product.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
+                    descuento = product.getDiscount();
+                }
+            }
         }
+
         return new ItemCarritoDTO(
                 item.getProductoId(),
                 item.getNombre(),
                 item.getPrecioUnitario(),
                 item.getCantidad(),
                 item.getSubtotal(),
-                imageUrl);
+                imageUrl,
+                precioOriginal,
+                descuento,
+                esDescuentoPremium);
+    }
+
+    private boolean isPremiumClient(String clienteId) {
+        if (clienteId == null || userRepository == null) {
+            return false;
+        }
+        return userRepository.findById(clienteId)
+                .map(user -> user.getClientProfile() != null
+                        && CustomerType.PREMIUM.equals(user.getClientProfile().getCustomerType()))
+                .orElse(false);
+    }
+
+    private BigDecimal calculateEffectivePrice(Product product, boolean isPremium) {
+        BigDecimal price = product.getPrice();
+        BigDecimal discount = BigDecimal.ZERO;
+
+        if (isPremium && product.getPremiumDiscount() != null
+                && product.getPremiumDiscount().compareTo(BigDecimal.ZERO) > 0) {
+            discount = product.getPremiumDiscount();
+        } else if (product.getDiscount() != null
+                && product.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
+            discount = product.getDiscount();
+        }
+
+        if (discount.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal factor = BigDecimal.valueOf(100).subtract(discount)
+                    .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+            return price.multiply(factor).setScale(2, RoundingMode.HALF_UP);
+        }
+
+        return price.setScale(2, RoundingMode.HALF_UP);
     }
 }
