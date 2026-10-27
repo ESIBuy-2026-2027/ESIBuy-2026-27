@@ -1,11 +1,19 @@
 import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
-import { CartResponse, CartService } from '../../../core/services/cart.service';
+import { CartItem, CartResponse, CartService } from '../../../core/services/cart.service';
 import { CheckoutSummary, ConfirmedOrder, PedidoService } from '../../../core/services/pedido.service';
+
+export interface SellerCartGroup {
+  vendedorId: string;
+  vendedorNombre: string;
+  items: CartItem[];
+  subtotal: number;
+  totalCount: number;
+}
 
 @Component({
   selector: 'app-client-cart',
@@ -31,6 +39,48 @@ export class ClientCart {
     currency: 'EUR',
   });
 
+  readonly sellerGroups = computed<SellerCartGroup[]>(() => {
+    const cart = this.cartService.cart();
+    if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
+      return [];
+    }
+    const map = new Map<string, SellerCartGroup>();
+    for (const item of cart.items) {
+      const sellerId = item.vendedorId || 'default-seller';
+      const sellerName =
+        item.vendedorNombre ||
+        (item.vendedorId ? `Vendedor ${item.vendedorId}` : 'Vendedor general');
+      let group = map.get(sellerId);
+      if (!group) {
+        group = {
+          vendedorId: sellerId,
+          vendedorNombre: sellerName,
+          items: [],
+          subtotal: 0,
+          totalCount: 0,
+        };
+        map.set(sellerId, group);
+      }
+      group.items.push(item);
+      group.subtotal = Number((group.subtotal + item.subtotal).toFixed(2));
+      group.totalCount += item.cantidad;
+    }
+    return Array.from(map.values());
+  });
+
+  readonly hasMultipleSellers = computed(() => this.sellerGroups().length > 1);
+
+  readonly sellerNamesList = computed(() =>
+    this.sellerGroups()
+      .map((group) => group.vendedorNombre)
+      .join(', '),
+  );
+
+  readonly singleSellerName = computed(() => {
+    const groups = this.sellerGroups();
+    return groups.length === 1 ? groups[0].vendedorNombre : null;
+  });
+
   formatPrice(price: number): string {
     return this.currencyFormatter.format(price);
   }
@@ -48,6 +98,12 @@ export class ClientCart {
 
   iniciarCheckout(): void {
     if (this.checkoutLoading() || this.processingOrder()) {
+      return;
+    }
+    if (this.hasMultipleSellers()) {
+      this.actionError.set(
+        'No se puede realizar un pedido con productos de diferentes vendedores en la misma compra. Debes tramitar pedidos independientes para cada vendedor.',
+      );
       return;
     }
     this.actionError.set(null);
@@ -86,6 +142,12 @@ export class ClientCart {
 
   confirmarPedido(): void {
     if (this.processingOrder()) {
+      return;
+    }
+    if (this.hasMultipleSellers()) {
+      this.actionError.set(
+        'No se puede realizar un pedido con productos de diferentes vendedores en la misma compra. Debes tramitar pedidos independientes para cada vendedor.',
+      );
       return;
     }
     const direccionId = this.selectedAddressId();

@@ -332,6 +332,7 @@ public class PedidoService {
 
     private List<PedidoItem> prepararItems(Carrito carrito) {
         List<PedidoItem> items = new ArrayList<>();
+        Set<String> sellers = new java.util.HashSet<>();
         for (ItemCarrito item : carrito.getItems()) {
             Product producto = productRepository.findById(item.getProductoId())
                     .orElseThrow(ProductNotFoundException::new);
@@ -341,6 +342,7 @@ public class PedidoService {
             if (producto.getStock() < item.getCantidad()) {
                 throw stockInsuficiente(producto);
             }
+            sellers.add(producto.getSellerId() != null ? producto.getSellerId() : "SIN_VENDEDOR");
             BigDecimal precio = producto.getPrice();
             BigDecimal subtotal = precio.multiply(BigDecimal.valueOf(item.getCantidad()));
             items.add(new PedidoItem(
@@ -350,6 +352,10 @@ public class PedidoService {
                     precio,
                     subtotal,
                     producto.getImageUrl()));
+        }
+        if (sellers.size() > 1) {
+            throw new IllegalArgumentException(
+                    "No se puede realizar un pedido con productos de diferentes vendedores. Debes realizar un pedido independiente por cada vendedor.");
         }
         return List.copyOf(items);
     }
@@ -405,10 +411,17 @@ public class PedidoService {
 
     private ItemCarritoDTO toItemCarritoDTO(ItemCarrito item) {
         String imageUrl = item.getImageUrl();
-        if ((imageUrl == null || imageUrl.isBlank()) && item.getProductoId() != null) {
-            imageUrl = productRepository.findById(item.getProductoId())
-                    .map(Product::getImageUrl)
-                    .orElse(null);
+        String vendedorId = null;
+        String vendedorNombre = null;
+        if (item.getProductoId() != null) {
+            Product product = productRepository.findById(item.getProductoId()).orElse(null);
+            if (product != null) {
+                if (imageUrl == null || imageUrl.isBlank()) {
+                    imageUrl = product.getImageUrl();
+                }
+                vendedorId = product.getSellerId();
+                vendedorNombre = resolveSellerName(vendedorId);
+            }
         }
         return new ItemCarritoDTO(
                 item.getProductoId(),
@@ -416,6 +429,27 @@ public class PedidoService {
                 item.getPrecioUnitario(),
                 item.getCantidad(),
                 item.getSubtotal(),
-                imageUrl);
+                imageUrl,
+                vendedorId,
+                vendedorNombre);
+    }
+
+    private String resolveSellerName(String sellerId) {
+        if (sellerId == null || sellerId.isBlank() || userRepository == null) {
+            return null;
+        }
+        return userRepository.findById(sellerId)
+                .map(user -> {
+                    if (user.getSellerProfile() != null
+                            && user.getSellerProfile().getBusinessName() != null
+                            && !user.getSellerProfile().getBusinessName().isBlank()) {
+                        return user.getSellerProfile().getBusinessName();
+                    }
+                    String firstName = user.getFirstName() != null ? user.getFirstName() : "";
+                    String lastName = user.getLastName() != null ? user.getLastName() : "";
+                    String fullName = (firstName + " " + lastName).trim();
+                    return !fullName.isBlank() ? fullName : "Vendedor " + sellerId;
+                })
+                .orElse("Vendedor " + sellerId);
     }
 }
