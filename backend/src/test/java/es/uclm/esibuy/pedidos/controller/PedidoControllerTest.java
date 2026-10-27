@@ -7,6 +7,7 @@ import java.util.List;
 import es.uclm.esibuy.common.exception.ApiExceptionHandler;
 import es.uclm.esibuy.common.exception.PagoFallidoException;
 import es.uclm.esibuy.pedidos.dto.PedidoConfirmadoDTO;
+import es.uclm.esibuy.pedidos.dto.PedidoClienteDTO;
 import es.uclm.esibuy.pedidos.dto.MetodoPagoCheckoutDTO;
 import es.uclm.esibuy.pedidos.model.PedidoEstado;
 import es.uclm.esibuy.pedidos.service.PedidoService;
@@ -152,6 +153,45 @@ class PedidoControllerTest {
                 .andExpect(status().isForbidden());
 
         verify(pedidoService, never()).obtenerPedidosDelVendedor(any());
+    }
+
+    @Test
+    void shouldReturnOnlyAuthenticatedClientOrderHistory() throws Exception {
+        when(pedidoService.obtenerPedidosDelCliente(CLIENTE_ID)).thenReturn(List.of());
+
+        mockMvc.perform(get(API)
+                .with(authentication(authenticationFor(UserRole.CLIENT))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+
+        verify(pedidoService).obtenerPedidosDelCliente(CLIENTE_ID);
+    }
+
+    @Test
+    void shouldRejectClientOrderHistoryForSeller() throws Exception {
+        mockMvc.perform(get(API)
+                .with(authentication(authenticationFor(UserRole.SELLER))))
+                .andExpect(status().isForbidden());
+
+        verify(pedidoService, never()).obtenerPedidosDelCliente(any());
+    }
+
+    @Test
+    void shouldReturnOrderDetailForAuthenticatedClient() throws Exception {
+        when(pedidoService.obtenerPedidoDelCliente(CLIENTE_ID, "pedido-123"))
+                .thenReturn(new PedidoClienteDTO(
+                        "pedido-123", LocalDateTime.now(), List.of(), new BigDecimal("39.98"),
+                        PedidoEstado.PAGADO));
+
+        mockMvc.perform(get(API + "/pedido-123")
+                .with(authentication(authenticationFor(UserRole.CLIENT))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pedidoId").value("pedido-123"))
+                .andExpect(jsonPath("$.total").value(39.98))
+                .andExpect(jsonPath("$.estado").value("PAGADO"));
+
+        verify(pedidoService).obtenerPedidoDelCliente(CLIENTE_ID, "pedido-123");
     }
 
     @Test

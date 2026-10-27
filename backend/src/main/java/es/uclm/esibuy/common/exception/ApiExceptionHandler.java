@@ -131,6 +131,14 @@ public class ApiExceptionHandler {
                                 CORRELATION_ID, id));
         }
 
+        @ExceptionHandler(PedidoNotFoundException.class)
+        public ResponseEntity<Map<String, String>> handlePedidoNotFound(PedidoNotFoundException exception,
+                        HttpServletRequest request) {
+                String id = correlationId(request);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(MESSAGE, exception.getMessage(),
+                                CORRELATION_ID, id));
+        }
+
         @ExceptionHandler(ProductoNoDisponibleException.class)
         public ResponseEntity<Map<String, String>> handleCartConflict(IllegalStateException exception,
                         HttpServletRequest request) {
