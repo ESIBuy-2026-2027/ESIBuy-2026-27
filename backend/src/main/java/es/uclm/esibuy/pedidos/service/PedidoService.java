@@ -76,7 +76,7 @@ public class PedidoService {
         this.pasarelaPago = pasarelaPago;
     }
 
-    public CheckoutResumenDTO obtenerCheckoutResumen(String clienteId) {
+    public CheckoutResumenDTO obtenerCheckoutResumen(String clienteId, String vendedorId) {
         User cliente = obtenerCliente(clienteId);
         ClientProfile perfil = cliente.getClientProfile();
         Carrito carrito = carritoRepository.findByClienteId(clienteId).orElseGet(() -> new Carrito(clienteId));
@@ -88,8 +88,16 @@ public class PedidoService {
                 .toList();
         List<ItemCarritoDTO> items = carrito.getItems().stream()
                 .map(this::toItemCarritoDTO)
+                .filter(dto -> vendedorId == null || vendedorId.isBlank() || vendedorId.equals(dto.vendedorId()))
                 .toList();
-        return new CheckoutResumenDTO(direcciones, metodosPago, items, carrito.getPrecioTotal());
+        BigDecimal precioTotal = items.stream()
+                .map(ItemCarritoDTO::subtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return new CheckoutResumenDTO(direcciones, metodosPago, items, precioTotal);
+    }
+
+    public CheckoutResumenDTO obtenerCheckoutResumen(String clienteId) {
+        return obtenerCheckoutResumen(clienteId, null);
     }
 
     public PedidoConfirmadoDTO crearPedido(String clienteId, CrearPedidoDTO request) {
@@ -106,7 +114,7 @@ public class PedidoService {
             throw new IllegalArgumentException("El carrito está vacío");
         }
 
-        List<PedidoItem> items = prepararItems(carrito);
+        List<PedidoItem> items = prepararItems(carrito, request.vendedorId());
         BigDecimal total = items.stream()
                 .map(PedidoItem::subtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -134,7 +142,9 @@ public class PedidoService {
                 resumenPago,
                 PedidoEstado.PAGADO);
         Pedido guardado = pedidoRepository.save(pedido);
-        carrito.vaciar();
+        for (PedidoItem item : items) {
+            carrito.removeItem(item.productoId());
+        }
         carritoRepository.save(carrito);
         return new PedidoConfirmadoDTO(
                 guardado.getId(),
@@ -330,19 +340,25 @@ public class PedidoService {
                 .orElseThrow(RecursoCheckoutNoEncontradoException::new);
     }
 
-    private List<PedidoItem> prepararItems(Carrito carrito) {
+    private List<PedidoItem> prepararItems(Carrito carrito, String vendedorId) {
         List<PedidoItem> items = new ArrayList<>();
         Set<String> sellers = new java.util.HashSet<>();
         for (ItemCarrito item : carrito.getItems()) {
             Product producto = productRepository.findById(item.getProductoId())
                     .orElseThrow(ProductNotFoundException::new);
+            String itemSellerId = producto.getSellerId() != null ? producto.getSellerId() : "SIN_VENDEDOR";
+            if (vendedorId != null && !vendedorId.isBlank()) {
+                if (!vendedorId.equals(itemSellerId)) {
+                    continue;
+                }
+            }
             if (!producto.isAvailable()) {
                 throw new ProductoNoDisponibleException();
             }
             if (producto.getStock() < item.getCantidad()) {
                 throw stockInsuficiente(producto);
             }
-            sellers.add(producto.getSellerId() != null ? producto.getSellerId() : "SIN_VENDEDOR");
+            sellers.add(itemSellerId);
             BigDecimal precio = producto.getPrice();
             BigDecimal subtotal = precio.multiply(BigDecimal.valueOf(item.getCantidad()));
             items.add(new PedidoItem(
@@ -353,11 +369,18 @@ public class PedidoService {
                     subtotal,
                     producto.getImageUrl()));
         }
+        if (items.isEmpty()) {
+            throw new IllegalArgumentException("No hay productos válidos para tramitar este pedido.");
+        }
         if (sellers.size() > 1) {
             throw new IllegalArgumentException(
                     "No se puede realizar un pedido con productos de diferentes vendedores. Debes realizar un pedido independiente por cada vendedor.");
         }
         return List.copyOf(items);
+    }
+
+    private List<PedidoItem> prepararItems(Carrito carrito) {
+        return prepararItems(carrito, null);
     }
 
     private void reservarStock(List<PedidoItem> items) {

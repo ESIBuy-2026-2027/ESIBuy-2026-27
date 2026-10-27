@@ -353,7 +353,7 @@ describe('ClientCart', () => {
     expect(fallback).toBeTruthy();
   });
 
-  it('should group cart items by vendor and show single vendor banner when all items belong to the same vendor', async () => {
+  it('should group cart items by vendor and calculate total based on selected vendor items', async () => {
     const cart = signal({
       id: 'cart-1',
       clienteId: 'client-1',
@@ -401,38 +401,39 @@ describe('ClientCart', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('.seller-single-banner')?.textContent).toContain('Burger King');
     expect(element.querySelector('.seller-summary-name')?.textContent).toContain('Burger King');
     expect(element.querySelector('.seller-warning-alert')).toBeNull();
+    expect(element.querySelector('.total-line')?.textContent).toContain('20,50');
 
     const checkoutBtn = element.querySelector('.checkout-action') as HTMLButtonElement;
     expect(checkoutBtn.disabled).toBe(false);
   });
 
-  it('should display warning alert and disable checkout when cart contains items from multiple vendors', async () => {
+  it('should only sum selected vendor items and prevent selecting products from another vendor', async () => {
+    const items = [
+      {
+        productoId: 'p-1',
+        nombre: 'Whopper',
+        precioUnitario: 8.5,
+        cantidad: 1,
+        subtotal: 8.5,
+        vendedorId: 'seller-bk',
+        vendedorNombre: 'Burger King',
+      },
+      {
+        productoId: 'p-2',
+        nombre: 'Big Mac',
+        precioUnitario: 8.0,
+        cantidad: 1,
+        subtotal: 8.0,
+        vendedorId: 'seller-mcd',
+        vendedorNombre: 'McDonalds',
+      },
+    ];
     const cart = signal({
       id: 'cart-1',
       clienteId: 'client-1',
-      items: [
-        {
-          productoId: 'p-1',
-          nombre: 'Whopper',
-          precioUnitario: 8.5,
-          cantidad: 1,
-          subtotal: 8.5,
-          vendedorId: 'seller-bk',
-          vendedorNombre: 'Burger King',
-        },
-        {
-          productoId: 'p-2',
-          nombre: 'Big Mac',
-          precioUnitario: 8.0,
-          cantidad: 1,
-          subtotal: 8.0,
-          vendedorId: 'seller-mcd',
-          vendedorNombre: 'McDonalds',
-        },
-      ],
+      items,
       precioTotal: 16.5,
     });
 
@@ -459,20 +460,31 @@ describe('ClientCart', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    const warningAlert = element.querySelector('.seller-warning-alert');
-    expect(warningAlert).not.toBeNull();
-    expect(warningAlert?.textContent).toContain('Burger King, McDonalds');
-    expect(warningAlert?.textContent).toContain('No se puede tramitar un pedido con productos de diferentes vendedores');
+    // When multiple sellers are in the cart, client selects a vendor first
+    const firstGroup = fixture.componentInstance.sellerGroups()[0];
+    fixture.componentInstance.toggleSellerSelection(firstGroup);
+    fixture.detectChanges();
+
+    // Total only includes selected vendor (Burger King: 8,50 €), NOT the entire cart (16,50 €)
+    expect(element.querySelector('.total-line')?.textContent).toContain('8,50');
+    expect(element.querySelector('.total-line')?.textContent).not.toContain('16,50');
+
+    // Attempting to select product from McDonalds while Burger King is selected
+    const secondGroup = fixture.componentInstance.sellerGroups()[1];
+    fixture.componentInstance.toggleProductSelection(items[1], secondGroup);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.isProductSelected('p-2')).toBe(false);
+    expect(fixture.componentInstance.actionError()).toContain('No puedes realizar pedidos de diferente vendedor a la vez');
+
+    // If multiple sellers are selected simultaneously, total price is removed (displays —) and checkout is blocked
+    fixture.componentInstance.setSelectedProductIds(['p-1', 'p-2']);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.selectedTotal()).toBeNull();
+    expect(element.querySelector('.no-price-indicator')?.textContent).toContain('—');
 
     const checkoutBtn = element.querySelector('.checkout-action') as HTMLButtonElement;
     expect(checkoutBtn.disabled).toBe(true);
-
-    const disabledNotice = element.querySelector('.checkout-disabled-notice');
-    expect(disabledNotice).not.toBeNull();
-    expect(disabledNotice?.textContent).toContain('debes realizar pedidos separados');
-
-    fixture.componentInstance.iniciarCheckout();
-    expect(obtenerCheckoutResumen).not.toHaveBeenCalled();
-    expect(fixture.componentInstance.actionError()).toContain('No se puede realizar un pedido con productos de diferentes vendedores');
   });
 });

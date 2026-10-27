@@ -530,3 +530,52 @@
   border-radius: 6px;
   padding: 0.5rem;
 }
+.seller-checkbox-wrapper,
+.item-checkbox-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.seller-checkbox,
+.item-checkbox {
+  width: 19px;
+  height: 19px;
+  accent-color: var(--color-brand-accent, #42d6b2);
+  cursor: pointer;
+}
+
+.cart-item.is-deselected {
+  opacity: 0.55;
+  background-color: #fafbfc;
+}
+
+.cart-item.is-deselected:hover {
+  opacity: 0.85;
+}
+
+.selected-vendor-badge {
+  font-size: 0.85rem;
+  color: #115e59;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  margin: 0.5rem 0 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.selected-vendor-badge.hint {
+  color: #64748b;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.no-price-indicator {
+  color: #94a3b8;
+  font-size: 1.25rem;
+}
