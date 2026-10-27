@@ -2,6 +2,7 @@ package es.uclm.esibuy.users.controller;
 
 import es.uclm.esibuy.common.exception.ApiExceptionHandler;
 import es.uclm.esibuy.common.exception.InvalidCredentialsException;
+import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
 import es.uclm.esibuy.security.config.SecurityConfig;
 import es.uclm.esibuy.security.service.EmailOtpService;
 import es.uclm.esibuy.security.service.LoginAttemptService;
@@ -21,11 +22,14 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -40,9 +44,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -60,6 +66,7 @@ class UserControllerTest {
         private static final String LOGIN_API = "/api/users/login";
         private static final String VERIFY_OTP_API = "/api/users/login/verify-otp";
         private static final String CURRENT_USER_API = "/api/users/me";
+        private static final String EMAIL_OTP_SETTINGS_API = "/api/users/me/email-otp-settings";
         private static final String TEST_OTP = "123456";
 
         @Autowired
@@ -409,6 +416,56 @@ class UserControllerTest {
         }
 
         @Test
+        void emailOtpSettingsExposeWhetherTotpIsEnabled() throws Exception {
+                User seller = activeSeller();
+                when(userService.findById(SELLER_ID)).thenReturn(seller);
+
+                mockMvc.perform(get(EMAIL_OTP_SETTINGS_API)
+                                .with(sellerAuthentication()))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.enabled").value(true))
+                                .andExpect(jsonPath("$.totpEnabled").value(false))
+                                .andExpect(jsonPath("$.email").value(SELLER_EMAIL));
+        }
+
+        @Test
+        void shouldRejectEnablingEmailOtpWhenTotpIsDisabled() throws Exception {
+                User seller = activeSeller();
+                when(userService.findById(SELLER_ID)).thenReturn(seller);
+
+                mockMvc.perform(put(EMAIL_OTP_SETTINGS_API)
+                                .with(sellerAuthentication())
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"enabled":true}
+                                                """))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.message").value(
+                                                "Activa primero la verificación en dos pasos con una aplicación Authenticator."));
+
+                verify(userService, never()).save(any(User.class));
+        }
+
+        @Test
+        void shouldAllowEnablingEmailOtpWhenTotpIsEnabled() throws Exception {
+                User seller = activeSeller();
+                when(seller.isTotpEnabled()).thenReturn(true);
+                when(userService.findById(SELLER_ID)).thenReturn(seller);
+
+                mockMvc.perform(put(EMAIL_OTP_SETTINGS_API)
+                                .with(sellerAuthentication())
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"enabled":true}
+                                                """))
+                                .andExpect(status().isOk());
+
+                verify(userService).save(seller);
+        }
+
+        @Test
         void shouldRejectOtpVerificationWithoutPendingSession() throws Exception {
                 mockMvc.perform(post(VERIFY_OTP_API)
                                 .with(csrf())
@@ -460,6 +517,16 @@ class UserControllerTest {
                 when(seller.isEmailOtpEnabled()).thenReturn(true);
 
                 return seller;
+        }
+
+        private RequestPostProcessor sellerAuthentication() {
+                AuthenticatedUserPrincipal principal = new AuthenticatedUserPrincipal(
+                                SELLER_ID, SELLER_EMAIL, UserRole.SELLER, true);
+
+                return authentication(UsernamePasswordAuthenticationToken.authenticated(
+                                principal,
+                                null,
+                                AuthorityUtils.createAuthorityList("ROLE_SELLER")));
         }
 
         private ResultActions loginRequest() throws Exception {

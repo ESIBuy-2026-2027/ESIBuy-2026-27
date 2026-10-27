@@ -20,6 +20,8 @@ public class Product {
     private BigDecimal discount;
     private BigDecimal premiumDiscount;
     private String imageUrl;
+    private String imageFileId;
+    private String imageContentType;
     private boolean available;
     private String sellerId;
     private Double rating = 5.0;
@@ -27,27 +29,19 @@ public class Product {
     protected Product() {
     }
 
-    public Product(
-            String name,
-            List<String> categoryIds,
-            int stock,
-            String description,
-            BigDecimal price,
-            BigDecimal discount,
-            BigDecimal premiumDiscount,
-            String imageUrl,
-            boolean available,
-            String sellerId) {
-        this.name = name;
-        this.categoryIds = List.copyOf(categoryIds);
-        this.stock = stock;
-        this.description = description;
-        this.price = price;
-        this.discount = discount;
-        this.premiumDiscount = premiumDiscount;
-        this.imageUrl = imageUrl;
-        this.available = available;
-        this.sellerId = sellerId;
+    public Product(ProductDetails details) {
+        this.name = details.name();
+        this.categoryIds = details.categoryIds() != null
+                ? List.copyOf(details.categoryIds())
+                : List.of();
+        this.stock = details.stock();
+        this.description = details.description();
+        this.price = details.price();
+        this.discount = details.discount();
+        this.premiumDiscount = details.premiumDiscount();
+        this.imageUrl = details.imageUrl();
+        this.available = details.available();
+        this.sellerId = details.sellerId();
     }
 
     public String getId() {
@@ -84,6 +78,22 @@ public class Product {
 
     public String getImageUrl() {
         return imageUrl;
+    }
+
+    public String getImageFileId() {
+        return imageFileId;
+    }
+
+    public void setImageFileId(String imageFileId) {
+        this.imageFileId = imageFileId;
+    }
+
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public void setImageContentType(String imageContentType) {
+        this.imageContentType = imageContentType;
     }
 
     public boolean isAvailable() {
@@ -146,24 +156,17 @@ public class Product {
         this.rating = rating;
     }
 
-    public void updateDetails(
-            String name,
-            List<String> categoryIds,
-            int stock,
-            String description,
-            BigDecimal price,
-            BigDecimal discount,
-            BigDecimal premiumDiscount,
-            String imageUrl,
-            boolean available) {
-        this.name = name;
-        this.categoryIds = categoryIds != null ? List.copyOf(categoryIds) : List.of();
-        this.stock = stock;
-        this.description = description;
-        this.price = price;
-        this.discount = discount;
-        this.premiumDiscount = premiumDiscount;
-        this.imageUrl = imageUrl;
-        this.available = available;
+    public void updateDetails(ProductDetails details) {
+        this.name = details.name();
+        this.categoryIds = details.categoryIds() != null
+                ? List.copyOf(details.categoryIds())
+                : List.of();
+        this.stock = details.stock();
+        this.description = details.description();
+        this.price = details.price();
+        this.discount = details.discount();
+        this.premiumDiscount = details.premiumDiscount();
+        this.imageUrl = details.imageUrl();
+        this.available = details.available();
     }
 }

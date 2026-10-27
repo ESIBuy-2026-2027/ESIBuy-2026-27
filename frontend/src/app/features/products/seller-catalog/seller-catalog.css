@@ -89,6 +89,7 @@
 .section-info {
   position: relative;
   display: flex;
+  width: 100%;
   min-width: 0;
 }
 
@@ -98,6 +99,7 @@
 
 .catalog-controls {
   display: flex;
+  width: 100%;
   align-items: center;
   gap: 12px;
 }
@@ -112,9 +114,8 @@
 .catalog-search {
   position: relative;
   display: flex;
-  width: min(230px, 32%);
-  min-width: 160px;
-  flex: 0 1 230px;
+  min-width: 0;
+  flex: 0 1 25%;
   align-items: center;
 }
 
@@ -281,6 +282,7 @@ h2 {
 }
 
 .product-count {
+  margin-left: auto;
   flex: 0 0 auto;
   padding: 8px 12px;
   border: 1px solid #dcebe7;

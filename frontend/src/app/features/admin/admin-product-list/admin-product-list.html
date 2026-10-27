@@ -1,0 +1,197 @@
+<div class="admin-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
+  <aside class="admin-sidebar admin-sidebar--shared app-sidebar" aria-label="Panel de administración">
+    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral">
+      <span aria-hidden="true">‹</span>
+    </button>
+
+    <a routerLink="/" class="admin-brand back-home-button" aria-label="ESIBuy">
+      <span class="brand-mark" aria-hidden="true">E</span>
+      <span>ESI<span class="brand-accent">Buy</span></span>
+    </a>
+
+    <p class="sidebar-caption">GESTIÓN DE ADMINISTRACIÓN</p>
+
+    <nav class="admin-navigation" aria-label="Navegación de administración">
+      <a class="navigation-link" routerLink="/admin/usuarios" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20"></path>
+          <circle cx="10" cy="7" r="3"></circle>
+          <path d="M16 11a3 3 0 1 0 0-6"></path>
+          <path d="M16 14h1a4 4 0 0 1 4 4v2"></path>
+        </svg>
+        <span>Usuarios</span>
+      </a>
+
+      <a class="navigation-link" routerLink="/admin/altas" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <span class="navigation-icon text-icon" aria-hidden="true">＋</span>
+        <span>Dar de alta Administrador</span>
+      </a>
+
+      <a class="navigation-link" routerLink="/admin/categorias" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 13 11 22l-9-9V2h11l9 9a1.4 1.4 0 0 1-2 2Z"></path>
+          <circle cx="7" cy="7" r="1.2"></circle>
+        </svg>
+        <span>Categorías</span>
+      </a>
+
+      <a class="navigation-link" routerLink="/admin/productos" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m7.5 4.27 9 5.15"></path>
+          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+          <path d="m3.3 7 8.7 5 8.7-5"></path>
+          <path d="M12 22V12"></path>
+        </svg>
+        <span>Productos</span>
+      </a>
+    </nav>
+  </aside>
+
+  <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()" aria-label="Mostrar barra lateral"
+    [hidden]="!sidebarCollapsed()">
+    <span aria-hidden="true">›</span>
+  </button>
+
+  <div class="admin-workspace app-workspace">
+    <main class="admin-content">
+      <div class="products-main-card">
+        <section class="page-heading" aria-labelledby="admin-products-title">
+          <div class="page-heading-copy">
+            <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
+            <h1 id="admin-products-title">Supervisión de productos</h1>
+            <p class="page-description">
+              Consulta en modo solo lectura los productos, precios y existencias gestionados por los vendedores.
+            </p>
+          </div>
+        </section>
+
+        <aside class="readonly-banner" role="status" aria-label="Aviso de supervisión">
+          <div class="banner-icon-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="banner-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              <circle cx="12" cy="16" r="1.2" fill="currentColor"></circle>
+            </svg>
+          </div>
+          <div class="banner-text">
+            <strong>Modo supervisión: solo lectura</strong>
+            <span>Acceso de auditoría y consulta. Las acciones de compra, modificación, valoración y favoritos están deshabilitadas.</span>
+          </div>
+        </aside>
+
+        @if (error()) {
+          <div class="error-alert" role="alert">
+            <svg viewBox="0 0 24 24" class="error-icon" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>{{ error() }}</span>
+          </div>
+        }
+
+        <section class="filters-bar" aria-label="Filtros de productos">
+          <label class="search-field">
+            <span class="visually-hidden">Buscar producto o vendedor</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16" y2="16"></line>
+            </svg>
+            <input type="search" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+              placeholder="Buscar por producto o vendedor..." aria-label="Buscar producto o vendedor">
+          </label>
+
+          <div class="filter-controls">
+            <label class="visually-hidden" for="filter-stock">Filtrar por existencias</label>
+            <select id="filter-stock" [ngModel]="stockFilter()" (ngModelChange)="stockFilter.set($event); applyFilters()">
+              <option value="ALL">Cualquier stock</option>
+              <option value="IN_STOCK">En existencias (> 0)</option>
+              <option value="OUT_OF_STOCK">Agotados (0)</option>
+            </select>
+
+            <label class="visually-hidden" for="filter-category">Filtrar por categoría</label>
+            <select id="filter-category" [ngModel]="categoryFilter()" (ngModelChange)="categoryFilter.set($event); applyFilters()">
+              <option value="ALL">Todas las categorías</option>
+              @for (cat of categories(); track cat.id) {
+                <option [value]="cat.name">{{ cat.name }}</option>
+              }
+            </select>
+          </div>
+        </section>
+
+        @if (loading()) {
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <span>Cargando productos para supervisión…</span>
+          </div>
+        } @else if (filteredProducts().length === 0) {
+          <div class="empty-state">
+            <p>No se encontraron productos con los filtros seleccionados.</p>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th scope="col">Producto</th>
+                  <th scope="col">Vendedor</th>
+                  <th scope="col">Categoría</th>
+                  <th scope="col">Precio</th>
+                  <th scope="col">Stock</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (prod of filteredProducts(); track prod.id) {
+                  <tr>
+                    <td class="cell-product-name">
+                      <span class="product-title">{{ prod.name }}</span>
+                      @if (prod.description) {
+                        <span class="product-desc">{{ prod.description }}</span>
+                      }
+                    </td>
+                    <td>
+                      <span class="seller-name">{{ prod.sellerName }}</span>
+                      <span class="seller-id-badge">{{ prod.sellerId }}</span>
+                    </td>
+                    <td>{{ prod.category }}</td>
+                    <td class="cell-price">{{ formatPrice(prod.price) }}</td>
+                    <td>
+                      @if (prod.stock > 0) {
+                        <span class="stock-pill in-stock">{{ prod.stock }} uds.</span>
+                      } @else {
+                        <span class="stock-pill out-of-stock">Agotado</span>
+                      }
+                    </td>
+                    <td>
+                      @if (prod.active) {
+                        <span class="status-pill status-active">Activo</span>
+                      } @else {
+                        <span class="status-pill status-inactive">Inactivo</span>
+                      }
+                    </td>
+                    <td class="cell-actions">
+                      <a [routerLink]="['/products', prod.id]" class="detail-link" [attr.aria-label]="'Consultar detalle de ' + prod.name">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <span>Ver detalle</span>
+                      </a>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </main>
+  </div>
+</div>
+

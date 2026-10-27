@@ -7,6 +7,7 @@ import java.util.Optional;
 import es.uclm.esibuy.common.exception.ProductNotFoundException;
 import es.uclm.esibuy.products.dto.ProductResponse;
 import es.uclm.esibuy.products.model.Product;
+import es.uclm.esibuy.products.model.ProductDetails;
 import es.uclm.esibuy.products.repository.ProductRepository;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
@@ -68,7 +69,17 @@ class WishlistServiceTest {
         WishlistItem item = new WishlistItem(CLIENT_ID, PRODUCT_ID);
         when(wishlistRepository.findAllByUserIdOrderByAddedAtDesc(CLIENT_ID)).thenReturn(List.of(item));
 
-        Product product = new Product("Laptop", List.of("cat1"), 5, "Desc", new BigDecimal("999.99"), null, null, null, true, "seller1");
+        Product product = new Product(new ProductDetails(
+                "Laptop",
+                List.of("cat1"),
+                5,
+                "Desc",
+                new BigDecimal("999.99"),
+                null,
+                null,
+                null,
+                true,
+                "seller1"));
         when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
 
         List<ProductResponse> wishlist = wishlistService.getUserWishlist(CLIENT_EMAIL);
@@ -124,8 +135,7 @@ class WishlistServiceTest {
         when(userRepository.findByEmailIgnoreCase(CLIENT_EMAIL)).thenReturn(Optional.of(clientUser));
         when(productRepository.existsById(PRODUCT_ID)).thenReturn(false);
 
-        assertThrows(ProductNotFoundException.class, () ->
-                wishlistService.addToWishlist(PRODUCT_ID, CLIENT_EMAIL));
+        assertThrows(ProductNotFoundException.class, () -> wishlistService.addToWishlist(PRODUCT_ID, CLIENT_EMAIL));
     }
 
     @Test
@@ -154,8 +164,6 @@ class WishlistServiceTest {
         when(sellerUser.getRole()).thenReturn(UserRole.SELLER);
         when(userRepository.findByEmailIgnoreCase(SELLER_EMAIL)).thenReturn(Optional.of(sellerUser));
 
-        assertThrows(AccessDeniedException.class, () ->
-                wishlistService.getUserWishlist(SELLER_EMAIL));
+        assertThrows(AccessDeniedException.class, () -> wishlistService.getUserWishlist(SELLER_EMAIL));
     }
 }
-

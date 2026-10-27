@@ -43,6 +43,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import es.uclm.esibuy.products.model.ProductDetails;
 
 @ExtendWith(MockitoExtension.class)
 class PedidoServiceTest {
@@ -234,10 +235,21 @@ class PedidoServiceTest {
         }
 
         private Product productoConStock(int stock) {
-                Product producto = new Product(
-                                "Auriculares", List.of("categoria-1"), stock, "Audio", PRECIO, BigDecimal.ZERO,
-                                BigDecimal.ZERO, null, true, "vendedor-1");
-                org.springframework.test.util.ReflectionTestUtils.setField(producto, "id", PRODUCTO_ID);
+                Product producto = new Product(new ProductDetails(
+                                "Auriculares",
+                                List.of("categoria-1"),
+                                stock,
+                                "Audio",
+                                PRECIO,
+                                BigDecimal.ZERO,
+                                BigDecimal.ZERO,
+                                null,
+                                true,
+                                "vendedor-1"));
+
+                org.springframework.test.util.ReflectionTestUtils.setField(
+                                producto, "id", PRODUCTO_ID);
+
                 return producto;
         }
 }

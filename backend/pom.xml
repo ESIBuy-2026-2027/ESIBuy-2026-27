@@ -38,24 +38,22 @@
     </scm>
 
     <properties>
-        <java.version>21</java.version>
+    <java.version>21</java.version>
 
-        <sonar.projectKey>2026-g06-backend</sonar.projectKey>
-        <sonar.projectName>2026-g06-backend</sonar.projectName>
+    <sonar.projectKey>2026-g06-backend</sonar.projectKey>
+    <sonar.projectName>2026-g06-backend</sonar.projectName>
 
-        <sonar.sources>src/main/java</sonar.sources>
-        <sonar.tests>src/test/java</sonar.tests>
+    <sonar.sources>src/main/java</sonar.sources>
+    <sonar.tests></sonar.tests>
 
-        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-
-        <sonar.coverage.exclusions>
-            **/dto/**,
-            **/model/**,
-            **/config/**,
-            **/exception/**,
-            **/EsibuyApplication.java
-        </sonar.coverage.exclusions>
-    </properties>
+    <sonar.coverage.exclusions>
+        **/dto/**,
+        **/model/**,
+        **/config/**,
+        **/exception/**,
+        **/EsibuyApplication.java
+    </sonar.coverage.exclusions>
+</properties>
 
     <dependencies>
 
@@ -125,6 +123,11 @@
             <groupId>dev.samstevens.totp</groupId>
             <artifactId>totp</artifactId>
             <version>1.7.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
 
     </dependencies>

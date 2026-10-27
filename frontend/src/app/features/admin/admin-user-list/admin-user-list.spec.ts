@@ -86,6 +86,34 @@ describe('AdminUserList', () => {
     expect(rendered.querySelector('#btnDarAltaAdmin')?.getAttribute('href')).toContain('/admin/altas');
   });
 
+  it('shows a seller commercial name without displaying the headquarters', () => {
+    component.users.set([{
+      id: 'seller-1',
+      email: 'seller@example.com',
+      firstName: 'Marcos',
+      lastName: 'Vendedor',
+      nationalId: '123',
+      phone: null,
+      profileImage: null,
+      role: 'SELLER',
+      active: true,
+      blocked: false,
+      createdAt: null,
+      sellerProfile: {
+        businessName: 'Marcos comercial',
+        headquarters: 'Canaleu',
+      },
+    }]);
+    fixture.detectChanges();
+
+    const rendered = fixture.nativeElement as HTMLElement;
+    const userInfo = rendered.querySelector('.user-info')?.textContent ?? '';
+
+    expect(userInfo).toContain('Marcos comercial');
+    expect(userInfo).not.toContain('Canaleu');
+    expect(userInfo).not.toContain('Sede:');
+  });
+
   it('loads and displays the users returned by the admin endpoint', () => {
     const users = [{
       id: 'user-1',
