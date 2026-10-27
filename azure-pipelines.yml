@@ -1,19 +1,88 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# ==============================================================================
+# Pipeline de CI/CD - ESIBuy 2026-2027
+# Historias de Usuario: 301 (Integración Continua) y 302 (Despliegue Continuo)
+# Bloque 1: Tareas 487 (Triggers y PRs) y 488 (Compilación CI Backend y Frontend)
+# ==============================================================================
 
+name: $(date:yyyyMMdd)$(rev:.r)
+
+# ------------------------------------------------------------------------------
+# Tarea 487: Triggers automáticos y PRs EXCLUSIVAMENTE para main y release
+# ------------------------------------------------------------------------------
 trigger:
-- main
+  branches:
+    include:
+      - main
+      - release
+
+pr:
+  branches:
+    include:
+      - main
+      - release
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+variables:
+  - group: 'esibuy-secrets'
+  - name: MAVEN_OPTS
+    value: '-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+stages:
+  # ============================================================================
+  # STAGE 1: INTEGRACIÓN CONTINUA (CI)
+  # ============================================================================
+  - stage: CI
+    displayName: 'Stage 1: Integración Continua'
+    jobs:
+      # ------------------------------------------------------------------------
+      # Tarea 488: Backend CI (Compilación Java 21, Maven y Tests Unitarios)
+      # ------------------------------------------------------------------------
+      - job: Backend_CI
+        displayName: 'Backend CI (Java 21 / Maven / Tests)'
+        steps:
+          - task: JavaToolInstaller@0
+            displayName: 'Configurar JDK 21'
+            inputs:
+              versionSpec: '21'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+
+          - task: Maven@4
+            displayName: 'Compilar backend y ejecutar tests unitarios'
+            inputs:
+              mavenPomFile: 'backend/pom.xml'
+              goals: 'clean verify'
+              options: '-B'
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.21'
+              mavenVersionOption: 'Default'
+
+      # ------------------------------------------------------------------------
+      # Tarea 488: Frontend CI (Node 22, Angular, Tests y Verificación de Build)
+      # ------------------------------------------------------------------------
+      - job: Frontend_CI
+        displayName: 'Frontend CI (Node 22 / Angular / Tests)'
+        steps:
+          - task: UseNode@1
+            displayName: 'Configurar Node.js 22.x'
+            inputs:
+              version: '22.x'
+
+          - script: |
+              cd frontend
+              npm ci
+            displayName: 'Instalar dependencias Frontend (npm ci)'
+
+          - script: |
+              cd frontend
+              npx ng test --watch=false
+            displayName: 'Ejecutar tests unitarios de Angular'
+
+          - script: |
+              cd frontend
+              npm run build
+            displayName: 'Compilación de verificación Frontend'
