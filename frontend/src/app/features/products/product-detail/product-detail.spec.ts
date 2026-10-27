@@ -158,6 +158,7 @@ describe('ProductDetail', () => {
     component.toggleFavorite();
     expect(toastServiceMock.show).toHaveBeenCalledWith(ADMIN_READONLY_ERROR_MESSAGE, 'error');
     expect(wishlistServiceMock.toggleWishlist).not.toHaveBeenCalled();
+    const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('.heart-toggle-btn')).toBeNull();
     expect(el.querySelector('.primary-buy-btn')).toBeNull();
   });
