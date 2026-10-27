@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
+import { resolveImageUrl } from '../utils/image.util';
 
 export interface CartItem {
   productoId: string;
@@ -34,7 +35,9 @@ export class CartService {
     this.cart.set(null);
     this.loading.set(true);
     this.loadError.set(null);
-    this.http.get<CartResponse>('/api/carrito').subscribe({
+    this.http.get<CartResponse>('/api/carrito').pipe(
+      map((cart) => this.normalizeCart(cart)),
+    ).subscribe({
       next: (cart) => {
         this.cart.set(cart);
         this.loading.set(false);
@@ -48,6 +51,7 @@ export class CartService {
 
   addItem(productoId: string, cantidad: number): Observable<CartResponse> {
     return this.http.post<CartResponse>('/api/carrito/items', { productoId, cantidad }).pipe(
+      map((cart) => this.normalizeCart(cart)),
       tap((cart) => this.cart.set(cart)),
     );
   }
@@ -56,13 +60,32 @@ export class CartService {
     return this.http.put<CartResponse>(
       `/api/carrito/items/${encodeURIComponent(productoId)}`,
       { cantidad },
-    ).pipe(tap((cart) => this.cart.set(cart)));
+    ).pipe(
+      map((cart) => this.normalizeCart(cart)),
+      tap((cart) => this.cart.set(cart)),
+    );
   }
 
   removeItem(productoId: string): Observable<CartResponse> {
     return this.http.delete<CartResponse>(
       `/api/carrito/items/${encodeURIComponent(productoId)}`,
-    ).pipe(tap((cart) => this.cart.set(cart)));
+    ).pipe(
+      map((cart) => this.normalizeCart(cart)),
+      tap((cart) => this.cart.set(cart)),
+    );
+  }
+
+  private normalizeCart(cart: CartResponse): CartResponse {
+    if (!cart || !Array.isArray(cart.items)) {
+      return cart;
+    }
+    return {
+      ...cart,
+      items: cart.items.map((item) => ({
+        ...item,
+        imageUrl: resolveImageUrl(item.imageUrl) ?? undefined,
+      })),
+    };
   }
 
   clear(): void {

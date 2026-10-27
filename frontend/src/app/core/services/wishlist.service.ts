@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
+import { resolveImageUrl } from '../utils/image.util';
 import { ProductItem } from '../services/products.service'
 import { AuthService } from './auth.service';
 
@@ -28,7 +29,19 @@ export class WishlistService {
   }
 
   getWishlist(): Observable<ProductItem[]> {
-    return this.http.get<ProductItem[]>('/api/wishlist');
+    return this.http.get<ProductItem[]>('/api/wishlist').pipe(
+      map((products) =>
+        products.map((p) => {
+          if (!p || p.imageUrl === undefined) {
+            return p;
+          }
+          return {
+            ...p,
+            imageUrl: resolveImageUrl(p.imageUrl),
+          };
+        })
+      )
+    );
   }
 
   getWishlistIds(): Observable<string[]> {

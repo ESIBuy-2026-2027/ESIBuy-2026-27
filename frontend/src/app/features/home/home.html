@@ -122,8 +122,8 @@
           @for (product of products(); track product.id) {
             <article class="showcase-card" [routerLink]="['/products', product.id]">
               <div class="card-media-wrapper">
-                @if (product.imageUrl) {
-                  <img [src]="product.imageUrl" [alt]="product.name" class="card-photo" loading="lazy" />
+                @if (product.imageUrl && !imageErrors()[product.id]) {
+                  <img [src]="product.imageUrl" [alt]="product.name" class="card-photo" loading="lazy" (error)="onImageError(product.id)" />
                 } @else {
                   <div class="photo-placeholder" aria-hidden="true">▦</div>
                 }
