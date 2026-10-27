@@ -163,9 +163,7 @@
 
             <div class="item-information">
               <h2>{{ item.nombre }}</h2>
-              <p class="item-seller-line">
-                <span class="seller-tag">{{ group.vendedorNombre }}</span>
-              </p>
+
               <p>{{ formatPrice(item.precioUnitario) }} por unidad</p>
 
               <div class="quantity-controls" [attr.aria-busy]="busyItemIds().has(item.productoId)">
