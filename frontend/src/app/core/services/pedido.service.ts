@@ -100,20 +100,40 @@ export interface CustomerPaymentMethod {
 export class PedidoService {
   private readonly http = inject(HttpClient);
 
-  obtenerCheckoutResumen(vendedorId?: string): Observable<CheckoutSummary> {
-    const options = vendedorId ? { params: { vendedorId } } : {};
+  obtenerCheckoutResumen(vendedorId?: string, productoIds?: string[]): Observable<CheckoutSummary> {
+    const params: Record<string, string | string[]> = {};
+    if (vendedorId) {
+      params['vendedorId'] = vendedorId;
+    }
+    if (productoIds && productoIds.length > 0) {
+      params['productoIds'] = productoIds;
+    }
+    const options = Object.keys(params).length > 0 ? { params } : {};
     return this.http.get<CheckoutSummary>('/api/pedidos/checkout-resumen', options).pipe(
       map((summary) => this.normalizeSummary(summary)),
     );
   }
 
-  crearPedido(direccionId: string, metodoPagoId: string, vendedorId?: string): Observable<ConfirmedOrder> {
-    const payload: { direccionId: string; metodoPagoId: string; vendedorId?: string } = {
+  crearPedido(
+    direccionId: string,
+    metodoPagoId: string,
+    vendedorId?: string,
+    productoIds?: string[],
+  ): Observable<ConfirmedOrder> {
+    const payload: {
+      direccionId: string;
+      metodoPagoId: string;
+      vendedorId?: string;
+      productoIds?: string[];
+    } = {
       direccionId,
       metodoPagoId,
     };
     if (vendedorId) {
       payload.vendedorId = vendedorId;
+    }
+    if (productoIds && productoIds.length > 0) {
+      payload.productoIds = productoIds;
     }
     return this.http.post<ConfirmedOrder>('/api/pedidos', payload);
   }

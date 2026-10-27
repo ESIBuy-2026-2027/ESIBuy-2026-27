@@ -37,9 +37,10 @@ public class PedidoController {
     @PreAuthorize("hasAnyRole('CLIENTE', 'CLIENT')")
     public ResponseEntity<CheckoutResumenDTO> obtenerCheckoutResumen(
             @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
-            @RequestParam(required = false) String vendedorId) {
-        if (vendedorId != null && !vendedorId.isBlank()) {
-            return ResponseEntity.ok(pedidoService.obtenerCheckoutResumen(principal.id(), vendedorId));
+            @RequestParam(required = false) String vendedorId,
+            @RequestParam(required = false) List<String> productoIds) {
+        if ((vendedorId != null && !vendedorId.isBlank()) || (productoIds != null && !productoIds.isEmpty())) {
+            return ResponseEntity.ok(pedidoService.obtenerCheckoutResumen(principal.id(), vendedorId, productoIds));
         }
         return ResponseEntity.ok(pedidoService.obtenerCheckoutResumen(principal.id()));
     }

@@ -493,4 +493,96 @@ describe('ClientCart', () => {
     const checkoutBtn = element.querySelector('.checkout-action') as HTMLButtonElement;
     expect(checkoutBtn.disabled).toBe(true);
   });
+  it('should only show and order selected products in checkout when subset is chosen', async () => {
+    const summary = {
+      direcciones: [{
+        id: 'address-1',
+        recipientName: 'Pepe',
+        street: 'Pepito, 12',
+        additionalInfo: null,
+        postalCode: '12222',
+        city: 'PEPELAND',
+        province: 'PEPELAND',
+        phone: '',
+        isDefault: true,
+      }],
+      metodosPago: [{
+        id: 'payment-1',
+        type: 'CARD',
+        cardBrand: 'VISA',
+        lastFourDigits: '1236',
+        defaultMethod: true,
+      }],
+      items: [
+        { productoId: 'p-1', nombre: 'Auriculares', precioUnitario: 25, cantidad: 2, subtotal: 50, vendedorId: 'v-1', vendedorNombre: 'cc' },
+        { productoId: 'p-2', nombre: 'Batería Yamaha', precioUnitario: 300, cantidad: 1, subtotal: 300, vendedorId: 'v-1', vendedorNombre: 'cc' },
+        { productoId: 'p-3', nombre: 'Casita de juguete', precioUnitario: 60, cantidad: 1, subtotal: 60, vendedorId: 'v-2', vendedorNombre: 'Messi' },
+      ],
+      precioTotal: 410,
+    };
+
+    const obtenerCheckoutResumen = vi.fn(() => of(summary));
+    const crearPedido = vi.fn(() => of({
+      pedidoId: 'pedido-auriculares',
+      precioTotal: 50,
+      estado: 'PAGADO' as const,
+      fechaCreacion: '2026-10-27T18:00:00',
+    }));
+
+    await TestBed.configureTestingModule({
+      imports: [ClientCart],
+      providers: [
+        provideRouter([]),
+        {
+          provide: CartService,
+          useValue: {
+            cart: signal({
+              id: 'cart-1',
+              clienteId: 'client-1',
+              items: summary.items,
+              precioTotal: 410,
+            }),
+            loading: signal(false),
+            loadError: signal(null),
+            itemCount: () => 4,
+            clear: vi.fn(),
+            load: vi.fn(),
+          },
+        },
+        { provide: PedidoService, useValue: { obtenerCheckoutResumen, crearPedido } },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ClientCart);
+    fixture.detectChanges();
+
+    // Client explicitly selects ONLY Auriculares (p-1)
+    fixture.componentInstance.setSelectedProductIds(['p-1']);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.selectedItemCount()).toBe(2);
+    expect(fixture.componentInstance.selectedTotal()).toBe(50);
+
+    // Click checkout
+    (fixture.nativeElement.querySelector('.checkout-action') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    // Checkout panel summary should only display Auriculares (not Batería or Casita)
+    const rows = element.querySelectorAll('.checkout-items tbody tr');
+    expect(rows.length).toBe(1);
+    expect(rows[0].querySelector('th')?.textContent).toBe('Auriculares');
+    expect(rows[0].querySelectorAll('td')[0].textContent).toContain('2');
+    expect(rows[0].querySelectorAll('td')[1].textContent).toContain('50,00');
+
+    expect(element.querySelector('.checkout-total strong')?.textContent).toContain('50,00');
+
+    // Confirm order
+    (element.querySelector('.checkout-actions .primary-action') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(crearPedido).toHaveBeenCalledWith('address-1', 'payment-1', 'v-1', ['p-1']);
+  });
 });

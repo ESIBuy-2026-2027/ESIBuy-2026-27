@@ -76,7 +76,7 @@ public class PedidoService {
         this.pasarelaPago = pasarelaPago;
     }
 
-    public CheckoutResumenDTO obtenerCheckoutResumen(String clienteId, String vendedorId) {
+    public CheckoutResumenDTO obtenerCheckoutResumen(String clienteId, String vendedorId, List<String> productoIds) {
         User cliente = obtenerCliente(clienteId);
         ClientProfile perfil = cliente.getClientProfile();
         Carrito carrito = carritoRepository.findByClienteId(clienteId).orElseGet(() -> new Carrito(clienteId));
@@ -89,11 +89,16 @@ public class PedidoService {
         List<ItemCarritoDTO> items = carrito.getItems().stream()
                 .map(this::toItemCarritoDTO)
                 .filter(dto -> vendedorId == null || vendedorId.isBlank() || vendedorId.equals(dto.vendedorId()))
+                .filter(dto -> productoIds == null || productoIds.isEmpty() || productoIds.contains(dto.productoId()))
                 .toList();
         BigDecimal precioTotal = items.stream()
                 .map(ItemCarritoDTO::subtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         return new CheckoutResumenDTO(direcciones, metodosPago, items, precioTotal);
+    }
+
+    public CheckoutResumenDTO obtenerCheckoutResumen(String clienteId, String vendedorId) {
+        return obtenerCheckoutResumen(clienteId, vendedorId, null);
     }
 
     public CheckoutResumenDTO obtenerCheckoutResumen(String clienteId) {
@@ -114,7 +119,7 @@ public class PedidoService {
             throw new IllegalArgumentException("El carrito está vacío");
         }
 
-        List<PedidoItem> items = prepararItems(carrito, request.vendedorId());
+        List<PedidoItem> items = prepararItems(carrito, request.vendedorId(), request.productoIds());
         BigDecimal total = items.stream()
                 .map(PedidoItem::subtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -340,10 +345,13 @@ public class PedidoService {
                 .orElseThrow(RecursoCheckoutNoEncontradoException::new);
     }
 
-    private List<PedidoItem> prepararItems(Carrito carrito, String vendedorId) {
+    private List<PedidoItem> prepararItems(Carrito carrito, String vendedorId, List<String> productoIds) {
         List<PedidoItem> items = new ArrayList<>();
         Set<String> sellers = new java.util.HashSet<>();
         for (ItemCarrito item : carrito.getItems()) {
+            if (productoIds != null && !productoIds.isEmpty() && !productoIds.contains(item.getProductoId())) {
+                continue;
+            }
             Product producto = productRepository.findById(item.getProductoId())
                     .orElseThrow(ProductNotFoundException::new);
             String itemSellerId = producto.getSellerId() != null ? producto.getSellerId() : "SIN_VENDEDOR";
@@ -377,6 +385,10 @@ public class PedidoService {
                     "No se puede realizar un pedido con productos de diferentes vendedores. Debes realizar un pedido independiente por cada vendedor.");
         }
         return List.copyOf(items);
+    }
+
+    private List<PedidoItem> prepararItems(Carrito carrito, String vendedorId) {
+        return prepararItems(carrito, vendedorId, null);
     }
 
     private List<PedidoItem> prepararItems(Carrito carrito) {
