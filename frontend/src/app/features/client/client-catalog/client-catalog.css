@@ -114,7 +114,7 @@
 
 .page-heading {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 24px;
@@ -134,23 +134,21 @@
   font-size: 14px;
 }
 
-.heading-title-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 14px;
-}
-
-.admin-mode-pill {
+/* NUEVA ETIQUETA AMARILLA COMPACTA A LA DERECHA */
+.admin-readonly-badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 12px;
-  border: 1px solid #bae6fd;
-  border-radius: 9999px;
-  background: #e0f2fe;
-  color: #0369a1;
+  gap: 8px;
+  background: #fefce8;
+  border: 1px solid #fde047;
+  color: #854d0e;
+  padding: 8px 14px;
+  border-radius: 8px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(133, 77, 14, 0.1);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .admin-catalog-view .app-workspace,
@@ -166,7 +164,7 @@
   flex-direction: column;
   gap: 18px;
   margin-bottom: 28px;
-  padding: 22px 24px;
+  padding: 22px 24px 44px 24px; 
   border: 2px solid #cbd5e1;
   border-radius: 14px;
   background: #fff;
@@ -210,29 +208,33 @@
   background: #fff;
 }
 
+/* ALINEACIÓN INFERIOR PARA LOS FILTROS Y BOTONES */
 .filter-controls-row {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   flex-wrap: wrap;
   gap: 16px;
-  padding-bottom: 12px;
+  padding-bottom: 0;
 }
 
 .filter-control {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0;
 }
 
 .filter-label {
   color: #475569;
   font-size: 12px;
   font-weight: 700;
+  margin: 0 0 6px 0;
+  line-height: normal;
 }
 
 .filter-control select {
   box-sizing: border-box;
   min-width: 170px;
+  height: 35px;
   padding: 8px 12px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -253,13 +255,13 @@
   min-width: 220px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0;
   position: relative;
 }
 
 .price-control .filter-label {
   display: block;
-  margin: 0;
+  margin: 0 0 6px 0;
   line-height: normal;
 }
 
@@ -390,8 +392,28 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
-  flex: 1 1 auto;
-  padding-top: 21px;
+  flex: 1 1 100%; /* Ocupa el 100% del ancho para forzar el salto de línea debajo del slider */
+  width: 100%;
+  margin-top: 14px; /* Margen superior para dar espacio seguro al slider de precios */
+  padding-top: 0;
+}
+
+.reset-filter-btn {
+  margin-left: auto; /* Empuja el botón de limpiar hacia la extrema derecha de esa misma fila */
+  height: 35px;
+  padding: 0 14px;
+  border: 1px solid #99f6e4;
+  border-radius: 8px;
+  background: transparent;
+  color: #0d9488;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.reset-filter-btn:hover {
+  background: #f0fdfa;
 }
 
 .checkbox-label {
@@ -409,24 +431,6 @@
   height: 16px;
   accent-color: #42d6b2;
   cursor: pointer;
-}
-
-.reset-filter-btn {
-  margin-left: auto;
-  height: 35px;
-  padding: 0 14px;
-  border: 1px solid #99f6e4;
-  border-radius: 8px;
-  background: transparent;
-  color: #0d9488;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.reset-filter-btn:hover {
-  background: #f0fdfa;
 }
 
 /* RESULTADOS */
@@ -904,7 +908,10 @@
   }
   
   .filter-actions-group {
-    padding-top: 0;
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+    height: auto;
   }
 
   .reset-filter-btn {

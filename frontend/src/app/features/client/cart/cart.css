@@ -437,3 +437,237 @@
   color: #059669;
   font-weight: 700;
 }
+
+.seller-warning-alert {
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  background: #fffbeb;
+  border: 1.5px solid #f59e0b;
+  border-radius: 12px;
+  color: #78350f;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.08);
+}
+
+.seller-warning-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.seller-warning-text {
+  flex: 1;
+}
+
+.seller-warning-title {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.seller-warning-text p {
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.seller-warning-hint {
+  font-size: 0.825rem !important;
+  color: #b45309;
+  font-weight: 500;
+}
+
+.seller-single-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1.25rem;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-radius: 8px;
+  color: #115e59;
+  font-size: 0.9rem;
+}
+
+.seller-badge-icon {
+  font-size: 1.1rem;
+}
+
+.seller-accordion {
+  padding: 0.25rem 0;
+}
+
+.seller-accordion + .seller-accordion {
+  border-top: 2px solid #e6edf1;
+  margin-top: 0.5rem;
+}
+
+.seller-accordion-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.85rem 0;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.95rem;
+}
+
+.seller-accordion-summary:hover {
+  color: var(--color-focus, #0e7490);
+}
+
+.seller-summary-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.seller-summary-icon {
+  font-size: 1.15rem;
+}
+
+.seller-summary-name {
+  color: var(--color-text-primary);
+}
+
+.seller-summary-count {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+}
+
+.seller-summary-subtotal {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.seller-summary-subtotal strong {
+  color: var(--color-text-primary);
+}
+
+.seller-items-container {
+  padding-bottom: 0.5rem;
+}
+
+.item-seller-line {
+  margin: 0.25rem 0 0;
+}
+
+.seller-tag {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.checkout-disabled-notice {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: #b45309;
+  line-height: 1.4;
+  text-align: center;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 0.5rem;
+}
+.seller-checkbox-wrapper,
+.item-checkbox-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.seller-checkbox,
+.item-checkbox {
+  width: 19px;
+  height: 19px;
+  accent-color: var(--color-brand-accent, #42d6b2);
+  cursor: pointer;
+}
+
+.cart-item.is-deselected {
+  opacity: 0.55;
+  background-color: #fafbfc;
+}
+
+.cart-item.is-deselected:hover {
+  opacity: 0.85;
+}
+
+.selected-vendor-badge {
+  font-size: 0.85rem;
+  color: #115e59;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  margin: 0.5rem 0 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.selected-vendor-badge.hint {
+  color: #64748b;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.no-price-indicator {
+  color: #94a3b8;
+  font-size: 1.25rem;
+}
+
+.seller-checkbox:disabled,
+.item-checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.seller-accordion.is-disabled-seller {
+  opacity: 0.55;
+  border-color: #e2e8f0;
+}
+
+.cart-item.is-disabled-item {
+  opacity: 0.5;
+  background-color: #f8fafc;
+}
+
+.cart-item.is-disabled-item:hover {
+  opacity: 0.5;
+}
+
+.seller-disabled-hint {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-left: auto;
+  padding: 2px 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+.store-svg-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  display: inline-block;
+  vertical-align: middle;
+  color: var(--color-primary, #102c40);
+  flex-shrink: 0;
+}
+
+.selected-vendor-badge .store-svg-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #0f766e;
+}

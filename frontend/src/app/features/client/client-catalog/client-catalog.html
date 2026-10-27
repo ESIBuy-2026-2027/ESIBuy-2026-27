@@ -93,19 +93,26 @@
 
   <div class="workspace app-workspace">
     <main class="catalog-content">
+      <!-- CABECERA MODIFICADA CON LA ETIQUETA AMARILLA A LA DERECHA -->
       <section class="page-heading" aria-labelledby="catalog-title">
         <div>
-          <div class="heading-title-row">
-            <h1 id="catalog-title">Catálogo de productos</h1>
-            @if (isAdmin()) {
-            <span class="admin-mode-pill">Modo Administrador (Solo lectura)</span>
-            }
-          </div>
+          <h1 id="catalog-title">Catálogo de productos</h1>
           <p class="page-description">Explora la oferta de ESIBuy, encuentra lo que buscas y guarda tus favoritos.</p>
         </div>
+
+        @if (isAdmin()) {
+        <div class="admin-readonly-badge admin-mode-pill" title="Modo supervisión: solo lectura">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          Modo Administrador (Solo lectura)
+        </div>
+        }
       </section>
 
-      <!-- MENSAJE DE AVISO (ÉXITO / ERROR) ESTILO BANNER ARRIBA DEL FILTRO/BUSCADOR -->
+      <!-- MENSAJE DE AVISO (ÉXITO / ERROR) -->
       @if (toastService.toast(); as t) {
       <output class="catalog-alert" [class.is-success]="t.type === 'success'"
         [class.is-error]="t.type === 'error'" [class.is-info]="t.type === 'info'" aria-live="polite">
@@ -125,7 +132,7 @@
       </output>
       }
 
-      <!-- BARRA DE FILTROS COMBINABLES CON RECUADRO NOTABLE -->
+      <!-- BARRA DE FILTROS -->
       <section class="filter-bar" aria-label="Filtros del catálogo">
         <div class="filter-group search-group">
           <label for="catalog-search" class="visually-hidden">Buscar producto</label>
@@ -249,7 +256,8 @@
           <article class="product-card" [routerLink]="['/products', product.id]">
             <div class="product-image-container">
               @if (product.imageUrl && !imageErrors()[product.id]) {
-              <img class="product-card-img" [src]="product.imageUrl" [alt]="product.name" loading="lazy" (error)="onImageError(product.id)" />
+              <img class="product-card-img" [src]="product.imageUrl" [alt]="product.name" loading="lazy"
+                (error)="onImageError(product.id)" />
               } @else {
               <div class="product-img-fallback" aria-hidden="true">▦</div>
               }

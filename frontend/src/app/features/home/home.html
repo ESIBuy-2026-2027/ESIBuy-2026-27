@@ -18,7 +18,8 @@
         <input id="public-search" type="search" placeholder="Buscar por nombre o palabra clave..."
           [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event); onFilterChange()" />
         @if (searchQuery()) {
-          <button type="button" class="clear-search-btn" (click)="searchQuery.set(''); onFilterChange()" aria-label="Borrar búsqueda">×</button>
+        <button type="button" class="clear-search-btn" (click)="searchQuery.set(''); onFilterChange()"
+          aria-label="Borrar búsqueda">×</button>
         }
       </div>
     </div>
@@ -44,37 +45,49 @@
       <button type="button" class="alert-close" (click)="toastService.clear()" aria-label="Cerrar aviso">×</button>
     </output>
     }
-    <div class="filters-panel">
-      <div class="filters-header">
-        <span class="filters-title">Filtrar catálogo</span>
-        <button type="button" class="reset-link" (click)="resetFilters()">Limpiar filtros</button>
-      </div>
 
-      <div class="filters-grid">
-        <div class="filter-item">
-          <label for="home-category">Categoría</label>
-          <select id="home-category" [ngModel]="selectedCategory()" (ngModelChange)="selectedCategory.set($event); onFilterChange()">
+    <!-- FILTROS (ESTILO UNIFICADO CON CATÁLOGO CLIENTE) -->
+    <div class="filters-panel">
+      <div class="filter-controls-row">
+
+        <div class="filter-control">
+          <label for="filter-category" class="filter-label">Categoría</label>
+          <select id="filter-category" [ngModel]="selectedCategory()"
+            (ngModelChange)="selectedCategory.set($event); onFilterChange()">
             <option value="">Todas las categorías</option>
             @for (cat of categories(); track cat.id) {
-              <option [value]="cat.id">{{ cat.name }}</option>
+            <option [value]="cat.id">{{ cat.name }}</option>
             }
           </select>
         </div>
 
-        <div class="filter-item price-item">
-          <span>Rango de precio (€)</span>
-          <div class="price-inputs-row">
-            <input type="number" min="0" placeholder="Mín" [ngModel]="minPrice()"
-              (ngModelChange)="minPrice.set($event); onFilterChange()" aria-label="Precio mínimo" />
-            <span class="sep">-</span>
-            <input type="number" min="0" placeholder="Máx" [ngModel]="maxPrice()"
-              (ngModelChange)="maxPrice.set($event); onFilterChange()" aria-label="Precio máximo" />
+        <div class="filter-control price-control">
+          <span class="filter-label">Precio (€)</span>
+          <div class="price-inputs">
+            <input type="number" min="0" [max]="maxPrice() ?? priceLimit()" step="1" placeholder="Mín"
+              [ngModel]="minPrice() ?? 0" (ngModelChange)="setMinPrice($event)" (change)="onFilterChange()"
+              aria-label="Precio mínimo" />
+            <span class="price-sep">-</span>
+            <input type="number" [min]="minPrice() ?? 0" [max]="priceLimit()" step="1" placeholder="Máx"
+              [ngModel]="maxPrice() ?? priceLimit()" (ngModelChange)="setMaxPrice($event)" (change)="onFilterChange()"
+              aria-label="Precio máximo" />
+          </div>
+
+          <div class="price-range-slider">
+            <div class="price-range-track"></div>
+            <div class="price-range-selection" [style.left.%]="minPricePercent()"
+              [style.width.%]="maxPricePercent() - minPricePercent()">
+            </div>
+            <input type="range" min="0" [max]="priceLimit()" step="1" [ngModel]="minPrice() ?? 0"
+              (ngModelChange)="setMinPrice($event)" (change)="onFilterChange()" aria-label="Ajustar precio mínimo" />
+            <input type="range" min="0" [max]="priceLimit()" step="1" [ngModel]="maxPrice() ?? priceLimit()"
+              (ngModelChange)="setMaxPrice($event)" (change)="onFilterChange()" aria-label="Ajustar precio máximo" />
           </div>
         </div>
 
-        <div class="filter-item">
-          <label for="home-rating">Valoración mínima</label>
-          <select id="home-rating" [ngModel]="minRating()" (ngModelChange)="minRating.set($event); onFilterChange()">
+        <div class="filter-control">
+          <label for="filter-rating" class="filter-label">Valoración mínima</label>
+          <select id="filter-rating" [ngModel]="minRating()" (ngModelChange)="minRating.set($event); onFilterChange()">
             <option [ngValue]="null">Cualquier valoración</option>
             <option [ngValue]="4">4 estrellas o más (★★★★☆)</option>
             <option [ngValue]="3">3 estrellas o más (★★★☆☆)</option>
@@ -83,12 +96,38 @@
           </select>
         </div>
 
-        <div class="filter-item stock-item">
-          <label class="stock-checkbox">
-            <input type="checkbox" [ngModel]="onlyInStock()" (ngModelChange)="onlyInStock.set($event); onFilterChange()" />
+        <!-- NUEVO: Ordenar por -->
+        <div class="filter-control">
+          <label for="filter-sort" class="filter-label">Ordenar por</label>
+          <select id="filter-sort" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event); onFilterChange()">
+            <option value="recommended">Recomendados</option>
+            <option value="rating-desc">Mejor valorados</option>
+            <option value="rating-asc">Peor valorados</option>
+            <option value="price-asc">Precio: menor a mayor</option>
+            <option value="price-desc">Precio: mayor a menor</option>
+          </select>
+        </div>
+
+        <!-- ACCIONES -->
+        <div class="filter-actions-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [ngModel]="onlyInStock()"
+              (ngModelChange)="onlyInStock.set($event); onFilterChange()" />
             <span>Solo en stock</span>
           </label>
+
+          <!-- NUEVO: Solo ofertas -->
+          <label class="checkbox-label">
+            <input type="checkbox" [ngModel]="onlyOffers()"
+              (ngModelChange)="onlyOffers.set($event); onFilterChange()" />
+            <span>Solo ofertas</span>
+          </label>
+
+          <button type="button" class="reset-filter-btn" (click)="resetFilters()" title="Limpiar todos los filtros">
+            Limpiar filtros
+          </button>
         </div>
+
       </div>
     </div>
 
@@ -96,49 +135,49 @@
     <div class="catalog-results">
       <div class="results-meta">
         @if (!loading() && !error()) {
-          <span class="meta-count">{{ products().length }} productos disponibles</span>
+        <span class="meta-count">{{ products().length }} productos disponibles</span>
         }
       </div>
 
       @if (loading()) {
-        <div class="status-box">
-          <div class="spinner"></div>
-          <p>Cargando el escaparate de productos…</p>
-        </div>
+      <div class="status-box">
+        <div class="spinner"></div>
+        <p>Cargando el escaparate de productos…</p>
+      </div>
       } @else if (error()) {
-        <div class="status-box error-box" role="alert">
-          <p>No se pudo cargar el catálogo de productos.</p>
-          <button type="button" class="btn-retry" (click)="loadProducts()">Reintentar</button>
-        </div>
+      <div class="status-box error-box" role="alert">
+        <p>No se pudo cargar el catálogo de productos.</p>
+        <button type="button" class="btn-retry" (click)="loadProducts()">Reintentar</button>
+      </div>
       } @else if (products().length === 0) {
-        <div class="status-box empty-box">
-          <span class="empty-glyph" aria-hidden="true">⌕</span>
-          <h3>No se encontraron productos</h3>
-          <p>No hay artículos que coincidan con tus criterios de búsqueda o filtros.</p>
-          <button type="button" class="btn-reset" (click)="resetFilters()">Restablecer filtros</button>
-        </div>
+      <div class="status-box empty-box">
+        <span class="empty-glyph" aria-hidden="true">⌕</span>
+        <h3>No se encontraron productos</h3>
+        <p>No hay artículos que coincidan con tus criterios de búsqueda o filtros.</p>
+        <button type="button" class="btn-reset" (click)="resetFilters()">Restablecer filtros</button>
+      </div>
       } @else {
-        <div class="product-cards-grid">
-          @for (product of products(); track product.id) {
-            <article class="showcase-card" [routerLink]="['/products', product.id]">
-              <div class="card-media-wrapper">
-                @if (product.imageUrl && !imageErrors()[product.id]) {
-                  <img [src]="product.imageUrl" [alt]="product.name" class="card-photo" loading="lazy" (error)="onImageError(product.id)" />
-                } @else {
-                  <div class="photo-placeholder" aria-hidden="true">▦</div>
-                }
+      <div class="product-cards-grid">
+        @for (product of products(); track product.id) {
+        <article class="showcase-card" [routerLink]="['/products', product.id]">
+          <div class="card-media-wrapper">
+            @if (product.imageUrl && !imageErrors()[product.id]) {
+            <img [src]="product.imageUrl" [alt]="product.name" class="card-photo" loading="lazy"
+              (error)="onImageError(product.id)" />
+            } @else {
+            <div class="photo-placeholder" aria-hidden="true">▦</div>
+            }
 
-                <!-- CORAZÓN CENTRADO AL PONERSE ENCIMA DE LA IMAGEN CON EL RATÓN -->
-                <button type="button" class="center-heart-action"
-                  [class.is-favorite]="wishlistService.isFavorite(product.id)"
-                  (click)="toggleFavorite(product.id, $event)"
-                  [title]="wishlistService.isFavorite(product.id) ? 'En tu lista de deseos' : 'Guardar en favoritos'"
-                  [attr.aria-label]="wishlistService.isFavorite(product.id) ? 'Quitar de lista de deseos' : 'Añadir a lista de deseos'">
-                  <svg viewBox="0 0 24 24" class="heart-svg-icon" aria-hidden="true">
-                    <path
-                      d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                  </svg>
-                </button>
+            <!-- CORAZÓN CENTRADO AL PONERSE ENCIMA DE LA IMAGEN CON EL RATÓN -->
+            <button type="button" class="center-heart-action"
+              [class.is-favorite]="wishlistService.isFavorite(product.id)" (click)="toggleFavorite(product.id, $event)"
+              [title]="wishlistService.isFavorite(product.id) ? 'En tu lista de deseos' : 'Guardar en favoritos'"
+              [attr.aria-label]="wishlistService.isFavorite(product.id) ? 'Quitar de lista de deseos' : 'Añadir a lista de deseos'">
+              <svg viewBox="0 0 24 24" class="heart-svg-icon" aria-hidden="true">
+                <path
+                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </button>
 
                 <!-- BADGES DE DESCUENTO EN ESQUINA SUPERIOR DERECHA (EN COLOR ROJO) -->
                 @if ((product.discount && product.discount > 0) || (product.premiumDiscount && product.premiumDiscount > 0)) {
@@ -158,15 +197,15 @@
                 </div>
                 }
 
-                <span class="rating-badge">★ {{ (product.rating ?? 5.0).toFixed(1) }}</span>
-              </div>
+            <span class="rating-badge">★ {{ (product.rating ?? 5.0).toFixed(1) }}</span>
+          </div>
 
-              <div class="card-content">
-                <div class="card-category-list">
-                  @for (catId of product.categoryIds; track catId) {
-                    <span class="cat-pill">{{ categoryName(catId) }}</span>
-                  }
-                </div>
+          <div class="card-content">
+            <div class="card-category-list">
+              @for (catId of product.categoryIds; track catId) {
+              <span class="cat-pill">{{ categoryName(catId) }}</span>
+              }
+            </div>
 
                 <h3 class="card-title">{{ product.name }}</h3>
                 <p class="card-desc">{{ product.description || 'Sin descripción' }}</p>
@@ -199,20 +238,18 @@
                     </span>
                   </div>
 
-                  <div class="card-btn-group">
-                    <button type="button" class="add-to-cart-action-btn"
-                      [disabled]="getRemainingStock(product) === 0"
-                      (click)="addToCart(product, $event)">
-                      Añadir al carrito
-                    </button>
-                  </div>
-                </div>
+              <div class="card-btn-group">
+                <button type="button" class="add-to-cart-action-btn" [disabled]="getRemainingStock(product) === 0"
+                  (click)="addToCart(product, $event)">
+                  Añadir al carrito
+                </button>
               </div>
-            </article>
-          }
-        </div>
+            </div>
+          </div>
+        </article>
+        }
+      </div>
       }
     </div>
-
   </section>
 </div>

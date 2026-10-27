@@ -42,6 +42,39 @@ export class Home implements OnInit {
   maxPrice = signal<number | null>(null);
   minRating = signal<number | null>(null);
   onlyInStock = signal(false);
+  sortOrder = signal('recommended');
+  onlyOffers = signal(false);
+
+  // Lógica del Slider de Precios
+  priceLimit = signal(4500);
+
+  minPricePercent = computed(() => {
+    const min = this.minPrice() ?? 0;
+    return (min / this.priceLimit()) * 100;
+  });
+
+  maxPricePercent = computed(() => {
+    const max = this.maxPrice() ?? this.priceLimit();
+    return (max / this.priceLimit()) * 100;
+  });
+
+  setMinPrice(val: number | null): void {
+    if (val === null) {
+      this.minPrice.set(null);
+      return;
+    }
+    const max = this.maxPrice() ?? this.priceLimit();
+    this.minPrice.set(Math.min(val, max));
+  }
+
+  setMaxPrice(val: number | null): void {
+    if (val === null) {
+      this.maxPrice.set(null);
+      return;
+    }
+    const min = this.minPrice() ?? 0;
+    this.maxPrice.set(Math.max(val, min));
+  }
 
   readonly isAuthenticated = computed(() => {
     return this.authService.currentUser() !== null;
@@ -104,6 +137,7 @@ export class Home implements OnInit {
     this.loadProducts();
   }
 
+
   resetFilters(): void {
     this.searchQuery.set('');
     this.selectedCategory.set('');
@@ -111,6 +145,8 @@ export class Home implements OnInit {
     this.maxPrice.set(null);
     this.minRating.set(null);
     this.onlyInStock.set(false);
+    this.sortOrder.set('recommended'); // <-- NUEVO
+    this.onlyOffers.set(false);        // <-- NUEVO
     this.loadProducts();
   }
 

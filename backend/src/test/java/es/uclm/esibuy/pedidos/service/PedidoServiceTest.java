@@ -1,4 +1,4 @@
-package es.uclm.esibuy.pedidos.service;
+﻿package es.uclm.esibuy.pedidos.service;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -203,6 +203,36 @@ class PedidoServiceTest {
                 verify(mongoTemplate, never()).findAndModify(
                                 any(Query.class), any(Update.class), any(FindAndModifyOptions.class),
                                 eq(Product.class));
+                verify(pasarelaPago, never()).cobrar(any(), any());
+        }
+
+        @Test
+        void shouldRejectOrderWhenCartContainsProductsFromMultipleSellers() {
+                carrito.addOrIncrementItem("producto-2", "Teclado", new BigDecimal("49.99"), 1);
+                Product p1 = productoConStock(5);
+                Product p2 = new Product(new ProductDetails(
+                                "Teclado",
+                                List.of("categoria-1"),
+                                5,
+                                "Periférico",
+                                new BigDecimal("49.99"),
+                                BigDecimal.ZERO,
+                                BigDecimal.ZERO,
+                                null,
+                                true,
+                                "vendedor-2"));
+                org.springframework.test.util.ReflectionTestUtils.setField(p2, "id", "producto-2");
+
+                when(carritoRepository.findByClienteId(CLIENTE_ID)).thenReturn(Optional.of(carrito));
+                when(productRepository.findById(PRODUCTO_ID)).thenReturn(Optional.of(p1));
+                when(productRepository.findById("producto-2")).thenReturn(Optional.of(p2));
+
+                IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                                () -> pedidoService.crearPedido(CLIENTE_ID, new CrearPedidoDTO("direccion-1", "pago-1")));
+
+                assertEquals("No se puede realizar un pedido con productos de diferentes vendedores. Debes realizar un pedido independiente por cada vendedor.",
+                                exception.getMessage());
+                verify(pedidoRepository, never()).save(any(Pedido.class));
                 verify(pasarelaPago, never()).cobrar(any(), any());
         }
 

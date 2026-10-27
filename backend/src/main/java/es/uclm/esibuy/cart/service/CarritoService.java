@@ -1,4 +1,4 @@
-package es.uclm.esibuy.cart.service;
+﻿package es.uclm.esibuy.cart.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,6 +19,7 @@ import es.uclm.esibuy.common.exception.ProductoNoDisponibleException;
 import es.uclm.esibuy.common.exception.StockInsuficienteException;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
+import es.uclm.esibuy.users.repository.UserRepository;
 import es.uclm.esibuy.users.model.CustomerType;
 import es.uclm.esibuy.users.repository.UserRepository;
 
@@ -28,14 +29,19 @@ public class CarritoService {
     private final ProductRepository productRepository;
     private final CarritoRepository carritoRepository;
     private final UserRepository userRepository;
+    private final UserRepository userRepository;
 
     private static final String CLIENTE_ID_OBLIGATORIO = "El identificador del cliente es obligatorio";
     private static final String PRODUCTO_ID_OBLIGATORIO = "El identificador del producto es obligatorio";
 
     @Autowired
+    @org.springframework.beans.factory.annotation.Autowired
     public CarritoService(
+            
             ProductRepository productRepository,
+           
             CarritoRepository carritoRepository,
+            UserRepository userRepository,
             UserRepository userRepository) {
         this.productRepository = productRepository;
         this.carritoRepository = carritoRepository;

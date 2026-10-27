@@ -13,6 +13,8 @@ export interface CartItem {
   precioOriginal?: number;
   descuento?: number;
   esDescuentoPremium?: boolean;
+  vendedorId?: string;
+  vendedorNombre?: string;
 }
 
 export interface CartResponse {
