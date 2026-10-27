@@ -1,4 +1,4 @@
-﻿package es.uclm.esibuy.cart.service;
+package es.uclm.esibuy.cart.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,7 +19,6 @@ import es.uclm.esibuy.common.exception.ProductoNoDisponibleException;
 import es.uclm.esibuy.common.exception.StockInsuficienteException;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
-import es.uclm.esibuy.users.repository.UserRepository;
 import es.uclm.esibuy.users.model.CustomerType;
 import es.uclm.esibuy.users.repository.UserRepository;
 
@@ -29,19 +28,14 @@ public class CarritoService {
     private final ProductRepository productRepository;
     private final CarritoRepository carritoRepository;
     private final UserRepository userRepository;
-    private final UserRepository userRepository;
 
     private static final String CLIENTE_ID_OBLIGATORIO = "El identificador del cliente es obligatorio";
     private static final String PRODUCTO_ID_OBLIGATORIO = "El identificador del producto es obligatorio";
 
     @Autowired
-    @org.springframework.beans.factory.annotation.Autowired
     public CarritoService(
-            
             ProductRepository productRepository,
-           
             CarritoRepository carritoRepository,
-            UserRepository userRepository,
             UserRepository userRepository) {
         this.productRepository = productRepository;
         this.carritoRepository = carritoRepository;
@@ -199,6 +193,8 @@ public class CarritoService {
         BigDecimal precioOriginal = item.getPrecioUnitario();
         BigDecimal descuento = BigDecimal.ZERO;
         boolean esDescuentoPremium = false;
+        String vendedorId = null;
+        String vendedorNombre = null;
 
         if (item.getProductoId() != null) {
             Product product = productRepository.findById(item.getProductoId()).orElse(null);
@@ -206,6 +202,8 @@ public class CarritoService {
                 if (imageUrl == null || imageUrl.isBlank()) {
                     imageUrl = product.getImageUrl();
                 }
+                vendedorId = product.getSellerId();
+                vendedorNombre = resolveSellerName(vendedorId);
                 precioOriginal = product.getPrice();
                 if (isPremium && product.getPremiumDiscount() != null
                         && product.getPremiumDiscount().compareTo(BigDecimal.ZERO) > 0) {
@@ -225,9 +223,30 @@ public class CarritoService {
                 item.getCantidad(),
                 item.getSubtotal(),
                 imageUrl,
+                vendedorId,
+                vendedorNombre,
                 precioOriginal,
                 descuento,
                 esDescuentoPremium);
+    }
+
+    private String resolveSellerName(String sellerId) {
+        if (sellerId == null || sellerId.isBlank() || userRepository == null) {
+            return null;
+        }
+        return userRepository.findById(sellerId)
+                .map(user -> {
+                    if (user.getSellerProfile() != null
+                            && user.getSellerProfile().getBusinessName() != null
+                            && !user.getSellerProfile().getBusinessName().isBlank()) {
+                        return user.getSellerProfile().getBusinessName();
+                    }
+                    String firstName = user.getFirstName() != null ? user.getFirstName() : "";
+                    String lastName = user.getLastName() != null ? user.getLastName() : "";
+                    String fullName = (firstName + " " + lastName).trim();
+                    return !fullName.isBlank() ? fullName : "Vendedor " + sellerId;
+                })
+                .orElse("Vendedor " + sellerId);
     }
 
     private boolean isPremiumClient(String clienteId) {
