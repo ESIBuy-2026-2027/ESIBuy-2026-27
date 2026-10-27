@@ -10,6 +10,7 @@ export interface AuthenticatedUser {
   role: UserRole;
   active: boolean;
   totpEnabled?: boolean;
+  customerType?: 'STANDARD' | 'PREMIUM' | string;
 }
 
 export interface LoginResponse {
@@ -21,6 +22,7 @@ export interface LoginResponse {
   role?: UserRole;
   active?: boolean;
   totpEnabled?: boolean;
+  customerType?: 'STANDARD' | 'PREMIUM' | string;
 }
 
 export interface ClientProfile {

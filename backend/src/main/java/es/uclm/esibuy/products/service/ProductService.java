@@ -457,7 +457,7 @@ private static final String NO_PERMISSIONS_MESSAGE = "No tiene permisos para mod
         String sellerId = findSeller(authenticatedEmail).getId();
 
         return productRepository.findAllBySellerId(sellerId).stream()
-                .map(ProductResponse::from)
+                .map(this::toProductResponse)
                 .toList();
     }
 
@@ -506,7 +506,7 @@ private static final String NO_PERMISSIONS_MESSAGE = "No tiene permisos para mod
 
     public List<ProductResponse> getAvailableProducts() {
         return productRepository.findAllByAvailableTrueAndStockGreaterThan(0).stream()
-                .map(ProductResponse::from)
+                .map(this::toProductResponse)
                 .toList();
     }
 
@@ -525,7 +525,7 @@ private static final String NO_PERMISSIONS_MESSAGE = "No tiene permisos para mod
                 .filter(product -> matchesMaxPrice(product, maxPrice))
                 .filter(product -> matchesMinRating(product, minRating))
                 .filter(product -> matchesStock(product, inStock))
-                .map(ProductResponse::from)
+                .map(this::toProductResponse)
                 .toList();
     }
 
@@ -567,6 +567,11 @@ private static final String NO_PERMISSIONS_MESSAGE = "No tiene permisos para mod
         }
 
         productRepository.delete(product);
+    }
+
+    private ProductResponse toProductResponse(Product product) {
+        String sellerName = resolveSellerName(product.getSellerId());
+        return ProductResponse.from(product, sellerName);
     }
 
     private ProductSummaryDTO toProductSummaryDTO(Product product) {
@@ -679,7 +684,7 @@ private static final String NO_PERMISSIONS_MESSAGE = "No tiene permisos para mod
                 .orElseThrow(
                         () -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE));
 
-        return ProductResponse.from(product);
+        return toProductResponse(product);
     }
 
     public ProductResponse updateProductStatus(
@@ -705,7 +710,7 @@ private static final String NO_PERMISSIONS_MESSAGE = "No tiene permisos para mod
 
         product.setAvailable(available);
 
-        return ProductResponse.from(productRepository.save(product));
+        return toProductResponse(productRepository.save(product));
     }
 
     private User findSeller(String authenticatedEmail) {

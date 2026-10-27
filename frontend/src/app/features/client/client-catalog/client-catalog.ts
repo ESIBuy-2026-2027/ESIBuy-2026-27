@@ -23,6 +23,7 @@ export class ClientCatalog implements OnInit {
   readonly wishlistService = inject(WishlistService);
   readonly toastService = inject(ToastService);
   readonly cartService = inject(CartService);
+  readonly isPremiumUser = computed(() => this.authService.currentUser()?.customerType === 'PREMIUM');
 
   readonly sidebarCollapsed = signal(false);
 
@@ -38,7 +39,7 @@ export class ClientCatalog implements OnInit {
       return;
     }
 
-    if (product.stock === 0) {
+    if (this.getRemainingStock(product) === 0) {
       this.toastService.show('El producto no tiene stock disponible.', 'error');
       return;
     }
@@ -228,7 +229,38 @@ export class ClientCatalog implements OnInit {
     return this.categories().find((c) => c.id === categoryId)?.name ?? 'Categoría';
   }
 
-  stockStatus(stock: number): string {
+  getRemainingStock(product: ProductItem): number {
+    const cartData = typeof this.cartService?.cart === 'function' ? this.cartService.cart() : null;
+    const inCart = cartData?.items?.find((item) => item.productoId === product.id)?.cantidad ?? 0;
+    return Math.max(0, product.stock - inCart);
+  }
+
+  getDiscountedPrice(p: ProductItem): number {
+    if (p.discount && p.discount > 0) {
+      const factor = (100 - p.discount) / 100;
+      return Math.round(p.price * factor * 100) / 100;
+    }
+    return p.price;
+  }
+
+  getPremiumPrice(p: ProductItem): number {
+    if (p.premiumDiscount && p.premiumDiscount > 0) {
+      const factor = (100 - p.premiumDiscount) / 100;
+      return Math.round(p.price * factor * 100) / 100;
+    }
+    return p.price;
+  }
+
+  hasStandardDiscount(p: ProductItem): boolean {
+    return Boolean(p.discount && p.discount > 0);
+  }
+
+  hasPremiumDiscount(p: ProductItem): boolean {
+    return Boolean(p.premiumDiscount && p.premiumDiscount > 0);
+  }
+
+  stockStatus(itemOrStock: ProductItem | number): string {
+    const stock = typeof itemOrStock === 'number' ? itemOrStock : this.getRemainingStock(itemOrStock);
     if (stock === 0) return 'Agotado';
     return stock <= LOW_STOCK_THRESHOLD ? 'Stock bajo' : 'En stock';
   }

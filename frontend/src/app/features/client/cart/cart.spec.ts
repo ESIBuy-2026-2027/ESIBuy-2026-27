@@ -585,4 +585,51 @@ describe('ClientCart', () => {
 
     expect(crearPedido).toHaveBeenCalledWith('address-1', 'payment-1', 'v-1', ['p-1']);
   });
+  it('should render discount pills, strikethrough price and total savings when discount is present', async () => {
+    const cart = signal({
+      id: 'cart-1',
+      clienteId: 'client-1',
+      items: [
+        {
+          productoId: 'p-1',
+          nombre: 'Auriculares con Descuento',
+          precioUnitario: 80,
+          precioOriginal: 100,
+          descuento: 20,
+          esDescuentoPremium: false,
+          cantidad: 1,
+          subtotal: 80,
+        },
+      ],
+      totalSinDescuento: 100,
+      descuentoTotal: 20,
+      precioTotal: 80,
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [ClientCart],
+      providers: [
+        provideRouter([]),
+        {
+          provide: CartService,
+          useValue: {
+            cart,
+            loading: signal(false),
+            loadError: signal(null),
+            itemCount: () => 1,
+          },
+        },
+        { provide: PedidoService, useValue: { obtenerCheckoutResumen: vi.fn(), crearPedido: vi.fn() } },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ClientCart);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.item-original-price')?.textContent).toContain('100,00');
+    expect(element.querySelector('.item-discount-tag')?.textContent).toContain('-20%');
+    expect(element.querySelector('.discount-saving-line')?.textContent).toContain('20,00');
+    expect(element.querySelector('.total-line')?.textContent).toContain('80,00');
+  });
 });
