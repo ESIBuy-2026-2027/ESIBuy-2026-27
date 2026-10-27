@@ -129,17 +129,23 @@ export class ProductDetail implements OnInit {
 
   goBack(): void {
     const role = this.authService.currentUser()?.role;
+
     if (role === 'SELLER') {
       void this.router.navigate(['/seller/catalog']);
-    } else if (role === 'CLIENT' || role === 'ADMIN') {
-      void this.router.navigate(['/client/catalog']);
-    } else {
-      if (window.history.length > 1) {
-        window.history.back();
-      } else {
-        void this.router.navigate(['/']);
-      }
+      return;
     }
+
+    if (role === 'CLIENT' || role === 'ADMIN') {
+      void this.router.navigate(['/client/catalog']);
+      return;
+    }
+
+    if (window.history.length <= 1) {
+      void this.router.navigate(['/']);
+      return;
+    }
+
+    window.history.back();
   }
 
   categoryName(id: string): string {
@@ -163,9 +169,15 @@ export class ProductDetail implements OnInit {
     this.quantity.update((q) => Math.min(max, q + 1));
   }
 
-  setQuantity(val: number): void {
+  setQuantity(val: number | null): void {
     const max = this.product()?.stock ?? 1;
-    this.quantity.set(Math.max(1, Math.min(val || 1, max)));
+
+    if (val === null || !Number.isFinite(val)) {
+      return;
+    }
+
+    const normalized = Math.max(1, Math.min(Math.trunc(val), max));
+    this.quantity.set(normalized);
   }
 
   onBuy(): void {

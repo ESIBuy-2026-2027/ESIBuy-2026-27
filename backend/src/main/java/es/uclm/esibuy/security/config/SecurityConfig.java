@@ -77,7 +77,12 @@ public class SecurityConfig {
                                         .csrf(csrf -> csrf
                                                         .csrfTokenRepository(csrfTokenRepository)
                                                         .csrfTokenRequestHandler(
-                                                                        new CsrfTokenRequestAttributeHandler()))
+                                                                        new CsrfTokenRequestAttributeHandler())
+                                                        .ignoringRequestMatchers(
+                                                                        "/api/users/login",
+                                                                        "/api/users/login/**",
+                                                                        "/api/users/register/**",
+                                                                        "/api/auth/password-reset/**"))
                                         .securityContext(context -> context
                                                         .securityContextRepository(securityContextRepository))
                                         .sessionManagement(session -> session
@@ -181,7 +186,7 @@ public class SecurityConfig {
                                 "https://esibuy-2627.firebaseapp.com"));
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                 configuration.setAllowedHeaders(List.of("*"));
-                configuration.setExposedHeaders(List.of("Retry-After", CorrelationIdFilter.HEADER));
+                configuration.setExposedHeaders(List.of("Retry-After", CorrelationIdFilter.HEADER, "X-CSRF-TOKEN", "X-XSRF-TOKEN"));
                 configuration.setAllowCredentials(true);
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -204,6 +209,7 @@ public class SecurityConfig {
                         CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
                         if (csrfToken != null) {
                                 csrfToken.getToken();
+                                response.setHeader("X-CSRF-TOKEN", csrfToken.getToken());
                         }
                         filterChain.doFilter(request, response);
                 }
