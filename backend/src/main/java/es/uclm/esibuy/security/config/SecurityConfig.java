@@ -176,7 +176,9 @@ public class SecurityConfig {
                 configuration.setAllowedOrigins(List.of(
                                 "http://localhost:3000",
                                 "http://localhost:5173",
-                                "http://localhost:4200"));
+                                "http://localhost:4200",
+                                "https://esibuy-2627.web.app",
+                                "https://esibuy-2627.firebaseapp.com"));
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                 configuration.setAllowedHeaders(List.of("*"));
                 configuration.setExposedHeaders(List.of("Retry-After", CorrelationIdFilter.HEADER));
