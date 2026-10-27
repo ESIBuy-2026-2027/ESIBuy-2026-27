@@ -97,9 +97,9 @@
         <section class="filters-bar" aria-label="Filtros de productos">
           <label class="search-field">
             <span class="visually-hidden">Buscar producto o vendedor</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="11" cy="11" r="6.5"></circle>
-              <path d="m16 16 4.5 4.5"></path>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16" y2="16"></line>
             </svg>
             <input type="search" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
               placeholder="Buscar por producto o vendedor..." aria-label="Buscar producto o vendedor">
