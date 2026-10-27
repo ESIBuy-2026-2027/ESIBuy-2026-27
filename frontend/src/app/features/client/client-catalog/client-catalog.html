@@ -184,8 +184,8 @@
           @for (product of products(); track product.id) {
           <article class="product-card" [routerLink]="['/products', product.id]">
             <div class="product-image-container">
-              @if (product.imageUrl) {
-              <img class="product-card-img" [src]="product.imageUrl" [alt]="product.name" loading="lazy" />
+              @if (product.imageUrl && !imageErrors()[product.id]) {
+              <img class="product-card-img" [src]="product.imageUrl" [alt]="product.name" loading="lazy" (error)="onImageError(product.id)" />
               } @else {
               <div class="product-img-fallback" aria-hidden="true">▦</div>
               }

@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { CartItem } from './cart.service';
+import { resolveImageUrl } from '../utils/image.util';
 
 export interface ShippingAddressSummary {
   id: string;
@@ -72,7 +73,17 @@ export class PedidoService {
   }
 
   obtenerPedidosDelVendedor(): Observable<SellerOrder[]> {
-    return this.http.get<SellerOrder[]>('/api/pedidos/vendedor');
+    return this.http.get<SellerOrder[]>('/api/pedidos/vendedor').pipe(
+      map((orders) =>
+        orders.map((order) => ({
+          ...order,
+          items: order.items.map((item) => ({
+            ...item,
+            imageUrl: resolveImageUrl(item.imageUrl),
+          })),
+        }))
+      )
+    );
   }
 
   actualizarEstadoPedido(

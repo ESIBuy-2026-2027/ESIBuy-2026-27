@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
+import { resolveImageUrl } from '../utils/image.util';
 
 export interface Category {
   id: string;
@@ -84,33 +85,55 @@ export class ProductsService {
   }
 
   getProduct(id: string): Observable<ProductDetails> {
-    return this.http.get<ProductDetails>(`/api/products/${id}`);
+    return this.http.get<ProductDetails>(`/api/products/${id}`).pipe(
+      map((product) => this.mapProduct(product))
+    );
   }
 
   updateProduct(id: string, request: ProductCreateRequest): Observable<ProductDetails> {
-    return this.http.put<ProductDetails>(`/api/products/${id}`, request);
+    return this.http.put<ProductDetails>(`/api/products/${id}`, request).pipe(
+      map((product) => this.mapProduct(product))
+    );
   }
 
   updateProductWithImage(id: string, request: ProductCreateRequest, image?: File | null): Observable<ProductDetails> {
     const formData = new FormData();
     formData.append('product', new Blob([JSON.stringify(request)], { type: 'application/json' }));
     if (image) formData.append('image', image, image.name);
-    return this.http.put<ProductDetails>(`/api/products/${id}`, formData);
+    return this.http.put<ProductDetails>(`/api/products/${id}`, formData).pipe(
+      map((product) => this.mapProduct(product))
+    );
   }
 
   uploadProductImage(id: string, image: File): Observable<ProductDetails> {
     const formData = new FormData();
     formData.append('image', image, image.name);
-    return this.http.post<ProductDetails>(`/api/products/${id}/image`, formData);
+    return this.http.post<ProductDetails>(`/api/products/${id}/image`, formData).pipe(
+      map((product) => this.mapProduct(product))
+    );
   }
 
   getAvailableProducts(): Observable<AvailableProduct[]> {
-    return this.http.get<AvailableProduct[]>('/api/catalog/products');
+    return this.http.get<AvailableProduct[]>('/api/catalog/products').pipe(
+      map((products) => products.map((p) => this.mapProduct(p)))
+    );
   }
 
   getPublicCatalog(filters?: CatalogFilterParams): Observable<ProductItem[]> {
     const params = this.buildCatalogParams(filters);
-    return this.http.get<ProductItem[]>('/api/products', { params });
+    return this.http.get<ProductItem[]>('/api/products', { params }).pipe(
+      map((products) => products.map((p) => this.mapProduct(p)))
+    );
+  }
+
+  private mapProduct<T extends { imageUrl?: string | null }>(product: T): T {
+    if (!product || product.imageUrl === undefined) {
+      return product;
+    }
+    return {
+      ...product,
+      imageUrl: resolveImageUrl(product.imageUrl),
+    };
   }
 
   private buildCatalogParams(filters?: CatalogFilterParams): HttpParams {
