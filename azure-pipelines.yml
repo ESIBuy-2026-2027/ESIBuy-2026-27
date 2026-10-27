@@ -138,9 +138,13 @@ stages:
     displayName: 'Stage 2: Despliegue Continuo'
     dependsOn: CI
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/release')))
+    variables:
+      - group: 'esibuy-secrets'
     jobs:
       - job: Release
         displayName: 'Empaquetado y Despliegue de Producción'
+        variables:
+          - group: 'esibuy-secrets'
         steps:
           - task: JavaToolInstaller@0
             displayName: 'Configurar JDK 21 para empaquetado'
