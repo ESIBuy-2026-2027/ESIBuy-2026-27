@@ -1,44 +1,43 @@
 # ==============================================================================
-# Pipeline de CI/CD - ESIBuy 2026
+# Pipeline de CI/CD - ESIBuy 2026-2027
 # Historias de Usuario: 301 (Integración Continua) y 302 (Despliegue Continuo)
-# Tareas: 487 (Triggers), 488 (Compilación Backend), 490 (Tests + JaCoCo + SonarQube),
-#         503 (Frontend CI), 495 (Empaquetado JAR), 496 (Build Producción Angular),
-#         498 (Variables Seguras y Artefacto JAR), 504 (Despliegue Firebase Hosting)
+# Bloques 1, 2 y 3: Tareas 487, 488, 490, 498, 499, 500 y 503
 # ==============================================================================
 
 name: $(date:yyyyMMdd)$(rev:.r)
 
 # ------------------------------------------------------------------------------
-# Tarea 487: Triggers automáticos en push y Pull Request hacia develop y main
+# Tarea 487: Triggers automáticos y PRs EXCLUSIVAMENTE para main y release
 # ------------------------------------------------------------------------------
 trigger:
   branches:
     include:
       - main
-      - develop
+      - release
 
 pr:
   branches:
     include:
       - main
-      - develop
+      - release
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  MAVEN_OPTS: '-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
-  SONAR_HOST_URL: 'http://seralu4.esi.uclm.es:1521/'
+  - group: 'esibuy-secrets'
+  - name: MAVEN_OPTS
+    value: '-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
 
 stages:
   # ============================================================================
-  # STAGE 1: INTEGRACIÓN CONTINUA (CI)
+  # STAGE 1: INTEGRACIÓN CONTINUA (CI) - Tareas 488, 490, 503
   # ============================================================================
   - stage: CI
     displayName: 'Stage 1: Integración Continua'
     jobs:
       # ------------------------------------------------------------------------
-      # Tareas 488 y 490: Backend CI (Compilación, Tests, JaCoCo y SonarQube)
+      # Tareas 488 y 490: Backend CI (Compilación, JaCoCo y SonarQube)
       # ------------------------------------------------------------------------
       - job: Backend_CI
         displayName: 'Backend CI (Java 21 / Maven / JaCoCo / SonarQube)'
@@ -62,38 +61,37 @@ stages:
               jdkVersionOption: '1.21'
               mavenVersionOption: 'Default'
 
+          # Tarea 490: Publicar cobertura de código JaCoCo
           - task: PublishCodeCoverageResults@2
-            displayName: 'Publicar reporte de cobertura JaCoCo en Azure DevOps'
+            displayName: 'Publicar reporte de cobertura JaCoCo'
             inputs:
               summaryFileLocation: '$(System.DefaultWorkingDirectory)/backend/target/site/jacoco/jacoco.xml'
               pathToSources: '$(System.DefaultWorkingDirectory)/backend/src/main/java/'
             condition: succeededOrFailed()
 
+          # Tarea 490: SonarQube con validación limpia de red UCLM
           - script: |
-              cd backend
-              SONAR_AUTH_TOKEN="${SONAR_TOKEN:-squ_11efbdd2b29294aaa690ecc31fd36bc8eb3dea53}"
-              echo "Comprobando accesibilidad del servidor SonarQube en $(SONAR_HOST_URL)..."
-              if curl --silent --head --connect-timeout 4 "$(SONAR_HOST_URL)" > /dev/null 2>&1; then
-                echo "Conectividad confirmada. Ejecutando análisis de SonarQube Backend..."
-                mvn sonar:sonar \
-                  -B \
-                  -Dsonar.host.url="$(SONAR_HOST_URL)" \
-                  -Dsonar.login="$SONAR_AUTH_TOKEN" \
+              echo "Comprobando disponibilidad del servidor SonarQube UCLM..."
+              if curl -s --connect-timeout 5 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
+                echo "Servidor SonarQube alcanzable. Ejecutando análisis de Backend..."
+                cd backend
+                mvn sonar:sonar -B \
+                  -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
+                  -Dsonar.token="$(SONAR_TOKEN)" \
                   -Dsonar.coverage.jacoco.xmlReportPaths="target/site/jacoco/jacoco.xml"
               else
-                echo "##vso[task.logissue type=warning]El servidor SonarQube ($(SONAR_HOST_URL)) es interno de la red UCLM (172.20.48.91) y no es alcanzable desde agentes públicos de Microsoft. Se omite el análisis en la nube sin bloquear el pipeline."
+                echo "##vso[task.logissue type=warning]El servidor SonarQube es interno de la red UCLM y no es alcanzable desde agentes públicos de Microsoft. Se omite el análisis en la nube sin bloquear el pipeline."
+                exit 0
               fi
             displayName: 'Ejecutar análisis de SonarQube Backend'
-            continueOnError: true
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
-            condition: succeeded()
 
       # ------------------------------------------------------------------------
-      # Tarea 503: Frontend CI (Angular, Tests Vitest y SonarQube)
+      # Tareas 488, 490 y 503: Frontend CI (Node 22, Angular, Tests y SonarQube)
       # ------------------------------------------------------------------------
       - job: Frontend_CI
-        displayName: 'Frontend CI (Node 22 / Angular / Vitest / SonarQube)'
+        displayName: 'Frontend CI (Node 22 / Angular / Tests / SonarQube)'
         steps:
           - task: UseNode@1
             displayName: 'Configurar Node.js 22.x'
@@ -107,7 +105,7 @@ stages:
 
           - script: |
               cd frontend
-              npm test -- --watch=false
+              npx ng test --watch=false
             displayName: 'Ejecutar tests unitarios de Angular'
 
           - script: |
@@ -115,123 +113,109 @@ stages:
               npm run build
             displayName: 'Compilación de verificación Frontend'
 
+          # Tarea 490: SonarQube Frontend con validación limpia de red UCLM
           - script: |
-              cd frontend
-              SONAR_AUTH_TOKEN="${SONAR_TOKEN:-squ_11efbdd2b29294aaa690ecc31fd36bc8eb3dea53}"
-              echo "Comprobando accesibilidad del servidor SonarQube en $(SONAR_HOST_URL)..."
-              if curl --silent --head --connect-timeout 4 "$(SONAR_HOST_URL)" > /dev/null 2>&1; then
-                echo "Conectividad confirmada. Ejecutando análisis de SonarQube Frontend..."
+              echo "Comprobando disponibilidad del servidor SonarQube UCLM..."
+              if curl -s --connect-timeout 5 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
+                echo "Servidor SonarQube alcanzable. Ejecutando análisis de Frontend..."
+                cd frontend
                 npx --yes sonar-scanner \
-                  -Dsonar.host.url="$(SONAR_HOST_URL)" \
-                  -Dsonar.login="$SONAR_AUTH_TOKEN"
+                  -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
+                  -Dsonar.token="$(SONAR_TOKEN)"
               else
-                echo "##vso[task.logissue type=warning]El servidor SonarQube ($(SONAR_HOST_URL)) es interno de la red UCLM (172.20.48.91) y no es alcanzable desde agentes públicos de Microsoft. Se omite el análisis en la nube sin bloquear el pipeline."
+                echo "##vso[task.logissue type=warning]El servidor SonarQube es interno de la red UCLM y no es alcanzable desde agentes públicos de Microsoft. Se omite el análisis en la nube sin bloquear el pipeline."
+                exit 0
               fi
             displayName: 'Ejecutar análisis de SonarQube Frontend'
-            continueOnError: true
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
-            condition: succeeded()
 
   # ============================================================================
-  # STAGE 2: DESPLIEGUE CONTINUO / RELEASE (CD)
-  # Solo se ejecuta si CI es exitoso y NO es una Pull Request
+  # STAGE 2: DESPLIEGUE CONTINUO (CD) - Tareas 498, 499, 500
+  # Solo se ejecuta tras CI exitoso en ramas principales (main y release), nunca en PRs
   # ============================================================================
   - stage: CD
-    displayName: 'Stage 2: Despliegue Continuo / Release'
+    displayName: 'Stage 2: Despliegue Continuo'
     dependsOn: CI
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/release')))
     jobs:
       - job: Release
-        displayName: 'Empaquetado, Publicación y Despliegue en Firebase'
+        displayName: 'Empaquetado y Despliegue de Producción'
         steps:
           - task: JavaToolInstaller@0
-            displayName: 'Configurar JDK 21'
+            displayName: 'Configurar JDK 21 para empaquetado'
             inputs:
               versionSpec: '21'
               jdkArchitectureOption: 'x64'
               jdkSourceOption: 'PreInstalled'
 
           - task: UseNode@1
-            displayName: 'Configurar Node.js 22.x'
+            displayName: 'Configurar Node.js 22.x para frontend'
             inputs:
               version: '22.x'
 
-          # --------------------------------------------------------------------
-          # Tarea 498: Validación estricta de variables de entorno y secrets
-          # --------------------------------------------------------------------
+          # Tarea 498: Validación silenciosa de variables de entorno de producción
           - script: |
-              echo "=================================================================="
-              echo "Validando presencia de secretos y variables de entorno críticas..."
-              echo "=================================================================="
-              MISSING_SECRETS=0
-
-              if [ -z "$MONGODB_URI" ]; then
-                echo "##vso[task.logissue type=error]Falta la variable secreta MONGODB_URI en Azure Pipelines."
-                MISSING_SECRETS=1
-              else
-                echo "[OK] Secreto MONGODB_URI detectado."
+              echo "Validando variables de entorno seguras para el despliegue..."
+              MISSING=0
+              if [ -z "$MONGODB_URI" ] || [ "$MONGODB_URI" = '$(MONGODB_URI)' ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta MONGODB_URI en el grupo 'esibuy-secrets'."
+                MISSING=1
               fi
-
-              if [ -z "$JWT_SECRET" ] && [ -z "$AES_KEY" ]; then
-                echo "##vso[task.logissue type=error]Falta la variable secreta JWT_SECRET o AES_KEY en Azure Pipelines."
-                MISSING_SECRETS=1
-              else
-                echo "[OK] Clave de seguridad (JWT_SECRET / AES_KEY) detectada."
+              if [ -z "$JWT_SECRET" ] || [ "$JWT_SECRET" = '$(JWT_SECRET)' ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta JWT_SECRET en el grupo 'esibuy-secrets'."
+                MISSING=1
               fi
-
-              if [ -z "$FIREBASE_TOKEN" ]; then
-                echo "##vso[task.logissue type=error]Falta la variable secreta FIREBASE_TOKEN en Azure Pipelines."
-                MISSING_SECRETS=1
-              else
-                echo "[OK] Secreto FIREBASE_TOKEN detectado."
+              if [ -z "$AES_KEY" ] || [ "$AES_KEY" = '$(AES_KEY)' ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta AES_KEY en el grupo 'esibuy-secrets'."
+                MISSING=1
               fi
-
-              if [ $MISSING_SECRETS -ne 0 ]; then
-                echo "##vso[task.complete result=Failed;]Validación de variables de entorno fallida. Define los secretos en las variables de Azure Pipelines."
+              if [ -z "$FIREBASE_TOKEN" ] || [ "$FIREBASE_TOKEN" = '$(FIREBASE_TOKEN)' ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta FIREBASE_TOKEN en el grupo 'esibuy-secrets'."
+                MISSING=1
+              fi
+              if [ $MISSING -ne 0 ]; then
+                echo "##vso[task.logissue type=error]Verifica la configuración de 'Library -> esibuy-secrets' en Azure DevOps."
                 exit 1
               fi
-            displayName: 'Validar secretos de entorno (MongoDB, JWT/AES, Firebase)'
+              echo "Todas las variables de entorno de producción están verificadas correctamente."
+            displayName: 'Validación silenciosa de secretos (Library: esibuy-secrets)'
             env:
               MONGODB_URI: $(MONGODB_URI)
               JWT_SECRET: $(JWT_SECRET)
               AES_KEY: $(AES_KEY)
               FIREBASE_TOKEN: $(FIREBASE_TOKEN)
 
-          # --------------------------------------------------------------------
-          # Tarea 495: Empaquetado final ejecutable de Spring Boot (.JAR)
-          # --------------------------------------------------------------------
-          - script: |
-              cd backend
-              mvn clean package -DskipTests -B
-            displayName: 'Generar .JAR ejecutable de Spring Boot'
-
-          # --------------------------------------------------------------------
-          # Tarea 498: Publicar artefacto .JAR en Azure Pipelines
-          # --------------------------------------------------------------------
-          - task: PublishBuildArtifacts@1
-            displayName: 'Publicar artefacto JAR ejecutable'
+          # Tarea 499: Empaquetado del Backend (JAR de producción)
+          - task: Maven@4
+            displayName: 'Empaquetar Backend (JAR ejecutable)'
             inputs:
-              PathtoPublish: 'backend/target'
+              mavenPomFile: 'backend/pom.xml'
+              goals: 'clean package'
+              options: '-DskipTests -B'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.21'
+              mavenVersionOption: 'Default'
+
+          # Tarea 499: Publicación del artefacto JAR en Azure Pipelines
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publicar artefacto JAR Backend (esibuy-backend-drop)'
+            inputs:
+              PathtoPublish: '$(System.DefaultWorkingDirectory)/backend/target'
               ArtifactName: 'esibuy-backend-drop'
               publishLocation: 'Container'
 
-          # --------------------------------------------------------------------
-          # Tarea 496: Build de producción en Angular
-          # --------------------------------------------------------------------
+          # Tarea 500: Compilación de producción del Frontend
           - script: |
               cd frontend
               npm ci
               npm run build -- --configuration production
-            displayName: 'Compilación de producción Angular (ng build --configuration production)'
+            displayName: 'Compilar Frontend para Producción'
 
-          # --------------------------------------------------------------------
-          # Tarea 504: Despliegue continuo en Firebase Hosting
-          # --------------------------------------------------------------------
+          # Tarea 500: Despliegue automatizado en Firebase Hosting
           - script: |
               cd frontend
-              echo "Desplegando SPA Angular en Firebase Hosting..."
-              npx --yes firebase-tools deploy --only hosting --project esibuy-2026-27 --token "$FIREBASE_TOKEN" --non-interactive
-            displayName: 'Desplegar Frontend en Firebase Hosting'
+              npx --yes firebase-tools deploy --only hosting --project esibuy-2627 --token "$FIREBASE_TOKEN" --non-interactive
+            displayName: 'Desplegar Frontend en Firebase Hosting (esibuy-2627)'
             env:
               FIREBASE_TOKEN: $(FIREBASE_TOKEN)
