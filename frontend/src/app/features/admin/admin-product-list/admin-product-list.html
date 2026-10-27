@@ -106,6 +106,14 @@
           </label>
 
           <div class="filter-controls">
+            <label class="visually-hidden" for="filter-seller">Filtrar por vendedor</label>
+            <select id="filter-seller" [ngModel]="sellerFilter()" (ngModelChange)="setSellerFilter($event)">
+              <option value="ALL">Todos los vendedores</option>
+              @for (seller of availableSellers(); track seller.id) {
+                <option [value]="seller.id">{{ seller.name }}</option>
+              }
+            </select>
+
             <label class="visually-hidden" for="filter-stock">Filtrar por existencias</label>
             <select id="filter-stock" [ngModel]="stockFilter()" (ngModelChange)="stockFilter.set($event); applyFilters()">
               <option value="ALL">Cualquier stock</option>
@@ -123,6 +131,17 @@
           </div>
         </section>
 
+        @if (sellerFilter() !== 'ALL') {
+          <div class="active-seller-bar" role="status">
+            <span class="active-seller-text">
+              Mostrando productos del vendedor: <strong>{{ currentSellerName() }}</strong>
+            </span>
+            <button type="button" class="clear-seller-btn" (click)="clearSellerFilter()">
+              ✕ Mostrar todos los vendedores
+            </button>
+          </div>
+        }
+
         @if (loading()) {
           <div class="loading-state">
             <div class="spinner"></div>
@@ -138,7 +157,17 @@
               <thead>
                 <tr>
                   <th scope="col">Producto</th>
-                  <th scope="col">Vendedor</th>
+                  <th scope="col" class="th-seller">
+                    <button type="button" class="seller-header-toggle" (click)="cycleSellerFilter()" [title]="sellerFilterTitle()">
+                      <span>Vendedor</span>
+                      @if (sellerFilter() !== 'ALL') {
+                        <span class="seller-filter-pill">{{ currentSellerName() }}</span>
+                      }
+                      <svg viewBox="0 0 24 24" class="seller-cycle-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4" />
+                      </svg>
+                    </button>
+                  </th>
                   <th scope="col">Categoría</th>
                   <th scope="col">Precio</th>
                   <th scope="col">Stock</th>
@@ -156,8 +185,10 @@
                       }
                     </td>
                     <td>
-                      <span class="seller-name">{{ prod.sellerName }}</span>
-                      <span class="seller-id-badge">{{ prod.sellerId }}</span>
+                      <button type="button" class="seller-cell-btn" (click)="setSellerFilter(prod.sellerId)" title="Filtrar por este vendedor">
+                        <span class="seller-name">{{ prod.sellerName }}</span>
+                        <span class="seller-id-badge">{{ prod.sellerId }}</span>
+                      </button>
                     </td>
                     <td>{{ prod.category }}</td>
                     <td class="cell-price">{{ formatPrice(prod.price) }}</td>
