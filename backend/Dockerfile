@@ -19,6 +19,8 @@ USER spring:spring
 COPY --from=build /workspace/target/*.jar app.jar
 
 ENV PORT=10000
+ENV SESSION_COOKIE_SAME_SITE=None
+ENV SESSION_COOKIE_SECURE=true
 EXPOSE 10000
 
 ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
