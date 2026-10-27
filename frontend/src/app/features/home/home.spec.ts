@@ -178,4 +178,36 @@ describe('Home', () => {
 
     expect(navigateSpy).toHaveBeenCalledWith(['/client/catalog'], { replaceUrl: true });
   });
+
+  it('should redirect logged in SELLER to /seller/catalog on initialization', () => {
+    currentUserSignal.set({
+      id: 's-1',
+      email: 'seller@example.com',
+      role: 'SELLER',
+      active: true,
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const testFixture = TestBed.createComponent(Home);
+    testFixture.componentInstance.ngOnInit();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/seller/catalog'], { replaceUrl: true });
+  });
+
+  it('should redirect logged in ADMIN to /client/catalog on initialization', () => {
+    currentUserSignal.set({
+      id: 'a-1',
+      email: 'admin@example.com',
+      role: 'ADMIN',
+      active: true,
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const testFixture = TestBed.createComponent(Home);
+    testFixture.componentInstance.ngOnInit();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/client/catalog'], { replaceUrl: true });
+  });
 });

@@ -120,10 +120,17 @@ export class ProductDetail implements OnInit {
   }
 
   goBack(): void {
-    if (window.history.length > 1) {
-      window.history.back();
+    const role = this.authService.currentUser()?.role;
+    if (role === 'SELLER') {
+      void this.router.navigate(['/seller/catalog']);
+    } else if (role === 'CLIENT' || role === 'ADMIN') {
+      void this.router.navigate(['/client/catalog']);
     } else {
-      void this.router.navigate(['/']);
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        void this.router.navigate(['/']);
+      }
     }
   }
 

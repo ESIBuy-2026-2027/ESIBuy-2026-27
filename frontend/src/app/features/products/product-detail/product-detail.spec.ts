@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { signal } from '@angular/core';
 import { of } from 'rxjs';
 import { describe, beforeEach, it, expect, vi } from 'vitest';
@@ -114,7 +114,7 @@ describe('ProductDetail', () => {
     expect(buyBtn?.disabled).toBe(true);
   });
 
-  it('should display admin read-only pill when logged in as admin', () => {
+  it('should display admin read-only pill and hide purchase options when logged in as admin', () => {
     currentUserSignal.set({
       id: 'admin-1',
       email: 'admin@example.com',
@@ -125,6 +125,16 @@ describe('ProductDetail', () => {
 
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('.admin-mode-pill')?.textContent).toContain('Modo Administrador (Solo lectura)');
+    expect(el.querySelector('.heart-toggle-btn')).toBeNull();
+    expect(el.querySelector('.primary-buy-btn')).toBeNull();
+  });
+
+  it('should navigate to /client/catalog on goBack when CLIENT or ADMIN', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.goBack();
+    expect(navigateSpy).toHaveBeenCalledWith(['/client/catalog']);
   });
 
   it('should toggle favorite when heart button is clicked', () => {

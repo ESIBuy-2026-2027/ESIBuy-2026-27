@@ -46,7 +46,7 @@ export const routes: Routes = [
   { path: 'products/:id/edit', component: ProductCreate, canActivate: [authGuard, roleGuard('SELLER')] },
   { path: 'seller/profile', component: SellerProfile, canActivate: [authGuard, roleGuard('SELLER')] },
 
-  { path: 'client/catalog', component: ClientCatalog, canActivate: [authGuard, roleGuard('CLIENT')] },
+  { path: 'client/catalog', component: ClientCatalog, canActivate: [authGuard, roleGuard(['CLIENT', 'ADMIN'])] },
   { path: 'client/dashboard', redirectTo: 'client/catalog', pathMatch: 'full' },
   { path: 'client/wishlist', component: ClientWishlist, canActivate: [authGuard, roleGuard('CLIENT')] },
   { path: 'client/orders', component: ClientOrders, canActivate: [authGuard, roleGuard('CLIENT')] },
