@@ -178,5 +178,43 @@ describe('AdminProductList', () => {
 
     expect(component.error()).toBe(ADMIN_READONLY_ERROR_MESSAGE);
   });
+
+  it('should cycle through available sellers when clicking the seller header', () => {
+    expect(component.filteredProducts().length).toBe(2);
+
+    // 1st click: switches to first seller ('seller-abc' / 'Pantallas Pro')
+    component.cycleSellerFilter();
+    fixture.detectChanges();
+    expect(component.sellerFilter()).toBe('seller-abc');
+    expect(component.filteredProducts().length).toBe(1);
+    expect(component.filteredProducts()[0].sellerName).toBe('Pantallas Pro');
+
+    // 2nd click: switches to second seller ('seller-xyz' / 'Gaming Zone')
+    component.cycleSellerFilter();
+    fixture.detectChanges();
+    expect(component.sellerFilter()).toBe('seller-xyz');
+    expect(component.filteredProducts().length).toBe(1);
+    expect(component.filteredProducts()[0].sellerName).toBe('Gaming Zone');
+
+    // 3rd click: resets to 'ALL' (shows all sellers)
+    component.cycleSellerFilter();
+    fixture.detectChanges();
+    expect(component.sellerFilter()).toBe('ALL');
+    expect(component.filteredProducts().length).toBe(2);
+  });
+
+  it('should filter directly by seller and allow clearing the filter', () => {
+    component.setSellerFilter('seller-xyz');
+    fixture.detectChanges();
+
+    expect(component.filteredProducts().length).toBe(1);
+    expect(component.filteredProducts()[0].sellerName).toBe('Gaming Zone');
+
+    component.clearSellerFilter();
+    fixture.detectChanges();
+
+    expect(component.sellerFilter()).toBe('ALL');
+    expect(component.filteredProducts().length).toBe(2);
+  });
 });
 
