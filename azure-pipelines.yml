@@ -1,7 +1,7 @@
 # ==============================================================================
 # Pipeline de CI/CD - ESIBuy 2026-2027
 # Historias de Usuario: 301 (Integración Continua) y 302 (Despliegue Continuo)
-# Bloques 1 y 2: Tareas 487 (Triggers), 488 (Compilación), 490 (JaCoCo + SonarQube) y 503 (Frontend CI)
+# Bloques 1, 2 y 3: Tareas 487, 488, 490, 498, 499, 500 y 503
 # ==============================================================================
 
 name: $(date:yyyyMMdd)$(rev:.r)
@@ -31,7 +31,7 @@ variables:
 
 stages:
   # ============================================================================
-  # STAGE 1: INTEGRACIÓN CONTINUA (CI)
+  # STAGE 1: INTEGRACIÓN CONTINUA (CI) - Tareas 488, 490, 503
   # ============================================================================
   - stage: CI
     displayName: 'Stage 1: Integración Continua'
@@ -129,3 +129,93 @@ stages:
             displayName: 'Ejecutar análisis de SonarQube Frontend'
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
+
+  # ============================================================================
+  # STAGE 2: DESPLIEGUE CONTINUO (CD) - Tareas 498, 499, 500
+  # Solo se ejecuta tras CI exitoso en ramas principales (main y release), nunca en PRs
+  # ============================================================================
+  - stage: CD
+    displayName: 'Stage 2: Despliegue Continuo'
+    dependsOn: CI
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/release')))
+    jobs:
+      - job: Release
+        displayName: 'Empaquetado y Despliegue de Producción'
+        steps:
+          - task: JavaToolInstaller@0
+            displayName: 'Configurar JDK 21 para empaquetado'
+            inputs:
+              versionSpec: '21'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+
+          - task: UseNode@1
+            displayName: 'Configurar Node.js 22.x para frontend'
+            inputs:
+              version: '22.x'
+
+          # Tarea 498: Validación silenciosa de variables de entorno de producción
+          - script: |
+              echo "Validando variables de entorno seguras para el despliegue..."
+              MISSING=0
+              if [ -z "$MONGODB_URI" ] || [ "$MONGODB_URI" = '$(MONGODB_URI)' ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta MONGODB_URI en el grupo 'esibuy-secrets'."
+                MISSING=1
+              fi
+              if [ -z "$JWT_SECRET" ] || [ "$JWT_SECRET" = '$(JWT_SECRET)' ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta JWT_SECRET en el grupo 'esibuy-secrets'."
+                MISSING=1
+              fi
+              if [ -z "$AES_KEY" ] || [ "$AES_KEY" = '$(AES_KEY)' ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta AES_KEY en el grupo 'esibuy-secrets'."
+                MISSING=1
+              fi
+              if [ -z "$FIREBASE_TOKEN" ] || [ "$FIREBASE_TOKEN" = '$(FIREBASE_TOKEN)' ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta FIREBASE_TOKEN en el grupo 'esibuy-secrets'."
+                MISSING=1
+              fi
+              if [ $MISSING -ne 0 ]; then
+                echo "##vso[task.logissue type=error]Verifica la configuración de 'Library -> esibuy-secrets' en Azure DevOps."
+                exit 1
+              fi
+              echo "Todas las variables de entorno de producción están verificadas correctamente."
+            displayName: 'Validación silenciosa de secretos (Library: esibuy-secrets)'
+            env:
+              MONGODB_URI: $(MONGODB_URI)
+              JWT_SECRET: $(JWT_SECRET)
+              AES_KEY: $(AES_KEY)
+              FIREBASE_TOKEN: $(FIREBASE_TOKEN)
+
+          # Tarea 499: Empaquetado del Backend (JAR de producción)
+          - task: Maven@4
+            displayName: 'Empaquetar Backend (JAR ejecutable)'
+            inputs:
+              mavenPomFile: 'backend/pom.xml'
+              goals: 'clean package'
+              options: '-DskipTests -B'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.21'
+              mavenVersionOption: 'Default'
+
+          # Tarea 499: Publicación del artefacto JAR en Azure Pipelines
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publicar artefacto JAR Backend (esibuy-backend-drop)'
+            inputs:
+              PathtoPublish: '$(System.DefaultWorkingDirectory)/backend/target'
+              ArtifactName: 'esibuy-backend-drop'
+              publishLocation: 'Container'
+
+          # Tarea 500: Compilación de producción del Frontend
+          - script: |
+              cd frontend
+              npm ci
+              npm run build -- --configuration production
+            displayName: 'Compilar Frontend para Producción'
+
+          # Tarea 500: Despliegue automatizado en Firebase Hosting
+          - script: |
+              cd frontend
+              npx --yes firebase-tools deploy --only hosting --project esibuy-2627 --token "$FIREBASE_TOKEN" --non-interactive
+            displayName: 'Desplegar Frontend en Firebase Hosting (esibuy-2627)'
+            env:
+              FIREBASE_TOKEN: $(FIREBASE_TOKEN)
