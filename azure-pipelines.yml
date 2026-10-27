@@ -1,7 +1,7 @@
 # ==============================================================================
 # Pipeline de CI/CD - ESIBuy 2026-2027
 # Historias de Usuario: 301 (Integración Continua) y 302 (Despliegue Continuo)
-# Bloque 1: Tareas 487 (Triggers y PRs) y 488 (Compilación CI Backend y Frontend)
+# Bloques 1 y 2: Tareas 487 (Triggers), 488 (Compilación), 490 (JaCoCo + SonarQube) y 503 (Frontend CI)
 # ==============================================================================
 
 name: $(date:yyyyMMdd)$(rev:.r)
@@ -37,10 +37,10 @@ stages:
     displayName: 'Stage 1: Integración Continua'
     jobs:
       # ------------------------------------------------------------------------
-      # Tarea 488: Backend CI (Compilación Java 21, Maven y Tests Unitarios)
+      # Tareas 488 y 490: Backend CI (Compilación, JaCoCo y SonarQube)
       # ------------------------------------------------------------------------
       - job: Backend_CI
-        displayName: 'Backend CI (Java 21 / Maven / Tests)'
+        displayName: 'Backend CI (Java 21 / Maven / JaCoCo / SonarQube)'
         steps:
           - task: JavaToolInstaller@0
             displayName: 'Configurar JDK 21'
@@ -50,7 +50,7 @@ stages:
               jdkSourceOption: 'PreInstalled'
 
           - task: Maven@4
-            displayName: 'Compilar backend y ejecutar tests unitarios'
+            displayName: 'Compilar backend y ejecutar tests con JaCoCo'
             inputs:
               mavenPomFile: 'backend/pom.xml'
               goals: 'clean verify'
@@ -61,11 +61,37 @@ stages:
               jdkVersionOption: '1.21'
               mavenVersionOption: 'Default'
 
+          # Tarea 490: Publicar cobertura de código JaCoCo
+          - task: PublishCodeCoverageResults@2
+            displayName: 'Publicar reporte de cobertura JaCoCo'
+            inputs:
+              summaryFileLocation: '$(System.DefaultWorkingDirectory)/backend/target/site/jacoco/jacoco.xml'
+              pathToSources: '$(System.DefaultWorkingDirectory)/backend/src/main/java/'
+            condition: succeededOrFailed()
+
+          # Tarea 490: SonarQube con validación limpia de red UCLM
+          - script: |
+              echo "Comprobando disponibilidad del servidor SonarQube UCLM..."
+              if curl -s --connect-timeout 5 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
+                echo "Servidor SonarQube alcanzable. Ejecutando análisis de Backend..."
+                cd backend
+                mvn sonar:sonar -B \
+                  -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
+                  -Dsonar.token="$(SONAR_TOKEN)" \
+                  -Dsonar.coverage.jacoco.xmlReportPaths="target/site/jacoco/jacoco.xml"
+              else
+                echo "##vso[task.logissue type=warning]El servidor SonarQube es interno de la red UCLM y no es alcanzable desde agentes públicos de Microsoft. Se omite el análisis en la nube sin bloquear el pipeline."
+                exit 0
+              fi
+            displayName: 'Ejecutar análisis de SonarQube Backend'
+            env:
+              SONAR_TOKEN: $(SONAR_TOKEN)
+
       # ------------------------------------------------------------------------
-      # Tarea 488: Frontend CI (Node 22, Angular, Tests y Verificación de Build)
+      # Tareas 488, 490 y 503: Frontend CI (Node 22, Angular, Tests y SonarQube)
       # ------------------------------------------------------------------------
       - job: Frontend_CI
-        displayName: 'Frontend CI (Node 22 / Angular / Tests)'
+        displayName: 'Frontend CI (Node 22 / Angular / Tests / SonarQube)'
         steps:
           - task: UseNode@1
             displayName: 'Configurar Node.js 22.x'
@@ -86,3 +112,20 @@ stages:
               cd frontend
               npm run build
             displayName: 'Compilación de verificación Frontend'
+
+          # Tarea 490: SonarQube Frontend con validación limpia de red UCLM
+          - script: |
+              echo "Comprobando disponibilidad del servidor SonarQube UCLM..."
+              if curl -s --connect-timeout 5 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
+                echo "Servidor SonarQube alcanzable. Ejecutando análisis de Frontend..."
+                cd frontend
+                npx --yes sonar-scanner \
+                  -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
+                  -Dsonar.token="$(SONAR_TOKEN)"
+              else
+                echo "##vso[task.logissue type=warning]El servidor SonarQube es interno de la red UCLM y no es alcanzable desde agentes públicos de Microsoft. Se omite el análisis en la nube sin bloquear el pipeline."
+                exit 0
+              fi
+            displayName: 'Ejecutar análisis de SonarQube Frontend'
+            env:
+              SONAR_TOKEN: $(SONAR_TOKEN)

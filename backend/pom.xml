@@ -38,22 +38,24 @@
     </scm>
 
     <properties>
-    <java.version>21</java.version>
+        <java.version>21</java.version>
 
-    <sonar.projectKey>2026-g06-backend</sonar.projectKey>
-    <sonar.projectName>2026-g06-backend</sonar.projectName>
+        <sonar.projectKey>2026-g06-backend</sonar.projectKey>
+        <sonar.projectName>2026-g06-backend</sonar.projectName>
 
-    <sonar.sources>src/main/java</sonar.sources>
-    <sonar.tests></sonar.tests>
+        <sonar.sources>src/main/java</sonar.sources>
+        <sonar.tests>src/test/java</sonar.tests>
 
-    <sonar.coverage.exclusions>
-        **/dto/**,
-        **/model/**,
-        **/config/**,
-        **/exception/**,
-        **/EsibuyApplication.java
-    </sonar.coverage.exclusions>
-</properties>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+
+        <sonar.coverage.exclusions>
+            **/dto/**,
+            **/model/**,
+            **/config/**,
+            **/exception/**,
+            **/EsibuyApplication.java
+        </sonar.coverage.exclusions>
+    </properties>
 
     <dependencies>
 
@@ -189,7 +191,7 @@
                     -->
                     <execution>
                         <id>report</id>
-                        <phase>test</phase>
+                        <phase>verify</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
