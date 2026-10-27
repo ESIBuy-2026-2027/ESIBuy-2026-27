@@ -1,4 +1,4 @@
-package es.uclm.esibuy.cart.service;
+﻿package es.uclm.esibuy.cart.service;
 
 import es.uclm.esibuy.cart.dto.AnadirItemCarritoDTO;
 import es.uclm.esibuy.cart.dto.ActualizarCantidadItemDTO;
@@ -25,6 +25,7 @@ public class CarritoService {
     private static final String CLIENTE_ID_OBLIGATORIO = "El identificador del cliente es obligatorio";
     private static final String PRODUCTO_ID_OBLIGATORIO = "El identificador del producto es obligatorio";
 
+    @org.springframework.beans.factory.annotation.Autowired
     public CarritoService(
             ProductRepository productRepository,
             CarritoRepository carritoRepository,
