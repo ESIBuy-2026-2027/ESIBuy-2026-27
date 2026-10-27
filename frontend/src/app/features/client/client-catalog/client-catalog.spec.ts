@@ -8,6 +8,7 @@ import { ProductsService, ProductItem, Category } from '../../../core/services/p
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { CartService } from '../../../core/services/cart.service';
+import { AuthService, AuthenticatedUser } from '../../../core/services/auth.service';
 
 describe('ClientCatalog', () => {
   let component: ClientCatalog;
@@ -16,6 +17,7 @@ describe('ClientCatalog', () => {
   let wishlistServiceMock: any;
   let toastServiceMock: any;
   let cartServiceMock: any;
+  let currentUserSignal = signal<AuthenticatedUser | null>(null);
 
   const mockCategories: Category[] = [
     { id: 'cat-1', name: 'Electrónica' },
@@ -66,6 +68,13 @@ describe('ClientCatalog', () => {
       clear: vi.fn(() => toastSignal.set(null)),
     };
 
+    currentUserSignal = signal<AuthenticatedUser | null>({
+      id: 'client-1',
+      email: 'client@example.com',
+      role: 'CLIENT',
+      active: true,
+    });
+
     cartServiceMock = {
       itemCount: vi.fn(() => 2),
       addItem: vi.fn(() => of({})),
@@ -79,6 +88,7 @@ describe('ClientCatalog', () => {
         { provide: WishlistService, useValue: wishlistServiceMock },
         { provide: ToastService, useValue: toastServiceMock },
         { provide: CartService, useValue: cartServiceMock },
+        { provide: AuthService, useValue: { currentUser: currentUserSignal } },
       ],
     }).compileComponents();
 
@@ -145,5 +155,25 @@ describe('ClientCatalog', () => {
     expect(productsServiceMock.getPublicCatalog).toHaveBeenCalledWith(
       expect.objectContaining({ query: 'Cafetera' })
     );
+  });
+
+  it('should render admin read-only mode without wishlist, add-to-cart or client sidebar for ADMIN', () => {
+    currentUserSignal.set({
+      id: 'admin-1',
+      email: 'admin@example.com',
+      role: 'ADMIN',
+      active: true,
+    });
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.admin-mode-pill')?.textContent).toContain('Modo Administrador (Solo lectura)');
+    expect(el.querySelector('.heart-center-button')).toBeNull();
+    expect(el.querySelector('.add-to-cart-action-btn')).toBeNull();
+
+    // The left sidebar must NOT be rendered for admin
+    expect(el.querySelector('.sidebar')).toBeNull();
+    expect(el.querySelector('.app-sidebar')).toBeNull();
+    expect(el.querySelectorAll('.navigation-link').length).toBe(0);
   });
 });

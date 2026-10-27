@@ -1,0 +1,96 @@
+<main class="order-detail-page">
+  <a class="back-link" routerLink="/client/orders">← Volver a mis compras</a>
+  @if (loading()) {
+  <p aria-live="polite">Cargando el pedido...</p>
+  } @else if (error()) {
+  <p class="feedback-error" role="alert">{{ error() }}</p>
+  } @else if (order(); as currentOrder) {
+  @if (actionError(); as message) {
+  <p class="feedback-error action-feedback" role="alert">{{ message }}</p>
+  }
+  <header class="detail-header">
+    <div>
+      <h1>Pedido #{{ currentOrder.pedidoId }}</h1>
+      <p>{{ formatDate(currentOrder.fechaCreacion) }}</p>
+    </div>
+    <span class="order-status" [class.status-paid]="currentOrder.estado === 'PAGADO'"
+      [class.status-pending]="currentOrder.estado === 'PENDIENTE'"
+      [class.status-preparing]="currentOrder.estado === 'PREPARANDO'"
+      [class.status-shipped]="currentOrder.estado === 'ENVIADO'"
+      [class.status-delivered]="currentOrder.estado === 'ENTREGADO'"
+      [class.status-cancelled]="currentOrder.estado === 'CANCELADO'">
+      {{ currentOrder.estado }}
+    </span>
+  </header>
+  <section class="detail-card" aria-labelledby="products-title">
+    <h2 id="products-title">Productos</h2>
+    @for (item of currentOrder.items; track item.productoId) {
+    <div class="detail-item">
+      @if (item.imageUrl) {
+      <img class="detail-item-image" [src]="item.imageUrl" [alt]="item.nombre" />
+      } @else {
+      <span class="detail-item-placeholder" aria-hidden="true">{{ item.nombre.charAt(0) }}</span>
+      }
+      <div>
+        <h3>{{ item.nombre }}</h3>
+        <p>{{ item.cantidad }} x {{ formatPrice(item.precioUnitario) }}</p>
+        <div class="item-actions">
+          <button type="button" class="buy-again-button"
+            [disabled]="addingProductId() !== null"
+            (click)="buyAgain(item.productoId, item.cantidad)">
+            <span aria-hidden="true">↻</span>
+            {{ addingProductId() === item.productoId ? 'Añadiendo...' : 'Comprar de nuevo' }}
+          </button>
+          <button type="button" class="view-product-button" (click)="viewProduct(item.productoId)">
+            Ver el artículo
+          </button>
+        </div>
+      </div>
+      <strong>{{ formatPrice(item.subtotal) }}</strong>
+    </div>
+    }
+    <div class="detail-total">
+      <span>Importe total</span>
+      <strong>{{ formatPrice(currentOrder.total) }}</strong>
+    </div>
+  </section>
+  <section class="order-information" aria-label="Información del pedido">
+    @if (currentOrder.direccionEnvio; as address) {
+    <article class="information-card">
+      <span class="information-icon" aria-hidden="true">⌖</span>
+      <div>
+        <h2>Dirección de envío</h2>
+        <p><strong>{{ address.recipientName }}</strong></p>
+        <p>{{ address.street }}</p>
+        <p>{{ address.postalCode }} {{ address.city }}, {{ address.province }}</p>
+        @if (address.additionalInfo) {
+        <p>{{ address.additionalInfo }}</p>
+        }
+        @if (address.phone) {
+        <p>Tel. {{ address.phone }}</p>
+        }
+      </div>
+    </article>
+    }
+    @if (currentOrder.metodoPago; as payment) {
+    <article class="information-card">
+      <span class="information-icon" aria-hidden="true">◉</span>
+      <div>
+        <h2>Método de pago</h2>
+        @switch (payment.tipo) {
+        @case ('CARD') {
+        <p>Tarjeta terminada en <strong>**** {{ payment.lastFourDigits || '----' }}</strong></p>
+        }
+        @case ('PAYPAL') {
+        <p>PayPal</p>
+        }
+        @case ('BIZUM') {
+        <p>Bizum</p>
+        }
+        }
+      </div>
+    </article>
+    }
+  </section>
+  }
+</main>

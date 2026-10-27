@@ -12,6 +12,7 @@ import es.uclm.esibuy.cart.model.Carrito;
 import es.uclm.esibuy.cart.model.ItemCarrito;
 import es.uclm.esibuy.cart.repository.CarritoRepository;
 import es.uclm.esibuy.common.exception.PagoFallidoException;
+import es.uclm.esibuy.common.exception.PedidoNotFoundException;
 import es.uclm.esibuy.common.exception.ProductNotFoundException;
 import es.uclm.esibuy.common.exception.ProductoNoDisponibleException;
 import es.uclm.esibuy.common.exception.RecursoCheckoutNoEncontradoException;
@@ -22,6 +23,10 @@ import es.uclm.esibuy.pedidos.dto.CrearPedidoDTO;
 import es.uclm.esibuy.pedidos.dto.MetodoPagoCheckoutDTO;
 import es.uclm.esibuy.pedidos.dto.PedidoConfirmadoDTO;
 import es.uclm.esibuy.pedidos.dto.ItemPedidoVendedorDTO;
+import es.uclm.esibuy.pedidos.dto.ItemPedidoClienteDTO;
+import es.uclm.esibuy.pedidos.dto.DireccionEnvioClienteDTO;
+import es.uclm.esibuy.pedidos.dto.MetodoPagoClienteDTO;
+import es.uclm.esibuy.pedidos.dto.PedidoClienteDTO;
 import es.uclm.esibuy.pedidos.dto.PedidoVendedorDTO;
 import es.uclm.esibuy.pedidos.model.DireccionEnvioPedido;
 import es.uclm.esibuy.pedidos.model.MetodoPagoPedido;
@@ -153,6 +158,23 @@ public class PedidoService {
                 .toList();
     }
 
+    public List<PedidoClienteDTO> obtenerPedidosDelCliente(String clienteId) {
+        obtenerCliente(clienteId);
+        return pedidoRepository.findAllByClienteIdOrderByFechaCreacionDesc(clienteId).stream()
+                .map(this::toClientOrder)
+                .toList();
+    }
+
+    public PedidoClienteDTO obtenerPedidoDelCliente(String clienteId, String pedidoId) {
+        obtenerCliente(clienteId);
+        if (pedidoId == null || pedidoId.isBlank()) {
+            throw new IllegalArgumentException("El identificador del pedido es obligatorio");
+        }
+        Pedido pedido = pedidoRepository.findByIdAndClienteId(pedidoId, clienteId)
+                .orElseThrow(PedidoNotFoundException::new);
+        return toClientOrder(pedido);
+    }
+
     public void actualizarEstadoPedido(
             String vendedorId,
             String pedidoId,
@@ -232,6 +254,41 @@ public class PedidoService {
                 pedido.getEstado());
     }
 
+    private PedidoClienteDTO toClientOrder(Pedido pedido) {
+        List<ItemPedidoClienteDTO> items = pedido.getItems().stream()
+                .map(item -> new ItemPedidoClienteDTO(
+                        item.productoId(),
+                        item.nombre(),
+                        item.cantidad(),
+                        item.precioUnitario(),
+                        item.subtotal(),
+                        resolveImageUrl(item)))
+                .toList();
+        return new PedidoClienteDTO(
+                pedido.getId(),
+                pedido.getFechaCreacion(),
+                items,
+                pedido.getPrecioTotal(),
+                pedido.getEstado(),
+                toClientShippingAddress(pedido.getDireccionEnvio()),
+                pedido.getMetodoPago() == null
+                        ? null
+                        : new MetodoPagoClienteDTO(
+                                pedido.getMetodoPago().tipo(),
+                                pedido.getMetodoPago().lastFourDigits()));
+    }
+
+    private DireccionEnvioClienteDTO toClientShippingAddress(DireccionEnvioPedido address) {
+        return new DireccionEnvioClienteDTO(
+                address.recipientName(),
+                address.street(),
+                address.additionalInfo(),
+                address.postalCode(),
+                address.city(),
+                address.province(),
+                address.phone());
+    }
+
     private String resolveImageUrl(PedidoItem item) {
         if (item.imageUrl() != null && !item.imageUrl().isBlank()) {
             return item.imageUrl();
@@ -287,7 +344,12 @@ public class PedidoService {
             BigDecimal precio = producto.getPrice();
             BigDecimal subtotal = precio.multiply(BigDecimal.valueOf(item.getCantidad()));
             items.add(new PedidoItem(
-                    producto.getId(), producto.getName(), item.getCantidad(), precio, subtotal));
+                    producto.getId(),
+                    producto.getName(),
+                    item.getCantidad(),
+                    precio,
+                    subtotal,
+                    producto.getImageUrl()));
         }
         return List.copyOf(items);
     }

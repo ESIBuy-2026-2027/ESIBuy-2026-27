@@ -31,14 +31,11 @@ export class App {
 
   brandDestination(): string {
     const role = this.authService.currentUser()?.role;
-    if (role === 'CLIENT') {
+    if (role === 'CLIENT' || role === 'ADMIN') {
       return '/client/catalog';
     }
     if (role === 'SELLER') {
       return '/seller/catalog';
-    }
-    if (role === 'ADMIN') {
-      return '/admin/usuarios';
     }
     return '/';
   }
