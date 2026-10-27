@@ -266,15 +266,32 @@ export class ClientCart {
 
     const rawVendorId = this.selectedVendor()?.vendedorId;
     const vendorId = rawVendorId && rawVendorId !== 'default-seller' ? rawVendorId : undefined;
+    const selectedIds = Array.from(this.selectedProductIds());
+    const totalCartItems = this.cartService.cart()?.items.length ?? 0;
+    const hasPartialSelection = selectedIds.length > 0 && selectedIds.length < totalCartItems;
+
     this.actionError.set(null);
     this.checkoutLoading.set(true);
-    const summary$ = vendorId
-      ? this.pedidoService.obtenerCheckoutResumen(vendorId)
+
+    const summary$ = (vendorId || hasPartialSelection)
+      ? this.pedidoService.obtenerCheckoutResumen(vendorId, selectedIds)
       : this.pedidoService.obtenerCheckoutResumen();
 
     summary$.subscribe({
       next: (summary) => {
-        this.checkoutSummary.set(summary);
+        // Garantizamos que solo se muestren en el resumen los productos seleccionados por el cliente
+        const selectedSet = this.selectedProductIds();
+        const filteredItems = summary.items.filter((item) =>
+          selectedSet.size === 0 || selectedSet.has(item.productoId),
+        );
+        const filteredTotal = Number(
+          filteredItems.reduce((total, item) => total + item.subtotal, 0).toFixed(2),
+        );
+        this.checkoutSummary.set({
+          ...summary,
+          items: filteredItems,
+          precioTotal: filteredTotal,
+        });
         this.selectedAddressId.set(
           summary.direcciones.find((address) => address.isDefault)?.id
           ?? summary.direcciones[0]?.id
@@ -322,10 +339,14 @@ export class ClientCart {
     }
     const rawVendorId = this.selectedVendor()?.vendedorId;
     const vendorId = rawVendorId && rawVendorId !== 'default-seller' ? rawVendorId : undefined;
+    const selectedIds = Array.from(this.selectedProductIds());
+    const totalCartItems = this.cartService.cart()?.items.length ?? 0;
+    const hasPartialSelection = selectedIds.length > 0 && selectedIds.length < totalCartItems;
+
     this.actionError.set(null);
     this.processingOrder.set(true);
-    const order$ = vendorId
-      ? this.pedidoService.crearPedido(direccionId, metodoPagoId, vendorId)
+    const order$ = (vendorId || hasPartialSelection)
+      ? this.pedidoService.crearPedido(direccionId, metodoPagoId, vendorId, selectedIds)
       : this.pedidoService.crearPedido(direccionId, metodoPagoId);
 
     order$.subscribe({

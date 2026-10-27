@@ -130,7 +130,7 @@
                 [disabled]="isSellerDisabled(group.vendedorId)"
                 [attr.aria-label]="'Seleccionar todos los productos de ' + group.vendedorNombre">
             </label>
-            <span class="seller-summary-icon" aria-hidden="true">🏪</span>
+            <span class="seller-summary-icon" aria-hidden="true"><svg class="store-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l2-5h14l2 5"/><path d="M21 9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9"/><path d="M3 9h18"/><path d="M10 13a2 2 0 0 0 4 0"/></svg></span>
             <span class="seller-summary-name">Vendedor: <strong>{{ group.vendedorNombre }}</strong></span>
             <span class="seller-summary-count">({{ group.totalCount }} {{ group.totalCount === 1 ? 'artículo' : 'artículos' }})</span>
             @if (isSellerDisabled(group.vendedorId)) {
@@ -163,9 +163,7 @@
 
             <div class="item-information">
               <h2>{{ item.nombre }}</h2>
-              <p class="item-seller-line">
-                <span class="seller-tag">🏪 {{ group.vendedorNombre }}</span>
-              </p>
+
               <p>{{ formatPrice(item.precioUnitario) }} por unidad</p>
 
               <div class="quantity-controls" [attr.aria-busy]="busyItemIds().has(item.productoId)">
@@ -224,7 +222,7 @@
       </p>
       } @else if (selectedVendor(); as vendor) {
       <p class="selected-vendor-badge">
-        🏪 Pedido para: <strong>{{ vendor.vendedorNombre }}</strong>
+        <svg class="store-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l2-5h14l2 5"/><path d="M21 9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9"/><path d="M3 9h18"/><path d="M10 13a2 2 0 0 0 4 0"/></svg> <span>Pedido para: <strong>{{ vendor.vendedorNombre }}</strong></span>
       </p>
       } @else {
       <p class="selected-vendor-badge hint">
