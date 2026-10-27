@@ -41,19 +41,6 @@
       <div id="profile-menu" class="profile-menu" aria-label="Opciones de cuenta" (click)="$event.stopPropagation()"
         (keydown)="$event.stopPropagation()">
         <p class="profile-menu-email">{{ user.email }}</p>
-        @if (user.role === 'CLIENT') {
-        <button type="button" class="profile-menu-item" (click)="goClientCatalog()">
-          Catálogo
-        </button>
-        } @else if (user.role === 'SELLER') {
-        <button type="button" class="profile-menu-item" (click)="goCatalog()">
-          Catálogo
-        </button>
-        } @else if (user.role === 'ADMIN') {
-        <button type="button" class="profile-menu-item" (click)="goUsersManagement()">
-          Gestión Usuarios
-        </button>
-        }
         <button type="button" class="profile-menu-item" (click)="goToProfile()">
           Perfil
         </button>

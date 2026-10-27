@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ProductsService, ProductItem, Category } from '../../../core/services/products.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { CartService } from '../../../core/services/cart.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -17,6 +18,8 @@ const LOW_STOCK_THRESHOLD = 5;
 })
 export class ClientCatalog implements OnInit {
   private readonly productsService = inject(ProductsService);
+  readonly authService = inject(AuthService);
+  readonly isAdmin = computed(() => this.authService.currentUser()?.role === 'ADMIN');
   readonly wishlistService = inject(WishlistService);
   readonly toastService = inject(ToastService);
   readonly cartService = inject(CartService);
@@ -30,6 +33,10 @@ export class ClientCatalog implements OnInit {
   addToCart(product: ProductItem, event: Event): void {
     event.stopPropagation();
     event.preventDefault();
+
+    if (this.isAdmin()) {
+      return;
+    }
 
     if (product.stock === 0) {
       this.toastService.show('El producto no tiene stock disponible.', 'error');
@@ -119,6 +126,10 @@ export class ClientCatalog implements OnInit {
   toggleFavorite(productId: string, event: Event): void {
     event.stopPropagation();
     event.preventDefault();
+
+    if (this.isAdmin()) {
+      return;
+    }
 
     this.wishlistService.toggleWishlist(productId).subscribe({
       next: (res) => {

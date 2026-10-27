@@ -51,7 +51,16 @@ export class Home implements OnInit {
   });
 
   ngOnInit(): void {
-    if (this.authService.currentUser()?.role === 'CLIENT') {
+    const role = this.authService.currentUser()?.role;
+    if (role === 'CLIENT') {
+      void this.router.navigate(['/client/catalog'], { replaceUrl: true });
+      return;
+    }
+    if (role === 'SELLER') {
+      void this.router.navigate(['/seller/catalog'], { replaceUrl: true });
+      return;
+    }
+    if (role === 'ADMIN') {
       void this.router.navigate(['/client/catalog'], { replaceUrl: true });
       return;
     }

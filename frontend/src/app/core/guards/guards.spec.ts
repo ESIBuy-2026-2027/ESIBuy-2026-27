@@ -59,6 +59,32 @@ describe('authentication route guards', () => {
     expect(TestBed.inject(Router).serializeUrl(denied as UrlTree)).toBe('/');
   });
 
+  it('allows any role from an array of allowed roles', () => {
+    currentUser.set({
+      id: 'admin-1',
+      email: 'admin@example.com',
+      role: 'ADMIN',
+      active: true,
+    });
+
+    const allowed = TestBed.runInInjectionContext(() =>
+      roleGuard(['CLIENT', 'ADMIN'])({} as ActivatedRouteSnapshot, { url: '/client/catalog' } as RouterStateSnapshot));
+
+    expect(allowed).toBe(true);
+
+    currentUser.set({
+      id: 'seller-1',
+      email: 'seller@example.com',
+      role: 'SELLER',
+      active: true,
+    });
+
+    const denied = TestBed.runInInjectionContext(() =>
+      roleGuard(['CLIENT', 'ADMIN'])({} as ActivatedRouteSnapshot, { url: '/client/catalog' } as RouterStateSnapshot));
+
+    expect(denied).toBeInstanceOf(UrlTree);
+  });
+
   it('redirects unauthenticated role checks home', () => {
     const result = TestBed.runInInjectionContext(() =>
       roleGuard('ADMIN')({} as ActivatedRouteSnapshot, { url: '/admin/usuarios' } as RouterStateSnapshot));
