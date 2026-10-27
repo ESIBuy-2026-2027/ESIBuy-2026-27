@@ -9,10 +9,10 @@ import es.uclm.esibuy.security.config.SecurityConfig;
 import es.uclm.esibuy.wishlist.service.WishlistService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.verify;
@@ -35,7 +35,7 @@ class WishlistControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @MockBean
     private WishlistService wishlistService;
 
     @Test
@@ -97,4 +97,3 @@ class WishlistControllerTest {
                 .andExpect(status().isForbidden());
     }
 }
-

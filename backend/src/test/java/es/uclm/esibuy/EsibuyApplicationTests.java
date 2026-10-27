@@ -3,12 +3,12 @@ package es.uclm.esibuy;
 import es.uclm.esibuy.categories.repository.CategoryRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest(properties = "spring.data.mongodb.auto-index-creation=false")
 class EsibuyApplicationTests {
 
-	@MockitoBean
+	@MockBean
 	private CategoryRepository categoryRepository;
 
 	@Test
