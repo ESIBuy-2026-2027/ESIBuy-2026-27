@@ -10,6 +10,8 @@ export interface CartItem {
   cantidad: number;
   subtotal: number;
   imageUrl?: string;
+  vendedorId?: string;
+  vendedorNombre?: string;
 }
 
 export interface CartResponse {

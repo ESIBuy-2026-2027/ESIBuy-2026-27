@@ -100,12 +100,22 @@ export interface CustomerPaymentMethod {
 export class PedidoService {
   private readonly http = inject(HttpClient);
 
-  obtenerCheckoutResumen(): Observable<CheckoutSummary> {
-    return this.http.get<CheckoutSummary>('/api/pedidos/checkout-resumen');
+  obtenerCheckoutResumen(vendedorId?: string): Observable<CheckoutSummary> {
+    const options = vendedorId ? { params: { vendedorId } } : {};
+    return this.http.get<CheckoutSummary>('/api/pedidos/checkout-resumen', options).pipe(
+      map((summary) => this.normalizeSummary(summary)),
+    );
   }
 
-  crearPedido(direccionId: string, metodoPagoId: string): Observable<ConfirmedOrder> {
-    return this.http.post<ConfirmedOrder>('/api/pedidos', { direccionId, metodoPagoId });
+  crearPedido(direccionId: string, metodoPagoId: string, vendedorId?: string): Observable<ConfirmedOrder> {
+    const payload: { direccionId: string; metodoPagoId: string; vendedorId?: string } = {
+      direccionId,
+      metodoPagoId,
+    };
+    if (vendedorId) {
+      payload.vendedorId = vendedorId;
+    }
+    return this.http.post<ConfirmedOrder>('/api/pedidos', payload);
   }
 
   obtenerPedidosDelCliente(): Observable<CustomerOrder[]> {
@@ -136,5 +146,18 @@ export class PedidoService {
     justificacion?: string,
   ): Observable<void> {
     return this.http.patch<void>(`/api/pedidos/vendedor/${pedidoId}/estado`, { estado, justificacion });
+  }
+
+  private normalizeSummary(summary: CheckoutSummary): CheckoutSummary {
+    if (!summary || !Array.isArray(summary.items)) {
+      return summary;
+    }
+    return {
+      ...summary,
+      items: summary.items.map((item) => ({
+        ...item,
+        imageUrl: resolveImageUrl(item.imageUrl) ?? undefined,
+      })),
+    };
   }
 }

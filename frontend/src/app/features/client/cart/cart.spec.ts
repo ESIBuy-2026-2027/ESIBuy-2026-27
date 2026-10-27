@@ -1,4 +1,4 @@
-import { HttpErrorResponse } from '@angular/common/http';
+﻿import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
@@ -351,5 +351,146 @@ describe('ClientCart', () => {
 
     const fallback = items[1].querySelector('.thumb-fallback');
     expect(fallback).toBeTruthy();
+  });
+
+  it('should group cart items by vendor and calculate total based on selected vendor items', async () => {
+    const cart = signal({
+      id: 'cart-1',
+      clienteId: 'client-1',
+      items: [
+        {
+          productoId: 'p-1',
+          nombre: 'Whopper',
+          precioUnitario: 8.5,
+          cantidad: 2,
+          subtotal: 17,
+          vendedorId: 'seller-bk',
+          vendedorNombre: 'Burger King',
+        },
+        {
+          productoId: 'p-2',
+          nombre: 'Patatas',
+          precioUnitario: 3.5,
+          cantidad: 1,
+          subtotal: 3.5,
+          vendedorId: 'seller-bk',
+          vendedorNombre: 'Burger King',
+        },
+      ],
+      precioTotal: 20.5,
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [ClientCart],
+      providers: [
+        provideRouter([]),
+        {
+          provide: CartService,
+          useValue: {
+            cart,
+            loading: signal(false),
+            loadError: signal(null),
+            itemCount: () => 3,
+          },
+        },
+        { provide: PedidoService, useValue: { obtenerCheckoutResumen: vi.fn(), crearPedido: vi.fn() } },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ClientCart);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.seller-summary-name')?.textContent).toContain('Burger King');
+    expect(element.querySelector('.seller-warning-alert')).toBeNull();
+    expect(element.querySelector('.total-line')?.textContent).toContain('20,50');
+
+    const checkoutBtn = element.querySelector('.checkout-action') as HTMLButtonElement;
+    expect(checkoutBtn.disabled).toBe(false);
+  });
+
+  it('should only sum selected vendor items and prevent selecting products from another vendor', async () => {
+    const items = [
+      {
+        productoId: 'p-1',
+        nombre: 'Whopper',
+        precioUnitario: 8.5,
+        cantidad: 1,
+        subtotal: 8.5,
+        vendedorId: 'seller-bk',
+        vendedorNombre: 'Burger King',
+      },
+      {
+        productoId: 'p-2',
+        nombre: 'Big Mac',
+        precioUnitario: 8.0,
+        cantidad: 1,
+        subtotal: 8.0,
+        vendedorId: 'seller-mcd',
+        vendedorNombre: 'McDonalds',
+      },
+    ];
+    const cart = signal({
+      id: 'cart-1',
+      clienteId: 'client-1',
+      items,
+      precioTotal: 16.5,
+    });
+
+    const obtenerCheckoutResumen = vi.fn();
+
+    await TestBed.configureTestingModule({
+      imports: [ClientCart],
+      providers: [
+        provideRouter([]),
+        {
+          provide: CartService,
+          useValue: {
+            cart,
+            loading: signal(false),
+            loadError: signal(null),
+            itemCount: () => 2,
+          },
+        },
+        { provide: PedidoService, useValue: { obtenerCheckoutResumen, crearPedido: vi.fn() } },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ClientCart);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    // When multiple sellers are in the cart, client selects a vendor first
+    const firstGroup = fixture.componentInstance.sellerGroups()[0];
+    fixture.componentInstance.toggleSellerSelection(firstGroup);
+    fixture.detectChanges();
+
+    // Total only includes selected vendor (Burger King: 8,50 €), NOT the entire cart (16,50 €)
+    expect(element.querySelector('.total-line')?.textContent).toContain('8,50');
+    expect(element.querySelector('.total-line')?.textContent).not.toContain('16,50');
+
+    // McDonalds seller is disabled because Burger King has active selection
+    expect(fixture.componentInstance.isSellerDisabled('seller-mcd')).toBe(true);
+    const mcdCheckboxes = element.querySelectorAll('.seller-accordion')[1].querySelectorAll('input[type="checkbox"]');
+    expect((mcdCheckboxes[0] as HTMLInputElement).disabled).toBe(true);
+    expect((mcdCheckboxes[1] as HTMLInputElement).disabled).toBe(true);
+
+    // Attempting to select product from McDonalds while Burger King is selected
+    const secondGroup = fixture.componentInstance.sellerGroups()[1];
+    fixture.componentInstance.toggleProductSelection(items[1], secondGroup);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.isProductSelected('p-2')).toBe(false);
+    expect(fixture.componentInstance.actionError()).toContain('No puedes realizar pedidos de diferente vendedor a la vez');
+
+    // If multiple sellers are selected simultaneously, total price is removed (displays —) and checkout is blocked
+    fixture.componentInstance.setSelectedProductIds(['p-1', 'p-2']);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.selectedTotal()).toBeNull();
+    expect(element.querySelector('.no-price-indicator')?.textContent).toContain('—');
+
+    const checkoutBtn = element.querySelector('.checkout-action') as HTMLButtonElement;
+    expect(checkoutBtn.disabled).toBe(true);
   });
 });

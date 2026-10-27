@@ -1,4 +1,4 @@
-package es.uclm.esibuy.cart.service;
+﻿package es.uclm.esibuy.cart.service;
 
 import es.uclm.esibuy.cart.dto.AnadirItemCarritoDTO;
 import es.uclm.esibuy.cart.dto.ActualizarCantidadItemDTO;
@@ -12,6 +12,7 @@ import es.uclm.esibuy.common.exception.ProductoNoDisponibleException;
 import es.uclm.esibuy.common.exception.StockInsuficienteException;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
+import es.uclm.esibuy.users.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,13 +20,23 @@ public class CarritoService {
 
     private final ProductRepository productRepository;
     private final CarritoRepository carritoRepository;
+    private final UserRepository userRepository;
 
     private static final String CLIENTE_ID_OBLIGATORIO = "El identificador del cliente es obligatorio";
     private static final String PRODUCTO_ID_OBLIGATORIO = "El identificador del producto es obligatorio";
 
-    public CarritoService(ProductRepository productRepository, CarritoRepository carritoRepository) {
+    @org.springframework.beans.factory.annotation.Autowired
+    public CarritoService(
+            ProductRepository productRepository,
+            CarritoRepository carritoRepository,
+            UserRepository userRepository) {
         this.productRepository = productRepository;
         this.carritoRepository = carritoRepository;
+        this.userRepository = userRepository;
+    }
+
+    public CarritoService(ProductRepository productRepository, CarritoRepository carritoRepository) {
+        this(productRepository, carritoRepository, null);
     }
 
     public CarritoDTO anadirItem(String clienteId, AnadirItemCarritoDTO request) {
@@ -153,10 +164,17 @@ public class CarritoService {
 
     private ItemCarritoDTO toDto(ItemCarrito item) {
         String imageUrl = item.getImageUrl();
-        if ((imageUrl == null || imageUrl.isBlank()) && item.getProductoId() != null) {
-            imageUrl = productRepository.findById(item.getProductoId())
-                    .map(Product::getImageUrl)
-                    .orElse(null);
+        String vendedorId = null;
+        String vendedorNombre = null;
+        if (item.getProductoId() != null) {
+            Product product = productRepository.findById(item.getProductoId()).orElse(null);
+            if (product != null) {
+                if (imageUrl == null || imageUrl.isBlank()) {
+                    imageUrl = product.getImageUrl();
+                }
+                vendedorId = product.getSellerId();
+                vendedorNombre = resolveSellerName(vendedorId);
+            }
         }
         return new ItemCarritoDTO(
                 item.getProductoId(),
@@ -164,6 +182,27 @@ public class CarritoService {
                 item.getPrecioUnitario(),
                 item.getCantidad(),
                 item.getSubtotal(),
-                imageUrl);
+                imageUrl,
+                vendedorId,
+                vendedorNombre);
+    }
+
+    private String resolveSellerName(String sellerId) {
+        if (sellerId == null || sellerId.isBlank() || userRepository == null) {
+            return null;
+        }
+        return userRepository.findById(sellerId)
+                .map(user -> {
+                    if (user.getSellerProfile() != null
+                            && user.getSellerProfile().getBusinessName() != null
+                            && !user.getSellerProfile().getBusinessName().isBlank()) {
+                        return user.getSellerProfile().getBusinessName();
+                    }
+                    String firstName = user.getFirstName() != null ? user.getFirstName() : "";
+                    String lastName = user.getLastName() != null ? user.getLastName() : "";
+                    String fullName = (firstName + " " + lastName).trim();
+                    return !fullName.isBlank() ? fullName : "Vendedor " + sellerId;
+                })
+                .orElse("Vendedor " + sellerId);
     }
 }
