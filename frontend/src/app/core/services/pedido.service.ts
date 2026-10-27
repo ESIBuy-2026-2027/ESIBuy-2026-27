@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { CartItem } from './cart.service';
+import { resolveImageUrl } from '../utils/image.util';
 
 export interface ShippingAddressSummary {
   id: string;
@@ -59,6 +60,42 @@ export interface SellerOrder {
   estado: SellerOrderStatus;
 }
 
+export interface CustomerOrderItem {
+  productoId: string;
+  nombre: string;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+  imageUrl: string | null;
+}
+
+export type CustomerOrderStatus = SellerOrderStatus | 'PAGADO';
+
+export interface CustomerOrder {
+  pedidoId: string;
+  fechaCreacion: string;
+  items: CustomerOrderItem[];
+  total: number;
+  estado: CustomerOrderStatus;
+  direccionEnvio: CustomerShippingAddress | null;
+  metodoPago: CustomerPaymentMethod | null;
+}
+
+export interface CustomerShippingAddress {
+  recipientName: string;
+  street: string;
+  additionalInfo: string | null;
+  postalCode: string;
+  city: string;
+  province: string;
+  phone: string | null;
+}
+
+export interface CustomerPaymentMethod {
+  tipo: 'CARD' | 'PAYPAL' | 'BIZUM';
+  lastFourDigits: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PedidoService {
   private readonly http = inject(HttpClient);
@@ -71,8 +108,26 @@ export class PedidoService {
     return this.http.post<ConfirmedOrder>('/api/pedidos', { direccionId, metodoPagoId });
   }
 
+  obtenerPedidosDelCliente(): Observable<CustomerOrder[]> {
+    return this.http.get<CustomerOrder[]>('/api/pedidos');
+  }
+
+  obtenerPedidoDelCliente(pedidoId: string): Observable<CustomerOrder> {
+    return this.http.get<CustomerOrder>(`/api/pedidos/${pedidoId}`);
+  }
+
   obtenerPedidosDelVendedor(): Observable<SellerOrder[]> {
-    return this.http.get<SellerOrder[]>('/api/pedidos/vendedor');
+    return this.http.get<SellerOrder[]>('/api/pedidos/vendedor').pipe(
+      map((orders) =>
+        orders.map((order) => ({
+          ...order,
+          items: order.items.map((item) => ({
+            ...item,
+            imageUrl: resolveImageUrl(item.imageUrl),
+          })),
+        }))
+      )
+    );
   }
 
   actualizarEstadoPedido(

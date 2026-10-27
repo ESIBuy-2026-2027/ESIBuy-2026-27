@@ -182,4 +182,10 @@ export class Home implements OnInit {
   formatPrice(price: number): string {
     return this.currencyFormatter.format(price);
   }
+
+  readonly imageErrors = signal<Record<string, boolean>>({});
+
+  onImageError(productId: string): void {
+    this.imageErrors.update((prev) => ({ ...prev, [productId]: true }));
+  }
 }

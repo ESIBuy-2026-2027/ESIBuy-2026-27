@@ -13,6 +13,7 @@ import { SellerCatalog } from './features/products/seller-catalog/seller-catalog
 import { ClientCatalog } from './features/client/client-catalog/client-catalog';
 import { ClientWishlist } from './features/client/client-wishlist/client-wishlist';
 import { ClientOrders } from './features/client/client-orders/client-orders';
+import { ClientOrderDetail } from './features/client/client-order-detail/client-order-detail';
 import { ClientProfile } from './features/client/client-profile/client-profile';
 import { SellerProfile } from './features/products/seller-profile/seller-profile';
 import { SellerOrders } from './features/products/seller-orders/seller-orders';
@@ -53,6 +54,7 @@ export const routes: Routes = [
   { path: 'client/dashboard', redirectTo: 'client/catalog', pathMatch: 'full' },
   { path: 'client/wishlist', component: ClientWishlist, canActivate: [authGuard, roleGuard('CLIENT')] },
   { path: 'client/orders', component: ClientOrders, canActivate: [authGuard, roleGuard('CLIENT')] },
+  { path: 'client/orders/:pedidoId', component: ClientOrderDetail, canActivate: [authGuard, roleGuard('CLIENT')] },
   { path: 'client/compras', redirectTo: 'client/orders', pathMatch: 'full' },
   { path: 'client/cart', component: ClientCart, canActivate: [authGuard, roleGuard('CLIENT')] },
   { path: 'client/profile', component: ClientProfile, canActivate: [authGuard, roleGuard('CLIENT')] },

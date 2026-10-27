@@ -214,4 +214,10 @@ export class ProductDetail implements OnInit {
       },
     });
   }
+
+  readonly imageError = signal(false);
+
+  onImageError(): void {
+    this.imageError.set(true);
+  }
 }

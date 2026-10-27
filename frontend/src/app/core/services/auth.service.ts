@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { computed, Injectable, signal } from '@angular/core';
-import { Observable, catchError, of, tap, throwError } from 'rxjs';
+import { Observable, catchError, of, tap, throwError, timeout } from 'rxjs';
 
 export type UserRole = 'CLIENT' | 'SELLER' | 'ADMIN';
 
@@ -253,13 +253,10 @@ export class AuthService {
 
   loadCurrentUser(): Observable<AuthenticatedUser | null> {
     return this.me().pipe(
-      catchError((error: unknown) => {
-        if (error instanceof HttpErrorResponse && error.status === 401) {
-          this.clearCurrentUser();
-          return of(null);
-        }
-
-        return throwError(() => error);
+      timeout(2000),
+      catchError(() => {
+        this.clearCurrentUser();
+        return of(null);
       }),
     );
   }
