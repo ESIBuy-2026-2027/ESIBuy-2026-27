@@ -67,11 +67,13 @@ export class ProductDetail implements OnInit {
   }
 
   getPremiumPrice(p: ProductItem): number {
-    if (p.premiumDiscount && p.premiumDiscount > 0) {
-      const factor = (100 - p.premiumDiscount) / 100;
-      return Math.round(p.price * factor * 100) / 100;
-    }
-    return p.price;
+    const standardDiscount = Math.max(0, p.discount ?? 0);
+    const premiumDiscount = Math.max(0, p.premiumDiscount ?? 0);
+
+    const totalDiscount = standardDiscount + premiumDiscount;
+    const factor = Math.max(0, 100 - totalDiscount) / 100;
+
+    return Math.round(p.price * factor * 100) / 100;
   }
 
   hasStandardDiscount(p: ProductItem): boolean {
