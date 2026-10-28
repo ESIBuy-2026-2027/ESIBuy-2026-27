@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
@@ -7,7 +7,7 @@ import { AdminIncidentService, Incident } from '../../../core/services/admin-inc
 @Component({
   selector: 'app-admin-incidents',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive, DatePipe],
   templateUrl: './admin-incidents.html',
   styleUrl: './admin-incidents.css',
 })
@@ -35,6 +35,25 @@ export class AdminIncidents {
   readonly totalCount = computed(() => this.incidents().length);
   readonly pendingCount = computed(() => this.incidents().filter((i) => i.status === 'PENDIENTE').length);
   readonly resolvedCount = computed(() => this.incidents().filter((i) => i.status === 'RESUELTA').length);
+
+  constructor() {
+    this.loadIncidents();
+  }
+
+  loadIncidents(): void {
+    this.loading.set(true);
+    this.loadError.set(false);
+    this.incidentService.getAll().subscribe({
+      next: (list) => {
+        this.incidents.set(list);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.loadError.set(true);
+      },
+    });
+  }
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update((collapsed) => !collapsed);

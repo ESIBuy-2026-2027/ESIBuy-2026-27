@@ -76,7 +76,7 @@
           <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
           <h1 id="incidents-page-title">Gestión de incidencias</h1>
           <p class="page-description">
-            Registra tickets de soporte técnico, consulta el estado de las incidencias del sistema y márcalas como resueltas.
+            Panel de soporte técnico interno para registrar, consultar y marcar incidencias como resueltas.
           </p>
         </div>
       </section>
@@ -105,7 +105,51 @@
         </div>
       }
 
-      <!-- Formulario de Registro de Incidencia (HU 191) -->
+      <!-- Resumen superior con contadores en tiempo real -->
+      <section class="stats-overview" aria-label="Resumen de incidencias">
+        <article class="stat-card">
+          <div class="stat-icon stat-icon--total" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Total de incidencias</span>
+            <span class="stat-value" data-testid="total-count">{{ totalCount() }}</span>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon stat-icon--pending" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Pendientes</span>
+            <span class="stat-value text-amber" data-testid="pending-count">{{ pendingCount() }}</span>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon stat-icon--resolved" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Resueltas</span>
+            <span class="stat-value text-teal" data-testid="resolved-count">{{ resolvedCount() }}</span>
+          </div>
+        </article>
+      </section>
+
+      <!-- Bloque de Registro de Incidencia (HU 191) -->
       <div class="card incident-form-card">
         <div class="card-header">
           <h2 class="card-title">
@@ -208,7 +252,142 @@
           </div>
         </form>
       </div>
+
+      <!-- Bloque de Bandeja / Listado de Incidencias (HU 239 y HU 192) -->
+      <div class="card incident-table-card">
+        <div class="card-header">
+          <div class="card-header-main">
+            <h2 class="card-title">
+              <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              Bandeja de incidencias registradas
+            </h2>
+            <p class="card-subtitle">
+              Listado completo de incidencias reportadas en la tienda, ordenadas por fecha reciente.
+            </p>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" (click)="loadIncidents()" [disabled]="loading()">
+            <svg viewBox="0 0 24 24" class="btn-icon-svg" aria-hidden="true" fill="none" stroke="currentColor">
+              <path d="M23 4v6h-6"></path>
+              <path d="M1 20v-6h6"></path>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <span>Actualizar</span>
+          </button>
+        </div>
+
+        @if (loadError()) {
+          <div class="catalog-alert is-error" role="alert" data-testid="load-error-alert">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <div class="alert-text">No se pudieron cargar las incidencias desde el servidor.</div>
+            <button type="button" class="btn btn-secondary btn-xs" (click)="loadIncidents()">Reintentar</button>
+          </div>
+        }
+
+        @if (loading()) {
+          <div class="loading-state" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <p>Cargando incidencias del sistema...</p>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="incident-table" aria-label="Listado de incidencias registradas">
+              <thead>
+                <tr>
+                  <th scope="col" class="col-id">ID</th>
+                  <th scope="col" class="col-date">Fecha</th>
+                  <th scope="col" class="col-category">Categoría</th>
+                  <th scope="col" class="col-subject">Asunto / Referencia</th>
+                  <th scope="col" class="col-desc">Descripción</th>
+                  <th scope="col" class="col-status">Estado</th>
+                  <th scope="col" class="col-action">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (incident of incidents(); track incident.id) {
+                  <tr class="incident-row" [class.is-resolved]="incident.status === 'RESUELTA'">
+                    <td class="col-id">
+                      <span class="incident-id-badge" [title]="incident.id">
+                        #{{ incident.id.length > 8 ? incident.id.slice(-6) : incident.id }}
+                      </span>
+                    </td>
+                    <td class="col-date text-muted">
+                      {{ incident.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                    </td>
+                    <td class="col-category">
+                      <span class="category-badge category-{{ incident.category.toLowerCase() }}">
+                        {{ incident.category }}
+                      </span>
+                    </td>
+                    <td class="col-subject">
+                      <div class="subject-wrapper">
+                        <strong class="subject-title">{{ incident.subject }}</strong>
+                        @if (incident.reference) {
+                          <span class="reference-tag" title="Referencia afectada">
+                            Ref: {{ incident.reference }}
+                          </span>
+                        }
+                      </div>
+                    </td>
+                    <td class="col-desc">
+                      <p class="description-text" [title]="incident.description">
+                        {{ incident.description }}
+                      </p>
+                    </td>
+                    <td class="col-status">
+                      @if (incident.status === 'PENDIENTE') {
+                        <span class="status-badge badge-pending">
+                          <span class="status-dot dot-pending" aria-hidden="true"></span>
+                          PENDIENTE
+                        </span>
+                      } @else {
+                        <span class="status-badge badge-resolved">
+                          <span class="status-dot dot-resolved" aria-hidden="true"></span>
+                          RESUELTA
+                        </span>
+                      }
+                    </td>
+                    <td class="col-action">
+                      @if (incident.status === 'PENDIENTE') {
+                        <span class="action-pending-hint">Por resolver</span>
+                      } @else {
+                        <span class="resolved-note text-teal">
+                          Resuelta
+                          @if (incident.resolvedAt) {
+                            <small class="resolved-date">({{ incident.resolvedAt | date:'dd/MM/yy' }})</small>
+                          }
+                        </span>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7">
+                      <div class="empty-state" data-testid="empty-incidents-state">
+                        <span class="empty-state-icon" aria-hidden="true">✓</span>
+                        <p class="empty-state-title">No hay incidencias registradas</p>
+                        <span class="empty-state-subtitle">
+                          Actualmente no existen tickets de soporte pendientes ni reportados en el sistema.
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
     </main>
   </div>
 </div>
-

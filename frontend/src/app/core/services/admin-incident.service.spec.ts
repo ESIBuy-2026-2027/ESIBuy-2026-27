@@ -44,5 +44,20 @@ describe('AdminIncidentService', () => {
     expect(request.request.withCredentials).toBe(true);
     request.flush(mockResponse);
   });
+
+  it('lists incidents ordered from the admin endpoint with credentials', () => {
+    service.getAll().subscribe((list) => {
+      expect(list).toHaveLength(2);
+      expect(list[0].id).toBe('inc-1');
+    });
+
+    const request = httpTesting.expectOne('/api/admin/incidents');
+    expect(request.request.method).toBe('GET');
+    expect(request.request.withCredentials).toBe(true);
+    request.flush([
+      { id: 'inc-1', subject: 'Incidencia 1', category: 'PEDIDO', description: 'Desc 1', status: 'PENDIENTE', createdBy: 'admin', createdAt: '2026-10-28T12:00:00Z' },
+      { id: 'inc-2', subject: 'Incidencia 2', category: 'PAGO', description: 'Desc 2', status: 'RESUELTA', createdBy: 'admin', createdAt: '2026-10-28T10:00:00Z' },
+    ]);
+  });
 });
 
