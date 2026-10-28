@@ -2,13 +2,10 @@
   <!-- Barra lateral de develop -->
   <aside class="admin-sidebar admin-sidebar--shared app-sidebar" aria-label="Panel de administración">
     <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral">
-      <span aria-hidden="true">‹</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m15 18-6-6 6-6" />
+      </svg>
     </button>
-
-    <a routerLink="/" class="admin-brand" aria-label="ESIBuy">
-      <span class="brand-mark" aria-hidden="true">E</span>
-      <span>ESI<span class="brand-accent">Buy</span></span>
-    </a>
 
     <p class="sidebar-caption">GESTIÓN DE ADMINISTRACIÓN</p>
 
@@ -53,7 +50,9 @@
 
   <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()" aria-label="Mostrar barra lateral"
     [hidden]="!sidebarCollapsed()">
-    <span aria-hidden="true">›</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m9 18 6-6-6-6" />
+    </svg>
   </button>
 
   <div class="admin-workspace app-workspace">
