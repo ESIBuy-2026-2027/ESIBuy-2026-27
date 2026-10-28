@@ -25,7 +25,7 @@ public class PasswordResetEmailService {
 
     public PasswordResetEmailService(
             JavaMailSender mailSender,
-            @Value("${spring.mail.username}") String fromAddress) {
+            @Value("${spring.mail.username:no-reply@esibuy.com}") String fromAddress) {
         this.mailSender = mailSender;
         this.fromAddress = fromAddress;
     }
