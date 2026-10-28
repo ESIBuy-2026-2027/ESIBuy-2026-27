@@ -59,5 +59,26 @@ describe('AdminIncidentService', () => {
       { id: 'inc-2', subject: 'Incidencia 2', category: 'PAGO', description: 'Desc 2', status: 'RESUELTA', createdBy: 'admin', createdAt: '2026-10-28T10:00:00Z' },
     ]);
   });
+
+  it('resolves an incident using the admin PATCH endpoint and credentials', () => {
+    service.resolve('inc-1').subscribe((resolved) => {
+      expect(resolved.status).toBe('RESUELTA');
+      expect(resolved.resolvedAt).toBeDefined();
+    });
+
+    const request = httpTesting.expectOne('/api/admin/incidents/inc-1/resolve');
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.withCredentials).toBe(true);
+    request.flush({
+      id: 'inc-1',
+      subject: 'Incidencia 1',
+      category: 'PEDIDO',
+      description: 'Desc 1',
+      status: 'RESUELTA',
+      createdBy: 'admin',
+      createdAt: '2026-10-28T12:00:00Z',
+      resolvedAt: '2026-10-28T12:15:00Z',
+    });
+  });
 });
 

@@ -359,14 +359,35 @@
                     </td>
                     <td class="col-action">
                       @if (incident.status === 'PENDIENTE') {
-                        <span class="action-pending-hint">Por resolver</span>
-                      } @else {
-                        <span class="resolved-note text-teal">
-                          Resuelta
-                          @if (incident.resolvedAt) {
-                            <small class="resolved-date">({{ incident.resolvedAt | date:'dd/MM/yy' }})</small>
+                        <button
+                          type="button"
+                          class="btn btn-resolve"
+                          [disabled]="resolvingId() === incident.id"
+                          (click)="resolveIncident(incident)"
+                          [attr.aria-label]="'Marcar como resuelta la incidencia ' + incident.subject"
+                        >
+                          @if (resolvingId() === incident.id) {
+                            <span>Resolviendo...</span>
+                          } @else {
+                            <svg viewBox="0 0 24 24" class="btn-icon-svg" aria-hidden="true" fill="none" stroke="currentColor">
+                              <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>Marcar como resuelta</span>
                           }
-                        </span>
+                        </button>
+                      } @else {
+                        <div class="resolved-cell">
+                          <span class="resolved-note text-teal">
+                            <svg viewBox="0 0 24 24" class="resolved-check-icon" aria-hidden="true" fill="none" stroke="currentColor">
+                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            Resuelta
+                          </span>
+                          @if (incident.resolvedAt) {
+                            <span class="resolved-date">{{ incident.resolvedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                          }
+                        </div>
                       }
                     </td>
                   </tr>

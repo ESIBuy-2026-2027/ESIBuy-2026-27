@@ -212,5 +212,78 @@ describe('AdminIncidents', () => {
     expect(el.querySelector('[data-testid="load-error-alert"]')).toBeTruthy();
     expect(el.textContent).toContain('No se pudieron cargar las incidencias desde el servidor');
   });
+
+  it('should resolve an incident on button click, update row and counters, and show success message', () => {
+    const pendingItem: Incident = {
+      id: 'inc-300',
+      subject: 'Problema de acceso admin',
+      category: 'USUARIO',
+      description: 'El admin no puede entrar',
+      status: 'PENDIENTE',
+      createdBy: 'admin@esibuy.com',
+      createdAt: '2026-10-28T14:00:00Z',
+    };
+
+    const resolvedItem: Incident = {
+      ...pendingItem,
+      status: 'RESUELTA',
+      resolvedAt: '2026-10-28T14:30:00Z',
+    };
+
+    incidentService.getAll.mockReturnValue(of([pendingItem]));
+    incidentService.resolve.mockReturnValue(of(resolvedItem));
+
+    const fixture = TestBed.createComponent(AdminIncidents);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(component.pendingCount()).toBe(1);
+    expect(component.resolvedCount()).toBe(0);
+
+    const resolveBtn = el.querySelector<HTMLButtonElement>('.btn-resolve');
+    expect(resolveBtn).toBeTruthy();
+    expect(resolveBtn?.textContent).toContain('Marcar como resuelta');
+
+    resolveBtn?.click();
+    fixture.detectChanges();
+
+    expect(incidentService.resolve).toHaveBeenCalledWith('inc-300');
+    expect(component.incidents()[0].status).toBe('RESUELTA');
+    expect(component.pendingCount()).toBe(0);
+    expect(component.resolvedCount()).toBe(1);
+    expect(component.mensajeExito()).toContain('marcada como resuelta');
+    expect(el.querySelector('.resolved-cell')?.textContent).toContain('Resuelta');
+  });
+
+  it('should show error message if resolving an incident fails', () => {
+    const pendingItem: Incident = {
+      id: 'inc-400',
+      subject: 'Fallo pasarela',
+      category: 'PAGO',
+      description: 'Error en webhook',
+      status: 'PENDIENTE',
+      createdBy: 'admin@esibuy.com',
+      createdAt: '2026-10-28T14:00:00Z',
+    };
+
+    incidentService.getAll.mockReturnValue(of([pendingItem]));
+    incidentService.resolve.mockReturnValue(
+      throwError(() => ({
+        error: { message: 'No se pudo resolver la incidencia en el servidor.' },
+      }))
+    );
+
+    const fixture = TestBed.createComponent(AdminIncidents);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.resolveIncident(pendingItem);
+    fixture.detectChanges();
+
+    expect(component.mensajeError()).toBe('No se pudo resolver la incidencia en el servidor.');
+    expect(component.incidents()[0].status).toBe('PENDIENTE');
+    expect(component.resolvingId()).toBeNull();
+  });
 });
 

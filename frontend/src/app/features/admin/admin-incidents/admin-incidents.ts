@@ -30,6 +30,7 @@ export class AdminIncidents {
   readonly incidents = signal<Incident[]>([]);
   readonly loading = signal(false);
   readonly loadError = signal(false);
+  readonly resolvingId = signal<string | null>(null);
 
   // Real-time calculated counters
   readonly totalCount = computed(() => this.incidents().length);
@@ -108,6 +109,34 @@ export class AdminIncidents {
           this.mensajeError.set(msg);
         },
       });
+  }
+
+  resolveIncident(incident: Incident): void {
+    if (!incident || !incident.id || incident.status === 'RESUELTA') {
+      return;
+    }
+
+    this.resolvingId.set(incident.id);
+    this.mensajeError.set('');
+    this.mensajeExito.set('');
+
+    this.incidentService.resolve(incident.id).subscribe({
+      next: (resolved) => {
+        this.resolvingId.set(null);
+        this.incidents.update((list) =>
+          list.map((item) => (item.id === resolved.id ? resolved : item))
+        );
+        this.mensajeExito.set(`Incidencia "${resolved.subject}" marcada como resuelta.`);
+      },
+      error: (err: unknown) => {
+        this.resolvingId.set(null);
+        const msg =
+          err && typeof err === 'object' && 'error' in err && (err as { error?: { message?: string } }).error?.message
+            ? (err as { error: { message: string } }).error.message
+            : 'Error al marcar la incidencia como resuelta. Por favor, inténtelo de nuevo.';
+        this.mensajeError.set(msg);
+      },
+    });
   }
 }
 
