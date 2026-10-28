@@ -101,7 +101,7 @@
   padding: 0;
 }
 
-/* MAIN CATALOG & FILTROS CON RECUADRO NOTABLE */
+/* MAIN CATALOG */
 .catalog-main {
   max-width: 1240px;
   margin: 0 auto;
@@ -110,6 +110,7 @@
   box-sizing: border-box;
 }
 
+/* FILTROS (DISEÑO UNIFICADO) */
 .filters-panel {
   background: #ffffff;
   border-radius: 14px;
@@ -119,102 +120,223 @@
   box-shadow: 0 4px 16px rgba(16, 44, 64, 0.08);
 }
 
-.filters-header {
+.filter-controls-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.filters-title {
-  font-size: 14px;
-  font-weight: 750;
-  color: #102c40;
-}
-
-.reset-link {
-  background: transparent;
-  border: none;
-  font-size: 13px;
-  color: #0d9488;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-}
-
-/* Ilustraciones de pedidos y pagos */
-
-.reset-link:hover {
-  text-decoration: underline;
-}
-
-.filters-grid {
-  display: flex;
+  align-items: flex-start;
   flex-wrap: wrap;
-  align-items: flex-end;
   gap: 16px;
+  padding-bottom: 12px; /* Espacio para el slider */
 }
 
-.filter-item {
+.filter-control {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.filter-item label,
-.filter-item span {
-  font-size: 12px;
-  font-weight: 650;
+.filter-label {
   color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  margin: 0;
+  line-height: normal;
 }
 
-.filter-item select {
-  padding: 9px 12px;
+.filter-control select {
+  box-sizing: border-box;
+  min-width: 170px;
+  height: 35px;
+  padding: 8px 12px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  font-size: 13px;
-  background: #ffffff;
-  color: #1e293b;
   outline: none;
-  min-width: 180px;
+  background: #fff;
+  color: #1e293b;
+  font-size: 13px;
   cursor: pointer;
 }
 
-.filter-item select:focus {
+.filter-control select:focus {
   border-color: #42d6b2;
 }
 
-.price-inputs-row {
+/* RANGO DE PRECIOS */
+.price-control {
+  flex: 0 1 220px;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.price-inputs {
   display: flex;
   align-items: center;
   gap: 6px;
+  width: 100%;
 }
 
-.price-inputs-row input {
-  width: 76px;
-  padding: 9px 10px;
+.price-inputs input {
+  box-sizing: border-box;
+  width: 0;
+  min-width: 0;
+  flex: 1;
+  height: 35px; 
+  padding: 8px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  font-size: 13px;
   outline: none;
+  background: #fff;
+  color: #1e293b;
+  font-size: 13px;
 }
 
-.price-inputs-row input:focus {
+.price-inputs input:focus {
   border-color: #42d6b2;
 }
 
-.price-inputs-row .sep {
+.price-sep {
+  flex: 0 0 auto;
   color: #94a3b8;
-  font-weight: bold;
+  font-weight: 700;
 }
 
-.stock-item {
-  justify-content: flex-end;
-  padding-bottom: 9px;
+.price-range-slider {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 26px;
+  margin: 4px 8px 0;
 }
 
+.price-range-track,
+.price-range-selection {
+  position: absolute;
+  top: 10px;
+  height: 6px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.price-range-track {
+  right: 0;
+  left: 0;
+  background: #dbe3ec;
+}
+
+.price-range-selection {
+  background: #42d6b2;
+}
+
+.price-range-slider input[type="range"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 26px;
+  margin: 0;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  pointer-events: none;
+  cursor: pointer;
+}
+
+.price-range-slider input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  background: transparent;
+}
+
+.price-range-slider input[type="range"]::-moz-range-track {
+  height: 6px;
+  background: transparent;
+}
+
+.price-range-slider input[type="range"]::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+  margin-top: -6px;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 2px solid #102c40;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(16, 44, 64, 0.2);
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.price-range-slider input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #102c40;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(16, 44, 64, 0.2);
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.price-range-slider input[type="range"]:focus-visible {
+  outline: none;
+}
+
+.price-range-slider input[type="range"]:focus-visible::-webkit-slider-thumb {
+  outline: 3px solid rgba(66, 214, 178, 0.35);
+}
+
+.price-range-slider input[type="range"]:focus-visible::-moz-range-thumb {
+  outline: 3px solid rgba(66, 214, 178, 0.35);
+}
+
+/* ACCIONES (CHECKBOXES Y BOTÓN) */
+.filter-actions-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  flex: 1 1 auto;
+  margin-top: 20px; /* <--- ESTO es lo que empuja los checkboxes a la altura de los inputs */
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.checkbox-label input {
+  width: 16px;
+  height: 16px;
+  accent-color: #42d6b2;
+  cursor: pointer;
+}
+
+.reset-filter-btn {
+  margin-left: auto;
+  height: 35px;
+  padding: 0 14px;
+  border: 1px solid #99f6e4;
+  border-radius: 8px;
+  background: transparent;
+  color: #0d9488;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.reset-filter-btn:hover {
+  background: #f0fdfa;
+}
+
+/* CARDS DE PRODUCTO */
 .product-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -532,8 +654,7 @@
   color: #0c6654 !important;
   background: #e8fbf5;
   border: 1px solid #b5eddf;
-  border-left: 4px solid #1bb89b;
-}
+  }
 
 @keyframes alert-slide-in {
   from {
@@ -555,12 +676,16 @@
   }
 }
 
-.catalog-alert.is-error,
-.catalog-alert.is-info {
+.catalog-alert.is-error {
   color: #a52232;
   background: #fff1f2;
-  border-color: #fecdd3;
-  border-left: 4px solid #e11d48;
+  border: 1px solid #fecdd3;
+  }
+
+.catalog-alert.is-info {
+  border: 1px solid #bae6fd;
+  background: #f0f9ff;
+  color: #0369a1 !important;
 }
 
 .catalog-alert svg {
@@ -596,4 +721,118 @@
 
 .catalog-alert .alert-close:hover {
   opacity: 1;
+}
+
+
+/* Badges de descuento en la esquina superior derecha (en rojo) */
+.discount-badges-wrapper {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.discount-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: -0.2px;
+  color: #ffffff;
+  background: #dc2626;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35);
+  line-height: 1.2;
+}
+
+.discount-badge-pill.premium-discount-badge {
+  background: #b91c1c;
+  border: 1px solid rgba(254, 240, 138, 0.4);
+}
+
+.discount-badge-pill.premium-discount-badge.is-current-plan {
+  background: #e11d48;
+  box-shadow: 0 0 0 1.5px #fef08a, 0 2px 8px rgba(225, 29, 72, 0.4);
+}
+
+/* Información del proveedor / vendedor debajo de la descripción */
+.product-vendor-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin: -4px 0 10px;
+}
+
+.product-vendor-info .vendor-label {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.product-vendor-info .vendor-name {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* Precios con descuento, tachado y precio premium */
+.prices-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 3px;
+}
+
+.main-price-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.strikethrough-original-price {
+  font-size: 13px;
+  color: #64748b;
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.premium-price-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  color: #713f12;
+  font-weight: 600;
+}
+
+.premium-price-line.is-current-plan {
+  color: #b45309;
+  font-weight: 700;
+}
+
+.premium-price-line .premium-star {
+  color: #eab308;
+  font-size: 11px;
+}
+
+.premium-price-line .premium-price-val {
+  font-weight: 750;
+  color: #b91c1c;
+}
+
+/* RESPONSIVE AJUSTES */
+@media (max-width: 768px) {
+  .filter-actions-group {
+    padding-top: 0;
+  }
+  .reset-filter-btn {
+    margin-left: 0;
+    width: 100%;
+  }
 }

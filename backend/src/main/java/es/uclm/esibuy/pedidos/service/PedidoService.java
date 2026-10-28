@@ -76,7 +76,7 @@ public class PedidoService {
         this.pasarelaPago = pasarelaPago;
     }
 
-    public CheckoutResumenDTO obtenerCheckoutResumen(String clienteId) {
+    public CheckoutResumenDTO obtenerCheckoutResumen(String clienteId, String vendedorId, List<String> productoIds) {
         User cliente = obtenerCliente(clienteId);
         ClientProfile perfil = cliente.getClientProfile();
         Carrito carrito = carritoRepository.findByClienteId(clienteId).orElseGet(() -> new Carrito(clienteId));
@@ -88,8 +88,21 @@ public class PedidoService {
                 .toList();
         List<ItemCarritoDTO> items = carrito.getItems().stream()
                 .map(this::toItemCarritoDTO)
+                .filter(dto -> vendedorId == null || vendedorId.isBlank() || vendedorId.equals(dto.vendedorId()))
+                .filter(dto -> productoIds == null || productoIds.isEmpty() || productoIds.contains(dto.productoId()))
                 .toList();
-        return new CheckoutResumenDTO(direcciones, metodosPago, items, carrito.getPrecioTotal());
+        BigDecimal precioTotal = items.stream()
+                .map(ItemCarritoDTO::subtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return new CheckoutResumenDTO(direcciones, metodosPago, items, precioTotal);
+    }
+
+    public CheckoutResumenDTO obtenerCheckoutResumen(String clienteId, String vendedorId) {
+        return obtenerCheckoutResumen(clienteId, vendedorId, null);
+    }
+
+    public CheckoutResumenDTO obtenerCheckoutResumen(String clienteId) {
+        return obtenerCheckoutResumen(clienteId, null);
     }
 
     public PedidoConfirmadoDTO crearPedido(String clienteId, CrearPedidoDTO request) {
@@ -106,7 +119,7 @@ public class PedidoService {
             throw new IllegalArgumentException("El carrito está vacío");
         }
 
-        List<PedidoItem> items = prepararItems(carrito);
+        List<PedidoItem> items = prepararItems(carrito, request.vendedorId(), request.productoIds());
         BigDecimal total = items.stream()
                 .map(PedidoItem::subtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -134,7 +147,9 @@ public class PedidoService {
                 resumenPago,
                 PedidoEstado.PAGADO);
         Pedido guardado = pedidoRepository.save(pedido);
-        carrito.vaciar();
+        for (PedidoItem item : items) {
+            carrito.removeItem(item.productoId());
+        }
         carritoRepository.save(carrito);
         return new PedidoConfirmadoDTO(
                 guardado.getId(),
@@ -330,17 +345,28 @@ public class PedidoService {
                 .orElseThrow(RecursoCheckoutNoEncontradoException::new);
     }
 
-    private List<PedidoItem> prepararItems(Carrito carrito) {
+    private List<PedidoItem> prepararItems(Carrito carrito, String vendedorId, List<String> productoIds) {
         List<PedidoItem> items = new ArrayList<>();
+        Set<String> sellers = new java.util.HashSet<>();
         for (ItemCarrito item : carrito.getItems()) {
+            if (productoIds != null && !productoIds.isEmpty() && !productoIds.contains(item.getProductoId())) {
+                continue;
+            }
             Product producto = productRepository.findById(item.getProductoId())
                     .orElseThrow(ProductNotFoundException::new);
+            String itemSellerId = producto.getSellerId() != null ? producto.getSellerId() : "SIN_VENDEDOR";
+            if (vendedorId != null && !vendedorId.isBlank()) {
+                if (!vendedorId.equals(itemSellerId)) {
+                    continue;
+                }
+            }
             if (!producto.isAvailable()) {
                 throw new ProductoNoDisponibleException();
             }
             if (producto.getStock() < item.getCantidad()) {
                 throw stockInsuficiente(producto);
             }
+            sellers.add(itemSellerId);
             BigDecimal precio = producto.getPrice();
             BigDecimal subtotal = precio.multiply(BigDecimal.valueOf(item.getCantidad()));
             items.add(new PedidoItem(
@@ -351,7 +377,22 @@ public class PedidoService {
                     subtotal,
                     producto.getImageUrl()));
         }
+        if (items.isEmpty()) {
+            throw new IllegalArgumentException("No hay productos válidos para tramitar este pedido.");
+        }
+        if (sellers.size() > 1) {
+            throw new IllegalArgumentException(
+                    "No se puede realizar un pedido con productos de diferentes vendedores. Debes realizar un pedido independiente por cada vendedor.");
+        }
         return List.copyOf(items);
+    }
+
+    private List<PedidoItem> prepararItems(Carrito carrito, String vendedorId) {
+        return prepararItems(carrito, vendedorId, null);
+    }
+
+    private List<PedidoItem> prepararItems(Carrito carrito) {
+        return prepararItems(carrito, null);
     }
 
     private void reservarStock(List<PedidoItem> items) {
@@ -405,10 +446,17 @@ public class PedidoService {
 
     private ItemCarritoDTO toItemCarritoDTO(ItemCarrito item) {
         String imageUrl = item.getImageUrl();
-        if ((imageUrl == null || imageUrl.isBlank()) && item.getProductoId() != null) {
-            imageUrl = productRepository.findById(item.getProductoId())
-                    .map(Product::getImageUrl)
-                    .orElse(null);
+        String vendedorId = null;
+        String vendedorNombre = null;
+        if (item.getProductoId() != null) {
+            Product product = productRepository.findById(item.getProductoId()).orElse(null);
+            if (product != null) {
+                if (imageUrl == null || imageUrl.isBlank()) {
+                    imageUrl = product.getImageUrl();
+                }
+                vendedorId = product.getSellerId();
+                vendedorNombre = resolveSellerName(vendedorId);
+            }
         }
         return new ItemCarritoDTO(
                 item.getProductoId(),
@@ -416,6 +464,27 @@ public class PedidoService {
                 item.getPrecioUnitario(),
                 item.getCantidad(),
                 item.getSubtotal(),
-                imageUrl);
+                imageUrl,
+                vendedorId,
+                vendedorNombre);
+    }
+
+    private String resolveSellerName(String sellerId) {
+        if (sellerId == null || sellerId.isBlank() || userRepository == null) {
+            return null;
+        }
+        return userRepository.findById(sellerId)
+                .map(user -> {
+                    if (user.getSellerProfile() != null
+                            && user.getSellerProfile().getBusinessName() != null
+                            && !user.getSellerProfile().getBusinessName().isBlank()) {
+                        return user.getSellerProfile().getBusinessName();
+                    }
+                    String firstName = user.getFirstName() != null ? user.getFirstName() : "";
+                    String lastName = user.getLastName() != null ? user.getLastName() : "";
+                    String fullName = (firstName + " " + lastName).trim();
+                    return !fullName.isBlank() ? fullName : "Vendedor " + sellerId;
+                })
+                .orElse("Vendedor " + sellerId);
     }
 }

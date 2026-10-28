@@ -23,6 +23,7 @@ export class ClientCatalog implements OnInit {
   readonly wishlistService = inject(WishlistService);
   readonly toastService = inject(ToastService);
   readonly cartService = inject(CartService);
+  readonly isPremiumUser = computed(() => this.authService.currentUser()?.customerType === 'PREMIUM');
 
   readonly sidebarCollapsed = signal(false);
 
@@ -38,7 +39,7 @@ export class ClientCatalog implements OnInit {
       return;
     }
 
-    if (product.stock === 0) {
+    if (this.getRemainingStock(product) === 0) {
       this.toastService.show('El producto no tiene stock disponible.', 'error');
       return;
     }
@@ -228,7 +229,50 @@ export class ClientCatalog implements OnInit {
     return this.categories().find((c) => c.id === categoryId)?.name ?? 'Categoría';
   }
 
-  stockStatus(stock: number): string {
+  getRemainingStock(product: ProductItem): number {
+    const cartData = typeof this.cartService?.cart === 'function' ? this.cartService.cart() : null;
+    const inCart = cartData?.items?.find((item) => item.productoId === product.id)?.cantidad ?? 0;
+    return Math.max(0, product.stock - inCart);
+  }
+
+  getTotalDiscount(p: ProductItem): number {
+    const standardDiscount = Math.max(0, p.discount ?? 0);
+    const premiumDiscount = Math.max(0, p.premiumDiscount ?? 0);
+
+    return Math.min(100, standardDiscount + premiumDiscount);
+  }
+
+  getDiscountedPrice(p: ProductItem): number {
+    const discount = Math.max(0, p.discount ?? 0);
+    return Math.round(p.price * (1 - discount / 100) * 100) / 100;
+  }
+
+  getPremiumPrice(p: ProductItem): number {
+    const totalDiscount = this.getTotalDiscount(p);
+
+    return Math.round(p.price * (1 - totalDiscount / 100) * 100) / 100;
+  }
+
+  hasStandardDiscount(p: ProductItem): boolean {
+    return (p.discount ?? 0) > 0;
+  }
+
+  hasPremiumDiscount(p: ProductItem): boolean {
+    return (p.premiumDiscount ?? 0) > 0;
+  }
+
+  hasAnyDiscount(p: ProductItem): boolean {
+    return this.hasStandardDiscount(p) || this.hasPremiumDiscount(p);
+  }
+
+  getDisplayPrice(p: ProductItem): number {
+    return this.isPremiumUser()
+      ? this.getPremiumPrice(p)
+      : this.getDiscountedPrice(p);
+  }
+
+  stockStatus(itemOrStock: ProductItem | number): string {
+    const stock = typeof itemOrStock === 'number' ? itemOrStock : this.getRemainingStock(itemOrStock);
     if (stock === 0) return 'Agotado';
     return stock <= LOW_STOCK_THRESHOLD ? 'Stock bajo' : 'En stock';
   }

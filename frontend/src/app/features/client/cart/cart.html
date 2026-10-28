@@ -118,62 +118,136 @@
   } @else {
   <section class="cart-content" aria-label="Contenido del carrito">
     <div class="cart-items">
-      @for (item of cart.items; track item.productoId) {
-      <article class="cart-item">
-        <div class="card-media">
-          @if (item.imageUrl) {
-          <img [src]="item.imageUrl" [alt]="item.nombre" class="product-thumb">
-          } @else {
-          <div class="thumb-fallback" aria-hidden="true">▦</div>
-          }
-        </div>
-
-        <div class="item-information">
-          <h2>{{ item.nombre }}</h2>
-          <p>{{ formatPrice(item.precioUnitario) }} por unidad</p>
-
-          <div class="quantity-controls" [attr.aria-busy]="busyItemIds().has(item.productoId)">
-
-            <button class="quantity-action" type="button" [disabled]="busyItemIds().has(item.productoId)"
-              [attr.aria-label]="'Reducir cantidad de ' + item.nombre"
-              (click)="changeQuantity(item.productoId, item.cantidad - 1)">
-              −
-            </button>
-
-            <span class="quantity-value" [attr.aria-label]="'Cantidad: ' + item.cantidad">
-              {{ item.cantidad }}
-            </span>
-
-            <button class="quantity-action" type="button" [disabled]="busyItemIds().has(item.productoId)"
-              [attr.aria-label]="'Aumentar cantidad de ' + item.nombre"
-              (click)="changeQuantity(item.productoId, item.cantidad + 1)">
-              +
-            </button>
-
-            <button class="remove-action" type="button" [disabled]="busyItemIds().has(item.productoId)"
-              [attr.aria-label]="'Eliminar ' + item.nombre + ' del carrito'" (click)="removeItem(item.productoId)">
-              Eliminar
-            </button>
-
-            @if (busyItemIds().has(item.productoId)) {
-            <output class="cart-state">Actualizando…</output>
+      @for (group of sellerGroups(); track group.vendedorId) {
+      <details class="seller-accordion" [class.is-disabled-seller]="isSellerDisabled(group.vendedorId)" open>
+        <summary class="seller-accordion-summary">
+          <div class="seller-summary-info">
+            <label class="seller-checkbox-wrapper" (click)="$event.stopPropagation()">
+              <input type="checkbox" class="seller-checkbox"
+                [checked]="isSellerFullySelected(group)"
+                [indeterminate]="isSellerPartiallySelected(group)"
+                (change)="toggleSellerSelection(group)"
+                [disabled]="isSellerDisabled(group.vendedorId)"
+                [attr.aria-label]="'Seleccionar todos los productos de ' + group.vendedorNombre">
+            </label>
+            <span class="seller-summary-icon" aria-hidden="true"><svg class="store-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l2-5h14l2 5"/><path d="M21 9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9"/><path d="M3 9h18"/><path d="M10 13a2 2 0 0 0 4 0"/></svg></span>
+            <span class="seller-summary-name">Vendedor: <strong>{{ group.vendedorNombre }}</strong></span>
+            <span class="seller-summary-count">({{ group.totalCount }} {{ group.totalCount === 1 ? 'artículo' : 'artículos' }})</span>
+            @if (isSellerDisabled(group.vendedorId)) {
+            <span class="seller-disabled-hint">Deselecciona "{{ selectedVendor()?.vendedorNombre }}" para cambiar</span>
             }
           </div>
-        </div>
+          <span class="seller-summary-subtotal">Subtotal vendedor: <strong>{{ formatPrice(group.subtotal) }}</strong></span>
+        </summary>
 
-        <p class="item-subtotal">{{ formatPrice(item.subtotal) }}</p>
-      </article>
+        <div class="seller-items-container">
+          @for (item of group.items; track item.productoId) {
+          <article class="cart-item"
+            [class.is-deselected]="!isProductSelected(item.productoId)"
+            [class.is-disabled-item]="isSellerDisabled(group.vendedorId)">
+            <label class="item-checkbox-wrapper" (click)="$event.stopPropagation()">
+              <input type="checkbox" class="item-checkbox"
+                [checked]="isProductSelected(item.productoId)"
+                (change)="toggleProductSelection(item, group)"
+                [disabled]="isSellerDisabled(group.vendedorId)"
+                [attr.aria-label]="'Seleccionar ' + item.nombre">
+            </label>
+
+            <div class="card-media">
+              @if (item.imageUrl) {
+              <img [src]="item.imageUrl" [alt]="item.nombre" class="product-thumb">
+              } @else {
+              <div class="thumb-fallback" aria-hidden="true">▦</div>
+              }
+            </div>
+
+            <div class="item-information">
+              <h2>{{ item.nombre }}</h2>
+
+              <div class="item-pricing-row">
+                <span class="item-unit-price">{{ formatPrice(item.precioUnitario) }} por unidad</span>
+                @if (item.precioOriginal && item.precioOriginal > item.precioUnitario) {
+                <span class="item-original-price"><s>{{ formatPrice(item.precioOriginal) }}</s></span>
+                <span class="item-discount-tag" [class.is-premium]="item.esDescuentoPremium">
+                  {{ item.esDescuentoPremium ? '★ -' + item.descuento + '% Premium' : '-' + item.descuento + '%' }}
+                </span>
+                }
+              </div>
+
+              <div class="quantity-controls" [attr.aria-busy]="busyItemIds().has(item.productoId)">
+                <button class="quantity-action" type="button" [disabled]="busyItemIds().has(item.productoId)"
+                  [attr.aria-label]="'Reducir cantidad de ' + item.nombre"
+                  (click)="changeQuantity(item.productoId, item.cantidad - 1)">
+                  −
+                </button>
+
+                <span class="quantity-value" [attr.aria-label]="'Cantidad: ' + item.cantidad">
+                  {{ item.cantidad }}
+                </span>
+
+                <button class="quantity-action" type="button" [disabled]="busyItemIds().has(item.productoId)"
+                  [attr.aria-label]="'Aumentar cantidad de ' + item.nombre"
+                  (click)="changeQuantity(item.productoId, item.cantidad + 1)">
+                  +
+                </button>
+
+                <button class="remove-action" type="button" [disabled]="busyItemIds().has(item.productoId)"
+                  [attr.aria-label]="'Eliminar ' + item.nombre + ' del carrito'" (click)="removeItem(item.productoId)">
+                  Eliminar
+                </button>
+
+                @if (busyItemIds().has(item.productoId)) {
+                <output class="cart-state">Actualizando…</output>
+                }
+              </div>
+            </div>
+
+            <p class="item-subtotal">{{ formatPrice(item.subtotal) }}</p>
+          </article>
+          }
+        </div>
+      </details>
       }
     </div>
 
     <aside class="cart-total" aria-label="Resumen del carrito">
       <p>
-        Artículos <span>{{ cartService.itemCount() }}</span>
+        Artículos seleccionados
+        <span>{{ selectedItemCount() !== null ? selectedItemCount() : '—' }}</span>
       </p>
+      @if (cart.descuentoTotal && cart.descuentoTotal > 0) {
+      <p class="summary-line">
+        Subtotal sin descuento <span>{{ formatPrice(cart.totalSinDescuento ?? cart.precioTotal) }}</span>
+      </p>
+      <p class="summary-line discount-saving-line">
+        Descuento aplicado <span class="discount-saved-val">-{{ formatPrice(cart.descuentoTotal) }}</span>
+      </p>
+      }
       <p class="total-line">
-        Total <strong>{{ formatPrice(cart.precioTotal) }}</strong>
+        Total
+        @if (selectedTotal() !== null) {
+        <strong>{{ formatPrice(selectedTotal()!) }}</strong>
+        } @else {
+        <strong class="no-price-indicator">—</strong>
+        }
       </p>
-      <button class="primary-action checkout-action" type="button" [disabled]="checkoutLoading()"
+
+      @if (hasMixedSelection() || selectedSellerIds().size > 1) {
+      <p class="checkout-disabled-notice" role="alert">
+        ⚠️ No se puede tramitar un pedido con productos de diferentes vendedores. Deselecciona los productos de otros vendedores para continuar.
+      </p>
+      } @else if (selectedVendor(); as vendor) {
+      <p class="selected-vendor-badge">
+        <svg class="store-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l2-5h14l2 5"/><path d="M21 9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9"/><path d="M3 9h18"/><path d="M10 13a2 2 0 0 0 4 0"/></svg> <span>Pedido para: <strong>{{ vendor.vendedorNombre }}</strong></span>
+      </p>
+      } @else {
+      <p class="selected-vendor-badge hint">
+        Selecciona los productos de un vendedor para tramitar su pedido.
+      </p>
+      }
+
+      <button class="primary-action checkout-action" type="button"
+        [disabled]="!canCheckout()"
         (click)="iniciarCheckout()">
         {{ checkoutLoading() ? 'Cargando checkout…' : 'Continuar con la compra' }}
       </button>

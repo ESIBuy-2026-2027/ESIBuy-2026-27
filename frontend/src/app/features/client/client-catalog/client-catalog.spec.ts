@@ -35,6 +35,9 @@ describe('ClientCatalog', () => {
       available: true,
       sellerId: 's-1',
       rating: 4.8,
+      discount: 15,
+      premiumDiscount: 25,
+      sellerName: 'AudioTech SL',
     },
     {
       id: 'p-2',
@@ -148,6 +151,23 @@ describe('ClientCatalog', () => {
     expect(toastServiceMock.show).toHaveBeenCalledWith('Lista actualizada', 'success');
   });
 
+  it('should render discount badges and provider name on product cards', () => {
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    const firstCard = el.querySelector('.product-card');
+    expect(firstCard).not.toBeNull();
+
+    const standardBadge = firstCard?.querySelector('.standard-discount-badge');
+    expect(standardBadge?.textContent).toContain('-15%');
+
+    const premiumBadge = firstCard?.querySelector('.premium-discount-badge');
+    expect(premiumBadge?.textContent).toContain('-25% Premium');
+
+    const vendorInfo = firstCard?.querySelector('.product-vendor-info');
+    expect(vendorInfo?.textContent).toContain('Proveedor:');
+    expect(vendorInfo?.textContent).toContain('AudioTech SL');
+  });
+
   it('should reload products when filters change', () => {
     component.searchQuery.set('Cafetera');
     component.onFilterChange();
@@ -167,7 +187,7 @@ describe('ClientCatalog', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('.admin-mode-pill')?.textContent).toContain('Modo Administrador (Solo lectura)');
+    expect(el.querySelector('.admin-readonly-badge, .admin-mode-pill')?.textContent).toContain('Modo Administrador (Solo lectura)');
     expect(el.querySelector('.heart-center-button')).toBeNull();
     expect(el.querySelector('.add-to-cart-action-btn')).toBeNull();
 

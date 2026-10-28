@@ -23,6 +23,7 @@ export class Home implements OnInit {
   readonly wishlistService = inject(WishlistService);
   readonly toastService = inject(ToastService);
   readonly cartService = inject(CartService);
+  readonly isPremiumUser = computed(() => this.authService.currentUser()?.customerType === 'PREMIUM');
 
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
@@ -41,6 +42,39 @@ export class Home implements OnInit {
   maxPrice = signal<number | null>(null);
   minRating = signal<number | null>(null);
   onlyInStock = signal(false);
+  sortOrder = signal('recommended');
+  onlyOffers = signal(false);
+
+  // Lógica del Slider de Precios
+  priceLimit = signal(4500);
+
+  minPricePercent = computed(() => {
+    const min = this.minPrice() ?? 0;
+    return (min / this.priceLimit()) * 100;
+  });
+
+  maxPricePercent = computed(() => {
+    const max = this.maxPrice() ?? this.priceLimit();
+    return (max / this.priceLimit()) * 100;
+  });
+
+  setMinPrice(val: number | null): void {
+    if (val === null) {
+      this.minPrice.set(null);
+      return;
+    }
+    const max = this.maxPrice() ?? this.priceLimit();
+    this.minPrice.set(Math.min(val, max));
+  }
+
+  setMaxPrice(val: number | null): void {
+    if (val === null) {
+      this.maxPrice.set(null);
+      return;
+    }
+    const min = this.minPrice() ?? 0;
+    this.maxPrice.set(Math.max(val, min));
+  }
 
   readonly isAuthenticated = computed(() => {
     return this.authService.currentUser() !== null;
@@ -103,6 +137,7 @@ export class Home implements OnInit {
     this.loadProducts();
   }
 
+
   resetFilters(): void {
     this.searchQuery.set('');
     this.selectedCategory.set('');
@@ -110,6 +145,8 @@ export class Home implements OnInit {
     this.maxPrice.set(null);
     this.minRating.set(null);
     this.onlyInStock.set(false);
+    this.sortOrder.set('recommended'); // <-- NUEVO
+    this.onlyOffers.set(false);        // <-- NUEVO
     this.loadProducts();
   }
 
@@ -143,7 +180,38 @@ export class Home implements OnInit {
     return this.categories().find((c) => c.id === categoryId)?.name ?? 'Categoría';
   }
 
-  stockStatus(stock: number): string {
+  getRemainingStock(product: ProductItem): number {
+    const cartData = typeof this.cartService?.cart === 'function' ? this.cartService.cart() : null;
+    const inCart = cartData?.items?.find((item) => item.productoId === product.id)?.cantidad ?? 0;
+    return Math.max(0, product.stock - inCart);
+  }
+
+  getDiscountedPrice(p: ProductItem): number {
+    if (p.discount && p.discount > 0) {
+      const factor = (100 - p.discount) / 100;
+      return Math.round(p.price * factor * 100) / 100;
+    }
+    return p.price;
+  }
+
+  getPremiumPrice(p: ProductItem): number {
+    if (p.premiumDiscount && p.premiumDiscount > 0) {
+      const factor = (100 - p.premiumDiscount) / 100;
+      return Math.round(p.price * factor * 100) / 100;
+    }
+    return p.price;
+  }
+
+  hasStandardDiscount(p: ProductItem): boolean {
+    return Boolean(p.discount && p.discount > 0);
+  }
+
+  hasPremiumDiscount(p: ProductItem): boolean {
+    return Boolean(p.premiumDiscount && p.premiumDiscount > 0);
+  }
+
+  stockStatus(itemOrStock: ProductItem | number): string {
+    const stock = typeof itemOrStock === 'number' ? itemOrStock : this.getRemainingStock(itemOrStock);
     if (stock === 0) return 'Agotado';
     return stock <= LOW_STOCK_THRESHOLD ? 'Stock bajo' : 'En stock';
   }
@@ -164,7 +232,7 @@ export class Home implements OnInit {
       return;
     }
 
-    if (product.stock === 0) {
+    if (this.getRemainingStock(product) === 0) {
       this.toastService.show('El producto no tiene stock disponible.', 'error');
       return;
     }

@@ -21,6 +21,7 @@ export interface ProductItem {
   available: boolean;
   sellerId: string;
   rating?: number;
+  sellerName?: string | null;
 }
 
 export interface ProductCreateRequest {
@@ -61,6 +62,7 @@ export interface ProductDetails {
   available: boolean;
   sellerId: string;
   rating?: number;
+  sellerName?: string | null;
 }
 
 export type AvailableProduct = ProductDetails;

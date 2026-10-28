@@ -186,8 +186,7 @@ body {
   color: #0c6654 !important;
   background: #e8fbf5;
   border: 1px solid #b5eddf;
-  border-left: 4px solid #1bb89b;
-}
+  }
 
 @keyframes alert-slide-in {
   from {
@@ -213,9 +212,8 @@ body {
 .catalog-alert.is-info {
   color: #a52232;
   background: #fff1f2;
-  border-color: #fecdd3;
-  border-left: 4px solid #e11d48;
-}
+  border: 1px solid #fecdd3;
+  }
 
 .catalog-alert svg {
   width: 20px;
@@ -250,4 +248,61 @@ body {
 
 .catalog-alert .alert-close:hover {
   opacity: 1;
+}
+
+
+/* Badges de descuento en la esquina superior derecha (en rojo) */
+.discount-badges-wrapper {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.discount-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: -0.2px;
+  color: #ffffff;
+  background: #dc2626;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35);
+  line-height: 1.2;
+}
+
+.discount-badge-pill.premium-discount-badge {
+  background: #b91c1c;
+  border: 1px solid rgba(254, 240, 138, 0.4);
+}
+
+.discount-badge-pill.premium-discount-badge.is-current-plan {
+  background: #e11d48;
+  box-shadow: 0 0 0 1.5px #fef08a, 0 2px 8px rgba(225, 29, 72, 0.4);
+}
+
+/* Información del proveedor / vendedor debajo de la descripción */
+.product-vendor-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin: -4px 0 10px;
+}
+
+.product-vendor-info .vendor-label {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.product-vendor-info .vendor-name {
+  color: #1e293b;
+  font-weight: 600;
 }
