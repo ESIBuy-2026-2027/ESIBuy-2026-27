@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import es.uclm.esibuy.common.exception.IncidentNotFoundException;
 import es.uclm.esibuy.incidents.dto.CreateIncidentRequest;
 import es.uclm.esibuy.incidents.model.Incident;
 import es.uclm.esibuy.incidents.model.IncidentStatus;
@@ -100,6 +101,41 @@ class IncidentServiceTest {
 
         assertThat(results).hasSize(2).containsExactly(i1, i2);
         verify(incidentRepository).findAllByOrderByCreatedAtDesc();
+    }
+
+    @Test
+    @DisplayName("Debe resolver una incidencia cambiando su estado a RESUELTA y registrando la fecha")
+    void resolveIncident_success() {
+        Incident existing = new Incident(
+                "inc-42",
+                "Fallo en checkout",
+                "PAGO",
+                "PED-77",
+                "Error 500 al pagar",
+                IncidentStatus.PENDIENTE,
+                "admin",
+                java.time.Instant.parse("2026-10-28T09:00:00Z"),
+                null);
+
+        when(incidentRepository.findById("inc-42")).thenReturn(java.util.Optional.of(existing));
+        when(incidentRepository.save(any(Incident.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Incident resolved = incidentService.resolve("inc-42");
+
+        assertThat(resolved.getStatus()).isEqualTo(IncidentStatus.RESUELTA);
+        assertThat(resolved.getResolvedAt()).isNotNull();
+        verify(incidentRepository).findById("inc-42");
+        verify(incidentRepository).save(existing);
+    }
+
+    @Test
+    @DisplayName("Debe lanzar IncidentNotFoundException si el ID a resolver no existe")
+    void resolveIncident_notFound_throwsException() {
+        when(incidentRepository.findById("inc-inexistente")).thenReturn(java.util.Optional.empty());
+
+        assertThatThrownBy(() -> incidentService.resolve("inc-inexistente"))
+                .isInstanceOf(IncidentNotFoundException.class)
+                .hasMessageContaining("inc-inexistente");
     }
 }
 

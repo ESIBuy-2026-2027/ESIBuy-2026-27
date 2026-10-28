@@ -1,5 +1,6 @@
 package es.uclm.esibuy.incidents.service;
 
+import es.uclm.esibuy.common.exception.IncidentNotFoundException;
 import es.uclm.esibuy.incidents.dto.CreateIncidentRequest;
 import es.uclm.esibuy.incidents.model.Incident;
 import es.uclm.esibuy.incidents.model.IncidentStatus;
@@ -37,6 +38,16 @@ public class IncidentService {
 
     public List<Incident> findAll() {
         return incidentRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    public Incident resolve(String id) {
+        Objects.requireNonNull(id, "id must not be null");
+        Incident incident = incidentRepository.findById(id)
+                .orElseThrow(() -> new IncidentNotFoundException(id));
+
+        incident.setStatus(IncidentStatus.RESUELTA);
+        incident.setResolvedAt(Instant.now());
+        return incidentRepository.save(incident);
     }
 }
 

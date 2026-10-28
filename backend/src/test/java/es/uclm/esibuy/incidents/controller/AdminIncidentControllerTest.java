@@ -7,10 +7,13 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import es.uclm.esibuy.common.exception.IncidentNotFoundException;
 import es.uclm.esibuy.incidents.dto.CreateIncidentRequest;
 import es.uclm.esibuy.incidents.model.Incident;
 import es.uclm.esibuy.incidents.model.IncidentStatus;
@@ -220,6 +223,71 @@ class AdminIncidentControllerTest {
     @DisplayName("RBAC GET: Petición anónima recibe 401 Unauthorized")
     void unauthenticated_cannotGetIncidents() throws Exception {
         mockMvc.perform(get(API))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Admin puede marcar una incidencia como resuelta (200 OK)")
+    void adminCanResolveIncident() throws Exception {
+        Incident resolved = new Incident(
+                "inc-1",
+                "Problema resuelto",
+                "PEDIDO",
+                "PED-123",
+                "Descripción solucionada",
+                IncidentStatus.RESUELTA,
+                "admin@esibuy.com",
+                Instant.parse("2026-10-28T10:00:00Z"),
+                Instant.parse("2026-10-28T10:30:00Z"));
+
+        when(incidentService.resolve("inc-1")).thenReturn(resolved);
+
+        mockMvc.perform(patch(API + "/inc-1/resolve")
+                .with(user("admin@esibuy.com").roles("ADMIN"))
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("inc-1"))
+                .andExpect(jsonPath("$.status").value("RESUELTA"))
+                .andExpect(jsonPath("$.resolvedAt").value("2026-10-28T10:30:00Z"));
+
+        verify(incidentService).resolve("inc-1");
+    }
+
+    @Test
+    @DisplayName("Resolver incidencia devuelve 404 si el ID no existe")
+    void resolveIncident_notFound_returns404() throws Exception {
+        when(incidentService.resolve("inc-inexistente"))
+                .thenThrow(new IncidentNotFoundException("inc-inexistente"));
+
+        mockMvc.perform(patch(API + "/inc-inexistente/resolve")
+                .with(user("admin@esibuy.com").roles("ADMIN"))
+                .with(csrf()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("RBAC RESOLVE: Usuario con rol CLIENT recibe 403 Forbidden")
+    void clientRole_cannotResolveIncident() throws Exception {
+        mockMvc.perform(patch(API + "/inc-1/resolve")
+                .with(user("cliente@test.com").roles("CLIENT"))
+                .with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("RBAC RESOLVE: Usuario con rol SELLER recibe 403 Forbidden")
+    void sellerRole_cannotResolveIncident() throws Exception {
+        mockMvc.perform(patch(API + "/inc-1/resolve")
+                .with(user("vendedor@test.com").roles("SELLER"))
+                .with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("RBAC RESOLVE: Petición anónima recibe 401 Unauthorized")
+    void unauthenticated_cannotResolveIncident() throws Exception {
+        mockMvc.perform(patch(API + "/inc-1/resolve")
+                .with(csrf()))
                 .andExpect(status().isUnauthorized());
     }
 }
