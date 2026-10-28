@@ -1,0 +1,214 @@
+<div class="admin-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
+  <aside class="admin-sidebar admin-sidebar--shared app-sidebar" aria-label="Panel de administración">
+    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral">
+      <span aria-hidden="true">‹</span>
+    </button>
+
+    <a routerLink="/" class="admin-brand back-home-button" aria-label="ESIBuy">
+      <span class="brand-mark" aria-hidden="true">E</span>
+      <span>ESI<span class="brand-accent">Buy</span></span>
+    </a>
+
+    <p class="sidebar-caption">GESTIÓN DE ADMINISTRACIÓN</p>
+
+    <nav class="admin-navigation" aria-label="Navegación de administración">
+      <a class="navigation-link" routerLink="/admin/usuarios" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20"></path>
+          <circle cx="10" cy="7" r="3"></circle>
+          <path d="M16 11a3 3 0 1 0 0-6"></path>
+          <path d="M16 14h1a4 4 0 0 1 4 4v2"></path>
+        </svg>
+        <span>Usuarios</span>
+      </a>
+
+      <a class="navigation-link" routerLink="/admin/altas" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <span class="navigation-icon text-icon" aria-hidden="true">＋</span>
+        <span>Dar de alta Administrador</span>
+      </a>
+
+      <a class="navigation-link" routerLink="/admin/categorias" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 13 11 22l-9-9V2h11l9 9a1.4 1.4 0 0 1-2 2Z"></path>
+          <circle cx="7" cy="7" r="1.2"></circle>
+        </svg>
+        <span>Categorías</span>
+      </a>
+
+      <a class="navigation-link" routerLink="/admin/productos" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m7.5 4.27 9 5.15"></path>
+          <path
+            d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z">
+          </path>
+          <path d="m3.3 7 8.7 5 8.7-5"></path>
+          <path d="M12 22V12"></path>
+        </svg>
+        <span>Productos</span>
+      </a>
+
+      <a class="navigation-link" routerLink="/admin/incidencias" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>Incidencias</span>
+      </a>
+    </nav>
+  </aside>
+
+  <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()" aria-label="Mostrar barra lateral"
+    [hidden]="!sidebarCollapsed()">
+    <span aria-hidden="true">›</span>
+  </button>
+
+  <div class="admin-workspace app-workspace">
+    <main class="admin-content">
+      <!-- Encabezado de la página -->
+      <section class="page-heading" aria-labelledby="incidents-page-title">
+        <div class="page-heading-copy">
+          <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
+          <h1 id="incidents-page-title">Gestión de incidencias</h1>
+          <p class="page-description">
+            Registra tickets de soporte técnico, consulta el estado de las incidencias del sistema y márcalas como resueltas.
+          </p>
+        </div>
+      </section>
+
+      <!-- Alertas de éxito y error -->
+      @if (mensajeExito()) {
+        <div class="catalog-alert is-success" role="status" aria-live="polite">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          <div class="alert-text">{{ mensajeExito() }}</div>
+          <button type="button" class="alert-close" (click)="mensajeExito.set('')" aria-label="Cerrar mensaje">×</button>
+        </div>
+      }
+
+      @if (mensajeError()) {
+        <div class="catalog-alert is-error" role="alert">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <div class="alert-text">{{ mensajeError() }}</div>
+          <button type="button" class="alert-close" (click)="mensajeError.set('')" aria-label="Cerrar aviso">×</button>
+        </div>
+      }
+
+      <!-- Formulario de Registro de Incidencia (HU 191) -->
+      <div class="card incident-form-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor">
+              <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            Registrar nueva incidencia
+          </h2>
+          <p class="card-subtitle">
+            Crea un ticket de soporte interno para seguimiento y resolución por el equipo de administración.
+          </p>
+        </div>
+
+        <form (ngSubmit)="onSubmit()" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="incident-subject" class="form-label">
+                Asunto <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="incident-subject"
+                name="subject"
+                type="text"
+                class="form-control"
+                [ngModel]="subject()"
+                (ngModelChange)="subject.set($event)"
+                placeholder="Ej: Cobro duplicado en pasarela de pago"
+                maxlength="150"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="incident-category" class="form-label">
+                Categoría <span class="required" aria-hidden="true">*</span>
+              </label>
+              <select
+                id="incident-category"
+                name="category"
+                class="form-control"
+                [ngModel]="category()"
+                (ngModelChange)="category.set($event)"
+                required
+              >
+                <option value="">Selecciona una categoría...</option>
+                <option value="PEDIDO">Pedido / Envío</option>
+                <option value="PRODUCTO">Catálogo / Producto</option>
+                <option value="PAGO">Pasarela de Pago</option>
+                <option value="USUARIO">Cuenta de Usuario</option>
+                <option value="SISTEMA">Error de Sistema / Servidor</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="incident-reference" class="form-label">
+              Referencia afectada <span class="optional-label">(opcional)</span>
+            </label>
+            <input
+              id="incident-reference"
+              name="reference"
+              type="text"
+              class="form-control"
+              [ngModel]="reference()"
+              (ngModelChange)="reference.set($event)"
+              placeholder="Ej: PED-2026-9042 o cliente@ejemplo.com"
+              maxlength="100"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="incident-description" class="form-label">
+              Descripción detallada <span class="required" aria-hidden="true">*</span>
+            </label>
+            <textarea
+              id="incident-description"
+              name="description"
+              class="form-control textarea-control"
+              rows="4"
+              [ngModel]="description()"
+              (ngModelChange)="description.set($event)"
+              placeholder="Describe detalladamente el problema observado, los pasos para reproducirlo o la información adicional..."
+              maxlength="3000"
+              required
+            ></textarea>
+          </div>
+
+          <div class="btn-wrapper">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="submitting()"
+            >
+              @if (submitting()) {
+                <span>Registrando...</span>
+              } @else {
+                <span>Registrar incidencia</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+
