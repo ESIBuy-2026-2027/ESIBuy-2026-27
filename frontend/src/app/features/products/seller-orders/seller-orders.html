@@ -92,59 +92,47 @@
           }
         </div>
 
-        <div class="orders-toolbar">
-          <label class="orders-search">
-            <span class="visually-hidden">Buscar pedidos</span>
+        <section class="filters-bar" aria-label="Filtros de pedidos">
+          <label class="search-field">
+            <span class="visually-hidden">Buscar pedido, cliente o producto</span>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="11" cy="11" r="6.5"></circle>
               <path d="m16 16 4.5 4.5"></path>
             </svg>
             <input type="search" [ngModel]="orderSearch()" (ngModelChange)="orderSearch.set($event)"
-              placeholder="Buscar pedido, cliente o producto...">
+              placeholder="Buscar por ID, cliente o producto..." aria-label="Buscar pedido, cliente o producto">
           </label>
-          <div class="orders-filter">
-            <button type="button" class="secondary-button"
-              [class.is-active]="selectedStatus() !== 'Todos' || dateFrom() || dateTo()"
-              [attr.aria-expanded]="filtersOpen()" aria-controls="orders-filter-panel" (click)="toggleFilters()">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"></path>
-              </svg>
-              Filtrar
-              @if (selectedStatus() !== 'Todos' || dateFrom() || dateTo()) {
-              <span class="filter-indicator" aria-label="Filtro activo"></span>
-              }
-            </button>
-            @if (filtersOpen()) {
-            <div class="orders-filter-panel" id="orders-filter-panel">
-              <button type="button" class="close-orders-filter" aria-label="Cerrar panel de filtros" title="Cerrar"
-                (click)="toggleFilters()">×</button>
-              <label for="order-status-filter">Estado del pedido</label>
-              <select id="order-status-filter" [ngModel]="selectedStatus()"
-                (ngModelChange)="selectedStatus.set($event)">
-                <option value="Todos">Todos los estados</option>
-                <option value="Pendiente">Pendiente</option>
-                <option value="En preparación">En preparación</option>
-                <option value="Enviado">Enviado</option>
-                <option value="Entregado">Entregado</option>
-                <option value="Cancelado">Cancelado</option>
-              </select>
-              <div class="date-filter-group">
-                <span>Fecha del pedido</span>
-                <div class="date-filter-fields">
-                  <label for="order-date-from">Desde</label>
-                  <input id="order-date-from" type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event)">
-                  <label for="order-date-to">Hasta</label>
-                  <input id="order-date-to" type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event)">
-                </div>
-              </div>
-              <button type="button" class="clear-order-filter" (click)="clearFilters()">
-                Limpiar filtro
-              </button>
+
+          <div class="filter-controls">
+            <label class="visually-hidden" for="order-status-filter">Filtrar por estado</label>
+            <select id="order-status-filter" [ngModel]="selectedStatus()"
+              (ngModelChange)="selectedStatus.set($event)">
+              <option value="Todos">Todos los estados</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="En preparación">En preparación</option>
+              <option value="Enviado">Enviado</option>
+              <option value="Entregado">Entregado</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+
+            <div class="date-filter-group">
+              <label for="order-date-from" class="date-filter-label">Desde</label>
+              <input id="order-date-from" type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event)"
+                aria-label="Fecha desde">
+              <label for="order-date-to" class="date-filter-label">Hasta</label>
+              <input id="order-date-to" type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event)"
+                aria-label="Fecha hasta">
             </div>
+
+            @if (hasActiveFilters()) {
+            <button type="button" class="reset-filter-btn" (click)="clearFilters()" aria-label="Limpiar filtros">
+              Limpiar filtros
+            </button>
             }
+
+            <span class="order-count">{{ visibleOrders().length }} {{ visibleOrders().length === 1 ? 'pedido' : 'pedidos' }}</span>
           </div>
-          <span class="order-count">{{ visibleOrders().length }} pedidos</span>
-        </div>
+        </section>
 
         <section aria-label="Pedidos de la tienda">
           @if (ordersLoading()) {

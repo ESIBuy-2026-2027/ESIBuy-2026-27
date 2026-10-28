@@ -50,7 +50,12 @@ export class SellerOrders implements OnInit {
   readonly selectedStatus = signal<'Todos' | OrderStatus>('Todos');
   readonly dateFrom = signal('');
   readonly dateTo = signal('');
-  readonly filtersOpen = signal(false);
+  readonly hasActiveFilters = computed(() =>
+    this.selectedStatus() !== 'Todos'
+    || !!this.dateFrom()
+    || !!this.dateTo()
+    || !!this.orderSearch().trim()
+  );
   readonly expandedOrderId = signal<string | null>(null);
   readonly statusSavingOrderId = signal<string | null>(null);
   readonly statusUpdateError = signal<string | null>(null);
@@ -173,11 +178,8 @@ export class SellerOrders implements OnInit {
     return 'Ver detalle';
   }
 
-  toggleFilters(): void {
-    this.filtersOpen.update((isOpen) => !isOpen);
-  }
-
   clearFilters(): void {
+    this.orderSearch.set('');
     this.selectedStatus.set('Todos');
     this.dateFrom.set('');
     this.dateTo.set('');
