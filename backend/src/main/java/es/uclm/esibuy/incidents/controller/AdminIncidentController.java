@@ -6,11 +6,13 @@ import es.uclm.esibuy.incidents.model.Incident;
 import es.uclm.esibuy.incidents.service.IncidentService;
 import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +43,14 @@ public class AdminIncidentController {
 
         Incident created = incidentService.create(request, author);
         return ResponseEntity.status(HttpStatus.CREATED).body(IncidentResponse.from(created));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<IncidentResponse>> findAll() {
+        List<IncidentResponse> list = incidentService.findAll().stream()
+                .map(IncidentResponse::from)
+                .toList();
+        return ResponseEntity.ok(list);
     }
 }
 

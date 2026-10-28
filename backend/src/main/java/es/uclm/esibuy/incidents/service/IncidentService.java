@@ -5,6 +5,7 @@ import es.uclm.esibuy.incidents.model.Incident;
 import es.uclm.esibuy.incidents.model.IncidentStatus;
 import es.uclm.esibuy.incidents.repository.IncidentRepository;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,10 @@ public class IncidentService {
                 null);
 
         return incidentRepository.save(incident);
+    }
+
+    public List<Incident> findAll() {
+        return incidentRepository.findAllByOrderByCreatedAtDesc();
     }
 }
 

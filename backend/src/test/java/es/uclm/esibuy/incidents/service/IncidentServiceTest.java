@@ -88,5 +88,18 @@ class IncidentServiceTest {
         assertThatThrownBy(() -> incidentService.create(null, "admin@esibuy.com"))
                 .isInstanceOf(NullPointerException.class);
     }
+
+    @Test
+    @DisplayName("Debe consultar todas las incidencias ordenadas por fecha de creación descendente")
+    void findAll_returnsIncidentsOrderedDesc() {
+        Incident i1 = new Incident("Asunto 1", "PEDIDO", null, "Desc 1", IncidentStatus.PENDIENTE, "admin", null, null);
+        Incident i2 = new Incident("Asunto 2", "PAGO", null, "Desc 2", IncidentStatus.RESUELTA, "admin", null, null);
+        when(incidentRepository.findAllByOrderByCreatedAtDesc()).thenReturn(java.util.List.of(i1, i2));
+
+        java.util.List<Incident> results = incidentService.findAll();
+
+        assertThat(results).hasSize(2).containsExactly(i1, i2);
+        verify(incidentRepository).findAllByOrderByCreatedAtDesc();
+    }
 }
 

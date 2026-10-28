@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,6 +17,7 @@ import es.uclm.esibuy.incidents.model.IncidentStatus;
 import es.uclm.esibuy.incidents.service.IncidentService;
 import es.uclm.esibuy.security.config.SecurityConfig;
 import java.time.Instant;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -158,6 +160,66 @@ class AdminIncidentControllerTest {
                             "description": "Sin autenticar"
                         }
                         """))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Admin puede consultar todas las incidencias (200 OK)")
+    void adminCanGetAllIncidents() throws Exception {
+        Incident i1 = new Incident(
+                "inc-1",
+                "Problema de pago",
+                "PAGO",
+                "PED-101",
+                "Cobro no procesado",
+                IncidentStatus.PENDIENTE,
+                "admin@esibuy.com",
+                Instant.parse("2026-10-28T11:00:00Z"),
+                null);
+
+        Incident i2 = new Incident(
+                "inc-2",
+                "Fallo en catálogo",
+                "PRODUCTO",
+                null,
+                "Imagen no carga",
+                IncidentStatus.RESUELTA,
+                "admin@esibuy.com",
+                Instant.parse("2026-10-28T09:00:00Z"),
+                Instant.parse("2026-10-28T10:00:00Z"));
+
+        when(incidentService.findAll()).thenReturn(List.of(i1, i2));
+
+        mockMvc.perform(get(API).with(user("admin@esibuy.com").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value("inc-1"))
+                .andExpect(jsonPath("$[0].subject").value("Problema de pago"))
+                .andExpect(jsonPath("$[0].status").value("PENDIENTE"))
+                .andExpect(jsonPath("$[1].id").value("inc-2"))
+                .andExpect(jsonPath("$[1].status").value("RESUELTA"));
+
+        verify(incidentService).findAll();
+    }
+
+    @Test
+    @DisplayName("RBAC GET: Usuario con rol CLIENT recibe 403 Forbidden")
+    void clientRole_cannotGetIncidents() throws Exception {
+        mockMvc.perform(get(API).with(user("cliente@test.com").roles("CLIENT")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("RBAC GET: Usuario con rol SELLER recibe 403 Forbidden")
+    void sellerRole_cannotGetIncidents() throws Exception {
+        mockMvc.perform(get(API).with(user("vendedor@test.com").roles("SELLER")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("RBAC GET: Petición anónima recibe 401 Unauthorized")
+    void unauthenticated_cannotGetIncidents() throws Exception {
+        mockMvc.perform(get(API))
                 .andExpect(status().isUnauthorized());
     }
 }
