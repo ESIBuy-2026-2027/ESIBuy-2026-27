@@ -1,4 +1,4 @@
-﻿<div class="admin-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
+<div class="admin-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
   <aside class="admin-sidebar admin-sidebar--shared app-sidebar" aria-label="Panel de administración">
     <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral">
       <span aria-hidden="true">‹</span>
@@ -46,6 +46,16 @@
           <path d="M12 22V12"></path>
         </svg>
         <span>Productos</span>
+      </a>
+
+      <a class="navigation-link" routerLink="/admin/incidencias" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>Incidencias</span>
       </a>
     </nav>
   </aside>

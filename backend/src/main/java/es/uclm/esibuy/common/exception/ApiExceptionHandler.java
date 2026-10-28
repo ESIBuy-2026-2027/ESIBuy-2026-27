@@ -83,6 +83,15 @@ public class ApiExceptionHandler {
                                 CORRELATION_ID, correlationId(request)));
         }
 
+        @ExceptionHandler(IncidentNotFoundException.class)
+        public ResponseEntity<Map<String, String>> handleIncidentNotFound(IncidentNotFoundException exception,
+                        HttpServletRequest request) {
+                String id = correlationId(request);
+                LOGGER.warn("Incidencia solicitada no encontrada. correlationId={}", id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(MESSAGE, exception.getMessage(),
+                                CORRELATION_ID, id));
+        }
+
         @ExceptionHandler(CategoryIdNotFoundException.class)
         public ResponseEntity<Map<String, String>> handleCategoryIdNotFound(CategoryIdNotFoundException exception,
                         HttpServletRequest request) {
