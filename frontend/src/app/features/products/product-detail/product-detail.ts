@@ -148,6 +148,7 @@ export class ProductDetail implements OnInit {
   loadProduct(id: string): void {
     this.loading.set(true);
     this.error.set(false);
+    this.imageError.set(false);
 
     this.productsService.getProductById(id).subscribe({
       next: (data) => {
