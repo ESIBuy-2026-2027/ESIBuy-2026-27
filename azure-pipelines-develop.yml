@@ -144,7 +144,11 @@ stages:
             fetchDepth: 0
           - script: |
               echo "Sincronizando rama $(Build.SourceBranchName) hacia Azure Repos (ESIBuy)..."
-              git -c http.extraheader="AUTHORIZATION: bearer $AZURE_TOKEN" push https://dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy HEAD:refs/heads/$(Build.SourceBranchName) --force
+              if [ -z "$AZURE_REPO_TOKEN" ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta AZURE_REPO_TOKEN en el grupo 'esibuy-secrets'."
+                exit 1
+              fi
+              git push https://pat:$AZURE_REPO_TOKEN@dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy HEAD:refs/heads/$(Build.SourceBranchName) --force
             displayName: 'Push a Azure Repos (ESIBuy)'
             env:
-              AZURE_TOKEN: $(System.AccessToken)
+              AZURE_REPO_TOKEN: $(AZURE_REPO_TOKEN)
