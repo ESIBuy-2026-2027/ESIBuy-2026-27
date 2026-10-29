@@ -39,6 +39,11 @@ describe('ClientOrders', () => {
     expect(el.querySelector('#orders-title')?.textContent).toContain('Mis pedidos');
     expect(el.querySelector('#orders-search-input')).toBeTruthy();
     expect(el.querySelector('.orders-tabs')).toBeNull();
+    expect(el.querySelector('.filter-button')?.textContent).toContain('Filtrar');
+    expect(el.querySelector('#orders-status')).toBeNull();
+
+    (el.querySelector('.filter-button') as HTMLButtonElement).click();
+    fixture.detectChanges();
     expect(el.querySelector('#orders-status')).toBeTruthy();
 
     const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
@@ -49,6 +54,34 @@ describe('ClientOrders', () => {
     expect(navLinks[2].classList.contains('is-active')).toBe(true);
     expect(navLinks[3].textContent).toContain('Carrito');
     expect(navLinks[4].textContent).toContain('Perfil');
+  });
+
+  it('should show filters only when requested and apply the selected order status', async () => {
+    component.orders.set([
+      { pedidoId: 'pending', fechaCreacion: '2026-10-28T12:00:00', items: [], total: 0, estado: 'PENDIENTE', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
+      { pedidoId: 'delivered', fechaCreacion: '2026-10-28T12:00:00', items: [], total: 0, estado: 'ENTREGADO', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
+    ]);
+    fixture.detectChanges();
+
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('#orders-status')).toBeNull();
+    (element.querySelector('.filter-button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const statusSelect = element.querySelector('#orders-status') as HTMLSelectElement;
+    statusSelect.value = 'PENDIENTE';
+    statusSelect.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.statusFilter()).toBe('PENDIENTE');
+    expect(element.querySelectorAll('.order-row')).toHaveLength(1);
+    expect(element.textContent).toContain('#pending');
+    expect(element.textContent).not.toContain('#delivered');
+
+    (element.querySelector('.close-orders-filter') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(element.querySelector('#orders-status')).toBeNull();
   });
 
   it('should toggle sidebar collapsed state', () => {
@@ -84,6 +117,21 @@ describe('ClientOrders', () => {
     expect(element.textContent).not.toContain('#pending');
   });
 
+  it('should place the total count beside the visible range below the search and filter toolbar', () => {
+    component.orders.set([
+      { pedidoId: 'order-1', fechaCreacion: '2026-10-28T12:00:00', items: [], total: 0, estado: 'PENDIENTE', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
+      { pedidoId: 'order-2', fechaCreacion: '2026-10-27T12:00:00', items: [], total: 0, estado: 'ENTREGADO', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
+    ]);
+    fixture.detectChanges();
+
+    const element: HTMLElement = fixture.nativeElement;
+    const resultsMeta = element.querySelector('.orders-results-meta') as HTMLElement;
+
+    expect(resultsMeta.textContent).toContain('1–2 de 2');
+    expect(resultsMeta.querySelector('.order-count')?.textContent).toContain('2 pedidos');
+    expect(element.querySelector('.orders-toolbar .order-count')).toBeNull();
+  });
+
   it('should provide a clear details link without a reorder button on the order list', () => {
     component.orders.set([{
       pedidoId: 'pedido-123',
@@ -102,6 +150,45 @@ describe('ClientOrders', () => {
     expect(detailsLink.getAttribute('href')).toBe('/client/orders/pedido-123');
     expect(fixture.nativeElement.querySelector('.reorder-button')).toBeNull();
     expect(fixture.nativeElement.textContent).not.toContain('Comprar de nuevo');
+  });
+
+  it('should preview order product images in the main list', () => {
+    component.orders.set([{
+      pedidoId: 'pedido-images',
+      fechaCreacion: '2026-10-28T12:00:00',
+      items: [
+        {
+          productoId: 'producto-1',
+          nombre: 'Auriculares',
+          cantidad: 1,
+          precioUnitario: 19.99,
+          subtotal: 19.99,
+          imageUrl: 'https://example.test/auriculares.jpg',
+        },
+        {
+          productoId: 'producto-2',
+          nombre: 'Funda',
+          cantidad: 1,
+          precioUnitario: 9.99,
+          subtotal: 9.99,
+          imageUrl: null,
+        },
+      ],
+      total: 29.98,
+      estado: 'ENTREGADO',
+      estadoPago: 'PAGADO',
+      direccionEnvio: null,
+      metodoPago: null,
+    }]);
+    fixture.detectChanges();
+
+    const element: HTMLElement = fixture.nativeElement;
+    const previewImages = element.querySelectorAll('.order-item-thumbnail img, img.order-item-thumbnail');
+    expect(previewImages).toHaveLength(1);
+    expect(previewImages[0].getAttribute('src')).toBe('https://example.test/auriculares.jpg');
+    expect(previewImages[0].getAttribute('alt')).toBe('Auriculares');
+    expect(element.querySelector('.order-item-placeholder')?.textContent?.trim()).toBe('F');
+    expect(element.querySelector('.order-item-count')?.textContent).toContain('2 artículos');
   });
 
   it('should include every fulfillment state in the unified order list', () => {
@@ -177,6 +264,7 @@ describe('ClientOrders', () => {
       preparing: 0,
       shipped: 0,
       delivered: 1,
+      cancelled: 0,
     });
     expect(component.getPaymentLabel(component.orders()[0])).toBe('Pagado');
     expect(component.getStatusLabel(component.orders()[0])).toBe('Pendiente');

@@ -72,12 +72,6 @@
           <h1 id="orders-title">Mis pedidos</h1>
           <p>Consulta tus compras, su estado y el seguimiento de tus envíos.</p>
         </div>
-        <form class="orders-search" (submit)="$event.preventDefault(); searchOrders()">
-          <label class="visually-hidden" for="orders-search-input">Buscar por número de pedido o producto</label>
-          <input id="orders-search-input" type="search" placeholder="N.º de pedido o producto"
-            [ngModel]="searchQuery()" (ngModelChange)="setSearchQuery($event)" name="ordersSearch" />
-          <button type="submit">Buscar</button>
-        </form>
       </section>
 
       @if (loading()) {
@@ -87,31 +81,45 @@
       <button type="button" class="retry-button" (click)="loadOrders()">Volver a intentarlo</button>
       } @else {
       <section class="order-summary" aria-label="Resumen de pedidos">
-        <article class="summary-card">
+        <button type="button" class="summary-card summary-total" [class.is-selected]="statusFilter() === 'TODOS'"
+          [attr.aria-pressed]="statusFilter() === 'TODOS'" (click)="setStatusFilter('TODOS')">
           <span class="summary-label">Total de pedidos</span>
           <strong>{{ orderCounts().total }}</strong>
-        </article>
-        <article class="summary-card">
-          <span class="summary-label">Pendientes</span>
-          <strong>{{ orderCounts().pending }}</strong>
-        </article>
-        <article class="summary-card">
-          <span class="summary-label">En preparación</span>
-          <strong>{{ orderCounts().preparing }}</strong>
-        </article>
-        <article class="summary-card">
-          <span class="summary-label">Enviados</span>
-          <strong>{{ orderCounts().shipped }}</strong>
-        </article>
-        <article class="summary-card">
-          <span class="summary-label">Entregados</span>
-          <strong>{{ orderCounts().delivered }}</strong>
-        </article>
+        </button>
+        @for (summary of statusSummaries(); track summary.status) {
+        <button type="button" [class]="'summary-card ' + summary.className"
+          [class.is-selected]="statusFilter() === summary.status"
+          [attr.aria-pressed]="statusFilter() === summary.status" (click)="selectStatus(summary.status)">
+          <span class="summary-label">{{ summary.label }}</span>
+          <strong>{{ summary.count }}</strong>
+        </button>
+        }
       </section>
 
       <section class="orders-toolbar" aria-label="Buscar y filtrar pedidos">
-        <div class="orders-filter-row">
-          <div class="filter-control">
+        <label class="orders-search">
+          <span class="visually-hidden">Buscar pedidos por número o producto</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5"></circle>
+            <path d="m16 16 4.5 4.5"></path>
+          </svg>
+          <input id="orders-search-input" type="search" placeholder="Buscar pedido o producto..."
+            [ngModel]="searchQuery()" (ngModelChange)="setSearchQuery($event)" name="ordersSearch" />
+        </label>
+        <div class="orders-filter">
+          <button type="button" class="filter-button" [class.is-active]="hasActiveFilters()"
+            [attr.aria-expanded]="filtersOpen()" aria-controls="client-orders-filter-panel" (click)="toggleFilters()">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"></path>
+            </svg>
+            Filtrar
+            @if (hasActiveFilters()) {
+            <span class="filter-indicator" aria-label="Hay filtros activos"></span>
+            }
+          </button>
+          @if (filtersOpen()) {
+          <div class="orders-filter-panel" id="client-orders-filter-panel">
+            <button type="button" class="close-orders-filter" aria-label="Cerrar filtros" (click)="closeFilters()">×</button>
             <label for="orders-status">Estado del pedido</label>
             <select id="orders-status" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)"
               name="ordersStatus">
@@ -122,8 +130,6 @@
               <option value="ENTREGADO">Entregado</option>
               <option value="CANCELADO">Cancelado</option>
             </select>
-          </div>
-          <div class="filter-control">
             <label for="orders-payment">Estado del pago</label>
             <select id="orders-payment" [ngModel]="paymentFilter()" (ngModelChange)="setPaymentFilter($event)"
               name="ordersPayment">
@@ -131,8 +137,6 @@
               <option value="PAGADO">Pagado</option>
               <option value="PENDIENTE">Pendiente</option>
             </select>
-          </div>
-          <div class="filter-control">
             <label for="orders-period">Periodo</label>
             <select id="orders-period" [ngModel]="period()" (ngModelChange)="setPeriod($event)" name="ordersPeriod">
               <option value="all">Todo el historial</option>
@@ -140,8 +144,6 @@
               <option value="6months">Últimos 6 meses</option>
               <option value="year">Último año</option>
             </select>
-          </div>
-          <div class="filter-control">
             <label for="orders-sort">Ordenar por</label>
             <select id="orders-sort" [ngModel]="sortOrder()" (ngModelChange)="setSortOrder($event)" name="ordersSort">
               <option value="date-desc">Fecha: más recientes</option>
@@ -149,8 +151,9 @@
               <option value="amount-desc">Importe: mayor a menor</option>
               <option value="amount-asc">Importe: menor a mayor</option>
             </select>
+            <button type="button" class="clear-order-filter" (click)="clearFilters()">Limpiar filtros</button>
           </div>
-          <button type="button" class="clear-filters-button" (click)="clearFilters()">Limpiar filtros</button>
+          }
         </div>
       </section>
 
@@ -167,7 +170,10 @@
         }
       </div>
       } @else {
-      <p class="orders-result-count" aria-live="polite">{{ pageLabel() }}</p>
+      <div class="orders-results-meta">
+        <p class="orders-result-count" aria-live="polite">{{ pageLabel() }}</p>
+        <span class="order-count">{{ filteredOrders().length }} pedidos</span>
+      </div>
       <div class="orders-table-scroll">
         <table class="orders-table">
           <caption class="visually-hidden">Pedidos de tu cuenta</caption>
@@ -189,10 +195,33 @@
               <th scope="row">#{{ order.pedidoId }}</th>
               <td>Tu cuenta</td>
               <td>{{ formatDate(order.fechaCreacion) }}</td>
-              <td>{{ getItemCount(order) }} {{ getItemCount(order) === 1 ? 'artículo' : 'artículos' }}</td>
+              <td>
+                <div class="order-items-preview" [attr.aria-label]="getItemCount(order) + ' artículos del pedido'">
+                  @for (item of order.items.slice(0, 3); track item.productoId) {
+                  @if (item.imageUrl) {
+                  <img class="order-item-thumbnail" [src]="item.imageUrl" [alt]="item.nombre" [title]="item.nombre" />
+                  } @else {
+                  <span class="order-item-thumbnail order-item-placeholder" [title]="item.nombre"
+                    [attr.aria-label]="item.nombre">{{ item.nombre.charAt(0) }}</span>
+                  }
+                  }
+                  @if (order.items.length > 3) {
+                  <span class="order-items-more" [attr.aria-label]="(order.items.length - 3) + ' artículos más'">
+                    +{{ order.items.length - 3 }}
+                  </span>
+                  }
+                </div>
+                <span class="order-item-count">
+                  {{ getItemCount(order) }} {{ getItemCount(order) === 1 ? 'artículo' : 'artículos' }}
+                </span>
+              </td>
               <td class="order-amount">{{ formatPrice(order.total) }}</td>
               <td><span [class]="'payment-badge ' + getPaymentClass(order)">{{ getPaymentLabel(order) }}</span></td>
-              <td><span [class]="'order-status ' + getStatusClass(order)">{{ getStatusLabel(order) }}</span></td>
+              <td>
+                <span [class]="'order-status ' + getStatusClass(order)">
+                  <span class="status-dot" aria-hidden="true"></span>{{ getStatusLabel(order) }}
+                </span>
+              </td>
               <td class="order-actions">
                 <a class="order-detail-link" [routerLink]="['/client/orders', order.pedidoId]">Ver detalle</a>
               </td>
