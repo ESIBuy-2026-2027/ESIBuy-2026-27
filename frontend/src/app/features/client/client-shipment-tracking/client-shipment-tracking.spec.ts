@@ -37,7 +37,7 @@ describe('ClientShipmentTracking', () => {
 
     const element: HTMLElement = fixture.nativeElement;
     expect(obtenerHistorialEstadosEnvio).toHaveBeenCalledWith('pedido-123');
-    expect(element.textContent).toContain('Preparando');
+    expect(element.textContent).toContain('En preparación');
     expect(element.textContent).toContain('Enviado');
     expect(element.textContent).toContain('Entregado');
     expect(element.textContent).toContain('Entrega estimada');
@@ -61,7 +61,7 @@ describe('ClientShipmentTracking', () => {
     expect(fixture.nativeElement.textContent).toContain('Tiempo estimado');
     expect(fixture.nativeElement.textContent).toContain('3 días hábiles desde el envío');
     expect(fixture.nativeElement.querySelector('.progress-step[aria-current="step"]')?.textContent)
-      .toContain('Preparando');
+      .toContain('En preparación');
     expect(fixture.nativeElement.querySelector('.progress-steps')?.getAttribute('style'))
       .toContain('--progress-width: 25%');
   });

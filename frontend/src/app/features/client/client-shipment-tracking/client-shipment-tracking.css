@@ -48,7 +48,7 @@
 .progress-steps::before,
 .progress-steps::after {
   position: absolute;
-  top: 7px;
+  top: 17px;
   left: 12.5%;
   height: 3px;
   border-radius: 2px;
@@ -85,21 +85,37 @@
 }
 
 .progress-marker {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 16px;
-  border: 3px solid #dbe4ed;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  place-items: center;
+  border: 2px solid #dbe4ed;
   border-radius: 50%;
   background: #fff;
+  color: #64748b;
+}
+
+.progress-marker svg {
+  width: 18px;
+  height: 18px;
 }
 
 .progress-step.is-complete .progress-marker,
 .progress-step.is-current .progress-marker {
   border-color: #42d6b2;
+  color: #102c40;
 }
 
-.progress-step.is-current .progress-marker {
-  box-shadow: 0 0 0 3px rgba(66, 214, 178, 0.2);
+.progress-step.is-complete .progress-marker {
+  background: #dff7ef;
+}
+
+.progress-marker.is-current {
+  border-color: #102c40;
+  background: #42d6b2;
+  color: #102c40;
+  box-shadow: 0 0 0 4px rgba(66, 214, 178, 0.3);
 }
 
 .progress-label {

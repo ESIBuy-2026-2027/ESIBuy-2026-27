@@ -69,7 +69,13 @@ describe('ClientOrderDetail', () => {
     expect(element.textContent).toContain('No disponible');
     expect(element.querySelector('.progress-steps')).toBeTruthy();
     expect(element.querySelector('.status-history')).toBeNull();
-    expect(element.querySelector('.progress-step[aria-current="step"]')?.textContent).toContain('Preparando');
+    expect(element.querySelector('.progress-step[aria-current="step"]')?.textContent).toContain('En preparación');
+    expect(element.querySelector('.progress-step[aria-current="step"]')?.classList.contains('is-current'))
+      .toBe(true);
+    expect(element.querySelectorAll('.progress-marker svg')).toHaveLength(4);
+    expect(element.querySelector('.progress-marker.is-current')).toBeTruthy();
+    expect(Array.from(element.querySelectorAll('.progress-marker svg')).map((icon) => icon.getAttribute('viewBox')))
+      .toEqual(['0 0 24 24', '0 0 24 24', '0 0 24 24', '0 0 24 24']);
     expect(element.querySelector('.buy-again-button')).toBeTruthy();
   });
 });

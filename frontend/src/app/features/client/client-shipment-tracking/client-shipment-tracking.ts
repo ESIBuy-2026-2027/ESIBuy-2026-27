@@ -3,6 +3,7 @@ import { CustomerOrderStatus, PedidoService, SeguimientoEnvio } from '../../../c
 
 interface TrackingStep {
   label: string;
+  icon: 'clipboard' | 'package' | 'truck' | 'check';
   statuses: CustomerOrderStatus[];
 }
 
@@ -21,10 +22,10 @@ export class ClientShipmentTracking implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly steps: TrackingStep[] = [
-    { label: 'Pedido recibido', statuses: ['PAGADO', 'PENDIENTE'] },
-    { label: 'Preparando', statuses: ['PREPARANDO'] },
-    { label: 'Enviado', statuses: ['ENVIADO'] },
-    { label: 'Entregado', statuses: ['ENTREGADO'] },
+    { label: 'Pendiente', icon: 'clipboard', statuses: ['PAGADO', 'PENDIENTE'] },
+    { label: 'En preparación', icon: 'package', statuses: ['PREPARANDO'] },
+    { label: 'Enviado', icon: 'truck', statuses: ['ENVIADO'] },
+    { label: 'Entregado', icon: 'check', statuses: ['ENTREGADO'] },
   ];
   private readonly dateFormatter = new Intl.DateTimeFormat('es-ES', {
     dateStyle: 'medium',
