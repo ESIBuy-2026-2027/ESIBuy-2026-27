@@ -144,13 +144,43 @@ stages:
             persistCredentials: true
             fetchDepth: 0
           - script: |
-              echo "Sincronizando rama $(Build.SourceBranchName) hacia Azure Repos (ESIBuy)..."
+              echo "Sincronizando rama $(Build.SourceBranchName) hacia Azure Repos..."
               if [ -z "$AZURE_REPO_TOKEN" ]; then
                 echo "##vso[task.logissue type=error]Falta la variable secreta AZURE_REPO_TOKEN en el grupo 'esibuy-secrets'."
                 exit 1
               fi
-              git push https://pat:$AZURE_REPO_TOKEN@dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy HEAD:refs/heads/$(Build.SourceBranchName) --force
-            displayName: 'Push a Azure Repos (ESIBuy)'
+
+              echo "Consultando repositorios disponibles en Azure DevOps..."
+              REPOS_JSON=$(curl -s -u "pat:$AZURE_REPO_TOKEN" "https://dev.azure.com/ESIBuy-G6/ESIBuy-G6/_apis/git/repositories?api-version=7.0")
+
+              TARGET_URL=$(python3 -c "
+import sys, json
+try:
+    data = json.loads(sys.argv[1])
+    repos = data.get('value', [])
+    if not repos:
+        print('No se encontraron repositorios o respuesta inesperada: ' + str(data)[:200], file=sys.stderr)
+        sys.exit(1)
+    names = [r['name'] for r in repos]
+    print(f'Repositorios encontrados en Azure DevOps: {names}', file=sys.stderr)
+    match = next((r for r in repos if r['name'].lower() == 'esibuy'), None)
+    if not match:
+        match = next((r for r in repos if 'esibuy' in r['name'].lower()), repos[0])
+    print(match['remoteUrl'])
+except Exception as e:
+    print(f'Error al parsear repositorios ({e}): ' + sys.argv[1][:300], file=sys.stderr)
+    sys.exit(1)
+" "$REPOS_JSON")
+
+              if [ $? -ne 0 ] || [ -z "$TARGET_URL" ]; then
+                echo "##vso[task.logissue type=error]No se pudo determinar el repositorio destino en Azure DevOps."
+                exit 1
+              fi
+
+              CLEAN_URL=$(echo "$TARGET_URL" | sed -e 's|^https://||')
+              echo "Haciendo push sincronizado hacia: https://$CLEAN_URL"
+              git push "https://pat:$AZURE_REPO_TOKEN@$CLEAN_URL" HEAD:refs/heads/$(Build.SourceBranchName) --force
+            displayName: 'Push a Azure Repos'
             env:
               AZURE_REPO_TOKEN: $(AZURE_REPO_TOKEN)
 
