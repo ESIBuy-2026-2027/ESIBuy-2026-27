@@ -58,7 +58,7 @@ describe('ClientOrderDetail', () => {
     fixture.detectChanges();
   });
 
-  it('should show independent payment and order statuses plus actual state history', () => {
+  it('should show independent payment and order statuses plus the progress bar in order details', () => {
     const element: HTMLElement = fixture.nativeElement;
 
     expect(element.textContent).toContain('En preparación');
@@ -67,8 +67,9 @@ describe('ClientOrderDetail', () => {
     expect(element.textContent).toContain('25,00 €');
     expect(element.textContent).toContain('Descuentos, impuestos y envío: no desglosados');
     expect(element.textContent).toContain('No disponible');
-    expect(element.querySelector('.status-history')).toBeTruthy();
-    expect(element.querySelector('.progress-steps')).toBeNull();
+    expect(element.querySelector('.progress-steps')).toBeTruthy();
+    expect(element.querySelector('.status-history')).toBeNull();
+    expect(element.querySelector('.progress-step[aria-current="step"]')?.textContent).toContain('Preparando');
     expect(element.querySelector('.buy-again-button')).toBeTruthy();
   });
 });

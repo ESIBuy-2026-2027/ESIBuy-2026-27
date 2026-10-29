@@ -9,7 +9,6 @@ import {
   getCustomerOrderPaymentStatus,
   PedidoService,
 } from '../../../core/services/pedido.service';
-import { ClientShipmentTracking } from '../client-shipment-tracking/client-shipment-tracking';
 
 type PeriodFilter = 'all' | '3months' | '6months' | 'year';
 type SortOrder = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc';
@@ -19,7 +18,7 @@ type PaymentStatusFilter = CustomerOrderPaymentStatus | 'TODOS';
 @Component({
   selector: 'app-client-orders',
   standalone: true,
-  imports: [FormsModule, RouterLink, ClientShipmentTracking],
+  imports: [FormsModule, RouterLink],
   templateUrl: './client-orders.html',
   styleUrl: './client-orders.css',
 })
@@ -28,7 +27,6 @@ export class ClientOrders implements OnInit {
   readonly sidebarCollapsed = signal(false);
   readonly orders = signal<CustomerOrder[]>([]);
   readonly searchQuery = signal('');
-  readonly activeTab = signal<'orders' | 'pending'>('orders');
   readonly period = signal<PeriodFilter>('all');
   readonly statusFilter = signal<OrderStatusFilter>('TODOS');
   readonly paymentFilter = signal<PaymentStatusFilter>('TODOS');
@@ -47,16 +45,11 @@ export class ClientOrders implements OnInit {
       delivered: orders.filter((order) => getCustomerOrderFulfillmentStatus(order) === 'ENTREGADO').length,
     };
   });
-  readonly deliveredOrderCount = computed(() => this.orderCounts().delivered);
-  readonly pendingShipmentCount = computed(() => this.orders().length - this.deliveredOrderCount());
   readonly filteredOrders = computed(() => {
     const query = this.searchQuery().trim().toLocaleLowerCase();
     const cutoff = this.getPeriodCutoff(this.period());
 
     const filtered = this.orders().filter((order) => {
-      const matchesTab = this.activeTab() === 'orders'
-        ? getCustomerOrderFulfillmentStatus(order) === 'ENTREGADO'
-        : getCustomerOrderFulfillmentStatus(order) !== 'ENTREGADO';
       const matchesSearch = !query
         || order.pedidoId.toLocaleLowerCase().includes(query)
         || order.items.some((item) => item.nombre.toLocaleLowerCase().includes(query));
@@ -66,7 +59,7 @@ export class ClientOrders implements OnInit {
         || fulfillmentStatus === this.statusFilter();
       const matchesPayment = this.paymentFilter() === 'TODOS'
         || getCustomerOrderPaymentStatus(order) === this.paymentFilter();
-      return matchesTab && matchesSearch && matchesPeriod && matchesStatus && matchesPayment;
+      return matchesSearch && matchesPeriod && matchesStatus && matchesPayment;
     });
     const sort = this.sortOrder();
     return filtered.sort((first, second) => {
@@ -157,11 +150,6 @@ export class ClientOrders implements OnInit {
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update((collapsed) => !collapsed);
-  }
-
-  selectTab(tab: 'orders' | 'pending'): void {
-    this.activeTab.set(tab);
-    this.pageIndex.set(0);
   }
 
   searchOrders(): void {

@@ -50,53 +50,6 @@
   background: #1d4357;
 }
 
-.orders-tabs {
-  display: flex;
-  gap: 30px;
-  margin: 4px 0 18px;
-  border-bottom: 1px solid #cbd5e1;
-}
-
-.orders-tabs button {
-  position: relative;
-  padding: 0 4px 13px;
-  border: 0;
-  background: transparent;
-  color: #1761a0;
-  font: inherit;
-  font-size: 15px;
-  font-weight: 650;
-  cursor: pointer;
-}
-
-.orders-tabs button.is-active {
-  color: #102c40;
-}
-
-.orders-tabs button.is-active::after {
-  position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  height: 3px;
-  border-radius: 3px 3px 0 0;
-  background: #42d6b2;
-  content: '';
-}
-
-.orders-tabs button span {
-  display: inline-grid;
-  min-width: 22px;
-  height: 22px;
-  place-items: center;
-  margin-left: 5px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: #e9eff8;
-  color: #102c40;
-  font-size: 11px;
-}
-
 .order-summary {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -327,12 +280,6 @@
   color: #b42318;
 }
 
-.tracking-row > td {
-  padding: 0 14px 14px;
-  border-bottom: 1px solid #e2e8f0;
-  background: #fbfcfe;
-}
-
 .orders-pagination {
   display: flex;
   align-items: center;
@@ -393,11 +340,6 @@
 
   .orders-search input {
     width: auto;
-  }
-
-  .orders-tabs {
-    gap: 18px;
-    overflow-x: auto;
   }
 
   .orders-filter-row {

@@ -38,7 +38,8 @@ describe('ClientOrders', () => {
 
     expect(el.querySelector('#orders-title')?.textContent).toContain('Mis pedidos');
     expect(el.querySelector('#orders-search-input')).toBeTruthy();
-    expect(el.querySelector('.orders-tabs')?.textContent).toContain('Pendiente de envío');
+    expect(el.querySelector('.orders-tabs')).toBeNull();
+    expect(el.querySelector('#orders-status')).toBeTruthy();
 
     const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
     expect(navLinks.length).toBe(5);
@@ -58,32 +59,29 @@ describe('ClientOrders', () => {
     expect(component.sidebarCollapsed()).toBe(false);
   });
 
-  it('should show shipment progress only in the pending shipment tab', async () => {
-    component.orders.set([{
-      pedidoId: 'pedido-123',
-      fechaCreacion: '2026-10-28T12:00:00',
-      items: [{
-        productoId: 'product-1',
-        nombre: 'Auriculares',
-        cantidad: 1,
-        precioUnitario: 19.99,
-        subtotal: 19.99,
-        imageUrl: null,
-      }],
-      total: 19.99,
-      estado: 'ENVIADO',
-      estadoPago: 'PAGADO' as const,
-      direccionEnvio: null,
-      metodoPago: null,
-    }]);
+  it('should show all orders together with only the current status in the list', () => {
+    component.orders.set([
+      { pedidoId: 'delivered', fechaCreacion: '2026-10-28T12:00:00', items: [], total: 0, estado: 'ENTREGADO', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
+      { pedidoId: 'pending', fechaCreacion: '2026-10-28T12:00:00', items: [], total: 0, estado: 'PENDIENTE', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
+      { pedidoId: 'preparing', fechaCreacion: '2026-10-28T12:00:00', items: [], total: 0, estado: 'PREPARANDO', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
+      { pedidoId: 'shipped', fechaCreacion: '2026-10-28T12:00:00', items: [], total: 0, estado: 'ENVIADO', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
+      { pedidoId: 'cancelled', fechaCreacion: '2026-10-28T12:00:00', items: [], total: 0, estado: 'CANCELADO', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
+    ]);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('app-client-shipment-tracking')).toBeNull();
-    fixture.nativeElement.querySelector('.orders-tabs button:nth-child(2)').click();
-    fixture.detectChanges();
-    await fixture.whenStable();
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelectorAll('.order-row')).toHaveLength(5);
+    expect(element.querySelector('app-client-shipment-tracking')).toBeNull();
+    expect(element.textContent).toContain('#delivered');
+    expect(element.textContent).toContain('#pending');
+    expect(element.textContent).toContain('#cancelled');
+    expect(element.querySelector('.status-pending')?.textContent).toContain('Pendiente');
 
-    expect(fixture.nativeElement.querySelector('app-client-shipment-tracking')).toBeTruthy();
+    component.setStatusFilter('ENTREGADO');
+    fixture.detectChanges();
+    expect(element.querySelectorAll('.order-row')).toHaveLength(1);
+    expect(element.textContent).toContain('#delivered');
+    expect(element.textContent).not.toContain('#pending');
   });
 
   it('should provide a clear details link without a reorder button on the order list', () => {
@@ -106,7 +104,7 @@ describe('ClientOrders', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Comprar de nuevo');
   });
 
-  it('should only show delivered orders in the Pedidos tab', () => {
+  it('should include every fulfillment state in the unified order list', () => {
     const makeOrder = (
       pedidoId: string,
       estado: 'PAGADO' | 'PENDIENTE' | 'PREPARANDO' | 'ENVIADO' | 'ENTREGADO' | 'CANCELADO',
@@ -129,11 +127,8 @@ describe('ClientOrders', () => {
       makeOrder('pedido-cancelado', 'CANCELADO'),
     ]);
 
-    expect(component.filteredOrders().map((order) => order.pedidoId)).toEqual(['pedido-entregado']);
-
-    component.selectTab('pending');
-
     expect(component.filteredOrders().map((order) => order.pedidoId)).toEqual([
+      'pedido-entregado',
       'pedido-pagado',
       'pedido-pendiente',
       'pedido-enviado',
@@ -186,7 +181,6 @@ describe('ClientOrders', () => {
     expect(component.getPaymentLabel(component.orders()[0])).toBe('Pagado');
     expect(component.getStatusLabel(component.orders()[0])).toBe('Pendiente');
 
-    component.selectTab('pending');
     component.setPaymentFilter('PENDIENTE');
     expect(component.filteredOrders().map((order) => order.pedidoId)).toEqual(['unpaid']);
   });

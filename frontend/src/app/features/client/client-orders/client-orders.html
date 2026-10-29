@@ -109,15 +109,6 @@
         </article>
       </section>
 
-      <nav class="orders-tabs" aria-label="Filtros de pedidos">
-        <button type="button" [class.is-active]="activeTab() === 'orders'" (click)="selectTab('orders')">
-          Pedidos <span>{{ deliveredOrderCount() }}</span>
-        </button>
-        <button type="button" [class.is-active]="activeTab() === 'pending'" (click)="selectTab('pending')">
-          Pendiente de envío <span>{{ pendingShipmentCount() }}</span>
-        </button>
-      </nav>
-
       <section class="orders-toolbar" aria-label="Buscar y filtrar pedidos">
         <div class="orders-filter-row">
           <div class="filter-control">
@@ -169,10 +160,6 @@
         @if (orders().length === 0) {
         <h3>Aún no tienes pedidos</h3>
         <p>Cuando completes una compra, podrás consultar aquí su estado y sus detalles.</p>
-        } @else if (activeTab() === 'orders' && deliveredOrderCount() === 0
-        && !searchQuery() && statusFilter() === 'TODOS' && paymentFilter() === 'TODOS' && period() === 'all') {
-        <h3>Aún no tienes pedidos entregados</h3>
-        <p>Los pedidos que están en curso aparecen en «Pendiente de envío».</p>
         } @else {
         <h3>No hay pedidos que coincidan</h3>
         <p>Prueba a cambiar la búsqueda o los filtros seleccionados.</p>
@@ -210,13 +197,6 @@
                 <a class="order-detail-link" [routerLink]="['/client/orders', order.pedidoId]">Ver detalle</a>
               </td>
             </tr>
-            @if (activeTab() === 'pending') {
-            <tr class="tracking-row">
-              <td colspan="8">
-                <app-client-shipment-tracking [pedidoId]="order.pedidoId" [currentStatus]="order.estado" />
-              </td>
-            </tr>
-            }
             }
           </tbody>
         </table>

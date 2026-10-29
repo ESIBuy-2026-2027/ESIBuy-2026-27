@@ -1,5 +1,5 @@
 <section class="tracking-card" aria-labelledby="tracking-title">
-  <h2 id="tracking-title">Seguimiento del envío</h2>
+  <h2 id="tracking-title">{{ displayMode() === 'history' ? 'Historial de estados' : 'Seguimiento del pedido' }}</h2>
   @if (loading()) {
   <p aria-live="polite">Cargando seguimiento...</p>
   } @else if (error(); as message) {
