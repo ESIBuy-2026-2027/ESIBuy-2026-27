@@ -13,13 +13,12 @@
       <h1>Pedido #{{ currentOrder.pedidoId }}</h1>
       <p>{{ formatDate(currentOrder.fechaCreacion) }}</p>
     </div>
-    <span class="order-status" [class.status-paid]="currentOrder.estado === 'PAGADO'"
-      [class.status-pending]="currentOrder.estado === 'PENDIENTE'"
-      [class.status-preparing]="currentOrder.estado === 'PREPARANDO'"
-      [class.status-shipped]="currentOrder.estado === 'ENVIADO'"
-      [class.status-delivered]="currentOrder.estado === 'ENTREGADO'"
-      [class.status-cancelled]="currentOrder.estado === 'CANCELADO'">
-      {{ currentOrder.estado }}
+    <span class="order-status" [class.status-delivered]="getFulfillmentStatus(currentOrder) === 'ENTREGADO'"
+      [class.status-pending]="getFulfillmentStatus(currentOrder) === 'PENDIENTE'"
+      [class.status-preparing]="getFulfillmentStatus(currentOrder) === 'PREPARANDO'"
+      [class.status-shipped]="getFulfillmentStatus(currentOrder) === 'ENVIADO'"
+      [class.status-cancelled]="getFulfillmentStatus(currentOrder) === 'CANCELADO'">
+      {{ getFulfillmentStatusLabel(currentOrder) }}
     </span>
   </header>
   <section class="detail-card" aria-labelledby="products-title">
@@ -49,17 +48,24 @@
       <strong>{{ formatPrice(item.subtotal) }}</strong>
     </div>
     }
+    <div class="economic-row">
+      <span>Subtotal de productos</span>
+      <strong>{{ formatPrice(getItemsSubtotal(currentOrder)) }}</strong>
+    </div>
+    <p class="unitemized-costs">Descuentos, impuestos y envío: no desglosados en los datos del pedido.</p>
     <div class="detail-total">
       <span>Importe total</span>
       <strong>{{ formatPrice(currentOrder.total) }}</strong>
     </div>
   </section>
+  <app-client-shipment-tracking [pedidoId]="currentOrder.pedidoId" [currentStatus]="currentOrder.estado"
+    displayMode="progress" />
   <section class="order-information" aria-label="Información del pedido">
-    @if (currentOrder.direccionEnvio; as address) {
     <article class="information-card">
       <span class="information-icon" aria-hidden="true">⌖</span>
       <div>
         <h2>Dirección de envío</h2>
+        @if (currentOrder.direccionEnvio; as address) {
         <p><strong>{{ address.recipientName }}</strong></p>
         <p>{{ address.street }}</p>
         <p>{{ address.postalCode }} {{ address.city }}, {{ address.province }}</p>
@@ -69,14 +75,21 @@
         @if (address.phone) {
         <p>Tel. {{ address.phone }}</p>
         }
+        } @else {
+        <p>No disponible</p>
+        }
+        <p>Método de envío: <strong>No disponible</strong></p>
+        <p>Número de seguimiento: <strong>No disponible</strong></p>
       </div>
     </article>
-    }
-    @if (currentOrder.metodoPago; as payment) {
     <article class="information-card">
       <span class="information-icon" aria-hidden="true">◉</span>
       <div>
-        <h2>Método de pago</h2>
+        <h2>Pago</h2>
+        <p>Estado del pago:
+          <strong [class]="'payment-status ' + getPaymentClass(currentOrder)">{{ getPaymentLabel(currentOrder) }}</strong>
+        </p>
+        @if (currentOrder.metodoPago; as payment) {
         @switch (payment.tipo) {
         @case ('CARD') {
         <p>Tarjeta terminada en <strong>**** {{ payment.lastFourDigits || '----' }}</strong></p>
@@ -88,9 +101,11 @@
         <p>Bizum</p>
         }
         }
+        } @else {
+        <p>Método de pago: <strong>No disponible</strong></p>
+        }
       </div>
     </article>
-    }
   </section>
   }
 </main>

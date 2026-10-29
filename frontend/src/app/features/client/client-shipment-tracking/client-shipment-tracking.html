@@ -1,0 +1,89 @@
+<section class="tracking-card" aria-labelledby="tracking-title">
+  <h2 id="tracking-title">{{ displayMode() === 'history' ? 'Historial de estados' : 'Seguimiento del pedido' }}</h2>
+  @if (loading()) {
+  <p aria-live="polite">Cargando seguimiento...</p>
+  } @else if (error(); as message) {
+  <p class="tracking-error" role="alert">{{ message }}</p>
+  } @else if (tracking(); as shipment) {
+  @if (displayMode() === 'history') {
+  <ol class="status-history" aria-label="Historial de cambios de estado">
+    @for (event of shipment.historialEstados; track event.fecha + event.estado) {
+    <li>
+      <strong>{{ statusLabel(event.estado) }}</strong>
+      <time [attr.datetime]="event.fecha">{{ formatHistoryDate(event.fecha) }}</time>
+    </li>
+    } @empty {
+    <li>No hay cambios de estado registrados.</li>
+    }
+  </ol>
+  } @else if (currentStatus() === 'CANCELADO') {
+  <p class="tracking-cancelled" role="status">Pedido cancelado</p>
+  } @else {
+  <p class="estimated-date">
+    @if (shipment.estimatedDeliveryDate; as estimatedDate) {
+    <span>Entrega estimada</span>
+    <strong>{{ formatEstimatedDate(estimatedDate) }}</strong>
+    <small>Plazo: 3 días hábiles desde el envío</small>
+    } @else {
+    <span>Tiempo estimado</span>
+    <strong>3 días hábiles desde el envío</strong>
+    @if (currentStatus() === 'ENVIADO') {
+    <small>La fecha concreta no está disponible para este pedido.</small>
+    }
+    }
+  </p>
+  <ol class="progress-steps" aria-label="Progreso del pedido" [style.--progress-width]="progressWidth()">
+    @for (step of steps; track step.label; let index = $index) {
+    <li class="progress-step"
+      [class.is-complete]="isStepComplete(index)"
+      [class.is-current]="isCurrentStep(index)"
+      [attr.aria-current]="isCurrentStep(index) ? 'step' : null">
+      <span class="progress-marker" [class.is-current]="isCurrentStep(index)" aria-hidden="true">
+        @switch (step.icon) {
+        @case ('clipboard') {
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="4" width="14" height="17" rx="2" />
+          <path d="M9 4.5h6a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1Z" />
+          <path d="M9 10h6M9 14h6M9 18h3" />
+        </svg>
+        }
+        @case ('package') {
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" />
+          <path d="m4.3 7.7 7.7 4.4 7.7-4.4M12 12.1V21M8 5.3l8 4.5" />
+        </svg>
+        }
+        @case ('truck') {
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h11v11H3zM14 10h4l3 3v4h-7z" />
+          <circle cx="7.5" cy="18" r="2" />
+          <circle cx="18" cy="18" r="2" />
+        </svg>
+        }
+        @case ('check') {
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="m8 12 2.5 2.5L16 9" />
+        </svg>
+        }
+        }
+      </span>
+      <span class="progress-label">{{ step.label }}</span>
+      @if (stepDate(step); as eventDate) {
+      <time [attr.datetime]="eventDate">{{ formatStepDate(eventDate) }}</time>
+      }
+    </li>
+    }
+  </ol>
+  @if (shipment.historialEstados.length === 0) {
+  <p class="tracking-empty">
+    Estado actual: <strong>{{ statusLabel(currentStatus()) }}</strong>.
+  </p>
+  }
+  }
+  }
+</section>

@@ -641,6 +641,31 @@
     }
 }
 
+@media (max-width: 1100px) and (min-width: 761px) {
+    .profile-page {
+        grid-template-columns: 210px minmax(0, 1fr);
+        gap: 16px;
+        padding: 28px 20px 48px;
+    }
+
+    .panel {
+        padding: 22px 20px 24px;
+    }
+}
+
+@media (max-width: 760px) {
+    .profile-page {
+        width: 100%;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 18px;
+        padding: 24px 18px 40px;
+    }
+
+    .profile-card {
+        min-height: 0;
+    }
+}
+
 /* Estilos definitivos de los botones del perfil del cliente */
 .profile-card .sidebar-footer button.back-button {
     background: #fff !important;
