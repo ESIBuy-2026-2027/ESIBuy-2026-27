@@ -26,9 +26,10 @@ export class ClientOrders implements OnInit {
 
     return this.orders().filter((order) => {
       const matchesTab = this.activeTab() === 'orders'
-        || order.estado === 'PENDIENTE'
-        || order.estado === 'PREPARANDO'
-        || order.estado === 'ENVIADO';
+        ? order.estado === 'ENTREGADO'
+        : order.estado === 'PENDIENTE'
+          || order.estado === 'PREPARANDO'
+          || order.estado === 'ENVIADO';
       const matchesSearch = !query
         || order.pedidoId.toLocaleLowerCase().includes(query)
         || order.items.some((item) => item.nombre.toLocaleLowerCase().includes(query));

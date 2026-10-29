@@ -103,4 +103,23 @@ describe('ClientOrders', () => {
     expect(fixture.nativeElement.querySelector('.reorder-button')).toBeNull();
     expect(fixture.nativeElement.textContent).not.toContain('Comprar de nuevo');
   });
+
+  it('should only show delivered orders in the Pedidos tab', () => {
+    const makeOrder = (pedidoId: string, estado: 'ENTREGADO' | 'ENVIADO' | 'PREPARANDO') => ({
+      pedidoId,
+      fechaCreacion: '2026-10-28T12:00:00',
+      items: [],
+      total: 0,
+      estado,
+      direccionEnvio: null,
+      metodoPago: null,
+    });
+    component.orders.set([
+      makeOrder('pedido-entregado', 'ENTREGADO'),
+      makeOrder('pedido-enviado', 'ENVIADO'),
+      makeOrder('pedido-preparando', 'PREPARANDO'),
+    ]);
+
+    expect(component.filteredOrders().map((order) => order.pedidoId)).toEqual(['pedido-entregado']);
+  });
 });
