@@ -390,6 +390,10 @@
   }
 }
 
+.cart-page {
+  min-width: 0;
+}
+
 
 /* Precios y descuentos de artículos en el carrito */
 .item-pricing-row {

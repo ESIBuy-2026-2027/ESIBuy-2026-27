@@ -32,7 +32,7 @@ describe('ClientOrders', () => {
     await fixture.whenStable();
   });
 
-  it('should create and render navigation order in sidebar with Mis compras active', () => {
+  it('should create and render navigation order in sidebar with Mis pedidos active', () => {
     expect(component).toBeTruthy();
     const el: HTMLElement = fixture.nativeElement;
 
@@ -50,8 +50,9 @@ describe('ClientOrders', () => {
     expect(navLinks.length).toBe(5);
     expect(navLinks[0].textContent).toContain('Catálogo');
     expect(navLinks[1].textContent).toContain('Lista de deseos');
-    expect(navLinks[2].textContent).toContain('Mis compras');
+    expect(navLinks[2].textContent).toContain('Mis pedidos');
     expect(navLinks[2].classList.contains('is-active')).toBe(true);
+    expect(navLinks[2].querySelector('svg path')?.getAttribute('d')).toContain('M21 8');
     expect(navLinks[3].textContent).toContain('Carrito');
     expect(navLinks[4].textContent).toContain('Perfil');
   });

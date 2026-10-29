@@ -57,6 +57,25 @@ describe('ClientProfile', () => {
         expect(el.querySelector('h1')?.textContent).toContain('Perfil');
         expect(el.querySelector('.section-title')?.textContent).toContain('Datos personales');
         el.querySelectorAll('input').forEach((input) => expect(input.readOnly).toBe(true));
+        const clientLinks = el.querySelectorAll('.seller-navigation .navigation-link');
+        expect(clientLinks).toHaveLength(5);
+        expect(clientLinks[2].textContent).toContain('Mis pedidos');
+        expect(clientLinks[4].getAttribute('href')).toBe('/client/profile');
+        expect(clientLinks[4].getAttribute('aria-current')).toBe('page');
+    });
+
+    it('permite plegar y desplegar la navegación global del cliente', () => {
+        const sidebar = fixture.nativeElement.querySelector('.seller-shell') as HTMLElement;
+        const toggle = fixture.nativeElement.querySelector('.app-sidebar-toggle') as HTMLButtonElement;
+
+        toggle.click();
+        fixture.detectChanges();
+        expect(sidebar.classList.contains('app-sidebar-collapsed')).toBe(true);
+
+        const openToggle = fixture.nativeElement.querySelector('.app-sidebar-toggle-open') as HTMLButtonElement;
+        openToggle.click();
+        fixture.detectChanges();
+        expect(sidebar.classList.contains('app-sidebar-collapsed')).toBe(false);
     });
 
     it('muestra el correo de la sesión', () => {
