@@ -128,3 +128,23 @@ stages:
             displayName: 'Ejecutar análisis de SonarQube Frontend (con fallback de red)'
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
+
+      # ------------------------------------------------------------------------
+      # Sync_Azure_Repos: Sincronización automática a Azure Repos (ESIBuy)
+      # Se ejecuta sólo si Backend_CI y Frontend_CI terminan con éxito
+      # y NO es una Pull Request (sólo en pushes reales a develop)
+      # ------------------------------------------------------------------------
+      - job: Sync_Azure_Repos
+        displayName: 'Sincronizar rama con Azure Repos (ESIBuy)'
+        dependsOn: [Backend_CI, Frontend_CI]
+        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+        steps:
+          - checkout: self
+            persistCredentials: true
+            fetchDepth: 0
+          - script: |
+              echo "Sincronizando rama $(Build.SourceBranchName) hacia Azure Repos (ESIBuy)..."
+              git -c http.extraheader="AUTHORIZATION: bearer $(AZURE_TOKEN)" push https://dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy HEAD:refs/heads/$(Build.SourceBranchName) --force
+            displayName: 'Push a Azure Repos (ESIBuy)'
+            env:
+              AZURE_TOKEN: $(System.AccessToken)
