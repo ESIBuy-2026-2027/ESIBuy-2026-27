@@ -622,31 +622,6 @@ form {
   to { transform: rotate(360deg); }
 }
 
-/* Toggle lateral */
-.app-sidebar-toggle,
-.app-sidebar-toggle-open {
-  position: absolute;
-  top: 24px;
-  right: -14px;
-  z-index: 10;
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border: 1px solid #234c62;
-  border-radius: 50%;
-  color: #fff;
-  background: #173b50;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.app-sidebar-toggle-open {
-  position: fixed;
-  left: 12px;
-  background: var(--color-brand-dark);
-}
 
 @media (max-width: 900px) {
   .admin-workspace {
