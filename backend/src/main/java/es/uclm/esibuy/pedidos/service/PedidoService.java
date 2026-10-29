@@ -242,7 +242,8 @@ public class PedidoService {
                         item.cantidad(),
                         item.precioUnitario(),
                         item.subtotal(),
-                        resolveImageUrl(item)))
+                        resolveImageUrl(item),
+                        resolveCategoryIds(item)))
                 .toList();
 
         if (items.isEmpty()) {
@@ -311,6 +312,12 @@ public class PedidoService {
         return productRepository.findById(item.productoId())
                 .map(Product::getImageUrl)
                 .orElse(null);
+    }
+
+    private List<String> resolveCategoryIds(PedidoItem item) {
+        return productRepository.findById(item.productoId())
+                .map(Product::getCategoryIds)
+                .orElse(List.of());
     }
 
     private String formatAddress(DireccionEnvioPedido address) {

@@ -9,8 +9,8 @@ import { SellerCatalogService, SellerProduct } from '../../../core/services/sell
 
 const LOW_STOCK_THRESHOLD = 5;
 type InlineField = 'price' | 'stock';
+type SortOrder = 'recommended' | 'name-asc' | 'price-asc' | 'price-desc' | 'stock-asc' | 'stock-desc';
 type VisibilityFilter = 'all' | 'published' | 'hidden';
-type StockFilter = 'all' | 'in-stock' | 'low-stock' | 'out-of-stock';
 
 @Component({
   selector: 'app-seller-catalog',
@@ -36,9 +36,14 @@ export class SellerCatalog implements OnInit {
   categoriesError = signal(false);
   productSearch = signal('');
   filtersOpen = signal(false);
-  visibilityFilter = signal<VisibilityFilter>('all');
-  stockFilter = signal<StockFilter>('all');
-  categoryFilter = signal('all');
+  selectedCategory = signal('');
+  minPrice = signal<number | null>(null);
+  maxPrice = signal<number | null>(null);
+  selectedVisibility = signal<VisibilityFilter>('all');
+  onlyInStock = signal(false);
+  onlyOffers = signal(false);
+  sortOrder = signal<SortOrder>('recommended');
+  priceLimit = signal(1);
   inlineEdit = signal<{ productId: string; field: InlineField } | null>(null);
   inlineValue = signal<number | null>(null);
   inlineSaving = signal(false);
@@ -48,27 +53,44 @@ export class SellerCatalog implements OnInit {
   sidebarCollapsed = signal(this.readSidebarPreference());
   visibleProducts = computed(() => {
     const query = this.productSearch().trim().toLocaleLowerCase();
-    return this.products()
-      .filter((product) => product.name.toLocaleLowerCase().includes(query))
-      .filter((product) => {
-        const visibility = this.visibilityFilter();
-        const matchesVisibility = visibility === 'all'
-          || (visibility === 'published' && product.available)
-          || (visibility === 'hidden' && !product.available);
+    const minPrice = this.minPrice();
+    const maxPrice = this.maxPrice();
+    const selectedCategory = this.selectedCategory();
+    const selectedVisibility = this.selectedVisibility();
+    const filtered = this.products().filter((product) => {
+      const matchesSearch = !query
+        || product.name.toLocaleLowerCase().includes(query)
+        || (product.description ?? '').toLocaleLowerCase().includes(query);
+      const matchesCategory = !selectedCategory || product.categoryIds.includes(selectedCategory);
+      const matchesMinPrice = minPrice === null || product.price >= minPrice;
+      const matchesMaxPrice = maxPrice === null || product.price <= maxPrice;
+      const matchesVisibility = selectedVisibility === 'all'
+        || (selectedVisibility === 'published' && product.available)
+        || (selectedVisibility === 'hidden' && !product.available);
+      const matchesStock = !this.onlyInStock() || product.stock > 0;
+      const matchesOffers = !this.onlyOffers()
+        || (product.discount ?? 0) > 0
+        || (product.premiumDiscount ?? 0) > 0;
+      return matchesSearch && matchesCategory && matchesMinPrice && matchesMaxPrice
+        && matchesVisibility && matchesStock && matchesOffers;
+    });
 
-        const stock = this.stockFilter();
-        const matchesStock = stock === 'all'
-          || (stock === 'in-stock' && product.stock !== null && product.stock > LOW_STOCK_THRESHOLD)
-          || (stock === 'low-stock' && product.stock !== null
-            && product.stock > 0 && product.stock <= LOW_STOCK_THRESHOLD)
-          || (stock === 'out-of-stock' && product.stock === 0);
-
-        const selectedCategory = this.categoryFilter();
-        const matchesCategory = selectedCategory === 'all'
-          || product.categoryIds.includes(selectedCategory);
-
-        return matchesVisibility && matchesStock && matchesCategory;
-      });
+    return filtered.sort((first, second) => {
+      switch (this.sortOrder()) {
+        case 'name-asc':
+          return first.name.localeCompare(second.name, 'es', { sensitivity: 'base' });
+        case 'stock-asc':
+          return first.stock - second.stock;
+        case 'stock-desc':
+          return second.stock - first.stock;
+        case 'price-asc':
+          return first.price - second.price;
+        case 'price-desc':
+          return second.price - first.price;
+        default:
+          return 0;
+      }
+    });
   });
 
   ngOnInit(): void {
@@ -83,6 +105,11 @@ export class SellerCatalog implements OnInit {
     this.catalogService.getProducts().subscribe({
       next: (products) => {
         this.products.set(products);
+        const highestPrice = products.reduce(
+          (highest, product) => Math.max(highest, product.price),
+          0,
+        );
+        this.priceLimit.set(Math.max(1, Math.ceil(highestPrice)));
         this.productsLoading.set(false);
       },
       error: () => {
@@ -118,9 +145,14 @@ export class SellerCatalog implements OnInit {
   }
 
   clearFilters(): void {
-    this.visibilityFilter.set('all');
-    this.stockFilter.set('all');
-    this.categoryFilter.set('all');
+    this.productSearch.set('');
+    this.selectedCategory.set('');
+    this.minPrice.set(null);
+    this.maxPrice.set(null);
+    this.selectedVisibility.set('all');
+    this.onlyInStock.set(false);
+    this.onlyOffers.set(false);
+    this.sortOrder.set('recommended');
   }
 
   toggleSidebar(): void {
@@ -133,9 +165,36 @@ export class SellerCatalog implements OnInit {
   }
 
   hasActiveFilters(): boolean {
-    return this.visibilityFilter() !== 'all'
-      || this.stockFilter() !== 'all'
-      || this.categoryFilter() !== 'all';
+    return Boolean(this.productSearch().trim())
+      || Boolean(this.selectedCategory())
+      || this.minPrice() !== null
+      || this.maxPrice() !== null
+      || this.selectedVisibility() !== 'all'
+      || this.onlyInStock()
+      || this.onlyOffers()
+      || this.sortOrder() !== 'recommended';
+  }
+
+  minPricePercent(): number {
+    return ((this.minPrice() ?? 0) / this.priceLimit()) * 100;
+  }
+
+  maxPricePercent(): number {
+    return ((this.maxPrice() ?? this.priceLimit()) / this.priceLimit()) * 100;
+  }
+
+  setMinPrice(value: number): void {
+    const normalized = Math.max(0, Math.min(Math.trunc(Number(value) || 0), this.priceLimit()));
+    const currentMax = this.maxPrice() ?? this.priceLimit();
+    const newMin = Math.min(normalized, currentMax);
+    this.minPrice.set(newMin === 0 ? null : newMin);
+  }
+
+  setMaxPrice(value: number): void {
+    const normalized = Math.max(0, Math.min(Math.trunc(Number(value) || 0), this.priceLimit()));
+    const currentMin = this.minPrice() ?? 0;
+    const newMax = Math.max(normalized, currentMin);
+    this.maxPrice.set(newMax >= this.priceLimit() ? null : newMax);
   }
 
   private readSidebarPreference(): boolean {

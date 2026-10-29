@@ -90,11 +90,13 @@ describe('SellerCatalog', () => {
     expect(element.textContent).toContain('Audio');
     expect(element.textContent).not.toContain('INVENTARIO');
     expect(element.querySelector('.product-table caption')?.textContent).toContain('Productos de mi catálogo');
-    expect(element.querySelector('.catalog-controls .catalog-search')).not.toBeNull();
-    expect(element.querySelector('.catalog-controls .product-count')?.textContent).toContain('1 producto');
-    const filterButton = element.querySelector<HTMLButtonElement>('.catalog-filter-button');
-    expect(filterButton?.textContent).toContain('Filtrar');
-    expect(filterButton).not.toBeNull();
+    expect(element.querySelector('.filter-bar .search-input-wrapper')).not.toBeNull();
+    expect(element.querySelector('.filter-bar #seller-filter-category')).not.toBeNull();
+    expect(element.querySelector('.filter-bar #seller-filter-visibility')).not.toBeNull();
+    expect(element.querySelector('.filter-bar #seller-filter-sort')).not.toBeNull();
+    expect(element.querySelector('.filter-bar .price-range-slider')).not.toBeNull();
+    expect(element.querySelector('.filter-product-count')?.textContent).toContain('1 producto');
+    expect(element.querySelector('.reset-filter-btn')?.textContent).toContain('Limpiar filtros');
     expect(element.querySelector<HTMLImageElement>('.product-image')?.alt).toBe('');
     expect(element.querySelector('input[type="search"]')?.hasAttribute('aria-label')).toBe(true);
     expect(element.querySelectorAll('.navigation-link[aria-disabled="true"]')).toHaveLength(2);
@@ -103,6 +105,31 @@ describe('SellerCatalog', () => {
     expect(element.querySelector<HTMLAnchorElement>('.edit-button')?.getAttribute('href'))
       .toBe('/products/product-1/edit');
     expect(element.querySelector('.delete-button')).toBeNull();
+  });
+
+
+  it('filters seller products by visibility and sorts by stock', () => {
+    const component = fixture.componentInstance;
+    const hiddenProduct: SellerProduct = {
+      ...products[0],
+      id: 'product-2',
+      name: 'Teclado',
+      stock: 0,
+      available: false,
+      price: 29.99,
+    };
+    component.products.set([...products, hiddenProduct]);
+
+    component.selectedVisibility.set('hidden');
+    expect(component.visibleProducts().map((product) => product.id)).toEqual(['product-2']);
+
+    component.selectedVisibility.set('all');
+    component.sortOrder.set('stock-asc');
+    expect(component.visibleProducts().map((product) => product.id)).toEqual(['product-2', 'product-1']);
+
+    component.clearFilters();
+    expect(component.selectedVisibility()).toBe('all');
+    expect(component.sortOrder()).toBe('recommended');
   });
 
   it('should show the quantity alone for normal stock and keep labels for exceptional stock', () => {
