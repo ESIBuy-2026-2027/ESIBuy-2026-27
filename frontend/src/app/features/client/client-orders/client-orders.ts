@@ -1,18 +1,17 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { CartService } from '../../../core/services/cart.service';
 import { CustomerOrder, PedidoService } from '../../../core/services/pedido.service';
+import { ClientShipmentTracking } from '../client-shipment-tracking/client-shipment-tracking';
 
 @Component({
   selector: 'app-client-orders',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, ClientShipmentTracking],
   templateUrl: './client-orders.html',
   styleUrl: './client-orders.css',
 })
 export class ClientOrders implements OnInit {
-  readonly cartService = inject(CartService);
   private readonly pedidoService = inject(PedidoService);
   readonly sidebarCollapsed = signal(false);
   readonly orders = signal<CustomerOrder[]>([]);
@@ -28,7 +27,8 @@ export class ClientOrders implements OnInit {
     return this.orders().filter((order) => {
       const matchesTab = this.activeTab() === 'orders'
         || order.estado === 'PENDIENTE'
-        || order.estado === 'PREPARANDO';
+        || order.estado === 'PREPARANDO'
+        || order.estado === 'ENVIADO';
       const matchesSearch = !query
         || order.pedidoId.toLocaleLowerCase().includes(query)
         || order.items.some((item) => item.nombre.toLocaleLowerCase().includes(query));

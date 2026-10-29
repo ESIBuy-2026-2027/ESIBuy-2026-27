@@ -58,6 +58,8 @@ describe('ClientShipmentTracking', () => {
     await fixture.whenStable();
 
     expect(fixture.nativeElement.textContent).toContain('Estado actual: Preparando.');
+    expect(fixture.nativeElement.textContent).toContain('Tiempo estimado');
+    expect(fixture.nativeElement.textContent).toContain('3 días hábiles desde el envío');
     expect(fixture.nativeElement.querySelector('.progress-step[aria-current="step"]')?.textContent)
       .toContain('Preparando');
     expect(fixture.nativeElement.querySelector('.progress-steps')?.getAttribute('style'))

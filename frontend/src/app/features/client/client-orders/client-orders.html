@@ -112,19 +112,9 @@
       <section class="orders-list" aria-label="Pedidos realizados">
         @for (order of filteredOrders(); track order.pedidoId) {
         <article class="order-card">
-          <div class="order-card-main">
-            <div class="order-preview" aria-hidden="true">
-              @for (item of order.items.slice(0, 3); track item.productoId) {
-              @if (item.imageUrl) {
-              <img [src]="item.imageUrl" [alt]="item.nombre" />
-              } @else {
-              <span class="image-placeholder">{{ item.nombre.charAt(0) }}</span>
-              }
-              }
-            </div>
-            <div class="order-card-content">
-          <div class="order-card-header">
+          <div class="order-card-heading">
             <div>
+              <span class="order-card-eyebrow">Compra realizada</span>
               <h2>Pedido #{{ order.pedidoId }}</h2>
               <p>{{ formatDate(order.fechaCreacion) }}</p>
             </div>
@@ -137,17 +127,41 @@
               {{ order.estado }}
             </span>
           </div>
-          <div class="order-card-summary">
-            <span>{{ order.items.length }} producto(s)</span>
-            <div class="order-card-total-actions">
-              <strong>{{ formatPrice(order.total) }}</strong>
-              <a class="secondary-action" [routerLink]="['/client/orders', order.pedidoId]">
-                Ver detalle
-              </a>
+          <div class="order-card-main">
+            <div class="order-preview" aria-hidden="true">
+              @for (item of order.items.slice(0, 3); track item.productoId) {
+              @if (item.imageUrl) {
+              <img [src]="item.imageUrl" alt="" />
+              } @else {
+              <span class="image-placeholder">{{ item.nombre.charAt(0) }}</span>
+              }
+              }
+            </div>
+            <div class="order-card-content">
+              <p class="order-card-summary">
+                {{ order.items.length }} {{ order.items.length === 1 ? 'artículo' : 'artículos' }}
+                <span aria-hidden="true">·</span>
+                Total <strong>{{ formatPrice(order.total) }}</strong>
+              </p>
+              <ul class="order-item-names" aria-label="Productos de este pedido">
+                @for (item of order.items.slice(0, 2); track item.productoId) {
+                <li>{{ item.nombre }} <span>×{{ item.cantidad }}</span></li>
+                }
+                @if (order.items.length > 2) {
+                <li class="more-items">y {{ order.items.length - 2 }} más</li>
+                }
+              </ul>
             </div>
           </div>
-            </div>
+          @if (activeTab() === 'orders') {
+          <div class="order-card-actions">
+            <a class="order-detail-link" [routerLink]="['/client/orders', order.pedidoId]">
+              Ver detalles
+            </a>
           </div>
+          } @else {
+          <app-client-shipment-tracking [pedidoId]="order.pedidoId" [currentStatus]="order.estado" />
+          }
         </article>
         }
       </section>

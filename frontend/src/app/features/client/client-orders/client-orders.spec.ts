@@ -16,7 +16,13 @@ describe('ClientOrders', () => {
       providers: [
         provideRouter([]),
         { provide: CartService, useValue: { itemCount: () => 0 } },
-        { provide: PedidoService, useValue: { obtenerPedidosDelCliente: () => of([]) } },
+        {
+          provide: PedidoService,
+          useValue: {
+            obtenerPedidosDelCliente: () => of([]),
+            obtenerHistorialEstadosEnvio: () => of({ historialEstados: [], estimatedDeliveryDate: null }),
+          },
+        },
       ],
     }).compileComponents();
 
@@ -50,5 +56,51 @@ describe('ClientOrders', () => {
     expect(component.sidebarCollapsed()).toBe(true);
     component.toggleSidebar();
     expect(component.sidebarCollapsed()).toBe(false);
+  });
+
+  it('should show shipment progress only in the pending shipment tab', async () => {
+    component.orders.set([{
+      pedidoId: 'pedido-123',
+      fechaCreacion: '2026-10-28T12:00:00',
+      items: [{
+        productoId: 'product-1',
+        nombre: 'Auriculares',
+        cantidad: 1,
+        precioUnitario: 19.99,
+        subtotal: 19.99,
+        imageUrl: null,
+      }],
+      total: 19.99,
+      estado: 'ENVIADO',
+      direccionEnvio: null,
+      metodoPago: null,
+    }]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-client-shipment-tracking')).toBeNull();
+    fixture.nativeElement.querySelector('.orders-tabs button:nth-child(2)').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.querySelector('app-client-shipment-tracking')).toBeTruthy();
+  });
+
+  it('should provide a clear details link without a reorder button on the order list', () => {
+    component.orders.set([{
+      pedidoId: 'pedido-123',
+      fechaCreacion: '2026-10-28T12:00:00',
+      items: [],
+      total: 0,
+      estado: 'ENTREGADO',
+      direccionEnvio: null,
+      metodoPago: null,
+    }]);
+    fixture.detectChanges();
+
+    const detailsLink = fixture.nativeElement.querySelector('.order-detail-link') as HTMLAnchorElement;
+    expect(detailsLink.textContent).toContain('Ver detalles');
+    expect(detailsLink.getAttribute('href')).toBe('/client/orders/pedido-123');
+    expect(fixture.nativeElement.querySelector('.reorder-button')).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Comprar de nuevo');
   });
 });

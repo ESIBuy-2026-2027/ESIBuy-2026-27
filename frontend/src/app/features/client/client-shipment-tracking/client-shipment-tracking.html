@@ -8,13 +8,19 @@
   @if (currentStatus() === 'CANCELADO') {
   <p class="tracking-cancelled" role="status">Pedido cancelado</p>
   } @else {
-  @if (shipment.estimatedDeliveryDate; as estimatedDate) {
   <p class="estimated-date">
+    @if (shipment.estimatedDeliveryDate; as estimatedDate) {
     <span>Entrega estimada</span>
     <strong>{{ formatEstimatedDate(estimatedDate) }}</strong>
-    <small>Plazo aproximado: 3 días hábiles desde el envío</small>
+    <small>Plazo: 3 días hábiles desde el envío</small>
+    } @else {
+    <span>Tiempo estimado</span>
+    <strong>3 días hábiles desde el envío</strong>
+    @if (currentStatus() === 'ENVIADO') {
+    <small>La fecha concreta no está disponible para este pedido.</small>
+    }
+    }
   </p>
-  }
   <ol class="progress-steps" aria-label="Progreso del pedido" [style.--progress-width]="progressWidth()">
     @for (step of steps; track step.label; let index = $index) {
     <li class="progress-step"
