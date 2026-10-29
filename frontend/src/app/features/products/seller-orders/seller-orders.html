@@ -159,8 +159,16 @@
                   <td class="order-id">#{{ order.id }}</td>
                   <td>
                     <div class="product-summary">
-                      <span class="product-icon" aria-hidden="true">▦</span>
-                      <span>{{ order.products }}</span>
+                      <div class="order-preview" aria-hidden="true">
+                        @for (item of order.items.slice(0, 3); track item.productId) {
+                          @if (item.imageUrl) {
+                            <img [src]="item.imageUrl" [alt]="item.name" />
+                          } @else {
+                            <span class="image-placeholder">{{ item.name.charAt(0) }}</span>
+                          }
+                        }
+                      </div>
+                      <span class="product-names">{{ order.products }}</span>
                     </div>
                   </td>
                   <td>{{ order.customer }}</td>
