@@ -34,6 +34,7 @@ import es.uclm.esibuy.pedidos.model.DireccionEnvioPedido;
 import es.uclm.esibuy.pedidos.model.MetodoPagoPedido;
 import es.uclm.esibuy.pedidos.model.Pedido;
 import es.uclm.esibuy.pedidos.model.PedidoEstado;
+import es.uclm.esibuy.pedidos.model.PedidoEstadoPago;
 import es.uclm.esibuy.pedidos.model.PedidoItem;
 import es.uclm.esibuy.pedidos.repository.PedidoRepository;
 import es.uclm.esibuy.products.model.Product;
@@ -147,7 +148,8 @@ public class PedidoService {
                 total,
                 DireccionEnvioPedido.from(direccion),
                 resumenPago,
-                PedidoEstado.PAGADO);
+                PedidoEstado.PENDIENTE,
+                PedidoEstadoPago.PAGADO);
         Pedido guardado = pedidoRepository.save(pedido);
         for (PedidoItem item : items) {
             carrito.removeItem(item.productoId());
@@ -157,7 +159,8 @@ public class PedidoService {
                 guardado.getId(),
                 guardado.getPrecioTotal(),
                 guardado.getEstado(),
-                guardado.getFechaCreacion());
+                guardado.getFechaCreacion(),
+                guardado.getEstadoPago());
     }
 
     public List<PedidoVendedorDTO> obtenerPedidosDelVendedor(String vendedorId) {
@@ -305,7 +308,8 @@ public class PedidoService {
                         ? null
                         : new MetodoPagoClienteDTO(
                                 pedido.getMetodoPago().tipo(),
-                                pedido.getMetodoPago().lastFourDigits()));
+                                pedido.getMetodoPago().lastFourDigits()),
+                pedido.getEstadoPago());
     }
 
     private DireccionEnvioClienteDTO toClientShippingAddress(DireccionEnvioPedido address) {

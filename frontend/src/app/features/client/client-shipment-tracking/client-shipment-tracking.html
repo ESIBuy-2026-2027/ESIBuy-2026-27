@@ -5,7 +5,18 @@
   } @else if (error(); as message) {
   <p class="tracking-error" role="alert">{{ message }}</p>
   } @else if (tracking(); as shipment) {
-  @if (currentStatus() === 'CANCELADO') {
+  @if (displayMode() === 'history') {
+  <ol class="status-history" aria-label="Historial de cambios de estado">
+    @for (event of shipment.historialEstados; track event.fecha + event.estado) {
+    <li>
+      <strong>{{ statusLabel(event.estado) }}</strong>
+      <time [attr.datetime]="event.fecha">{{ formatHistoryDate(event.fecha) }}</time>
+    </li>
+    } @empty {
+    <li>No hay cambios de estado registrados.</li>
+    }
+  </ol>
+  } @else if (currentStatus() === 'CANCELADO') {
   <p class="tracking-cancelled" role="status">Pedido cancelado</p>
   } @else {
   <p class="estimated-date">

@@ -176,7 +176,8 @@ describe('ClientCart', () => {
     const crearPedido = vi.fn(() => of({
       pedidoId: 'pedido-123',
       precioTotal: 39.98,
-      estado: 'PAGADO' as const,
+      estado: 'PENDIENTE' as const,
+      estadoPago: 'PAGADO' as const,
       fechaCreacion: '2026-10-17T12:00:00',
     }));
 
@@ -525,7 +526,8 @@ describe('ClientCart', () => {
     const crearPedido = vi.fn(() => of({
       pedidoId: 'pedido-auriculares',
       precioTotal: 50,
-      estado: 'PAGADO' as const,
+      estado: 'PENDIENTE' as const,
+      estadoPago: 'PAGADO' as const,
       fechaCreacion: '2026-10-27T18:00:00',
     }));
 

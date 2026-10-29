@@ -70,12 +70,13 @@
       <section class="page-heading" aria-labelledby="orders-title">
         <div>
           <h1 id="orders-title">Mis pedidos</h1>
+          <p>Consulta tus compras, su estado y el seguimiento de tus envíos.</p>
         </div>
         <form class="orders-search" (submit)="$event.preventDefault(); searchOrders()">
-          <label class="visually-hidden" for="orders-search-input">Buscar pedidos</label>
-          <input id="orders-search-input" type="search" placeholder="Buscar todos los pedidos"
-            [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" name="ordersSearch" />
-          <button type="submit">Buscar pedidos</button>
+          <label class="visually-hidden" for="orders-search-input">Buscar por número de pedido o producto</label>
+          <input id="orders-search-input" type="search" placeholder="N.º de pedido o producto"
+            [ngModel]="searchQuery()" (ngModelChange)="setSearchQuery($event)" name="ordersSearch" />
+          <button type="submit">Buscar</button>
         </form>
       </section>
 
@@ -83,88 +84,150 @@
       <p class="orders-feedback" aria-live="polite">Cargando tus pedidos...</p>
       } @else if (error()) {
       <p class="orders-feedback is-error" role="alert">{{ error() }}</p>
+      <button type="button" class="retry-button" (click)="loadOrders()">Volver a intentarlo</button>
       } @else {
+      <section class="order-summary" aria-label="Resumen de pedidos">
+        <article class="summary-card">
+          <span class="summary-label">Total de pedidos</span>
+          <strong>{{ orderCounts().total }}</strong>
+        </article>
+        <article class="summary-card">
+          <span class="summary-label">Pendientes</span>
+          <strong>{{ orderCounts().pending }}</strong>
+        </article>
+        <article class="summary-card">
+          <span class="summary-label">En preparación</span>
+          <strong>{{ orderCounts().preparing }}</strong>
+        </article>
+        <article class="summary-card">
+          <span class="summary-label">Enviados</span>
+          <strong>{{ orderCounts().shipped }}</strong>
+        </article>
+        <article class="summary-card">
+          <span class="summary-label">Entregados</span>
+          <strong>{{ orderCounts().delivered }}</strong>
+        </article>
+      </section>
+
       <nav class="orders-tabs" aria-label="Filtros de pedidos">
         <button type="button" [class.is-active]="activeTab() === 'orders'" (click)="selectTab('orders')">
-          Pedidos
+          Pedidos <span>{{ deliveredOrderCount() }}</span>
         </button>
         <button type="button" [class.is-active]="activeTab() === 'pending'" (click)="selectTab('pending')">
-          Pendiente de envío
+          Pendiente de envío <span>{{ pendingShipmentCount() }}</span>
         </button>
       </nav>
-      <div class="orders-filter-row">
-        <strong>{{ filteredOrders().length }} pedidos realizados</strong>
-        <label for="orders-period" class="visually-hidden">Filtrar por periodo</label>
-        <select id="orders-period" [ngModel]="period()" (ngModelChange)="period.set($event)" name="ordersPeriod">
-          <option value="all">Todo el historial</option>
-          <option value="3months">Últimos 3 meses</option>
-          <option value="6months">Últimos 6 meses</option>
-          <option value="year">Último año</option>
-        </select>
-      </div>
+
+      <section class="orders-toolbar" aria-label="Buscar y filtrar pedidos">
+        <div class="orders-filter-row">
+          <div class="filter-control">
+            <label for="orders-status">Estado del pedido</label>
+            <select id="orders-status" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)"
+              name="ordersStatus">
+              <option value="TODOS">Todos los estados</option>
+              <option value="PENDIENTE">Pendiente</option>
+              <option value="PREPARANDO">En preparación</option>
+              <option value="ENVIADO">Enviado</option>
+              <option value="ENTREGADO">Entregado</option>
+              <option value="CANCELADO">Cancelado</option>
+            </select>
+          </div>
+          <div class="filter-control">
+            <label for="orders-payment">Estado del pago</label>
+            <select id="orders-payment" [ngModel]="paymentFilter()" (ngModelChange)="setPaymentFilter($event)"
+              name="ordersPayment">
+              <option value="TODOS">Todos los pagos</option>
+              <option value="PAGADO">Pagado</option>
+              <option value="PENDIENTE">Pendiente</option>
+            </select>
+          </div>
+          <div class="filter-control">
+            <label for="orders-period">Periodo</label>
+            <select id="orders-period" [ngModel]="period()" (ngModelChange)="setPeriod($event)" name="ordersPeriod">
+              <option value="all">Todo el historial</option>
+              <option value="3months">Últimos 3 meses</option>
+              <option value="6months">Últimos 6 meses</option>
+              <option value="year">Último año</option>
+            </select>
+          </div>
+          <div class="filter-control">
+            <label for="orders-sort">Ordenar por</label>
+            <select id="orders-sort" [ngModel]="sortOrder()" (ngModelChange)="setSortOrder($event)" name="ordersSort">
+              <option value="date-desc">Fecha: más recientes</option>
+              <option value="date-asc">Fecha: más antiguos</option>
+              <option value="amount-desc">Importe: mayor a menor</option>
+              <option value="amount-asc">Importe: menor a mayor</option>
+            </select>
+          </div>
+          <button type="button" class="clear-filters-button" (click)="clearFilters()">Limpiar filtros</button>
+        </div>
+      </section>
+
       @if (filteredOrders().length === 0) {
       <div class="empty-state">
         <span class="empty-icon" aria-hidden="true">🛍</span>
+        @if (orders().length === 0) {
+        <h3>Aún no tienes pedidos</h3>
+        <p>Cuando completes una compra, podrás consultar aquí su estado y sus detalles.</p>
+        } @else if (activeTab() === 'orders' && deliveredOrderCount() === 0
+        && !searchQuery() && statusFilter() === 'TODOS' && paymentFilter() === 'TODOS' && period() === 'all') {
+        <h3>Aún no tienes pedidos entregados</h3>
+        <p>Los pedidos que están en curso aparecen en «Pendiente de envío».</p>
+        } @else {
         <h3>No hay pedidos que coincidan</h3>
-        <p>Prueba a cambiar la búsqueda o el filtro seleccionado.</p>
+        <p>Prueba a cambiar la búsqueda o los filtros seleccionados.</p>
+        <button type="button" class="clear-filters-button" (click)="clearFilters()">Limpiar filtros</button>
+        }
       </div>
       } @else {
-      <section class="orders-list" aria-label="Pedidos realizados">
-        @for (order of filteredOrders(); track order.pedidoId) {
-        <article class="order-card">
-          <div class="order-card-heading">
-            <div>
-              <span class="order-card-eyebrow">Compra realizada</span>
-              <h2>Pedido #{{ order.pedidoId }}</h2>
-              <p>{{ formatDate(order.fechaCreacion) }}</p>
-            </div>
-            <span class="order-status" [class.status-paid]="order.estado === 'PAGADO'"
-              [class.status-pending]="order.estado === 'PENDIENTE'"
-              [class.status-preparing]="order.estado === 'PREPARANDO'"
-              [class.status-shipped]="order.estado === 'ENVIADO'"
-              [class.status-delivered]="order.estado === 'ENTREGADO'"
-              [class.status-cancelled]="order.estado === 'CANCELADO'">
-              {{ order.estado }}
-            </span>
-          </div>
-          <div class="order-card-main">
-            <div class="order-preview" aria-hidden="true">
-              @for (item of order.items.slice(0, 3); track item.productoId) {
-              @if (item.imageUrl) {
-              <img [src]="item.imageUrl" alt="" />
-              } @else {
-              <span class="image-placeholder">{{ item.nombre.charAt(0) }}</span>
-              }
-              }
-            </div>
-            <div class="order-card-content">
-              <p class="order-card-summary">
-                {{ order.items.length }} {{ order.items.length === 1 ? 'artículo' : 'artículos' }}
-                <span aria-hidden="true">·</span>
-                Total <strong>{{ formatPrice(order.total) }}</strong>
-              </p>
-              <ul class="order-item-names" aria-label="Productos de este pedido">
-                @for (item of order.items.slice(0, 2); track item.productoId) {
-                <li>{{ item.nombre }} <span>×{{ item.cantidad }}</span></li>
-                }
-                @if (order.items.length > 2) {
-                <li class="more-items">y {{ order.items.length - 2 }} más</li>
-                }
-              </ul>
-            </div>
-          </div>
-          @if (activeTab() === 'orders') {
-          <div class="order-card-actions">
-            <a class="order-detail-link" [routerLink]="['/client/orders', order.pedidoId]">
-              Ver detalles
-            </a>
-          </div>
-          } @else {
-          <app-client-shipment-tracking [pedidoId]="order.pedidoId" [currentStatus]="order.estado" />
-          }
-        </article>
-        }
-      </section>
+      <p class="orders-result-count" aria-live="polite">{{ pageLabel() }}</p>
+      <div class="orders-table-scroll">
+        <table class="orders-table">
+          <caption class="visually-hidden">Pedidos de tu cuenta</caption>
+          <thead>
+            <tr>
+              <th scope="col">Pedido</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">Fecha y hora</th>
+              <th scope="col">Artículos</th>
+              <th scope="col">Importe</th>
+              <th scope="col">Pago</th>
+              <th scope="col">Estado del pedido</th>
+              <th scope="col"><span class="visually-hidden">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (order of visibleOrders(); track order.pedidoId) {
+            <tr class="order-row">
+              <th scope="row">#{{ order.pedidoId }}</th>
+              <td>Tu cuenta</td>
+              <td>{{ formatDate(order.fechaCreacion) }}</td>
+              <td>{{ getItemCount(order) }} {{ getItemCount(order) === 1 ? 'artículo' : 'artículos' }}</td>
+              <td class="order-amount">{{ formatPrice(order.total) }}</td>
+              <td><span [class]="'payment-badge ' + getPaymentClass(order)">{{ getPaymentLabel(order) }}</span></td>
+              <td><span [class]="'order-status ' + getStatusClass(order)">{{ getStatusLabel(order) }}</span></td>
+              <td class="order-actions">
+                <a class="order-detail-link" [routerLink]="['/client/orders', order.pedidoId]">Ver detalle</a>
+              </td>
+            </tr>
+            @if (activeTab() === 'pending') {
+            <tr class="tracking-row">
+              <td colspan="8">
+                <app-client-shipment-tracking [pedidoId]="order.pedidoId" [currentStatus]="order.estado" />
+              </td>
+            </tr>
+            }
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (filteredOrders().length > pageSize) {
+      <nav class="orders-pagination" aria-label="Paginación de pedidos">
+        <button type="button" (click)="previousPage()" [disabled]="pageIndex() === 0">Anterior</button>
+        <span>Página {{ pageIndex() + 1 }} de {{ pageCount() }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="pageIndex() >= pageCount() - 1">Siguiente</button>
+      </nav>
+      }
       }
       }
     </main>

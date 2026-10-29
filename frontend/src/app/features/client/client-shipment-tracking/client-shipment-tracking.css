@@ -119,6 +119,32 @@
   margin: 0;
 }
 
+.status-history {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0 0 0 20px;
+  color: #475569;
+}
+
+.status-history li {
+  padding-left: 4px;
+}
+
+.status-history li::marker {
+  color: #176b70;
+}
+
+.status-history strong {
+  display: block;
+  color: #102c40;
+}
+
+.status-history time {
+  color: #64748b;
+  font-size: 12px;
+}
+
 .tracking-empty {
   margin-top: 16px;
   color: #475569;

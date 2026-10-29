@@ -16,6 +16,7 @@ export class ClientShipmentTracking implements OnInit {
   private readonly pedidoService = inject(PedidoService);
   readonly pedidoId = input.required<string>();
   readonly currentStatus = input.required<CustomerOrderStatus>();
+  readonly displayMode = input<'progress' | 'history'>('progress');
   readonly tracking = signal<SeguimientoEnvio | null>(null);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -75,6 +76,10 @@ export class ClientShipmentTracking implements OnInit {
 
   formatStepDate(date: string): string {
     return new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' }).format(new Date(date));
+  }
+
+  formatHistoryDate(date: string): string {
+    return new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(date));
   }
 
   formatEstimatedDate(date: string): string {

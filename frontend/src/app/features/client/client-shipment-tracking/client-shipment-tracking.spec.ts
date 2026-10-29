@@ -73,4 +73,15 @@ describe('ClientShipmentTracking', () => {
 
     expect(fixture.nativeElement.textContent).toContain('No se pudo cargar el seguimiento del envío.');
   });
+
+  it('should show actual state history without the shipment progress line in history mode', async () => {
+    fixture.componentRef.setInput('displayMode', 'history');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.querySelector('.status-history')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.progress-steps')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('28 oct 2026, 12:00');
+    expect(fixture.nativeElement.textContent).not.toContain('Entrega estimada');
+  });
 });

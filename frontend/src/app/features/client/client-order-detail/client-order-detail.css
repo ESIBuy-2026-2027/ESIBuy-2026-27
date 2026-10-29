@@ -184,6 +184,38 @@ p {
   font-size: 18px;
 }
 
+.economic-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 0 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.unitemized-costs {
+  margin: 0;
+  padding: 8px 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.payment-status {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.payment-paid {
+  background: #dff7ef;
+  color: #087f5b;
+}
+
+.payment-pending {
+  background: #fff3cd;
+  color: #9a6700;
+}
+
 .feedback-error {
   color: #b42318;
 }

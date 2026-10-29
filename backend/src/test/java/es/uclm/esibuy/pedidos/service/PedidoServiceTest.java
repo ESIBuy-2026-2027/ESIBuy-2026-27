@@ -19,6 +19,7 @@ import es.uclm.esibuy.pedidos.model.DireccionEnvioPedido;
 import es.uclm.esibuy.pedidos.model.MetodoPagoPedido;
 import es.uclm.esibuy.pedidos.model.Pedido;
 import es.uclm.esibuy.pedidos.model.PedidoEstado;
+import es.uclm.esibuy.pedidos.model.PedidoEstadoPago;
 import es.uclm.esibuy.pedidos.model.PedidoItem;
 import es.uclm.esibuy.pedidos.repository.PedidoRepository;
 import es.uclm.esibuy.products.model.Product;
@@ -33,6 +34,7 @@ import es.uclm.esibuy.users.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -95,14 +97,15 @@ class PedidoServiceTest {
         }
 
         @Test
-        void shouldChargeCreatePaidOrderDeductStockAndEmptyCart() {
+        void shouldChargeCreatePaidPendingOrderDeductStockAndEmptyCart() {
                 prepararCarritoYProducto(productoConStock(5));
                 habilitarReservaStock();
                 when(pasarelaPago.cobrar(any(), any())).thenReturn(true);
                 Pedido guardado = org.mockito.Mockito.mock(Pedido.class);
                 when(guardado.getId()).thenReturn("pedido-123");
                 when(guardado.getPrecioTotal()).thenReturn(new BigDecimal("39.98"));
-                when(guardado.getEstado()).thenReturn(PedidoEstado.PAGADO);
+                when(guardado.getEstado()).thenReturn(PedidoEstado.PENDIENTE);
+                when(guardado.getEstadoPago()).thenReturn(PedidoEstadoPago.PAGADO);
                 when(guardado.getFechaCreacion()).thenReturn(java.time.LocalDateTime.now());
                 when(pedidoRepository.save(any(Pedido.class))).thenReturn(guardado);
 
@@ -111,11 +114,15 @@ class PedidoServiceTest {
 
                 assertEquals("pedido-123", resultado.pedidoId());
                 assertEquals(new BigDecimal("39.98"), resultado.precioTotal());
-                assertEquals(PedidoEstado.PAGADO, resultado.estado());
+                assertEquals(PedidoEstado.PENDIENTE, resultado.estado());
+                assertEquals(PedidoEstadoPago.PAGADO, resultado.estadoPago());
                 verify(mongoTemplate).findAndModify(
                                 any(Query.class), any(Update.class), any(FindAndModifyOptions.class),
                                 eq(Product.class));
-                verify(pedidoRepository).save(any(Pedido.class));
+                ArgumentCaptor<Pedido> pedidoCaptor = ArgumentCaptor.forClass(Pedido.class);
+                verify(pedidoRepository).save(pedidoCaptor.capture());
+                assertEquals(PedidoEstado.PENDIENTE, pedidoCaptor.getValue().getEstado());
+                assertEquals(PedidoEstadoPago.PAGADO, pedidoCaptor.getValue().getEstadoPago());
                 verify(carritoRepository).save(carrito);
                 assertEquals(List.of(), carrito.getItems());
                 assertEquals(BigDecimal.ZERO, carrito.getPrecioTotal());

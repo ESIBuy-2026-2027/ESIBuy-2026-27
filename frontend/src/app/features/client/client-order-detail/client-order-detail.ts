@@ -1,12 +1,19 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
-import { CustomerOrder, PedidoService } from '../../../core/services/pedido.service';
+import {
+  CustomerOrder,
+  CustomerOrderFulfillmentStatus,
+  getCustomerOrderFulfillmentStatus,
+  getCustomerOrderPaymentStatus,
+  PedidoService,
+} from '../../../core/services/pedido.service';
+import { ClientShipmentTracking } from '../client-shipment-tracking/client-shipment-tracking';
 
 @Component({
   selector: 'app-client-order-detail',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, ClientShipmentTracking],
   templateUrl: './client-order-detail.html',
   styleUrl: './client-order-detail.css',
 })
@@ -50,6 +57,33 @@ export class ClientOrderDetail implements OnInit {
 
   formatDate(date: string): string {
     return new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(date));
+  }
+
+  getItemsSubtotal(order: CustomerOrder): number {
+    return order.items.reduce((subtotal, item) => subtotal + item.subtotal, 0);
+  }
+
+  getFulfillmentStatus(order: CustomerOrder): CustomerOrderFulfillmentStatus {
+    return getCustomerOrderFulfillmentStatus(order);
+  }
+
+  getFulfillmentStatusLabel(order: CustomerOrder): string {
+    const labels: Record<CustomerOrderFulfillmentStatus, string> = {
+      PENDIENTE: 'Pendiente',
+      PREPARANDO: 'En preparación',
+      ENVIADO: 'Enviado',
+      ENTREGADO: 'Entregado',
+      CANCELADO: 'Cancelado',
+    };
+    return labels[this.getFulfillmentStatus(order)];
+  }
+
+  getPaymentLabel(order: CustomerOrder): string {
+    return getCustomerOrderPaymentStatus(order) === 'PAGADO' ? 'Pagado' : 'Pendiente';
+  }
+
+  getPaymentClass(order: CustomerOrder): string {
+    return getCustomerOrderPaymentStatus(order) === 'PAGADO' ? 'payment-paid' : 'payment-pending';
   }
 
   buyAgain(productId: string, quantity: number): void {

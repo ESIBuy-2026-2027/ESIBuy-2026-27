@@ -48,10 +48,15 @@ describe('PedidoService', () => {
     request.flush({
       pedidoId: 'pedido-123',
       precioTotal: 39.98,
-      estado: 'PAGADO',
+      estado: 'PENDIENTE',
+      estadoPago: 'PAGADO',
       fechaCreacion: '2026-10-17T12:00:00',
     });
-    expect(response).toEqual(expect.objectContaining({ pedidoId: 'pedido-123' }));
+    expect(response).toEqual(expect.objectContaining({
+      pedidoId: 'pedido-123',
+      estado: 'PENDIENTE',
+      estadoPago: 'PAGADO',
+    }));
   });
 
   it('should request the signed-in customer order history', () => {

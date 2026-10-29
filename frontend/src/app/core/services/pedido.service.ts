@@ -35,6 +35,7 @@ export interface ConfirmedOrder {
   pedidoId: string;
   precioTotal: number;
   estado: 'PAGADO' | 'PENDIENTE' | 'CANCELADO';
+  estadoPago: CustomerOrderPaymentStatus;
   fechaCreacion: string;
 }
 
@@ -69,7 +70,9 @@ export interface CustomerOrderItem {
   imageUrl: string | null;
 }
 
-export type CustomerOrderStatus = SellerOrderStatus | 'PAGADO';
+export type CustomerOrderStatus = SellerOrderStatus;
+export type CustomerOrderPaymentStatus = 'PENDIENTE' | 'PAGADO';
+export type CustomerOrderFulfillmentStatus = Exclude<CustomerOrderStatus, 'PAGADO'>;
 
 export interface CustomerOrder {
   pedidoId: string;
@@ -77,8 +80,21 @@ export interface CustomerOrder {
   items: CustomerOrderItem[];
   total: number;
   estado: CustomerOrderStatus;
+  estadoPago: CustomerOrderPaymentStatus;
   direccionEnvio: CustomerShippingAddress | null;
   metodoPago: CustomerPaymentMethod | null;
+}
+
+export function getCustomerOrderFulfillmentStatus(
+  order: Pick<CustomerOrder, 'estado'>,
+): CustomerOrderFulfillmentStatus {
+  return order.estado === 'PAGADO' ? 'PENDIENTE' : order.estado;
+}
+
+export function getCustomerOrderPaymentStatus(
+  order: Pick<CustomerOrder, 'estado' | 'estadoPago'>,
+): CustomerOrderPaymentStatus {
+  return order.estadoPago ?? 'PAGADO';
 }
 
 export interface CustomerShippingAddress {
