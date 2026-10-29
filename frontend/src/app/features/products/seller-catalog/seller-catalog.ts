@@ -9,7 +9,8 @@ import { SellerCatalogService, SellerProduct } from '../../../core/services/sell
 
 const LOW_STOCK_THRESHOLD = 5;
 type InlineField = 'price' | 'stock';
-type SortOrder = 'recommended' | 'rating-desc' | 'rating-asc' | 'price-asc' | 'price-desc';
+type SortOrder = 'recommended' | 'name-asc' | 'price-asc' | 'price-desc' | 'stock-asc' | 'stock-desc';
+type VisibilityFilter = 'all' | 'published' | 'hidden';
 
 @Component({
   selector: 'app-seller-catalog',
@@ -38,7 +39,7 @@ export class SellerCatalog implements OnInit {
   selectedCategory = signal('');
   minPrice = signal<number | null>(null);
   maxPrice = signal<number | null>(null);
-  minRating = signal<number | null>(null);
+  selectedVisibility = signal<VisibilityFilter>('all');
   onlyInStock = signal(false);
   onlyOffers = signal(false);
   sortOrder = signal<SortOrder>('recommended');
@@ -54,8 +55,8 @@ export class SellerCatalog implements OnInit {
     const query = this.productSearch().trim().toLocaleLowerCase();
     const minPrice = this.minPrice();
     const maxPrice = this.maxPrice();
-    const minRating = this.minRating();
     const selectedCategory = this.selectedCategory();
+    const selectedVisibility = this.selectedVisibility();
     const filtered = this.products().filter((product) => {
       const matchesSearch = !query
         || product.name.toLocaleLowerCase().includes(query)
@@ -63,21 +64,25 @@ export class SellerCatalog implements OnInit {
       const matchesCategory = !selectedCategory || product.categoryIds.includes(selectedCategory);
       const matchesMinPrice = minPrice === null || product.price >= minPrice;
       const matchesMaxPrice = maxPrice === null || product.price <= maxPrice;
-      const matchesRating = minRating === null || (product.rating ?? 0) >= minRating;
+      const matchesVisibility = selectedVisibility === 'all'
+        || (selectedVisibility === 'published' && product.available)
+        || (selectedVisibility === 'hidden' && !product.available);
       const matchesStock = !this.onlyInStock() || product.stock > 0;
       const matchesOffers = !this.onlyOffers()
         || (product.discount ?? 0) > 0
         || (product.premiumDiscount ?? 0) > 0;
       return matchesSearch && matchesCategory && matchesMinPrice && matchesMaxPrice
-        && matchesRating && matchesStock && matchesOffers;
+        && matchesVisibility && matchesStock && matchesOffers;
     });
 
     return filtered.sort((first, second) => {
       switch (this.sortOrder()) {
-        case 'rating-desc':
-          return (second.rating ?? 0) - (first.rating ?? 0);
-        case 'rating-asc':
-          return (first.rating ?? 0) - (second.rating ?? 0);
+        case 'name-asc':
+          return first.name.localeCompare(second.name, 'es', { sensitivity: 'base' });
+        case 'stock-asc':
+          return first.stock - second.stock;
+        case 'stock-desc':
+          return second.stock - first.stock;
         case 'price-asc':
           return first.price - second.price;
         case 'price-desc':
@@ -144,7 +149,7 @@ export class SellerCatalog implements OnInit {
     this.selectedCategory.set('');
     this.minPrice.set(null);
     this.maxPrice.set(null);
-    this.minRating.set(null);
+    this.selectedVisibility.set('all');
     this.onlyInStock.set(false);
     this.onlyOffers.set(false);
     this.sortOrder.set('recommended');
@@ -164,7 +169,7 @@ export class SellerCatalog implements OnInit {
       || Boolean(this.selectedCategory())
       || this.minPrice() !== null
       || this.maxPrice() !== null
-      || this.minRating() !== null
+      || this.selectedVisibility() !== 'all'
       || this.onlyInStock()
       || this.onlyOffers()
       || this.sortOrder() !== 'recommended';

@@ -89,9 +89,6 @@ describe('SellerOrders', () => {
     const filterControls = filtersBar?.querySelector('.filter-controls');
     expect(filterControls).toBeTruthy();
 
-    const statusSelect = filterControls?.querySelector('#order-status-filter') as HTMLSelectElement;
-    expect(statusSelect).toBeTruthy();
-
     const dateGroup = filterControls?.querySelector('.date-filter-group');
     expect(dateGroup).toBeTruthy();
     expect(dateGroup?.querySelector('#order-date-from')).toBeTruthy();
@@ -176,6 +173,31 @@ describe('SellerOrders', () => {
     expect(component.dateFrom()).toBe('');
     expect(component.dateTo()).toBe('');
     expect(component.hasActiveFilters()).toBe(false);
+  });
+
+  it('should toggle order details and apply is-expanded class to chevron', () => {
+    const el = fixture.nativeElement as HTMLElement;
+    const detailsBtn = el.querySelector('.details-button') as HTMLButtonElement;
+    expect(detailsBtn).toBeTruthy();
+
+    const chevron = detailsBtn.querySelector('.profile-chevron');
+    expect(chevron).toBeTruthy();
+    expect(chevron?.classList.contains('is-expanded')).toBe(false);
+    expect(detailsBtn.getAttribute('aria-expanded')).toBe('false');
+
+    detailsBtn.click();
+    fixture.detectChanges();
+
+    expect(component.expandedOrderId()).toBe('PED-101');
+    expect(chevron?.classList.contains('is-expanded')).toBe(true);
+    expect(detailsBtn.getAttribute('aria-expanded')).toBe('true');
+
+    detailsBtn.click();
+    fixture.detectChanges();
+
+    expect(component.expandedOrderId()).toBeNull();
+    expect(chevron?.classList.contains('is-expanded')).toBe(false);
+    expect(detailsBtn.getAttribute('aria-expanded')).toBe('false');
   });
 });
 

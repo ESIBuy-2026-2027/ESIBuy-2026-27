@@ -100,16 +100,6 @@
           </label>
 
           <div class="filter-controls">
-            <label class="visually-hidden" for="order-status-filter">Filtrar por estado</label>
-            <select id="order-status-filter" [ngModel]="selectedStatus()"
-              (ngModelChange)="selectedStatus.set($event)">
-              <option value="Todos">Todos los estados</option>
-              <option value="Pendiente">Pendiente</option>
-              <option value="En preparación">En preparación</option>
-              <option value="Enviado">Enviado</option>
-              <option value="Entregado">Entregado</option>
-              <option value="Cancelado">Cancelado</option>
-            </select>
 
             <div class="date-filter-group">
               <label for="order-date-from" class="date-filter-label">Desde</label>
@@ -182,12 +172,27 @@
                   </td>
                   <td class="order-total">{{ formatPrice(order.total) }}</td>
                   <td class="order-action">
-                    <button type="button" class="details-button" [class.action-button]="expandedOrderId() !== order.id"
+                    <button
+                      type="button"
+                      class="details-button"
+                      [class.action-button]="expandedOrderId() !== order.id"
                       (click)="toggleOrderDetails(order.id)"
                       [attr.aria-expanded]="expandedOrderId() === order.id"
                       [attr.aria-controls]="'order-details-' + order.id"
-                      [attr.aria-label]="(expandedOrderId() === order.id ? 'Ocultar' : 'Ver') + ' detalles del pedido ' + order.id">
-                      {{ expandedOrderId() === order.id ? 'Ocultar' : 'Ver detalles' }}
+                      [attr.aria-label]="(expandedOrderId() === order.id ? 'Ocultar' : 'Mostrar') + ' detalles del pedido ' + order.id">
+
+                      <svg
+                        class="profile-chevron"
+                        [class.is-expanded]="expandedOrderId() === order.id"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true">
+                        <path d="m4 6 4 4 4-4"></path>
+                      </svg>
                     </button>
                   </td>
                 </tr>

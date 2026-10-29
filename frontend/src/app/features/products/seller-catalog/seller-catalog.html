@@ -90,14 +90,14 @@
               <label for="seller-catalog-search" class="visually-hidden">Buscar producto</label>
               <div class="search-input-wrapper">
                 <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="11" cy="11" r="6.5"></circle>
-                  <path d="m16 16 4.5 4.5"></path>
+                  <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"></circle>
+                  <path d="m16 16 4.5 4.5" fill="none" stroke="currentColor" stroke-width="2"></path>
                 </svg>
                 <input id="seller-catalog-search" type="search" placeholder="Buscar por nombre o palabra clave..."
                   [ngModel]="productSearch()" (ngModelChange)="productSearch.set($event)"
                   aria-label="Buscar producto por nombre o palabra clave">
               </div>
-            </div>
+            </div> 
 
             <div class="filter-controls-row">
               <div class="filter-control">
@@ -122,61 +122,35 @@
                     [ngModel]="maxPrice() ?? priceLimit()" (ngModelChange)="setMaxPrice($event)"
                     aria-label="Precio máximo">
                 </div>
-                <div class="price-range-slider">
-                  <div class="price-range-track"></div>
-                  <div class="price-range-selection" [style.left.%]="minPricePercent()"
-                    [style.width.%]="maxPricePercent() - minPricePercent()"></div>
-                  <input type="range" min="0" [max]="priceLimit()" step="1" [ngModel]="minPrice() ?? 0"
-                    (ngModelChange)="setMinPrice($event)" aria-label="Ajustar precio mínimo">
-                  <input type="range" min="0" [max]="priceLimit()" step="1"
-                    [ngModel]="maxPrice() ?? priceLimit()" (ngModelChange)="setMaxPrice($event)"
-                    aria-label="Ajustar precio máximo">
-                </div>
+                
               </div>
 
               <div class="filter-control">
-                <label for="seller-filter-rating" class="filter-label">Valoración mínima</label>
-                <select id="seller-filter-rating" [ngModel]="minRating()"
-                  (ngModelChange)="minRating.set($event)">
-                  <option [ngValue]="null">Cualquier valoración</option>
-                  <option [ngValue]="4">4 estrellas o más (★★★★☆)</option>
-                  <option [ngValue]="3">3 estrellas o más (★★★☆☆)</option>
-                  <option [ngValue]="2">2 estrellas o más (★★☆☆☆)</option>
-                  <option [ngValue]="1">1 estrella o más (★☆☆☆☆)</option>
+                <label for="seller-filter-visibility" class="filter-label">Visibilidad</label>
+                <select id="seller-filter-visibility" [ngModel]="selectedVisibility()"
+                  (ngModelChange)="selectedVisibility.set($event)">
+                  <option value="all">Todos los productos</option>
+                  <option value="published">Publicados</option>
+                  <option value="hidden">Ocultos</option>
                 </select>
               </div>
 
               <div class="filter-control">
                 <label for="seller-filter-sort" class="filter-label">Ordenar por</label>
                 <select id="seller-filter-sort" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event)">
-                  <option value="recommended">Recomendados</option>
-                  <option value="rating-desc">Mejor valorados</option>
-                  <option value="rating-asc">Peor valorados</option>
+                  <option value="recommended">Orden predeterminado</option>
+                  <option value="name-asc">Nombre: A-Z</option>
                   <option value="price-asc">Precio: menor a mayor</option>
                   <option value="price-desc">Precio: mayor a menor</option>
+                  <option value="stock-asc">Stock: menor a mayor</option>
+                  <option value="stock-desc">Stock: mayor a menor</option>
                 </select>
-              </div>
-
-              <div class="filter-actions-group">
-                <label class="checkbox-label">
-                  <input type="checkbox" [ngModel]="onlyInStock()" (ngModelChange)="onlyInStock.set($event)">
-                  <span>Solo en stock</span>
-                </label>
-                <label class="checkbox-label">
-                  <input type="checkbox" [ngModel]="onlyOffers()" (ngModelChange)="onlyOffers.set($event)">
-                  <span>Solo ofertas</span>
-                </label>
-                <button type="button" class="reset-filter-btn" (click)="clearFilters()">
-                  Limpiar filtros
-                </button>
-              </div>
+              </div>              
+              
+              <button type="button" class="reset-filter-btn" (click)="clearFilters()">
+                Limpiar filtros
+              </button>
             </div>
-            @if (!productsLoading() && !productsError()) {
-            <span class="product-count filter-product-count">
-              {{ visibleProducts().length }}
-              {{ visibleProducts().length === 1 ? 'producto' : 'productos' }}
-            </span>
-            }
           </section>
 
           @if (productsLoading()) {
@@ -214,6 +188,15 @@
             <button type="button" (click)="loadCategories()">Reintentar</button>
           </div>
           }
+
+          <div class="filter-actions-group">
+                @if (!productsLoading() && !productsError()) {
+                <span class="product-count filter-product-count" aria-live="polite">
+                  {{ visibleProducts().length }}
+                  {{ visibleProducts().length === 1 ? 'producto' : 'productos' }}
+                </span>
+                }
+              </div>
 
           <div class="table-scroll">
             <table class="seller-data-table product-table">
