@@ -15,6 +15,7 @@ export interface SellerProduct {
   imageUrl: string | null;
   available: boolean;
   sellerId: string;
+  rating?: number;
 }
 
 @Injectable({ providedIn: 'root' })

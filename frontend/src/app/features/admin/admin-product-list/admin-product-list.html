@@ -1,13 +1,11 @@
 <div class="admin-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
   <aside class="admin-sidebar admin-sidebar--shared app-sidebar" aria-label="Panel de administración">
     <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral">
-      <span aria-hidden="true">‹</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m15 18-6-6 6-6" />
+      </svg>
     </button>
 
-    <a routerLink="/" class="admin-brand back-home-button" aria-label="ESIBuy">
-      <span class="brand-mark" aria-hidden="true">E</span>
-      <span>ESI<span class="brand-accent">Buy</span></span>
-    </a>
 
     <p class="sidebar-caption">GESTIÓN DE ADMINISTRACIÓN</p>
 
@@ -50,12 +48,24 @@
         </svg>
         <span>Productos</span>
       </a>
+
+      <a class="navigation-link" routerLink="/admin/incidencias" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>Incidencias</span>
+      </a>
     </nav>
   </aside>
 
   <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()" aria-label="Mostrar barra lateral"
     [hidden]="!sidebarCollapsed()">
-    <span aria-hidden="true">›</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m9 18 6-6-6-6" />
+    </svg>
   </button>
 
   <div class="admin-workspace app-workspace">

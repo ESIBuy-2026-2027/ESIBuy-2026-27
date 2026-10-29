@@ -1,9 +1,5 @@
 <div class="seller-layout" [class.sidebar-collapsed]="sidebarCollapsed()">
   <aside class="sidebar" aria-label="Panel del vendedor">
-    <a class="brand" routerLink="/seller/catalog" aria-label="ESIBuy">
-      <span class="brand-mark" aria-hidden="true">E</span>
-      <span>ESI<span class="brand-accent">Buy</span></span>
-    </a>
     <button type="button" class="sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral"
       title="Ocultar barra lateral">
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -92,59 +88,37 @@
           }
         </div>
 
-        <div class="orders-toolbar">
-          <label class="orders-search">
-            <span class="visually-hidden">Buscar pedidos</span>
+        <section class="filters-bar" aria-label="Filtros de pedidos">
+          <label class="search-field">
+            <span class="visually-hidden">Buscar pedido, cliente o producto</span>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="11" cy="11" r="6.5"></circle>
               <path d="m16 16 4.5 4.5"></path>
             </svg>
             <input type="search" [ngModel]="orderSearch()" (ngModelChange)="orderSearch.set($event)"
-              placeholder="Buscar pedido, cliente o producto...">
+              placeholder="Buscar por ID, cliente o producto..." aria-label="Buscar pedido, cliente o producto">
           </label>
-          <div class="orders-filter">
-            <button type="button" class="secondary-button"
-              [class.is-active]="selectedStatus() !== 'Todos' || dateFrom() || dateTo()"
-              [attr.aria-expanded]="filtersOpen()" aria-controls="orders-filter-panel" (click)="toggleFilters()">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"></path>
-              </svg>
-              Filtrar
-              @if (selectedStatus() !== 'Todos' || dateFrom() || dateTo()) {
-              <span class="filter-indicator" aria-label="Filtro activo"></span>
-              }
-            </button>
-            @if (filtersOpen()) {
-            <div class="orders-filter-panel" id="orders-filter-panel">
-              <button type="button" class="close-orders-filter" aria-label="Cerrar panel de filtros" title="Cerrar"
-                (click)="toggleFilters()">×</button>
-              <label for="order-status-filter">Estado del pedido</label>
-              <select id="order-status-filter" [ngModel]="selectedStatus()"
-                (ngModelChange)="selectedStatus.set($event)">
-                <option value="Todos">Todos los estados</option>
-                <option value="Pendiente">Pendiente</option>
-                <option value="En preparación">En preparación</option>
-                <option value="Enviado">Enviado</option>
-                <option value="Entregado">Entregado</option>
-                <option value="Cancelado">Cancelado</option>
-              </select>
-              <div class="date-filter-group">
-                <span>Fecha del pedido</span>
-                <div class="date-filter-fields">
-                  <label for="order-date-from">Desde</label>
-                  <input id="order-date-from" type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event)">
-                  <label for="order-date-to">Hasta</label>
-                  <input id="order-date-to" type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event)">
-                </div>
-              </div>
-              <button type="button" class="clear-order-filter" (click)="clearFilters()">
-                Limpiar filtro
-              </button>
+
+          <div class="filter-controls">
+
+            <div class="date-filter-group">
+              <label for="order-date-from" class="date-filter-label">Desde</label>
+              <input id="order-date-from" type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event)"
+                aria-label="Fecha desde">
+              <label for="order-date-to" class="date-filter-label">Hasta</label>
+              <input id="order-date-to" type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event)"
+                aria-label="Fecha hasta">
             </div>
+
+            @if (hasActiveFilters()) {
+            <button type="button" class="reset-filter-btn" (click)="clearFilters()" aria-label="Limpiar filtros">
+              Limpiar filtros
+            </button>
             }
+
+            <span class="order-count">{{ visibleOrders().length }} {{ visibleOrders().length === 1 ? 'pedido' : 'pedidos' }}</span>
           </div>
-          <span class="order-count">{{ visibleOrders().length }} pedidos</span>
-        </div>
+        </section>
 
         <section aria-label="Pedidos de la tienda">
           @if (ordersLoading()) {
@@ -185,8 +159,16 @@
                   <td class="order-id">#{{ order.id }}</td>
                   <td>
                     <div class="product-summary">
-                      <span class="product-icon" aria-hidden="true">▦</span>
-                      <span>{{ order.products }}</span>
+                      <div class="order-preview" aria-hidden="true">
+                        @for (item of order.items.slice(0, 3); track item.productId) {
+                          @if (item.imageUrl) {
+                            <img [src]="item.imageUrl" [alt]="item.name" />
+                          } @else {
+                            <span class="image-placeholder">{{ item.name.charAt(0) }}</span>
+                          }
+                        }
+                      </div>
+                      <span class="product-names">{{ order.products }}</span>
                     </div>
                   </td>
                   <td>{{ order.customer }}</td>
@@ -198,12 +180,27 @@
                   </td>
                   <td class="order-total">{{ formatPrice(order.total) }}</td>
                   <td class="order-action">
-                    <button type="button" class="details-button" [class.action-button]="expandedOrderId() !== order.id"
+                    <button
+                      type="button"
+                      class="details-button"
+                      [class.action-button]="expandedOrderId() !== order.id"
                       (click)="toggleOrderDetails(order.id)"
                       [attr.aria-expanded]="expandedOrderId() === order.id"
                       [attr.aria-controls]="'order-details-' + order.id"
-                      [attr.aria-label]="(expandedOrderId() === order.id ? 'Ocultar' : 'Ver') + ' detalles del pedido ' + order.id">
-                      {{ expandedOrderId() === order.id ? 'Ocultar' : 'Ver detalles' }}
+                      [attr.aria-label]="(expandedOrderId() === order.id ? 'Ocultar' : 'Mostrar') + ' detalles del pedido ' + order.id">
+
+                      <svg
+                        class="profile-chevron"
+                        [class.is-expanded]="expandedOrderId() === order.id"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true">
+                        <path d="m4 6 4 4 4-4"></path>
+                      </svg>
                     </button>
                   </td>
                 </tr>

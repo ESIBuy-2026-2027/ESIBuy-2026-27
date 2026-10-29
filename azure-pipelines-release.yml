@@ -130,6 +130,38 @@ stages:
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
 
+      # ------------------------------------------------------------------------
+      # Sync_Azure_Repos: Sincronización automática a Azure Repos (ESIBuy)
+      # Se ejecuta sólo si Backend_CI y Frontend_CI terminan con éxito
+      # y NO es una Pull Request (sólo en pushes reales a release)
+      # ------------------------------------------------------------------------
+      - job: Sync_Azure_Repos
+        displayName: 'Sincronizar rama con Azure Repos (ESIBuy)'
+        dependsOn: [Backend_CI, Frontend_CI]
+        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+        steps:
+          - checkout: self
+            persistCredentials: true
+            fetchDepth: 0
+          - script: |
+              echo "Sincronizando rama $(Build.SourceBranchName) hacia Azure Repos..."
+              if [ -z "$AZURE_REPO_TOKEN" ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta AZURE_REPO_TOKEN en el grupo 'esibuy-secrets'."
+                exit 1
+              fi
+              echo "Intentando sincronizar con repositorio ESIBuy-G6..."
+              if git push "https://pat:$AZURE_REPO_TOKEN@dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy-G6" HEAD:refs/heads/$(Build.SourceBranchName) --force; then
+                echo "Rama $(Build.SourceBranchName) sincronizada con exito en ESIBuy-G6."
+              elif git push "https://pat:$AZURE_REPO_TOKEN@dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy" HEAD:refs/heads/$(Build.SourceBranchName) --force; then
+                echo "Rama $(Build.SourceBranchName) sincronizada con exito en ESIBuy."
+              else
+                echo "##vso[task.logissue type=error]No se pudo sincronizar con Azure Repos. Verifica el nombre del repositorio y los permisos del token."
+                exit 1
+              fi
+            displayName: 'Push a Azure Repos'
+            env:
+              AZURE_REPO_TOKEN: $(AZURE_REPO_TOKEN)
+
   # ============================================================================
   # STAGE 2: DESPLIEGUE CONTINUO (CD) - Pruebas de Despliegue en Release
   # Se ejecuta tras CI exitoso en la rama release (nunca en PRs)

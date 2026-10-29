@@ -1,10 +1,5 @@
 <div class="seller-layout" [class.sidebar-collapsed]="sidebarCollapsed()">
   <aside class="sidebar" aria-label="Panel del vendedor">
-    <a class="brand" routerLink="/seller/catalog" aria-label="ESIBuy">
-      <span class="brand-mark" aria-hidden="true">E</span>
-      <span>ESI<span class="brand-accent">Buy</span></span>
-    </a>
-
     <button type="button" class="sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral"
       title="Ocultar barra lateral">
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -90,80 +85,73 @@
         </section>
 
         <section class="products-region" aria-label="Productos del catálogo">
-          <div class="section-heading">
-            <div class="section-info">
-              <div class="catalog-controls">
-                <label class="catalog-search">
-                  <span class="visually-hidden">Buscar producto por nombre</span>
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="11" cy="11" r="6.5" />
-                    <path d="m16 16 4.5 4.5" />
-                  </svg>
-                  <input type="search" [ngModel]="productSearch()" (ngModelChange)="productSearch.set($event)"
-                    placeholder="Buscar producto..." aria-label="Buscar producto por nombre">
-                </label>
+          <section class="filter-bar" aria-label="Filtros del catálogo">
+            <div class="filter-group search-group">
+              <label for="seller-catalog-search" class="visually-hidden">Buscar producto</label>
+              <div class="search-input-wrapper">
+                <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"></circle>
+                  <path d="m16 16 4.5 4.5" fill="none" stroke="currentColor" stroke-width="2"></path>
+                </svg>
+                <input id="seller-catalog-search" type="search" placeholder="Buscar por nombre o palabra clave..."
+                  [ngModel]="productSearch()" (ngModelChange)="productSearch.set($event)"
+                  aria-label="Buscar producto por nombre o palabra clave">
+              </div>
+            </div> 
 
-                <button type="button" class="catalog-filter-button" [class.is-active]="hasActiveFilters()"
-                  [attr.aria-expanded]="filtersOpen()" aria-controls="catalog-filter-panel" (click)="toggleFilters()">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z" />
-                  </svg>
-                  <span>Filtrar</span>
-
-                  @if (hasActiveFilters()) {
-                  <span class="filter-indicator" aria-label="Filtros activos"></span>
+            <div class="filter-controls-row">
+              <div class="filter-control">
+                <label for="seller-filter-category" class="filter-label">Categoría</label>
+                <select id="seller-filter-category" [ngModel]="selectedCategory()"
+                  (ngModelChange)="selectedCategory.set($event)">
+                  <option value="">Todas las categorías</option>
+                  @for (category of categories(); track category.id) {
+                  <option [value]="category.id">{{ category.name }}</option>
                   }
-                </button>
-
-                @if (!productsLoading() && !productsError()) {
-                <span class="product-count">
-                  {{ visibleProducts().length }}
-                  {{ visibleProducts().length === 1 ? 'producto' : 'productos' }}
-                </span>
-                }
+                </select>
               </div>
 
-              @if (filtersOpen()) {
-              <div class="catalog-filter-panel" id="catalog-filter-panel">
-                <button type="button" class="close-filters-button" aria-label="Cerrar panel de filtros" title="Cerrar"
-                  (click)="toggleFilters()">×</button>
-
-                <label>
-                  <span>Visibilidad</span>
-                  <select [ngModel]="visibilityFilter()" (ngModelChange)="visibilityFilter.set($event)">
-                    <option value="all">Todos</option>
-                    <option value="published">Publicados</option>
-                    <option value="hidden">Ocultos</option>
-                  </select>
-                </label>
-
-                <label>
-                  <span>Stock</span>
-                  <select [ngModel]="stockFilter()" (ngModelChange)="stockFilter.set($event)">
-                    <option value="all">Cualquier stock</option>
-                    <option value="in-stock">En stock</option>
-                    <option value="low-stock">Stock bajo</option>
-                    <option value="out-of-stock">Sin stock</option>
-                  </select>
-                </label>
-
-                <label>
-                  <span>Categoría</span>
-                  <select [ngModel]="categoryFilter()" (ngModelChange)="categoryFilter.set($event)">
-                    <option value="all">Todas las categorías</option>
-                    @for (category of categories(); track category.id) {
-                    <option [value]="category.id">{{ category.name }}</option>
-                    }
-                  </select>
-                </label>
-
-                <button type="button" class="clear-filters-button" (click)="clearFilters()">
-                  Limpiar filtros
-                </button>
+              <div class="filter-control price-control">
+                <span class="filter-label">Precio (€)</span>
+                <div class="price-inputs">
+                  <input type="number" min="0" [max]="maxPrice() ?? priceLimit()" step="1" placeholder="Mín"
+                    [ngModel]="minPrice() ?? 0" (ngModelChange)="setMinPrice($event)"
+                    aria-label="Precio mínimo">
+                  <span class="price-sep">-</span>
+                  <input type="number" [min]="minPrice() ?? 0" [max]="priceLimit()" step="1" placeholder="Máx"
+                    [ngModel]="maxPrice() ?? priceLimit()" (ngModelChange)="setMaxPrice($event)"
+                    aria-label="Precio máximo">
+                </div>
+                
               </div>
-              }
+
+              <div class="filter-control">
+                <label for="seller-filter-visibility" class="filter-label">Visibilidad</label>
+                <select id="seller-filter-visibility" [ngModel]="selectedVisibility()"
+                  (ngModelChange)="selectedVisibility.set($event)">
+                  <option value="all">Todos los productos</option>
+                  <option value="published">Publicados</option>
+                  <option value="hidden">Ocultos</option>
+                </select>
+              </div>
+
+              <div class="filter-control">
+                <label for="seller-filter-sort" class="filter-label">Ordenar por</label>
+                <select id="seller-filter-sort" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event)">
+                  <option value="recommended">Orden predeterminado</option>
+                  <option value="name-asc">Nombre: A-Z</option>
+                  <option value="price-asc">Precio: menor a mayor</option>
+                  <option value="price-desc">Precio: mayor a menor</option>
+                  <option value="stock-asc">Stock: menor a mayor</option>
+                  <option value="stock-desc">Stock: mayor a menor</option>
+                </select>
+              </div>              
+              
+              <button type="button" class="reset-filter-btn" (click)="clearFilters()">
+                Limpiar filtros
+              </button>
             </div>
-          </div>
+          </section>
 
           @if (productsLoading()) {
           <output class="catalog-message" aria-live="polite">
@@ -200,6 +188,15 @@
             <button type="button" (click)="loadCategories()">Reintentar</button>
           </div>
           }
+
+          <div class="filter-actions-group">
+                @if (!productsLoading() && !productsError()) {
+                <span class="product-count filter-product-count" aria-live="polite">
+                  {{ visibleProducts().length }}
+                  {{ visibleProducts().length === 1 ? 'producto' : 'productos' }}
+                </span>
+                }
+              </div>
 
           <div class="table-scroll">
             <table class="seller-data-table product-table">

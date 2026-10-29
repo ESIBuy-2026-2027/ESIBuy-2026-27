@@ -4,9 +4,7 @@
   </a>
   @if (authService.currentUser(); as user) {
   <div class="app-session">
-    @if (user.role === 'SELLER') {
-    <a routerLink="/seller/catalog" class="session-nav-button" (click)="closeProfileMenu()">Catálogo</a>
-    } @else if (user.role === 'ADMIN') {
+    @if (user.role === 'ADMIN') {
     <a routerLink="/admin/usuarios" class="session-nav-button" (click)="closeProfileMenu()">Gestión Usuarios</a>
     }
 
@@ -59,8 +57,10 @@
   }
 </header>
 
-@if (logoutError(); as error) {
-<p class="logout-error" role="alert">{{ error }}</p>
-}
+<div class="app-route-content">
+  @if (logoutError(); as error) {
+  <p class="logout-error" role="alert">{{ error }}</p>
+  }
 
-<router-outlet />
+  <router-outlet />
+</div>

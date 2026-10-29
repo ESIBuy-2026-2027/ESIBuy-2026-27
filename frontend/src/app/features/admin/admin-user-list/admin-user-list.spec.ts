@@ -56,9 +56,9 @@ describe('AdminUserList', () => {
     expect(rendered.textContent).not.toContain('Dar de alta usuario');
   });
 
-  it('renders a link to the home page', () => {
+  it('does not render a duplicate brand logo in the sidebar', () => {
     const rendered = fixture.nativeElement as HTMLElement;
-    expect(rendered.querySelector('.back-home-button')?.getAttribute('href')).toBe('/');
+    expect(rendered.querySelector('.admin-brand')).toBeNull();
   });
 
   it('renders users returned by the admin endpoint and links to admin creation', () => {
