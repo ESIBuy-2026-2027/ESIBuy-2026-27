@@ -9,8 +9,8 @@
 
     <!-- MENSAJE DE AVISO (ÉXITO / ERROR) -->
     @if (toastService.toast(); as t) {
-    <output class="catalog-alert" [class.is-success]="t.type === 'success'"
-      [class.is-error]="t.type === 'error' || t.type === 'info'" aria-live="polite">
+    <output class="catalog-alert" [class.is-success]="t.type === 'success'" [class.is-error]="t.type === 'error'"
+      [class.is-info]="t.type === 'info'" aria-live="polite">
 
       @if (t.type === 'success') {
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -18,9 +18,9 @@
       </svg>
       } @else {
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"></circle>
+        <line x1="12" y1="8" x2="12" y2="12.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line>
+        <circle cx="12" cy="16.5" r="1" fill="currentColor"></circle>
       </svg>
       }
 
@@ -48,8 +48,7 @@
         Regresar al catálogo
       </button>
     </div>
-    } @else {
-    @let p = product()!;
+    } @else if (product(); as p) {
 
     <!-- AVISO PRODUCTO DESACTIVADO -->
     @if (!p.available) {
@@ -123,47 +122,126 @@
           <span class="status-pill status-disabled">
             No disponible
           </span>
-          } @else if (p.stock > 0) {
-          <span class="status-pill" [class.status-available]="!isLowStock(p.stock)"
-            [class.status-low]="isLowStock(p.stock)">
-            En stock ({{ p.stock }} disponibles)
+          } @else if (availableStock() > 0) {
+          <span class="status-pill" [class.status-available]="!isLowStock(availableStock())"
+            [class.status-low]="isLowStock(availableStock())">
+            En stock ({{ availableStock() }} disponibles)
           </span>
           } @else {
           <span class="status-pill status-out">Agotado</span>
           }
         </div>
 
+        <!-- PROVEEDOR / VENDEDOR -->
+        <div class="product-vendor-row">
+          <span class="vendor-label">Proveedor:</span>
+          <strong class="vendor-name">{{ p.sellerName || 'Proveedor oficial' }}</strong>
+        </div>
+
+        <!-- PRECIO Y OFERTAS -->
+
         <!-- PRECIO Y OFERTAS -->
         <div class="price-section">
-          <div class="current-price-row">
-            <span class="price-value">
-              {{ formatPrice(p.price) }}
+
+          <!-- Precio principal según el tipo de cuenta -->
+          <div class="current-price-block">
+            <span class="current-price-label">
+              @if (isPremiumUser()) {
+              Tu precio Premium
+              } @else if (isClient()) {
+              Tu precio
+              } @else {
+              Precio para cliente estándar
+              }
             </span>
-            <span class="tax-info">IVA incluido</span>
+
+            <div class="current-price-row">
+              <span class="price-value">
+                {{ formatPrice(getCurrentPrice(p)) }}
+              </span>
+
+              @if (hasCurrentDiscount(p)) {
+              <span class="detail-strikethrough">
+                {{ formatPrice(p.price) }}
+              </span>
+              }
+
+              <span class="tax-info">IVA incluido</span>
+            </div>
           </div>
+
+          <!-- Promoción Premium para quienes aún no son Premium -->
+          @if (hasPremiumDiscount(p) && !isPremiumUser()) {
+          <div class="detail-premium-price-row">
+            <div class="premium-promo-heading">
+              <span class="premium-star" aria-hidden="true">★</span>
+              <span class="detail-premium-label">
+                @if (isClient()) {
+                Con ESIBuy Premium pagarías
+                } @else {
+                Precio con ESIBuy Premium
+                }
+              </span>
+            </div>
+
+            <div class="premium-promo-price">
+              <strong class="detail-premium-value">
+                {{ formatPrice(getPremiumPrice(p)) }}
+              </strong>
+
+              <span class="detail-premium-badge">
+                -{{ getTotalDiscount(p) }}%
+              </span>
+            </div>
+
+            @if (isClient() && getPremiumSavings(p) > 0) {
+            <div class="premium-savings">
+              <span aria-hidden="true">↘</span>
+              Ahorrarías
+              <strong>{{ formatPrice(getPremiumSavings(p)) }}</strong>
+              en este producto con Premium.
+            </div>
+            }
+          </div>
+          }
+
+          <!-- El cliente Premium ve su precio aplicado, no una segunda fila duplicada -->
+          @if (isPremiumUser() && hasPremiumDiscount(p)) {
+          <div class="premium-active-note">
+            <span aria-hidden="true">★</span>
+            Ya disfrutas del descuento ESIBuy Premium.
+          </div>
+          }
 
           @if (hasOffers()) {
           <div class="offers-panel">
             <span class="offer-title">
-              Ofertas y promociones activas:
+              Ofertas y promociones activas
             </span>
 
             <div class="offer-badges">
-              @if (p.discount && p.discount > 0) {
+              @if (hasStandardDiscount(p)) {
               <span class="offer-badge discount-badge">
                 Descuento general: -{{ p.discount }}%
               </span>
               }
 
-              @if (p.premiumDiscount && p.premiumDiscount > 0) {
+              @if (hasPremiumDiscount(p)) {
               <span class="offer-badge premium-offer-badge">
-                ★ Oferta ESIBuy Premium: -{{ p.premiumDiscount }}%
+                ★ Descuento Premium adicional: -{{ p.premiumDiscount }}%
               </span>
               }
             </div>
+
+            @if (hasStandardDiscount(p) && hasPremiumDiscount(p)) {
+            <p class="offers-accumulation-note">
+              Los descuentos son acumulables para clientes Premium.
+            </p>
+            }
           </div>
           }
         </div>
+
 
         <!-- DESCRIPCIÓN -->
         <div class="description-section">
@@ -204,11 +282,11 @@
               Compra bloqueada
             </button>
           </div>
-          } @else if (p.stock <= 0) { <div class="purchase-blocked-message">
-            <p>El producto está temporalmente agotado.</p>
+          } @else if (availableStock() <= 0) { <div class="purchase-blocked-message">
+            <p>El producto está agotado o has alcanzado el límite disponible en tu carrito.</p>
 
             <button type="button" class="primary-buy-btn is-disabled" disabled aria-disabled="true">
-              Sin existencias
+              Agotado / En tu carrito
             </button>
         </div>
         } @else {
@@ -224,12 +302,11 @@
                 -
               </button>
 
-              <input id="detail-product-quantity" type="number" min="1" [max]="p.stock" step="1" [value]="quantity()"
-                (input)="setQuantity($any($event.target).valueAsNumber)"
-                (blur)="$any($event.target).value = quantity()" />
+              <input id="detail-product-quantity" type="number" min="1" [max]="availableStock()" step="1"
+                [value]="quantity()" (input)="onQuantityInput($event)" (blur)="onQuantityBlur($event)" />
 
-              <button type="button" class="qty-btn" (click)="increaseQuantity()" [disabled]="quantity() >= p.stock"
-                aria-label="Aumentar cantidad">
+              <button type="button" class="qty-btn" (click)="increaseQuantity()"
+                [disabled]="quantity() >= availableStock()" aria-label="Aumentar cantidad">
                 +
               </button>
             </div>

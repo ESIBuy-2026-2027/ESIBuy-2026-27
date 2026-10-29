@@ -45,7 +45,13 @@ describe('App', () => {
     fixture.detectChanges();
 
     const cartLink = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>('.header-cart');
+    const headerBrand = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>(
+      '.app-header .app-brand',
+    );
     expect(cartService.load).toHaveBeenCalled();
+    expect(headerBrand?.getAttribute('href')).toBe('/client/catalog');
+    expect(headerBrand?.textContent).toContain('ESI');
+    expect(headerBrand?.textContent).toContain('Buy');
     expect(cartLink?.getAttribute('href')).toBe('/client/cart');
     expect(cartLink?.textContent).toContain('3');
   });

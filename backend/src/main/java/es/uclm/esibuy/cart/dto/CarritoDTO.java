@@ -7,9 +7,19 @@ public record CarritoDTO(
         String id,
         String clienteId,
         List<ItemCarritoDTO> items,
-        BigDecimal precioTotal) {
+        BigDecimal precioTotal,
+        BigDecimal totalSinDescuento,
+        BigDecimal descuentoTotal) {
 
     public CarritoDTO {
         items = List.copyOf(items);
+    }
+
+    public CarritoDTO(
+            String id,
+            String clienteId,
+            List<ItemCarritoDTO> items,
+            BigDecimal precioTotal) {
+        this(id, clienteId, items, precioTotal, precioTotal, BigDecimal.ZERO);
     }
 }

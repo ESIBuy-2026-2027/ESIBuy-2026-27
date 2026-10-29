@@ -59,8 +59,10 @@
   }
 </header>
 
-@if (logoutError(); as error) {
-<p class="logout-error" role="alert">{{ error }}</p>
-}
+<div class="app-route-content">
+  @if (logoutError(); as error) {
+  <p class="logout-error" role="alert">{{ error }}</p>
+  }
 
-<router-outlet />
+  <router-outlet />
+</div>

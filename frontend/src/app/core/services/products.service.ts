@@ -21,6 +21,7 @@ export interface ProductItem {
   available: boolean;
   sellerId: string;
   rating?: number;
+  sellerName?: string | null;
 }
 
 export interface ProductCreateRequest {
@@ -61,6 +62,7 @@ export interface ProductDetails {
   available: boolean;
   sellerId: string;
   rating?: number;
+  sellerName?: string | null;
 }
 
 export type AvailableProduct = ProductDetails;
@@ -178,12 +180,16 @@ export class ProductsService {
   }
 
   getProductById(id: string): Observable<ProductItem> {
-    return this.http.get<ProductItem>(`/api/products/${id}`);
+    return this.http.get<ProductItem>(`/api/products/${id}`).pipe(
+      map((product) => this.mapProduct(product))
+    );
   }
 
   updateProductStatus(id: string, available: boolean): Observable<ProductItem> {
     return this.http.patch<ProductItem>(`/api/products/${id}/status`, null, {
       params: { available: available.toString() }
-    });
+    }).pipe(
+      map((product) => this.mapProduct(product))
+    );
   }
 }

@@ -16,7 +16,7 @@ import { AuthService } from '../../../core/services/auth.service';
 const passwordPattern =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S+$/;
 
-type RecoveryStep = 'request' | 'token' | 'password' | 'success';
+type RecoveryStep = 'request' | 'validating' | 'password' | 'success';
 
 function passwordMatchValidator(
     control: AbstractControl,
@@ -41,7 +41,6 @@ function passwordMatchValidator(
 export class PasswordRecovery {
     readonly requestForm;
     readonly resetForm;
-
     readonly tokenFromUrl: string;
 
     step: RecoveryStep = 'request';
@@ -61,9 +60,6 @@ export class PasswordRecovery {
         this.tokenFromUrl =
             this.route.snapshot.queryParamMap.get('token') ?? '';
 
-        // Si el enlace incluye un token, primero se debe validar.
-        this.step = this.tokenFromUrl ? 'token' : 'request';
-
         this.requestForm = this.fb.group({
             email: [
                 '',
@@ -77,6 +73,7 @@ export class PasswordRecovery {
 
         this.resetForm = this.fb.group(
             {
+                // El token procede exclusivamente del enlace del correo.
                 token: [
                     this.tokenFromUrl,
                     [
@@ -99,43 +96,52 @@ export class PasswordRecovery {
                 validators: passwordMatchValidator,
             },
         );
-    }
 
-    useRecoveryCode(): void {
-        this.clearMessages();
-        this.step = 'token';
-
-        if (!this.tokenFromUrl) {
-            this.resetForm.controls.token.reset('');
+        if (this.tokenFromUrl) {
+            this.step = 'validating';
+            this.validateRecoveryToken();
         }
-
-        this.changeDetectorRef.markForCheck();
     }
 
-    backToEmailRequest(): void {
-        if (this.loading) {
+    validateRecoveryToken(): void {
+        const token = this.tokenFromUrl.trim();
+
+        if (!token || this.loading) {
             return;
         }
 
         this.clearMessages();
-        this.step = 'request';
-        this.changeDetectorRef.markForCheck();
-    }
+        this.loading = true;
 
-    backToTokenEntry(): void {
-        if (this.loading) {
-            return;
-        }
+        this.authService
+            .validatePasswordResetToken(token)
+            .pipe(
+                finalize(() => {
+                    this.loading = false;
+                    this.changeDetectorRef.markForCheck();
+                }),
+            )
+            .subscribe({
+                next: (response) => {
+                    this.resetForm.controls.token.setValue(token);
+                    this.step = 'password';
+                    this.successMessage =
+                        response?.message ||
+                        'El enlace es válido. Ya puedes establecer una nueva contraseña.';
 
-        this.clearMessages();
-        this.resetForm.controls.newPassword.reset('');
-        this.resetForm.controls.confirmPassword.reset('');
-        this.step = 'token';
-        this.changeDetectorRef.markForCheck();
-    }
+                    this.changeDetectorRef.markForCheck();
+                },
+                error: (error: unknown) => {
+                    this.step = 'request';
+                    this.requestSubmitted = false;
+                    this.errorMessage = this.getErrorMessage(
+                        error,
+                        'El enlace no es válido o ha caducado. Solicita uno nuevo e inténtalo de nuevo.',
+                    );
 
-    togglePasswordVisibility(): void {
-        this.showPassword = !this.showPassword;
+                    this.changeDetectorRef.markForCheck();
+                },
+            });
     }
 
     requestPasswordReset(): void {
@@ -184,53 +190,17 @@ export class PasswordRecovery {
             });
     }
 
-    validateRecoveryToken(): void {
+    allowAnotherRequest(): void {
+        if (this.loading) {
+            return;
+        }
+
+        this.requestSubmitted = false;
         this.clearMessages();
+    }
 
-        const tokenControl = this.resetForm.controls.token;
-        tokenControl.markAsTouched();
-
-        if (tokenControl.invalid || this.loading) {
-            return;
-        }
-
-        const token = String(tokenControl.value ?? '').trim();
-
-        if (!token) {
-            this.errorMessage = 'Introduce el código de recuperación.';
-            return;
-        }
-
-        this.loading = true;
-
-        this.authService
-            .validatePasswordResetToken(token)
-            .pipe(
-                finalize(() => {
-                    this.loading = false;
-                    this.changeDetectorRef.markForCheck();
-                }),
-            )
-            .subscribe({
-                next: (response) => {
-                    // Solo se muestran las contraseñas tras validar el token.
-                    this.resetForm.controls.token.setValue(token);
-                    this.step = 'password';
-                    this.successMessage =
-                        response?.message ||
-                        'El código es válido. Ya puedes establecer una nueva contraseña.';
-
-                    this.changeDetectorRef.markForCheck();
-                },
-                error: (error: unknown) => {
-                    this.errorMessage = this.getErrorMessage(
-                        error,
-                        'El código no es válido o ha caducado. Compruébalo e inténtalo de nuevo.',
-                    );
-
-                    this.changeDetectorRef.markForCheck();
-                },
-            });
+    togglePasswordVisibility(): void {
+        this.showPassword = !this.showPassword;
     }
 
     confirmPasswordReset(): void {
@@ -241,13 +211,17 @@ export class PasswordRecovery {
             return;
         }
 
-        const token = String(
-            this.resetForm.controls.token.value ?? '',
-        ).trim();
-
+        const token = this.tokenFromUrl.trim();
         const newPassword = String(
             this.resetForm.controls.newPassword.value ?? '',
         );
+
+        if (!token) {
+            this.step = 'request';
+            this.errorMessage =
+                'No se ha encontrado un enlace de recuperación válido. Solicita uno nuevo.';
+            return;
+        }
 
         this.loading = true;
 
@@ -272,7 +246,7 @@ export class PasswordRecovery {
                 error: (error: unknown) => {
                     this.errorMessage = this.getErrorMessage(
                         error,
-                        'No se ha podido restablecer la contraseña. Comprueba el código e inténtalo de nuevo.',
+                        'No se ha podido restablecer la contraseña. El enlace puede haber caducado o ya haberse utilizado.',
                     );
 
                     this.changeDetectorRef.markForCheck();

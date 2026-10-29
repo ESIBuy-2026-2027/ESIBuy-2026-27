@@ -19,6 +19,7 @@ describe('ProductDetail', () => {
   let toastServiceMock: any;
   let cartServiceMock: any;
   let currentUserSignal = signal<AuthenticatedUser | null>(null);
+  let cartSignal = signal<any>(null);
 
   const mockProduct: ProductItem = {
     id: 'p-1',
@@ -33,6 +34,7 @@ describe('ProductDetail', () => {
     available: true,
     sellerId: 's-1',
     rating: 4.9,
+    sellerName: 'Móviles del Sur SL',
   };
 
   const mockCategories: Category[] = [{ id: 'cat-1', name: 'Telefonía' }];
@@ -63,7 +65,9 @@ describe('ProductDetail', () => {
       clear: vi.fn(() => toastSignal.set(null)),
     };
 
+    cartSignal = signal<any>(null);
     cartServiceMock = {
+      cart: cartSignal,
       addItem: vi.fn(() => of({})),
       itemCount: vi.fn(() => 0),
     };
@@ -95,10 +99,20 @@ describe('ProductDetail', () => {
     const el: HTMLElement = fixture.nativeElement;
 
     expect(el.querySelector('.product-heading')?.textContent).toContain('Smartphone Pro Max');
-    expect(el.querySelector('.price-value')?.textContent).toContain('899,99');
+    expect(el.querySelector('.price-value')?.textContent).toContain('809,99');
+    expect(el.querySelector('.detail-strikethrough')?.textContent).toContain('899,99');
     expect(el.querySelector('.description-text')?.textContent).toContain('Pantalla OLED 120Hz');
     expect(el.querySelector('.status-available')?.textContent).toContain('En stock');
     expect(el.querySelector('.offers-panel')).not.toBeNull();
+  });
+
+  it('renders provider name between rating row and price section', () => {
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    const vendorRow = el.querySelector('.product-vendor-row');
+    expect(vendorRow).not.toBeNull();
+    expect(vendorRow?.textContent).toContain('Proveedor:');
+    expect(vendorRow?.textContent).toContain('Móviles del Sur SL');
   });
 
   it('shows low positive stock with the warning color', () => {
@@ -208,4 +222,74 @@ describe('ProductDetail', () => {
     );
     expect(navigateSpy).toHaveBeenCalledWith(['/login']);
   });
+  it('caps keyboard input to available stock and updates quantity', () => {
+    const input = document.createElement('input');
+    input.value = '999';
+    component.onQuantityInput({ target: input } as any);
+    expect(input.value).toBe('8');
+    expect(component.quantity()).toBe(8);
+
+    input.value = '-5';
+    component.onQuantityInput({ target: input } as any);
+    expect(input.value).toBe('1');
+    expect(component.quantity()).toBe(1);
+  });
+
+  it('updates available stock dynamically subtracting items already in cart', () => {
+    cartSignal.set({
+      id: 'cart-1',
+      clienteId: 'client-1',
+      items: [{ productoId: 'p-1', cantidad: 5 }],
+      total: 4049.95,
+    });
+    fixture.detectChanges();
+
+    expect(component.availableStock()).toBe(3);
+
+    // When all stock is in cart
+    cartSignal.set({
+      id: 'cart-1',
+      clienteId: 'client-1',
+      items: [{ productoId: 'p-1', cantidad: 8 }],
+      total: 6479.92,
+    });
+    fixture.detectChanges();
+
+    expect(component.availableStock()).toBe(0);
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.status-out')?.textContent).toContain('Agotado');
+  });
+
+
+  it('shows the Premium price and additional savings to a standard client', () => {
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+
+    expect(el.querySelector('.price-value')?.textContent).toContain('809,99');
+    expect(el.querySelector('.detail-premium-value')?.textContent).toContain('674,99');
+    expect(el.querySelector('.premium-savings')?.textContent).toContain('135,00');
+    expect(el.querySelector('.premium-savings')?.textContent).toContain('Ahorrarías');
+  });
+
+  it('shows the Premium price as the main price for a Premium client', () => {
+    currentUserSignal.set({
+      id: 'premium-client-1',
+      email: 'premium@example.com',
+      role: 'CLIENT',
+      active: true,
+      customerType: 'PREMIUM',
+    });
+
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+
+    expect(el.querySelector('.price-value')?.textContent).toContain('674,99');
+    expect(el.querySelector('.detail-premium-price-row')).toBeNull();
+    expect(el.querySelector('.premium-savings')).toBeNull();
+    expect(el.querySelector('.premium-active-note')).not.toBeNull();
+  });
+
+
 });
