@@ -144,7 +144,7 @@ stages:
             fetchDepth: 0
           - script: |
               echo "Sincronizando rama $(Build.SourceBranchName) hacia Azure Repos (ESIBuy)..."
-              git -c http.extraheader="AUTHORIZATION: bearer $(AZURE_TOKEN)" push https://dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy HEAD:refs/heads/$(Build.SourceBranchName) --force
+              git -c http.extraheader="AUTHORIZATION: bearer $AZURE_TOKEN" push https://dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy HEAD:refs/heads/$(Build.SourceBranchName) --force
             displayName: 'Push a Azure Repos (ESIBuy)'
             env:
               AZURE_TOKEN: $(System.AccessToken)
