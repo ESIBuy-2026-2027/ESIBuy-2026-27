@@ -3,8 +3,10 @@
 }
 
 .app-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  right: 0;
+  left: 0;
   z-index: 50;
   display: flex;
   box-sizing: border-box;
@@ -20,9 +22,12 @@
 }
 
 .app-brand {
+  position: relative;
   display: inline-flex;
+  min-width: max-content;
   align-items: center;
   gap: 0.55rem;
+  flex: 0 0 auto;
   color: #fff;
   font-size: 1.15rem;
   font-weight: 800;
@@ -32,6 +37,7 @@
 
 .app-brand::before {
   display: inline-grid;
+  flex: 0 0 1.8rem;
   place-items: center;
   width: 1.8rem;
   height: 1.8rem;
@@ -212,6 +218,11 @@
   margin: 1rem 1.5rem;
   color: #b91c1c;
   font-family: Arial, sans-serif;
+}
+
+.app-route-content {
+  box-sizing: border-box;
+  padding-top: var(--app-header-height);
 }
 
 .visually-hidden {

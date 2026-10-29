@@ -1,10 +1,5 @@
 <aside class="app-sidebar" [class.app-sidebar--admin]="variant === 'admin'" [class.app-sidebar--seller]="variant === 'seller'" [class.app-sidebar--seller-compact]="variant === 'seller-compact'" [class.app-sidebar--client]="variant === 'client'"
   [attr.aria-label]="variant === 'admin' ? 'Panel de administración' : variant === 'client' ? 'Panel del cliente' : 'Panel del vendedor'">
-  <a routerLink="/" class="app-brand" aria-label="ESIBuy">
-    <span class="brand-mark" aria-hidden="true">E</span>
-    <span>ESI<span class="brand-accent">Buy</span></span>
-  </a>
-
   <p class="sidebar-caption">{{ variant === 'admin' ? 'GESTIÓN DE ADMINISTRACIÓN' : variant === 'client' ? 'ÁREA DE CLIENTE' : 'GESTIÓN DE VENTA' }}</p>
 
   @if (variant === 'admin') {

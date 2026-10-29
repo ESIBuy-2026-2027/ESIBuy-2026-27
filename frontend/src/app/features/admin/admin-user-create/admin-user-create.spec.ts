@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
@@ -141,7 +142,8 @@ describe('AdminUserCreate', () => {
 
     expect(fechaInput).toBeTruthy();
     expect(fechaInput?.readOnly).toBe(true);
-    expect(fechaInput?.value).toBe(new Date(component.creationDate).toLocaleString('es-ES').replace(',', ''));
+    const datePipe = new DatePipe('en-US');
+    expect(fechaInput?.value).toBe(datePipe.transform(component.creationDate, 'dd/MM/yyyy HH:mm:ss'));
   });
 
 
