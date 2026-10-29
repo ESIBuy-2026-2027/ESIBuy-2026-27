@@ -6,6 +6,7 @@ import es.uclm.esibuy.pedidos.dto.CrearPedidoDTO;
 import es.uclm.esibuy.pedidos.dto.PedidoConfirmadoDTO;
 import es.uclm.esibuy.pedidos.dto.PedidoClienteDTO;
 import es.uclm.esibuy.pedidos.dto.PedidoVendedorDTO;
+import es.uclm.esibuy.pedidos.dto.SeguimientoEnvioDTO;
 import es.uclm.esibuy.pedidos.service.PedidoService;
 import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
 import jakarta.validation.Valid;
@@ -66,6 +67,14 @@ public class PedidoController {
             @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
             @PathVariable String pedidoId) {
         return ResponseEntity.ok(pedidoService.obtenerPedidoDelCliente(principal.id(), pedidoId));
+    }
+
+    @GetMapping("/{pedidoId}/historial-estados")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'CLIENT')")
+    public ResponseEntity<SeguimientoEnvioDTO> obtenerHistorialEstadosEnvio(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
+            @PathVariable String pedidoId) {
+        return ResponseEntity.ok(pedidoService.obtenerHistorialEstadosEnvio(principal.id(), pedidoId));
     }
 
     @GetMapping({"/vendedor", "/seller"})

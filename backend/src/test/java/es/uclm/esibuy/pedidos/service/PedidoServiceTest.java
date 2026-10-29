@@ -8,10 +8,15 @@ import com.mongodb.client.result.UpdateResult;
 import es.uclm.esibuy.cart.model.Carrito;
 import es.uclm.esibuy.cart.repository.CarritoRepository;
 import es.uclm.esibuy.common.exception.PagoFallidoException;
+import es.uclm.esibuy.common.exception.PedidoNotFoundException;
 import es.uclm.esibuy.common.exception.RecursoCheckoutNoEncontradoException;
 import es.uclm.esibuy.common.exception.StockInsuficienteException;
+import es.uclm.esibuy.pedidos.dto.EstadoPedidoHistorialDTO;
 import es.uclm.esibuy.pedidos.dto.CrearPedidoDTO;
 import es.uclm.esibuy.pedidos.dto.PedidoConfirmadoDTO;
+import es.uclm.esibuy.pedidos.dto.SeguimientoEnvioDTO;
+import es.uclm.esibuy.pedidos.model.DireccionEnvioPedido;
+import es.uclm.esibuy.pedidos.model.MetodoPagoPedido;
 import es.uclm.esibuy.pedidos.model.Pedido;
 import es.uclm.esibuy.pedidos.model.PedidoEstado;
 import es.uclm.esibuy.pedidos.model.PedidoItem;
@@ -36,6 +41,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -135,6 +142,58 @@ class PedidoServiceTest {
 
                 verify(pedido).setEstado(PedidoEstado.PREPARANDO);
                 verify(pedidoRepository).save(pedido);
+        }
+
+        @Test
+        void shouldReturnChronologicalTrackingHistoryOnlyForTheOwningClient() {
+                Pedido pedido = new Pedido(
+                                CLIENTE_ID,
+                                List.of(),
+                                BigDecimal.ZERO,
+                                new DireccionEnvioPedido("direccion-1", "Ana López", "Calle Mayor 1", null,
+                                                "13001", "Ciudad Real", "Ciudad Real", "600123456"),
+                                new MetodoPagoPedido("pago-1", null, "1234"),
+                                PedidoEstado.PAGADO);
+                pedido.setEstado(PedidoEstado.PREPARANDO);
+                pedido.setEstado(PedidoEstado.ENVIADO);
+                pedido.setEstado(PedidoEstado.ENVIADO);
+                when(pedidoRepository.findByIdAndClienteId("pedido-123", CLIENTE_ID))
+                                .thenReturn(Optional.of(pedido));
+
+                SeguimientoEnvioDTO seguimiento = pedidoService.obtenerHistorialEstadosEnvio(CLIENTE_ID, "pedido-123");
+
+                assertEquals(
+                                List.of(PedidoEstado.PAGADO, PedidoEstado.PREPARANDO, PedidoEstado.ENVIADO),
+                                seguimiento.historialEstados().stream().map(EstadoPedidoHistorialDTO::estado).toList());
+                assertEquals(pedido.getEstimatedDeliveryDate(), seguimiento.estimatedDeliveryDate());
+                verify(pedidoRepository).findByIdAndClienteId("pedido-123", CLIENTE_ID);
+        }
+
+        @Test
+        void shouldClearEstimatedDeliveryDateWhenShipmentReturnsToPreparing() {
+                Pedido pedido = new Pedido(
+                                CLIENTE_ID,
+                                List.of(),
+                                BigDecimal.ZERO,
+                                new DireccionEnvioPedido("direccion-1", "Ana López", "Calle Mayor 1", null,
+                                                "13001", "Ciudad Real", "Ciudad Real", "600123456"),
+                                new MetodoPagoPedido("pago-1", null, "1234"),
+                                PedidoEstado.PREPARANDO);
+                pedido.setEstado(PedidoEstado.ENVIADO);
+                assertNotNull(pedido.getEstimatedDeliveryDate());
+
+                pedido.setEstado(PedidoEstado.PREPARANDO);
+
+                assertNull(pedido.getEstimatedDeliveryDate());
+        }
+
+        @Test
+        void shouldHideTrackingHistoryWhenOrderDoesNotBelongToTheClient() {
+                when(pedidoRepository.findByIdAndClienteId("pedido-123", CLIENTE_ID)).thenReturn(Optional.empty());
+
+                assertThrows(
+                                PedidoNotFoundException.class,
+                                () -> pedidoService.obtenerHistorialEstadosEnvio(CLIENTE_ID, "pedido-123"));
         }
 
         @Test
@@ -282,4 +341,5 @@ class PedidoServiceTest {
 
                 return producto;
         }
+
 }

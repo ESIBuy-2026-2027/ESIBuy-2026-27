@@ -1,7 +1,10 @@
 package es.uclm.esibuy.pedidos.model;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,6 +23,8 @@ public class Pedido {
     private MetodoPagoPedido metodoPago;
     private PedidoEstado estado;
     private LocalDateTime fechaCreacion;
+    private List<EstadoPedidoHistorial> historialEstados = new ArrayList<>();
+    private LocalDate estimatedDeliveryDate;
 
     protected Pedido() {
     }
@@ -38,6 +43,7 @@ public class Pedido {
         this.metodoPago = Objects.requireNonNull(metodoPago);
         this.estado = Objects.requireNonNull(estado);
         this.fechaCreacion = LocalDateTime.now();
+        this.historialEstados.add(new EstadoPedidoHistorial(estado, fechaCreacion));
     }
 
     public String getId() {
@@ -69,10 +75,44 @@ public class Pedido {
     }
 
     public void setEstado(PedidoEstado estado) {
-        this.estado = Objects.requireNonNull(estado);
+        PedidoEstado nuevoEstado = Objects.requireNonNull(estado);
+        if (this.estado != nuevoEstado) {
+            LocalDateTime fechaCambio = LocalDateTime.now();
+            this.estado = nuevoEstado;
+            if (historialEstados == null) {
+                historialEstados = new ArrayList<>();
+            }
+            historialEstados.add(new EstadoPedidoHistorial(nuevoEstado, fechaCambio));
+            if (nuevoEstado == PedidoEstado.ENVIADO) {
+                estimatedDeliveryDate = calcularFechaEstimadaEntrega(fechaCambio.toLocalDate());
+            } else if (nuevoEstado != PedidoEstado.ENTREGADO) {
+                estimatedDeliveryDate = null;
+            }
+        }
     }
 
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
+    }
+
+    public List<EstadoPedidoHistorial> getHistorialEstados() {
+        return historialEstados == null ? List.of() : List.copyOf(historialEstados);
+    }
+
+    public LocalDate getEstimatedDeliveryDate() {
+        return estimatedDeliveryDate;
+    }
+
+    static LocalDate calcularFechaEstimadaEntrega(LocalDate fechaEnvio) {
+        LocalDate fechaEstimada = fechaEnvio;
+        int diasHabiles = 0;
+        while (diasHabiles < 3) {
+            fechaEstimada = fechaEstimada.plusDays(1);
+            DayOfWeek diaSemana = fechaEstimada.getDayOfWeek();
+            if (diaSemana != DayOfWeek.SATURDAY && diaSemana != DayOfWeek.SUNDAY) {
+                diasHabiles++;
+            }
+        }
+        return fechaEstimada;
     }
 }

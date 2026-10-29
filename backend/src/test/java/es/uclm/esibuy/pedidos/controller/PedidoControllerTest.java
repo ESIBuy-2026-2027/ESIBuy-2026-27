@@ -8,6 +8,8 @@ import es.uclm.esibuy.common.exception.ApiExceptionHandler;
 import es.uclm.esibuy.common.exception.PagoFallidoException;
 import es.uclm.esibuy.pedidos.dto.PedidoConfirmadoDTO;
 import es.uclm.esibuy.pedidos.dto.PedidoClienteDTO;
+import es.uclm.esibuy.pedidos.dto.EstadoPedidoHistorialDTO;
+import es.uclm.esibuy.pedidos.dto.SeguimientoEnvioDTO;
 import es.uclm.esibuy.pedidos.dto.MetodoPagoCheckoutDTO;
 import es.uclm.esibuy.pedidos.model.PedidoEstado;
 import es.uclm.esibuy.pedidos.service.PedidoService;
@@ -194,6 +196,34 @@ class PedidoControllerTest {
                                 .andExpect(jsonPath("$.estado").value("PAGADO"));
 
                 verify(pedidoService).obtenerPedidoDelCliente(CLIENTE_ID, "pedido-123");
+        }
+
+        @Test
+        void shouldReturnTrackingHistoryForAuthenticatedClient() throws Exception {
+                when(pedidoService.obtenerHistorialEstadosEnvio(CLIENTE_ID, "pedido-123"))
+                                .thenReturn(new SeguimientoEnvioDTO(
+                                                List.of(new EstadoPedidoHistorialDTO(
+                                                                PedidoEstado.ENVIADO,
+                                                                LocalDateTime.of(2026, 10, 28, 12, 0))),
+                                                null));
+
+                mockMvc.perform(get(API + "/pedido-123/historial-estados")
+                                .with(authentication(authenticationFor(UserRole.CLIENT))))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.historialEstados[0].estado").value("ENVIADO"))
+                                .andExpect(jsonPath("$.historialEstados[0].fecha").value("2026-10-28T12:00:00"))
+                                .andExpect(jsonPath("$.estimatedDeliveryDate").doesNotExist());
+
+                verify(pedidoService).obtenerHistorialEstadosEnvio(CLIENTE_ID, "pedido-123");
+        }
+
+        @Test
+        void shouldRejectTrackingHistoryForAnotherRole() throws Exception {
+                mockMvc.perform(get(API + "/pedido-123/historial-estados")
+                                .with(authentication(authenticationFor(UserRole.SELLER))))
+                                .andExpect(status().isForbidden());
+
+                verify(pedidoService, never()).obtenerHistorialEstadosEnvio(any(), any());
         }
 
         @Test

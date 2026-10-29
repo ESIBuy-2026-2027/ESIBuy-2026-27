@@ -22,6 +22,9 @@
       {{ currentOrder.estado }}
     </span>
   </header>
+  <app-client-shipment-tracking
+    [pedidoId]="currentOrder.pedidoId"
+    [currentStatus]="currentOrder.estado" />
   <section class="detail-card" aria-labelledby="products-title">
     <h2 id="products-title">Productos</h2>
     @for (item of currentOrder.items; track item.productoId) {

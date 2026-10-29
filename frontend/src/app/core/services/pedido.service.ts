@@ -96,6 +96,16 @@ export interface CustomerPaymentMethod {
   lastFourDigits: string | null;
 }
 
+export interface EstadoPedidoHistorial {
+  estado: CustomerOrderStatus;
+  fecha: string;
+}
+
+export interface SeguimientoEnvio {
+  historialEstados: EstadoPedidoHistorial[];
+  estimatedDeliveryDate: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PedidoService {
   private readonly http = inject(HttpClient);
@@ -144,6 +154,10 @@ export class PedidoService {
 
   obtenerPedidoDelCliente(pedidoId: string): Observable<CustomerOrder> {
     return this.http.get<CustomerOrder>(`/api/pedidos/${pedidoId}`);
+  }
+
+  obtenerHistorialEstadosEnvio(pedidoId: string): Observable<SeguimientoEnvio> {
+    return this.http.get<SeguimientoEnvio>(`/api/pedidos/${pedidoId}/historial-estados`);
   }
 
   obtenerPedidosDelVendedor(): Observable<SellerOrder[]> {

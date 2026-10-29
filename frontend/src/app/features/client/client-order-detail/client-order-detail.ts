@@ -2,11 +2,12 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
 import { CustomerOrder, PedidoService } from '../../../core/services/pedido.service';
+import { ClientShipmentTracking } from '../client-shipment-tracking/client-shipment-tracking';
 
 @Component({
   selector: 'app-client-order-detail',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, ClientShipmentTracking],
   templateUrl: './client-order-detail.html',
   styleUrl: './client-order-detail.css',
 })

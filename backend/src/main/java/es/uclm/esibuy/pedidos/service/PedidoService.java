@@ -25,9 +25,11 @@ import es.uclm.esibuy.pedidos.dto.PedidoConfirmadoDTO;
 import es.uclm.esibuy.pedidos.dto.ItemPedidoVendedorDTO;
 import es.uclm.esibuy.pedidos.dto.ItemPedidoClienteDTO;
 import es.uclm.esibuy.pedidos.dto.DireccionEnvioClienteDTO;
+import es.uclm.esibuy.pedidos.dto.EstadoPedidoHistorialDTO;
 import es.uclm.esibuy.pedidos.dto.MetodoPagoClienteDTO;
 import es.uclm.esibuy.pedidos.dto.PedidoClienteDTO;
 import es.uclm.esibuy.pedidos.dto.PedidoVendedorDTO;
+import es.uclm.esibuy.pedidos.dto.SeguimientoEnvioDTO;
 import es.uclm.esibuy.pedidos.model.DireccionEnvioPedido;
 import es.uclm.esibuy.pedidos.model.MetodoPagoPedido;
 import es.uclm.esibuy.pedidos.model.Pedido;
@@ -188,6 +190,19 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findByIdAndClienteId(pedidoId, clienteId)
                 .orElseThrow(PedidoNotFoundException::new);
         return toClientOrder(pedido);
+    }
+
+    public SeguimientoEnvioDTO obtenerHistorialEstadosEnvio(String clienteId, String pedidoId) {
+        obtenerCliente(clienteId);
+        if (pedidoId == null || pedidoId.isBlank()) {
+            throw new IllegalArgumentException("El identificador del pedido es obligatorio");
+        }
+        Pedido pedido = pedidoRepository.findByIdAndClienteId(pedidoId, clienteId)
+                .orElseThrow(PedidoNotFoundException::new);
+        List<EstadoPedidoHistorialDTO> historialEstados = pedido.getHistorialEstados().stream()
+                .map(evento -> new EstadoPedidoHistorialDTO(evento.estado(), evento.fecha()))
+                .toList();
+        return new SeguimientoEnvioDTO(historialEstados, pedido.getEstimatedDeliveryDate());
     }
 
     public void actualizarEstadoPedido(
