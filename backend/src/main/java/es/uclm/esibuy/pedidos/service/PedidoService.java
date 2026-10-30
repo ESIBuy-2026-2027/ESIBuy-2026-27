@@ -51,6 +51,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import java.util.Optional;
 
 @Service
 public class PedidoService {
@@ -371,54 +372,77 @@ public class PedidoService {
                 .orElseThrow(RecursoCheckoutNoEncontradoException::new);
     }
 
-    private List<PedidoItem> prepararItems(Carrito carrito, String vendedorId, List<String> productoIds) {
+    private List<PedidoItem> prepararItems(
+            Carrito carrito,
+            String vendedorId,
+            List<String> productoIds) {
+
         List<PedidoItem> items = new ArrayList<>();
         Set<String> sellers = new java.util.HashSet<>();
+
         for (ItemCarrito item : carrito.getItems()) {
-            if (productoIds != null && !productoIds.isEmpty() && !productoIds.contains(item.getProductoId())) {
-                continue;
-            }
-            Product producto = productRepository.findById(item.getProductoId())
-                    .orElseThrow(ProductNotFoundException::new);
-            String itemSellerId = producto.getSellerId() != null ? producto.getSellerId() : "SIN_VENDEDOR";
-            if (vendedorId != null && !vendedorId.isBlank()) {
-                if (!vendedorId.equals(itemSellerId)) {
-                    continue;
-                }
-            }
-            if (!producto.isAvailable()) {
-                throw new ProductoNoDisponibleException();
-            }
-            if (producto.getStock() < item.getCantidad()) {
-                throw stockInsuficiente(producto);
-            }
-            sellers.add(itemSellerId);
-            BigDecimal precio = producto.getPrice();
-            BigDecimal subtotal = precio.multiply(BigDecimal.valueOf(item.getCantidad()));
-            items.add(new PedidoItem(
-                    producto.getId(),
-                    producto.getName(),
-                    item.getCantidad(),
-                    precio,
-                    subtotal,
-                    producto.getImageUrl()));
+            Optional<PedidoItem> pedidoItem = prepararItem(item, vendedorId, productoIds, sellers);
+            pedidoItem.ifPresent(items::add);
         }
+
         if (items.isEmpty()) {
             throw new IllegalArgumentException("No hay productos válidos para tramitar este pedido.");
         }
+
         if (sellers.size() > 1) {
             throw new IllegalArgumentException(
-                    "No se puede realizar un pedido con productos de diferentes vendedores. Debes realizar un pedido independiente por cada vendedor.");
+                    "No se puede realizar un pedido con productos de diferentes vendedores. "
+                            + "Debes realizar un pedido independiente por cada vendedor.");
         }
+
         return List.copyOf(items);
     }
 
-    private List<PedidoItem> prepararItems(Carrito carrito, String vendedorId) {
-        return prepararItems(carrito, vendedorId, null);
-    }
+    private Optional<PedidoItem> prepararItem(
+            ItemCarrito item,
+            String vendedorId,
+            List<String> productoIds,
+            Set<String> sellers) {
 
-    private List<PedidoItem> prepararItems(Carrito carrito) {
-        return prepararItems(carrito, null);
+        if (productoIds != null
+                && !productoIds.isEmpty()
+                && !productoIds.contains(item.getProductoId())) {
+            return Optional.empty();
+        }
+
+        Product producto = productRepository.findById(item.getProductoId())
+                .orElseThrow(ProductNotFoundException::new);
+
+        String itemSellerId = producto.getSellerId() != null
+                ? producto.getSellerId()
+                : "SIN_VENDEDOR";
+
+        if (vendedorId != null
+                && !vendedorId.isBlank()
+                && !vendedorId.equals(itemSellerId)) {
+            return Optional.empty();
+        }
+
+        if (!producto.isAvailable()) {
+            throw new ProductoNoDisponibleException();
+        }
+
+        if (producto.getStock() < item.getCantidad()) {
+            throw stockInsuficiente(producto);
+        }
+
+        sellers.add(itemSellerId);
+
+        BigDecimal precio = producto.getPrice();
+        BigDecimal subtotal = precio.multiply(BigDecimal.valueOf(item.getCantidad()));
+
+        return Optional.of(new PedidoItem(
+                producto.getId(),
+                producto.getName(),
+                item.getCantidad(),
+                precio,
+                subtotal,
+                producto.getImageUrl()));
     }
 
     private void reservarStock(List<PedidoItem> items) {
