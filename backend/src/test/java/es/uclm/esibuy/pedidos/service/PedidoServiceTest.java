@@ -8,12 +8,18 @@ import com.mongodb.client.result.UpdateResult;
 import es.uclm.esibuy.cart.model.Carrito;
 import es.uclm.esibuy.cart.repository.CarritoRepository;
 import es.uclm.esibuy.common.exception.PagoFallidoException;
+import es.uclm.esibuy.common.exception.PedidoNotFoundException;
 import es.uclm.esibuy.common.exception.RecursoCheckoutNoEncontradoException;
 import es.uclm.esibuy.common.exception.StockInsuficienteException;
+import es.uclm.esibuy.pedidos.dto.EstadoPedidoHistorialDTO;
 import es.uclm.esibuy.pedidos.dto.CrearPedidoDTO;
 import es.uclm.esibuy.pedidos.dto.PedidoConfirmadoDTO;
+import es.uclm.esibuy.pedidos.dto.SeguimientoEnvioDTO;
+import es.uclm.esibuy.pedidos.model.DireccionEnvioPedido;
+import es.uclm.esibuy.pedidos.model.MetodoPagoPedido;
 import es.uclm.esibuy.pedidos.model.Pedido;
 import es.uclm.esibuy.pedidos.model.PedidoEstado;
+import es.uclm.esibuy.pedidos.model.PedidoEstadoPago;
 import es.uclm.esibuy.pedidos.model.PedidoItem;
 import es.uclm.esibuy.pedidos.repository.PedidoRepository;
 import es.uclm.esibuy.products.model.Product;
@@ -28,6 +34,7 @@ import es.uclm.esibuy.users.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -36,6 +43,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -88,14 +97,15 @@ class PedidoServiceTest {
         }
 
         @Test
-        void shouldChargeCreatePaidOrderDeductStockAndEmptyCart() {
+        void shouldChargeCreatePaidPendingOrderDeductStockAndEmptyCart() {
                 prepararCarritoYProducto(productoConStock(5));
                 habilitarReservaStock();
                 when(pasarelaPago.cobrar(any(), any())).thenReturn(true);
                 Pedido guardado = org.mockito.Mockito.mock(Pedido.class);
                 when(guardado.getId()).thenReturn("pedido-123");
                 when(guardado.getPrecioTotal()).thenReturn(new BigDecimal("39.98"));
-                when(guardado.getEstado()).thenReturn(PedidoEstado.PAGADO);
+                when(guardado.getEstado()).thenReturn(PedidoEstado.PENDIENTE);
+                when(guardado.getEstadoPago()).thenReturn(PedidoEstadoPago.PAGADO);
                 when(guardado.getFechaCreacion()).thenReturn(java.time.LocalDateTime.now());
                 when(pedidoRepository.save(any(Pedido.class))).thenReturn(guardado);
 
@@ -104,11 +114,15 @@ class PedidoServiceTest {
 
                 assertEquals("pedido-123", resultado.pedidoId());
                 assertEquals(new BigDecimal("39.98"), resultado.precioTotal());
-                assertEquals(PedidoEstado.PAGADO, resultado.estado());
+                assertEquals(PedidoEstado.PENDIENTE, resultado.estado());
+                assertEquals(PedidoEstadoPago.PAGADO, resultado.estadoPago());
                 verify(mongoTemplate).findAndModify(
                                 any(Query.class), any(Update.class), any(FindAndModifyOptions.class),
                                 eq(Product.class));
-                verify(pedidoRepository).save(any(Pedido.class));
+                ArgumentCaptor<Pedido> pedidoCaptor = ArgumentCaptor.forClass(Pedido.class);
+                verify(pedidoRepository).save(pedidoCaptor.capture());
+                assertEquals(PedidoEstado.PENDIENTE, pedidoCaptor.getValue().getEstado());
+                assertEquals(PedidoEstadoPago.PAGADO, pedidoCaptor.getValue().getEstadoPago());
                 verify(carritoRepository).save(carrito);
                 assertEquals(List.of(), carrito.getItems());
                 assertEquals(BigDecimal.ZERO, carrito.getPrecioTotal());
@@ -135,6 +149,58 @@ class PedidoServiceTest {
 
                 verify(pedido).setEstado(PedidoEstado.PREPARANDO);
                 verify(pedidoRepository).save(pedido);
+        }
+
+        @Test
+        void shouldReturnChronologicalTrackingHistoryOnlyForTheOwningClient() {
+                Pedido pedido = new Pedido(
+                                CLIENTE_ID,
+                                List.of(),
+                                BigDecimal.ZERO,
+                                new DireccionEnvioPedido("direccion-1", "Ana López", "Calle Mayor 1", null,
+                                                "13001", "Ciudad Real", "Ciudad Real", "600123456"),
+                                new MetodoPagoPedido("pago-1", null, "1234"),
+                                PedidoEstado.PAGADO);
+                pedido.setEstado(PedidoEstado.PREPARANDO);
+                pedido.setEstado(PedidoEstado.ENVIADO);
+                pedido.setEstado(PedidoEstado.ENVIADO);
+                when(pedidoRepository.findByIdAndClienteId("pedido-123", CLIENTE_ID))
+                                .thenReturn(Optional.of(pedido));
+
+                SeguimientoEnvioDTO seguimiento = pedidoService.obtenerHistorialEstadosEnvio(CLIENTE_ID, "pedido-123");
+
+                assertEquals(
+                                List.of(PedidoEstado.PAGADO, PedidoEstado.PREPARANDO, PedidoEstado.ENVIADO),
+                                seguimiento.historialEstados().stream().map(EstadoPedidoHistorialDTO::estado).toList());
+                assertEquals(pedido.getEstimatedDeliveryDate(), seguimiento.estimatedDeliveryDate());
+                verify(pedidoRepository).findByIdAndClienteId("pedido-123", CLIENTE_ID);
+        }
+
+        @Test
+        void shouldClearEstimatedDeliveryDateWhenShipmentReturnsToPreparing() {
+                Pedido pedido = new Pedido(
+                                CLIENTE_ID,
+                                List.of(),
+                                BigDecimal.ZERO,
+                                new DireccionEnvioPedido("direccion-1", "Ana López", "Calle Mayor 1", null,
+                                                "13001", "Ciudad Real", "Ciudad Real", "600123456"),
+                                new MetodoPagoPedido("pago-1", null, "1234"),
+                                PedidoEstado.PREPARANDO);
+                pedido.setEstado(PedidoEstado.ENVIADO);
+                assertNotNull(pedido.getEstimatedDeliveryDate());
+
+                pedido.setEstado(PedidoEstado.PREPARANDO);
+
+                assertNull(pedido.getEstimatedDeliveryDate());
+        }
+
+        @Test
+        void shouldHideTrackingHistoryWhenOrderDoesNotBelongToTheClient() {
+                when(pedidoRepository.findByIdAndClienteId("pedido-123", CLIENTE_ID)).thenReturn(Optional.empty());
+
+                assertThrows(
+                                PedidoNotFoundException.class,
+                                () -> pedidoService.obtenerHistorialEstadosEnvio(CLIENTE_ID, "pedido-123"));
         }
 
         @Test
@@ -282,4 +348,5 @@ class PedidoServiceTest {
 
                 return producto;
         }
+
 }

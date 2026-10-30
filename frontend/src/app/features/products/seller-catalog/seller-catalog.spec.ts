@@ -94,7 +94,7 @@ describe('SellerCatalog', () => {
     expect(element.querySelector('.filter-bar #seller-filter-category')).not.toBeNull();
     expect(element.querySelector('.filter-bar #seller-filter-visibility')).not.toBeNull();
     expect(element.querySelector('.filter-bar #seller-filter-sort')).not.toBeNull();
-    expect(element.querySelector('.filter-bar .price-range-slider')).not.toBeNull();
+    expect(element.querySelector('.filter-bar .price-inputs')).not.toBeNull();
     expect(element.querySelector('.filter-product-count')?.textContent).toContain('1 producto');
     expect(element.querySelector('.reset-filter-btn')?.textContent).toContain('Limpiar filtros');
     expect(element.querySelector<HTMLImageElement>('.product-image')?.alt).toBe('');

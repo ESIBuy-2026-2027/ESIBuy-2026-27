@@ -52,7 +52,7 @@ describe('ClientDashboard', () => {
     expect(navLinks[0].textContent).toContain('Catálogo');
     expect(navLinks[0].classList.contains('is-active')).toBe(true);
     expect(navLinks[1].textContent).toContain('Lista de deseos');
-    expect(navLinks[2].textContent).toContain('Mis compras');
+    expect(navLinks[2].textContent).toContain('Mis pedidos');
     expect(navLinks[3].textContent).toContain('Carrito');
     expect(navLinks[4].textContent).toContain('Perfil');
   });
@@ -94,4 +94,3 @@ describe('ClientDashboard', () => {
     expect(fixture.componentInstance.notification()?.type).toBe('error');
   });
 });
-

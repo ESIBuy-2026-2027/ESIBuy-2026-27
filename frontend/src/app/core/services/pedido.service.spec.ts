@@ -48,10 +48,15 @@ describe('PedidoService', () => {
     request.flush({
       pedidoId: 'pedido-123',
       precioTotal: 39.98,
-      estado: 'PAGADO',
+      estado: 'PENDIENTE',
+      estadoPago: 'PAGADO',
       fechaCreacion: '2026-10-17T12:00:00',
     });
-    expect(response).toEqual(expect.objectContaining({ pedidoId: 'pedido-123' }));
+    expect(response).toEqual(expect.objectContaining({
+      pedidoId: 'pedido-123',
+      estado: 'PENDIENTE',
+      estadoPago: 'PAGADO',
+    }));
   });
 
   it('should request the signed-in customer order history', () => {
@@ -72,5 +77,20 @@ describe('PedidoService', () => {
     expect(request.request.method).toBe('GET');
     request.flush({ pedidoId: 'pedido-123' });
     expect(response).toEqual({ pedidoId: 'pedido-123' });
+  });
+
+  it('should request the tracking history for a customer order', () => {
+    const tracking = {
+      historialEstados: [{ estado: 'ENVIADO', fecha: '2026-10-28T12:00:00' }],
+      estimatedDeliveryDate: null,
+    };
+    let response: unknown;
+
+    service.obtenerHistorialEstadosEnvio('pedido-123').subscribe((result) => response = result);
+
+    const request = httpTesting.expectOne('/api/pedidos/pedido-123/historial-estados');
+    expect(request.request.method).toBe('GET');
+    request.flush(tracking);
+    expect(response).toEqual(tracking);
   });
 });

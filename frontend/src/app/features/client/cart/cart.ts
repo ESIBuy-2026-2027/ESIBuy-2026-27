@@ -25,6 +25,7 @@ export interface SellerCartGroup {
 export class ClientCart {
   readonly cartService = inject(CartService);
   private readonly pedidoService = inject(PedidoService);
+  readonly sidebarCollapsed = signal(false);
   readonly busyItemIds = signal<ReadonlySet<string>>(new Set());
   readonly actionError = signal<string | null>(null);
   readonly checkoutOpen = signal(false);
@@ -35,6 +36,10 @@ export class ClientCart {
   readonly selectedAddressId = signal('');
   readonly selectedPaymentMethodId = signal('');
   readonly userSelectedProductIds = signal<ReadonlySet<string> | null>(null);
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update((collapsed) => !collapsed);
+  }
 
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',

@@ -2,7 +2,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { DeleteAccount } from '../../../shared/delete-account/delete-account';
@@ -40,7 +40,7 @@ interface UpdateClientProfileRequest {
 @Component({
     selector: 'app-client-profile',
     standalone: true,
-    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent, ShippingAddresses, PaymentMethods],
+    imports: [FormsModule, RouterLink, DeleteAccount, TwoFactorSettingsComponent, ShippingAddresses, PaymentMethods],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     templateUrl: './client-profile.html',
     styleUrl: './client-profile.css',
@@ -53,6 +53,7 @@ export class ClientProfile implements OnInit {
     private readonly apiUrl = '/api/users/me/profile';
 
     readonly profile = signal<ClientProfileResponse | null>(null);
+    readonly sidebarCollapsed = signal(false);
     readonly loading = signal(true);
     readonly profileError = signal<string | null>(null);
     readonly logoutError = signal<string | null>(null);
@@ -111,6 +112,10 @@ export class ClientProfile implements OnInit {
     ];
 
     readonly activeSection = signal('personal');
+
+    toggleSidebar(): void {
+        this.sidebarCollapsed.update((collapsed) => !collapsed);
+    }
 
     readonly initials = computed(() => {
         const profile = this.profile();
