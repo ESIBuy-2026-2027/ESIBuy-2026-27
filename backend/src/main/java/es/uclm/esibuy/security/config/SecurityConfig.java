@@ -45,6 +45,7 @@ public class SecurityConfig {
         private static final String ROLE_CLIENT = "CLIENT";
         private static final String ROLE_ADMIN = "ADMIN";
         private static final String ROLE_SELLER = "SELLER";
+        private static final String API_PRODUCT_PREFIX = "/api/products/**";
 
         @Bean
         SecurityContextRepository securityContextRepository() {
@@ -116,11 +117,11 @@ public class SecurityConfig {
                                                                         "/api/products/resumen")
                                                         .hasRole(ROLE_SELLER)
                                                         .requestMatchers(HttpMethod.POST, "/api/products",
-                                                                        "/api/products/**")
+                                                                        API_PRODUCT_PREFIX)
                                                         .hasRole(ROLE_SELLER)
-                                                        .requestMatchers(HttpMethod.PUT, "/api/products/**")
+                                                        .requestMatchers(HttpMethod.PUT, API_PRODUCT_PREFIX)
                                                         .hasRole(ROLE_SELLER)
-                                                        .requestMatchers(HttpMethod.DELETE, "/api/products/**")
+                                                        .requestMatchers(HttpMethod.DELETE, API_PRODUCT_PREFIX)
                                                         .hasRole(ROLE_SELLER)
                                                         .requestMatchers(HttpMethod.PATCH, "/api/products/*/status")
                                                         .hasAnyRole(ROLE_SELLER, ROLE_ADMIN)
@@ -128,10 +129,10 @@ public class SecurityConfig {
                                                                         "/api/products",
                                                                         "/api/products/*",
                                                                         "/api/products/*/image",
-                                                                        "/api/products/**")
+                                                                        API_PRODUCT_PREFIX)
                                                         .permitAll()
                                                         .requestMatchers("/api/catalog/**").hasRole(ROLE_CLIENT)
-                                                        .requestMatchers("/api/products/**").hasRole(ROLE_SELLER)
+                                                        .requestMatchers(API_PRODUCT_PREFIX).hasRole(ROLE_SELLER)
                                                         .requestMatchers("/api/wishlist/**").hasRole(ROLE_CLIENT)
                                                         .requestMatchers(HttpMethod.GET, "/api/users/me/profile")
                                                         .hasAnyRole(ROLE_CLIENT, ROLE_SELLER, ROLE_ADMIN)
@@ -186,7 +187,8 @@ public class SecurityConfig {
                                 "https://esibuy-2627.firebaseapp.com"));
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                 configuration.setAllowedHeaders(List.of("*"));
-                configuration.setExposedHeaders(List.of("Retry-After", CorrelationIdFilter.HEADER, "X-CSRF-TOKEN", "X-XSRF-TOKEN"));
+                configuration.setExposedHeaders(
+                                List.of("Retry-After", CorrelationIdFilter.HEADER, "X-CSRF-TOKEN", "X-XSRF-TOKEN"));
                 configuration.setAllowCredentials(true);
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
