@@ -2,6 +2,13 @@
 
     <!-- BARRA LATERAL -->
     <aside class="profile-card" aria-label="Menú de perfil">
+        <div class="sidebar-footer">
+            <button type="button" class="back-button" (click)="goBack()">
+            <span aria-hidden="true">←</span>
+                Volver
+        </button>
+        </div>
+        
 
         <div class="sidebar-profile">
             <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Perfil" />
@@ -54,11 +61,6 @@
             @if (logoutError(); as error) {
             <p class="form-error" role="alert">{{ error }}</p>
             }
-            <button type="button" class="back-button" (click)="goBack()">
-                <span aria-hidden="true">←</span>
-                Volver
-            </button>
-
             <button type="button" class="logout-button" (click)="logout()">
                 Cerrar sesión
             </button>
