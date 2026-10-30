@@ -184,7 +184,7 @@
       <details class="seller-accordion" [class.is-disabled-seller]="isSellerDisabled(group.vendedorId)" open>
         <summary class="seller-accordion-summary">
           <div class="seller-summary-info">
-            <label class="seller-checkbox-wrapper" (click)="$event.stopPropagation()">
+            <label class="seller-checkbox-wrapper" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
               <input type="checkbox" class="seller-checkbox"
                 [checked]="isSellerFullySelected(group)"
                 [indeterminate]="isSellerPartiallySelected(group)"
@@ -207,7 +207,7 @@
           <article class="cart-item"
             [class.is-deselected]="!isProductSelected(item.productoId)"
             [class.is-disabled-item]="isSellerDisabled(group.vendedorId)">
-            <label class="item-checkbox-wrapper" (click)="$event.stopPropagation()">
+            <label class="item-checkbox-wrapper" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
               <input type="checkbox" class="item-checkbox"
                 [checked]="isProductSelected(item.productoId)"
                 (change)="toggleProductSelection(item, group)"
