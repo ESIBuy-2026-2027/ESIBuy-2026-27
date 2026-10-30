@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 
 import com.mongodb.client.result.UpdateResult;
 
-import es.uclm.esibuy.cart.dto.ItemCarritoDTO;
-import es.uclm.esibuy.cart.model.Carrito;
-import es.uclm.esibuy.cart.model.ItemCarrito;
-import es.uclm.esibuy.cart.repository.CarritoRepository;
+import es.uclm.esibuy.cart.dto.CartItemDTO;
+import es.uclm.esibuy.cart.model.Cart;
+import es.uclm.esibuy.cart.model.CartItem;
+import es.uclm.esibuy.cart.repository.CartRepository;
 import es.uclm.esibuy.common.exception.PagoFallidoException;
 import es.uclm.esibuy.common.exception.PedidoNotFoundException;
 import es.uclm.esibuy.common.exception.ProductNotFoundException;
@@ -63,7 +63,7 @@ public class OrderService {
     private static final String STOCK_FIELD = "stock";
 
     private final UserRepository userRepository;
-    private final CarritoRepository carritoRepository;
+    private final CartRepository cartRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final MongoTemplate mongoTemplate;
@@ -71,13 +71,14 @@ public class OrderService {
 
     public OrderService(
             UserRepository userRepository,
-            CarritoRepository carritoRepository,
+            CartRepository cartRepository,
             ProductRepository productRepository,
             OrderRepository orderRepository,
             MongoTemplate mongoTemplate,
             PaymentGateway paymentGateway) {
+
         this.userRepository = userRepository;
-        this.carritoRepository = carritoRepository;
+        this.cartRepository = cartRepository;
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.mongoTemplate = mongoTemplate;
@@ -92,8 +93,8 @@ public class OrderService {
         User customer = getCustomer(customerId);
         ClientProfile profile = customer.getClientProfile();
 
-        Carrito cart = carritoRepository.findByClienteId(customerId)
-                .orElseGet(() -> new Carrito(customerId));
+        Cart cart = cartRepository.findByCustomerId(customerId)
+                .orElseGet(() -> new Cart(customerId));
 
         List<ShippingAddressResponse> addresses = profile.getAddresses().stream()
                 .map(ShippingAddressResponse::from)
@@ -103,18 +104,18 @@ public class OrderService {
                 .map(CheckoutPaymentMethodDTO::from)
                 .toList();
 
-        List<ItemCarritoDTO> items = cart.getItems().stream()
+        List<CartItemDTO> items = cart.getItems().stream()
                 .map(this::toCartItemDTO)
                 .filter(item -> sellerId == null
                         || sellerId.isBlank()
-                        || sellerId.equals(item.vendedorId()))
+                        || sellerId.equals(item.sellerId()))
                 .filter(item -> productIds == null
                         || productIds.isEmpty()
-                        || productIds.contains(item.productoId()))
+                        || productIds.contains(item.productId()))
                 .toList();
 
         BigDecimal totalPrice = items.stream()
-                .map(ItemCarritoDTO::subtotal)
+                .map(CartItemDTO::subtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return new CheckoutSummaryDTO(addresses, paymentMethods, items, totalPrice);
@@ -134,6 +135,7 @@ public class OrderService {
         }
 
         User customer = getCustomer(customerId);
+
         ShippingAddress shippingAddress = getShippingAddress(
                 customer.getClientProfile(),
                 request.shippingAddressId());
@@ -142,7 +144,7 @@ public class OrderService {
                 customer.getClientProfile(),
                 request.paymentMethodId());
 
-        Carrito cart = carritoRepository.findByClienteId(customerId)
+        Cart cart = cartRepository.findByCustomerId(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("El carrito está vacío"));
 
         if (cart.getItems().isEmpty()) {
@@ -191,7 +193,7 @@ public class OrderService {
             cart.removeItem(item.productId());
         }
 
-        carritoRepository.save(cart);
+        cartRepository.save(cart);
 
         return new OrderConfirmationDTO(
                 savedOrder.getId(),
@@ -446,14 +448,14 @@ public class OrderService {
     }
 
     private List<OrderItem> prepareOrderItems(
-            Carrito cart,
+            Cart cart,
             String sellerId,
             List<String> productIds) {
 
         List<OrderItem> items = new ArrayList<>();
         Set<String> sellers = new HashSet<>();
 
-        for (ItemCarrito item : cart.getItems()) {
+        for (CartItem item : cart.getItems()) {
             Optional<OrderItem> orderItem = prepareOrderItem(
                     item,
                     sellerId,
@@ -478,18 +480,18 @@ public class OrderService {
     }
 
     private Optional<OrderItem> prepareOrderItem(
-            ItemCarrito item,
+            CartItem item,
             String sellerId,
             List<String> productIds,
             Set<String> sellers) {
 
         if (productIds != null
                 && !productIds.isEmpty()
-                && !productIds.contains(item.getProductoId())) {
+                && !productIds.contains(item.getProductId())) {
             return Optional.empty();
         }
 
-        Product product = productRepository.findById(item.getProductoId())
+        Product product = productRepository.findById(item.getProductId())
                 .orElseThrow(ProductNotFoundException::new);
 
         String itemSellerId = product.getSellerId() != null
@@ -506,19 +508,19 @@ public class OrderService {
             throw new ProductoNoDisponibleException();
         }
 
-        if (product.getStock() < item.getCantidad()) {
+        if (product.getStock() < item.getQuantity()) {
             throw createInsufficientStockException(product);
         }
 
         sellers.add(itemSellerId);
 
         BigDecimal unitPrice = product.getPrice();
-        BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(item.getCantidad()));
+        BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
 
         return Optional.of(new OrderItem(
                 product.getId(),
                 product.getName(),
-                item.getCantidad(),
+                item.getQuantity(),
                 unitPrice,
                 subtotal,
                 product.getImageUrl()));
@@ -591,13 +593,13 @@ public class OrderService {
                 "Stock insuficiente para " + product.getName());
     }
 
-    private ItemCarritoDTO toCartItemDTO(ItemCarrito item) {
+    private CartItemDTO toCartItemDTO(CartItem item) {
         String imageUrl = item.getImageUrl();
         String sellerId = null;
         String sellerName = null;
 
-        if (item.getProductoId() != null) {
-            Product product = productRepository.findById(item.getProductoId()).orElse(null);
+        if (item.getProductId() != null) {
+            Product product = productRepository.findById(item.getProductId()).orElse(null);
 
             if (product != null) {
                 if (imageUrl == null || imageUrl.isBlank()) {
@@ -609,11 +611,11 @@ public class OrderService {
             }
         }
 
-        return new ItemCarritoDTO(
-                item.getProductoId(),
-                item.getNombre(),
-                item.getPrecioUnitario(),
-                item.getCantidad(),
+        return new CartItemDTO(
+                item.getProductId(),
+                item.getName(),
+                item.getUnitPrice(),
+                item.getQuantity(),
                 item.getSubtotal(),
                 imageUrl,
                 sellerId,

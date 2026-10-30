@@ -12,14 +12,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class AnadirItemCarritoDTOTest {
+class AddCartItemDTOTest {
 
     @Test
     void shouldAcceptAProductIdAndPositiveQuantity() {
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
             Validator validator = factory.getValidator();
 
-            assertTrue(validator.validate(new AnadirItemCarritoDTO("producto-1", 1)).isEmpty());
+            assertTrue(validator.validate(new AddCartItemDTO("producto-1", 1)).isEmpty());
         }
     }
 
@@ -28,11 +28,10 @@ class AnadirItemCarritoDTOTest {
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
             Validator validator = factory.getValidator();
 
-            Set<ConstraintViolation<AnadirItemCarritoDTO>> violations =
-                    validator.validate(new AnadirItemCarritoDTO(" ", 1));
+            Set<ConstraintViolation<AddCartItemDTO>> violations = validator.validate(new AddCartItemDTO(" ", 1));
 
             assertEquals(1, violations.size());
-            assertEquals("productoId", violations.iterator().next().getPropertyPath().toString());
+            assertEquals("productId", violations.iterator().next().getPropertyPath().toString());
         }
     }
 
@@ -41,9 +40,9 @@ class AnadirItemCarritoDTOTest {
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
             Validator validator = factory.getValidator();
 
-            assertFalse(validator.validate(new AnadirItemCarritoDTO("producto-1", null)).isEmpty());
-            assertFalse(validator.validate(new AnadirItemCarritoDTO("producto-1", 0)).isEmpty());
-            assertFalse(validator.validate(new AnadirItemCarritoDTO("producto-1", -1)).isEmpty());
+            assertFalse(validator.validate(new AddCartItemDTO("producto-1", null)).isEmpty());
+            assertFalse(validator.validate(new AddCartItemDTO("producto-1", 0)).isEmpty());
+            assertFalse(validator.validate(new AddCartItemDTO("producto-1", -1)).isEmpty());
         }
     }
 }

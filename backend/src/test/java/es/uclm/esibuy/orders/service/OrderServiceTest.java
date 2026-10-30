@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Optional;
 
 import com.mongodb.client.result.UpdateResult;
-import es.uclm.esibuy.cart.model.Carrito;
-import es.uclm.esibuy.cart.repository.CarritoRepository;
+import es.uclm.esibuy.cart.model.Cart;
+import es.uclm.esibuy.cart.repository.CartRepository;
 import es.uclm.esibuy.common.exception.PagoFallidoException;
 import es.uclm.esibuy.common.exception.PedidoNotFoundException;
 import es.uclm.esibuy.common.exception.RecursoCheckoutNoEncontradoException;
@@ -66,7 +66,7 @@ class OrderServiceTest {
         private UserRepository userRepository;
 
         @Mock
-        private CarritoRepository carritoRepository;
+        private CartRepository cartRepository;
 
         @Mock
         private ProductRepository productRepository;
@@ -81,13 +81,13 @@ class OrderServiceTest {
         private PaymentGateway paymentGateway;
 
         private OrderService orderService;
-        private Carrito carrito;
+        private Cart cart;
 
         @BeforeEach
         void setUp() {
                 orderService = new OrderService(
                                 userRepository,
-                                carritoRepository,
+                                cartRepository,
                                 productRepository,
                                 orderRepository,
                                 mongoTemplate,
@@ -127,8 +127,8 @@ class OrderServiceTest {
                 lenient().when(userRepository.findById(CUSTOMER_ID))
                                 .thenReturn(Optional.of(customer));
 
-                carrito = new Carrito(CUSTOMER_ID);
-                carrito.addOrIncrementItem(PRODUCT_ID, "Auriculares", PRICE, 2);
+                cart = new Cart(CUSTOMER_ID);
+                cart.addOrIncrementItem(PRODUCT_ID, "Auriculares", PRICE, 2);
         }
 
         @Test
@@ -170,10 +170,10 @@ class OrderServiceTest {
                 assertEquals(OrderStatus.PENDIENTE, orderCaptor.getValue().getStatus());
                 assertEquals(OrderPaymentStatus.PAGADO, orderCaptor.getValue().getPaymentStatus());
 
-                verify(carritoRepository).save(carrito);
+                verify(cartRepository).save(cart);
 
-                assertEquals(List.of(), carrito.getItems());
-                assertEquals(BigDecimal.ZERO, carrito.getPrecioTotal());
+                assertEquals(List.of(), cart.getItems());
+                assertEquals(BigDecimal.ZERO, cart.getTotalPrice());
         }
 
         @Test
@@ -330,7 +330,7 @@ class OrderServiceTest {
 
                 prepareCartAndProduct(firstProduct);
 
-                carrito.addOrIncrementItem("producto-2", "Ratón", PRICE, 1);
+                cart.addOrIncrementItem("producto-2", "Ratón", PRICE, 1);
 
                 when(productRepository.findById("producto-2"))
                                 .thenReturn(Optional.of(secondProduct));
@@ -359,8 +359,8 @@ class OrderServiceTest {
                 verify(paymentGateway, never()).charge(any(), any());
                 verify(orderRepository, never()).save(any(Order.class));
 
-                assertEquals(2, carrito.getItems().get(0).getCantidad());
-                assertEquals(2, carrito.getItems().size());
+                assertEquals(2, cart.getItems().get(0).getQuantity());
+                assertEquals(2, cart.getItems().size());
         }
 
         @Test
@@ -379,14 +379,14 @@ class OrderServiceTest {
                                                 new CreateOrderDTO("direccion-1", "pago-1")));
 
                 verify(orderRepository, never()).save(any(Order.class));
-                verify(carritoRepository, never()).save(carrito);
+                verify(cartRepository, never()).save(cart);
 
                 verify(mongoTemplate).updateFirst(
                                 any(Query.class),
                                 any(Update.class),
                                 eq(Product.class));
 
-                assertEquals(2, carrito.getItems().get(0).getCantidad());
+                assertEquals(2, cart.getItems().get(0).getQuantity());
         }
 
         @Test
@@ -410,7 +410,7 @@ class OrderServiceTest {
 
         @Test
         void shouldRejectOrderWhenCartContainsProductsFromMultipleSellers() {
-                carrito.addOrIncrementItem(
+                cart.addOrIncrementItem(
                                 "producto-2",
                                 "Teclado",
                                 new BigDecimal("49.99"),
@@ -433,8 +433,8 @@ class OrderServiceTest {
                 org.springframework.test.util.ReflectionTestUtils.setField(
                                 secondProduct, "id", "producto-2");
 
-                when(carritoRepository.findByClienteId(CUSTOMER_ID))
-                                .thenReturn(Optional.of(carrito));
+                when(cartRepository.findByCustomerId(CUSTOMER_ID))
+                                .thenReturn(Optional.of(cart));
 
                 when(productRepository.findById(PRODUCT_ID))
                                 .thenReturn(Optional.of(firstProduct));
@@ -480,8 +480,8 @@ class OrderServiceTest {
         }
 
         private void prepareCartAndProduct(Product product) {
-                when(carritoRepository.findByClienteId(CUSTOMER_ID))
-                                .thenReturn(Optional.of(carrito));
+                when(cartRepository.findByCustomerId(CUSTOMER_ID))
+                                .thenReturn(Optional.of(cart));
 
                 when(productRepository.findById(PRODUCT_ID))
                                 .thenReturn(Optional.of(product));

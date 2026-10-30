@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import es.uclm.esibuy.cart.dto.ItemCarritoDTO;
+import es.uclm.esibuy.cart.dto.CartItemDTO;
 import es.uclm.esibuy.users.dto.ShippingAddressResponse;
 
 public record CheckoutSummaryDTO(
@@ -13,7 +13,7 @@ public record CheckoutSummaryDTO(
 
         @JsonProperty("metodosPago") List<CheckoutPaymentMethodDTO> paymentMethods,
 
-        List<ItemCarritoDTO> items,
+        List<CartItemDTO> items,
 
         @JsonProperty("precioTotal") BigDecimal totalPrice) {
 

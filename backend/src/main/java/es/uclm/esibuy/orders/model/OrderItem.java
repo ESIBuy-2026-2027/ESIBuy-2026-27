@@ -5,7 +5,7 @@ import java.util.Objects;
 
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import es.uclm.esibuy.cart.model.ItemCarrito;
+import es.uclm.esibuy.cart.model.CartItem;
 
 public record OrderItem(
         @Field("productoId") String productId,
@@ -31,14 +31,14 @@ public record OrderItem(
         Objects.requireNonNull(subtotal);
     }
 
-    public static OrderItem from(ItemCarrito item) {
+    public static OrderItem from(CartItem item) {
         Objects.requireNonNull(item);
 
         return new OrderItem(
-                item.getProductoId(),
-                item.getNombre(),
-                item.getCantidad(),
-                item.getPrecioUnitario(),
+                item.getProductId(),
+                item.getName(),
+                item.getQuantity(),
+                item.getUnitPrice(),
                 item.getSubtotal(),
                 item.getImageUrl());
     }

@@ -11,15 +11,15 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ActualizarCantidadItemDTOTest {
+class UpdateCartItemQuantityDTOTest {
 
     @Test
     void shouldAcceptZeroAndPositiveQuantities() {
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
             Validator validator = factory.getValidator();
 
-            assertTrue(validator.validate(new ActualizarCantidadItemDTO(0)).isEmpty());
-            assertTrue(validator.validate(new ActualizarCantidadItemDTO(2)).isEmpty());
+            assertTrue(validator.validate(new UpdateCartItemQuantityDTO(0)).isEmpty());
+            assertTrue(validator.validate(new UpdateCartItemQuantityDTO(2)).isEmpty());
         }
     }
 
@@ -28,11 +28,12 @@ class ActualizarCantidadItemDTOTest {
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
             Validator validator = factory.getValidator();
 
-            Set<ConstraintViolation<ActualizarCantidadItemDTO>> violations =
-                    validator.validate(new ActualizarCantidadItemDTO(-1));
+            Set<ConstraintViolation<UpdateCartItemQuantityDTO>> violations = validator
+                    .validate(new UpdateCartItemQuantityDTO(-1));
+
             assertEquals(1, violations.size());
-            assertEquals("cantidad", violations.iterator().next().getPropertyPath().toString());
-            assertEquals(1, validator.validate(new ActualizarCantidadItemDTO(null)).size());
+            assertEquals("quantity", violations.iterator().next().getPropertyPath().toString());
+            assertEquals(1, validator.validate(new UpdateCartItemQuantityDTO(null)).size());
         }
     }
 }
