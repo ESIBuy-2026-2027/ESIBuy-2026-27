@@ -13,12 +13,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -56,16 +55,9 @@ public class AdminIncidentController {
         return ResponseEntity.ok(list);
     }
 
-    @PatchMapping("/{id}/resolve")
-    public ResponseEntity<IncidentResponse> resolvePatch(@PathVariable String id) {
-        Incident resolved = incidentService.resolve(id);
-        return ResponseEntity.ok(IncidentResponse.from(resolved));
-    }
-
-    @PutMapping("/{id}/resolve")
-    public ResponseEntity<IncidentResponse> resolvePut(@PathVariable String id) {
+    @RequestMapping(path = "/{id}/resolve", method = { RequestMethod.PATCH, RequestMethod.PUT })
+    public ResponseEntity<IncidentResponse> resolve(@PathVariable String id) {
         Incident resolved = incidentService.resolve(id);
         return ResponseEntity.ok(IncidentResponse.from(resolved));
     }
 }
-
