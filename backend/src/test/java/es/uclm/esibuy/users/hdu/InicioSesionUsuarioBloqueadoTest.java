@@ -1,7 +1,7 @@
 package es.uclm.esibuy.users.hdu;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
@@ -15,47 +15,73 @@ import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
+import es.uclm.esibuy.products.repository.ProductRepository;
 import es.uclm.esibuy.users.service.UserService;
 import es.uclm.esibuy.common.exception.InvalidCredentialsException;
-import es.uclm.esibuy.products.repository.ProductRepository;
+import es.uclm.esibuy.orders.repository.OrderRepository;
+import es.uclm.esibuy.cart.repository.CartRepository;
+import es.uclm.esibuy.wishlist.repository.WishlistRepository;
+import es.uclm.esibuy.security.repository.EmailOtpChallengeRepository;
+import es.uclm.esibuy.auth.passwordreset.repository.PasswordResetTokenRepository;
+import es.uclm.esibuy.security.repository.LoginAttemptRepository;
 
 @ExtendWith(MockitoExtension.class)
 class InicioSesionUsuarioBloqueadoTest {
+    @Mock private UserRepository userRepository;
+    @Mock private ProductRepository productRepository;
+    @Mock private PasswordEncoder passwordEncoder;
+    @Mock private OrderRepository orderRepository;
+    @Mock private CartRepository cartRepository;
+    @Mock private WishlistRepository wishlistRepository;
+    @Mock private EmailOtpChallengeRepository emailOtpChallengeRepository;
+    @Mock private PasswordResetTokenRepository passwordResetTokenRepository;
+    @Mock private LoginAttemptRepository loginAttemptRepository;
 
-        @Mock
-        private UserRepository userRepository;
+    private UserService createService() {
+        return new UserService(userRepository, passwordEncoder, productRepository,
+                orderRepository, cartRepository, wishlistRepository,
+                emailOtpChallengeRepository, passwordResetTokenRepository, loginAttemptRepository);
+    }
 
-        @Mock
-        private ProductRepository productRepository;
+    private LoginRequest request(String email, String password) {
+        LoginRequest request = new LoginRequest();
+        request.setEmail(email);
+        request.setPassword(password);
+        return request;
+    }
 
-        @Mock
-        private PasswordEncoder passwordEncoder;
+    @Test
+    void unaCuentaInactivaNoPuedeIniciarSesion() {
+        User user = new User("usuario@test.com", "Juan", "Pérez", UserRole.CLIENT);
+        user.setActive(false);
+        user.setBlocked(false);
+        user.setPasswordHash("hash");
+        when(userRepository.findByEmailIgnoreCase("usuario@test.com")).thenReturn(Optional.of(user));
 
-        @Test
-        void unaCuentaBloqueadaNoPuedeIniciarSesion() {
-                // Arrange
-                User usuario = new User(
-                                "usuario@test.com",
-                                "Juan",
-                                "Pérez",
-                                UserRole.CLIENT);
-                usuario.setActive(false);
-                usuario.setPasswordHash("hash");
+        assertThrows(InvalidCredentialsException.class,
+                () -> createService().login(request("usuario@test.com", "123456")));
+        verify(passwordEncoder, never()).matches(anyString(), anyString());
+    }
 
-                LoginRequest request = new LoginRequest();
-                request.setEmail("usuario@test.com");
-                request.setPassword("123456");
+    @Test
+    void unaCuentaBloqueadaAunqueEsteActivaNoPuedeIniciarSesion() {
+        User user = new User("usuario@test.com", "Juan", "Pérez", UserRole.CLIENT);
+        user.setActive(true);
+        user.setBlocked(true);
+        user.setPasswordHash("hash");
+        when(userRepository.findByEmailIgnoreCase("usuario@test.com")).thenReturn(Optional.of(user));
 
-                when(userRepository.findByEmailIgnoreCase("usuario@test.com"))
-                                .thenReturn(Optional.of(usuario));
-                // when(passwordEncoder.matches("123456", "hash"))
-                // .thenReturn(true);
+        assertThrows(InvalidCredentialsException.class,
+                () -> createService().login(request("usuario@test.com", "123456")));
+        verify(passwordEncoder, never()).matches(anyString(), anyString());
+    }
 
-                UserService userService = new UserService(userRepository, passwordEncoder, productRepository);
+    @Test
+    void unUsuarioInexistenteNoPuedeIniciarSesion() {
+        when(userRepository.findByEmailIgnoreCase("noexiste@test.com")).thenReturn(Optional.empty());
 
-                // Act + Assert
-                assertThrows(
-                                InvalidCredentialsException.class,
-                                () -> userService.login(request));
-        }
+        assertThrows(InvalidCredentialsException.class,
+                () -> createService().login(request("noexiste@test.com", "123456")));
+        verify(passwordEncoder, never()).matches(anyString(), anyString());
+    }
 }

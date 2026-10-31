@@ -13,7 +13,8 @@ public record OrderItem(
         @Field("cantidad") int quantity,
         @Field("precioUnitario") BigDecimal unitPrice,
         BigDecimal subtotal,
-        String imageUrl) {
+        String imageUrl,
+        @Field("vendedorId") String sellerId) {
 
     public OrderItem(
             String productId,
@@ -21,7 +22,17 @@ public record OrderItem(
             int quantity,
             BigDecimal unitPrice,
             BigDecimal subtotal) {
-        this(productId, name, quantity, unitPrice, subtotal, null);
+        this(productId, name, quantity, unitPrice, subtotal, null, null);
+    }
+
+    public OrderItem(
+            String productId,
+            String name,
+            int quantity,
+            BigDecimal unitPrice,
+            BigDecimal subtotal,
+            String imageUrl) {
+        this(productId, name, quantity, unitPrice, subtotal, imageUrl, null);
     }
 
     public OrderItem {
@@ -40,6 +51,18 @@ public record OrderItem(
                 item.getQuantity(),
                 item.getUnitPrice(),
                 item.getSubtotal(),
-                item.getImageUrl());
+                item.getImageUrl(),
+                null);
+    }
+
+    public OrderItem withSellerId(String sellerId) {
+        return new OrderItem(
+                productId,
+                name,
+                quantity,
+                unitPrice,
+                subtotal,
+                imageUrl,
+                sellerId);
     }
 }

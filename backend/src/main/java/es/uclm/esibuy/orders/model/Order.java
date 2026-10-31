@@ -174,4 +174,38 @@ public class Order {
 
         return estimatedDate;
     }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = Objects.requireNonNull(customerId);
+    }
+
+    public void anonymizeCustomerData() {
+        this.shippingAddress = new OrderShippingAddress(
+                null,
+                "Cliente eliminado",
+                "Dirección no disponible",
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        this.paymentMethod = null;
+    }
+
+    public void assignSellerToItems(String sellerId, List<String> productIds) {
+        if (sellerId == null || sellerId.isBlank()) {
+            throw new IllegalArgumentException("El vendedor es obligatorio");
+        }
+
+        if (productIds == null || productIds.isEmpty()) {
+            return;
+        }
+
+        this.items = this.items.stream()
+                .map(item -> productIds.contains(item.productId())
+                        ? item.withSellerId(sellerId)
+                        : item)
+                .toList();
+    }
 }

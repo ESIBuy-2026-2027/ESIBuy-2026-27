@@ -17,4 +17,6 @@ public interface EmailOtpChallengeRepository
         void deleteByUserIdAndPurpose(
                         String userId,
                         String purpose);
+
+        void deleteAllByUserId(String userId);
 }

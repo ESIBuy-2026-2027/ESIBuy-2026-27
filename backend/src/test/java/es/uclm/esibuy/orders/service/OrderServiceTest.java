@@ -15,6 +15,7 @@ import es.uclm.esibuy.common.exception.StockInsuficienteException;
 import es.uclm.esibuy.orders.dto.CreateOrderDTO;
 import es.uclm.esibuy.orders.dto.OrderConfirmationDTO;
 import es.uclm.esibuy.orders.dto.OrderStatusHistoryDTO;
+import es.uclm.esibuy.orders.dto.SellerOrderDTO;
 import es.uclm.esibuy.orders.dto.ShippingTrackingDTO;
 import es.uclm.esibuy.orders.model.Order;
 import es.uclm.esibuy.orders.model.OrderItem;
@@ -518,4 +519,165 @@ class OrderServiceTest {
 
                 return product;
         }
+
+        @Test
+        void shouldKeepSellerOrderHistoryAfterSellerProductsAreDeleted() {
+                String sellerId = "seller-1";
+
+                OrderItem historicalItem = new OrderItem(
+                                PRODUCT_ID,
+                                "Auriculares",
+                                2,
+                                PRICE,
+                                new BigDecimal("39.98"),
+                                "https://example.com/auriculares.jpg",
+                                sellerId);
+
+                Order order = new Order(
+                                CUSTOMER_ID,
+                                List.of(historicalItem),
+                                new BigDecimal("39.98"),
+                                new OrderShippingAddress(
+                                                "direccion-1",
+                                                "Ana López",
+                                                "Calle Mayor 1",
+                                                null,
+                                                "13001",
+                                                "Ciudad Real",
+                                                "Ciudad Real",
+                                                "600123456"),
+                                new OrderPaymentMethod("pago-1", null, "1234"),
+                                OrderStatus.ENVIADO);
+
+                org.springframework.test.util.ReflectionTestUtils.setField(
+                                order, "id", "pedido-historico-1");
+
+                when(productRepository.findAllBySellerId(sellerId))
+                                .thenReturn(List.of());
+
+                when(orderRepository.findAll())
+                                .thenReturn(List.of(order));
+
+                List<SellerOrderDTO> result = orderService.getSellerOrders(sellerId);
+
+                assertEquals(1, result.size());
+                assertEquals("pedido-historico-1", result.get(0).orderId());
+                assertEquals(OrderStatus.ENVIADO, result.get(0).status());
+
+                assertEquals(1, result.get(0).items().size());
+                assertEquals(PRODUCT_ID, result.get(0).items().get(0).productId());
+                assertEquals("Auriculares", result.get(0).items().get(0).name());
+
+                assertEquals(new BigDecimal("39.98"), result.get(0).total());
+
+                verify(productRepository).findAllBySellerId(sellerId);
+                verify(orderRepository).findAll();
+        }
+
+        @Test
+        void shouldAllowSellerToUpdateHistoricalOrderAfterProductsAreDeleted() {
+                String sellerId = "seller-1";
+
+                OrderItem historicalItem = new OrderItem(
+                                PRODUCT_ID,
+                                "Auriculares",
+                                2,
+                                PRICE,
+                                new BigDecimal("39.98"),
+                                "https://example.com/auriculares.jpg",
+                                sellerId);
+
+                Order order = new Order(
+                                CUSTOMER_ID,
+                                List.of(historicalItem),
+                                new BigDecimal("39.98"),
+                                new OrderShippingAddress(
+                                                "direccion-1",
+                                                "Ana López",
+                                                "Calle Mayor 1",
+                                                null,
+                                                "13001",
+                                                "Ciudad Real",
+                                                "Ciudad Real",
+                                                "600123456"),
+                                new OrderPaymentMethod("pago-1", null, "1234"),
+                                OrderStatus.PREPARANDO);
+
+                when(orderRepository.findById("pedido-historico-1"))
+                                .thenReturn(Optional.of(order));
+
+                // El vendedor ya no tiene productos asociados.
+                when(productRepository.findAllBySellerId(sellerId))
+                                .thenReturn(List.of());
+
+                orderService.updateOrderStatus(
+                                sellerId,
+                                "pedido-historico-1",
+                                OrderStatus.ENVIADO,
+                                null);
+
+                assertEquals(OrderStatus.ENVIADO, order.getStatus());
+
+                verify(orderRepository).save(order);
+        }
+
+        @Test
+        void shouldHideDeletedCustomerEmailInSellerOrderHistory() {
+                String sellerId = "seller-1";
+
+                User deletedCustomer = new User(
+                                "cliente.eliminado@esibuy.local",
+                                "Cliente",
+                                "eliminado",
+                                UserRole.CLIENT);
+
+                OrderItem historicalItem = new OrderItem(
+                                PRODUCT_ID,
+                                "Auriculares",
+                                1,
+                                PRICE,
+                                PRICE,
+                                "https://example.com/auriculares.jpg",
+                                sellerId);
+
+                Order order = new Order(
+                                CUSTOMER_ID,
+                                List.of(historicalItem),
+                                PRICE,
+                                new OrderShippingAddress(
+                                                "direccion-1",
+                                                "Ana López",
+                                                "Calle Mayor 1",
+                                                null,
+                                                "13001",
+                                                "Ciudad Real",
+                                                "Ciudad Real",
+                                                "600123456"),
+                                new OrderPaymentMethod("pago-1", null, "1234"),
+                                OrderStatus.ENTREGADO);
+
+                // Simula los datos que quedan después de eliminar la cuenta del cliente.
+                order.anonymizeCustomerData();
+
+                org.springframework.test.util.ReflectionTestUtils.setField(
+                                order, "id", "pedido-historico-2");
+                when(productRepository.findAllBySellerId(sellerId))
+                                .thenReturn(List.of());
+
+                when(orderRepository.findAll())
+                                .thenReturn(List.of(order));
+
+                org.mockito.Mockito.doReturn(Optional.of(deletedCustomer))
+                                .when(userRepository).findById(CUSTOMER_ID);
+
+                List<SellerOrderDTO> result = orderService.getSellerOrders(sellerId);
+
+                assertEquals(1, result.size());
+                assertEquals("Cliente eliminado", result.get(0).customerName());
+                assertNull(result.get(0).customerEmail());
+
+                assertEquals(1, result.get(0).items().size());
+                assertEquals(PRICE, result.get(0).total());
+        }
+
 }

@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.mongodb.client.result.UpdateResult;
 
@@ -213,7 +214,7 @@ public class OrderService {
                 .collect(Collectors.toSet());
 
         return orderRepository.findAll().stream()
-                .map(order -> toSellerOrder(order, sellerProductIds))
+                .map(order -> toSellerOrder(order, sellerId, sellerProductIds))
                 .filter(Objects::nonNull)
                 .toList();
     }
@@ -285,7 +286,8 @@ public class OrderService {
                 .collect(Collectors.toSet());
 
         boolean belongsToSeller = order.getItems().stream()
-                .anyMatch(item -> sellerProductIds.contains(item.productId()));
+                .anyMatch(item -> sellerId.equals(item.sellerId())
+                        || sellerProductIds.contains(item.productId()));
 
         if (!belongsToSeller) {
             throw new IllegalArgumentException("El pedido no pertenece al vendedor");
@@ -314,9 +316,10 @@ public class OrderService {
                 && newPosition < currentPosition;
     }
 
-    private SellerOrderDTO toSellerOrder(Order order, Set<String> sellerProductIds) {
+    private SellerOrderDTO toSellerOrder(Order order, String sellerId, Set<String> sellerProductIds) {
         List<SellerOrderItemDTO> items = order.getItems().stream()
-                .filter(item -> sellerProductIds.contains(item.productId()))
+                .filter(item -> sellerId.equals(item.sellerId())
+                        || sellerProductIds.contains(item.productId()))
                 .map(item -> new SellerOrderItemDTO(
                         item.productId(),
                         item.name(),
@@ -337,7 +340,10 @@ public class OrderService {
                 ? "Cliente no disponible"
                 : (customer.getFirstName() + " " + customer.getLastName()).trim();
 
-        String customerEmail = customer == null ? null : customer.getEmail();
+        String customerEmail = customer == null
+                || "cliente.eliminado@esibuy.local".equalsIgnoreCase(customer.getEmail())
+                        ? null
+                        : customer.getEmail();
 
         BigDecimal total = items.stream()
                 .map(SellerOrderItemDTO::subtotal)
@@ -412,10 +418,22 @@ public class OrderService {
     }
 
     private String formatAddress(OrderShippingAddress address) {
-        return String.join(", ", List.of(
+        if (address == null) {
+            return "";
+        }
+
+        String postalCodeAndCity = Stream.of(
+                address.postalCode(),
+                address.city())
+                .filter(value -> value != null && !value.isBlank())
+                .collect(Collectors.joining(" "));
+
+        return Stream.of(
                 address.street(),
-                address.postalCode() + " " + address.city(),
-                address.province()));
+                postalCodeAndCity,
+                address.province())
+                .filter(value -> value != null && !value.isBlank())
+                .collect(Collectors.joining(", "));
     }
 
     private User getCustomer(String customerId) {
@@ -523,7 +541,8 @@ public class OrderService {
                 item.getQuantity(),
                 unitPrice,
                 subtotal,
-                product.getImageUrl()));
+                product.getImageUrl(),
+                product.getSellerId()));
     }
 
     private void reserveStock(List<OrderItem> items) {

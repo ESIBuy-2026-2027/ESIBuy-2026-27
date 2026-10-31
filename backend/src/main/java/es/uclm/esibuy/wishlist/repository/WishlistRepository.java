@@ -1,5 +1,6 @@
 package es.uclm.esibuy.wishlist.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import es.uclm.esibuy.wishlist.model.WishlistItem;
@@ -16,5 +17,8 @@ public interface WishlistRepository extends MongoRepository<WishlistItem, String
     boolean existsByUserIdAndProductId(String userId, String productId);
 
     void deleteByUserIdAndProductId(String userId, String productId);
-}
 
+    void deleteAllByUserId(String userId);
+
+    void deleteAllByProductIdIn(Collection<String> productIds);
+}

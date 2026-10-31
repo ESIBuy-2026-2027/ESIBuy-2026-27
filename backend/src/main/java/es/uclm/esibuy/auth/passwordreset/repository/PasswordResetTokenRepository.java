@@ -13,4 +13,6 @@ public interface PasswordResetTokenRepository extends MongoRepository<PasswordRe
     Optional<PasswordResetToken> findByTokenHashAndUsedAtIsNullAndExpiresAtAfter(
             String tokenHash,
             Instant now);
+
+    void deleteAllByUserId(String userId);
 }
