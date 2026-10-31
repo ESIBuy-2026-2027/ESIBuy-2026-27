@@ -7,8 +7,11 @@
             desde la gestión de usuarios.
         </p>
         } @else {
-        <p>Si te das de baja, se eliminarán tus datos de ESIBuy. Esta acción no se puede deshacer.</p>
-        }
+        <p>
+            Esta acción eliminará tu cuenta y los datos personales asociados.
+            Los datos necesarios para conservar el histórico de pedidos se mantendrán
+            conforme a las condiciones indicadas.
+        </p> }
     </div>
     <button type="button" class="danger-button" [disabled]="blocked()" [attr.aria-disabled]="blocked()"
         [attr.title]="blocked() ? 'Otro administrador debe eliminar tu cuenta' : null" (click)="openDialog()">

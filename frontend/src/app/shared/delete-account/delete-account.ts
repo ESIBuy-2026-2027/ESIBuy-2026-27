@@ -9,13 +9,15 @@ export const DELETE_CONFIRMATION_WORD = 'ELIMINAR';
 
 const CONSEQUENCES: Record<UserRole, string[]> = {
     CLIENT: [
-        'Se eliminarán tus datos personales, tus favoritos y tus listas.',
+        'Se eliminarán tus datos personales, tu carrito y tus favoritos.',
         'Tus pedidos se conservarán de forma anónima en el histórico de la plataforma.',
-        'No podrás volver a iniciar sesión con esta cuenta.',
+        'Se eliminarán tus datos de autenticación y no podrás volver a iniciar sesión con esta cuenta.',
     ],
     SELLER: [
         'Se eliminarán tus datos personales y todos tus productos del catálogo.',
-        'No podrás eliminar tu cuenta mientras tengas pedidos en curso.',
+        'Se eliminarán tu carrito, tus favoritos y tus datos de autenticación.',
+        'Tus pedidos históricos se conservarán en la plataforma.',
+        'No podrás eliminar tu cuenta mientras tengas pedidos pendientes o en preparación.',
         'No podrás volver a iniciar sesión con esta cuenta.',
     ],
     ADMIN: [],
