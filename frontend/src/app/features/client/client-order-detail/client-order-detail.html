@@ -4,6 +4,9 @@
   <p aria-live="polite">Cargando el pedido...</p>
   } @else if (error()) {
   <p class="feedback-error" role="alert">{{ error() }}</p>
+  <button type="button" class="buy-again-button" (click)="retryLoadOrder()">
+    Reintentar
+  </button>
   } @else if (order(); as currentOrder) {
   @if (actionError(); as message) {
   <p class="feedback-error action-feedback" role="alert">{{ message }}</p>
@@ -35,7 +38,7 @@
         <p>{{ item.cantidad }} x {{ formatPrice(item.precioUnitario) }}</p>
         <div class="item-actions">
           <button type="button" class="buy-again-button"
-            [disabled]="addingProductId() !== null"
+            [disabled]="addingProductId() === item.productoId"
             (click)="buyAgain(item.productoId, item.cantidad)">
             <span aria-hidden="true">↻</span>
             {{ addingProductId() === item.productoId ? 'Añadiendo...' : 'Comprar de nuevo' }}

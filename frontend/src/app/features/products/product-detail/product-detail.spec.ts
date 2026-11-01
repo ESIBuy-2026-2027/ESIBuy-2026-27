@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { signal } from '@angular/core';
-import { of } from 'rxjs';
+import { NEVER, of, throwError } from 'rxjs';
 import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { ProductDetail } from './product-detail';
 import { ProductsService, ProductItem, Category } from '../../../core/services/products.service';
@@ -195,6 +195,36 @@ describe('ProductDetail', () => {
     expect(toastServiceMock.show).toHaveBeenCalledWith('Guardado', 'success');
   });
 
+  it('should retry product loading after an error', () => {
+    productsServiceMock.getProductById
+      .mockReturnValueOnce(throwError(() => new Error('network error')))
+      .mockReturnValueOnce(of(mockProduct));
+
+    component.loadProduct('p-1');
+    expect(component.error()).toBe(true);
+
+    component.retryLoadProduct();
+
+    expect(component.error()).toBe(false);
+    expect(component.product()).toEqual(mockProduct);
+  });
+
+  it('should expose a category error without blocking the product and recover on retry', () => {
+    productsServiceMock.getCategories.mockReturnValueOnce(
+      throwError(() => new Error('categories unavailable')),
+    );
+
+    component.loadCategories();
+    expect(component.categoryError()).toBe(true);
+    expect(component.product()).toEqual(mockProduct);
+
+    productsServiceMock.getCategories.mockReturnValueOnce(of(mockCategories));
+    component.loadCategories();
+
+    expect(component.categoryError()).toBe(false);
+    expect(component.categories()).toEqual(mockCategories);
+  });
+
   it('should allow changing quantity and adding to cart with success toast', () => {
     component.increaseQuantity();
     expect(component.quantity()).toBe(2);
@@ -202,6 +232,16 @@ describe('ProductDetail', () => {
     component.addToCart();
     expect(cartServiceMock.addItem).toHaveBeenCalledWith('p-1', 2);
     expect(toastServiceMock.show).toHaveBeenCalledWith('Producto añadido al carrito', 'success');
+  });
+
+  it('should ignore repeated add-to-cart clicks while the request is pending', () => {
+    cartServiceMock.addItem.mockReturnValue(NEVER);
+
+    component.addToCart();
+    component.addToCart();
+
+    expect(cartServiceMock.addItem).toHaveBeenCalledTimes(1);
+    expect(component.cartAdding()).toBe(true);
   });
 
   it('should redirect unauthenticated users to /login on favorite or buy click', () => {

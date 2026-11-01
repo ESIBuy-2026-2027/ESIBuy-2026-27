@@ -74,6 +74,27 @@ describe('ClientShipmentTracking', () => {
     expect(fixture.nativeElement.textContent).toContain('No se pudo cargar el seguimiento del envío.');
   });
 
+  it('should retry loading tracking after an error', async () => {
+    obtenerHistorialEstadosEnvio.mockReturnValueOnce(throwError(() => new Error('network error')));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    obtenerHistorialEstadosEnvio.mockReturnValueOnce(of({
+      historialEstados: [],
+      estimatedDeliveryDate: null,
+    }));
+    const retryButton = fixture.nativeElement.querySelector('.tracking-retry-button') as HTMLButtonElement;
+    retryButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(obtenerHistorialEstadosEnvio).toHaveBeenCalledTimes(2);
+    expect(fixture.componentInstance.error()).toBeNull();
+    expect(fixture.componentInstance.tracking()).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.tracking-error')).toBeNull();
+    expect(fixture.componentInstance.loading()).toBe(false);
+  });
+
   it('should show actual state history without the shipment progress line in history mode', async () => {
     fixture.componentRef.setInput('displayMode', 'history');
     fixture.detectChanges();

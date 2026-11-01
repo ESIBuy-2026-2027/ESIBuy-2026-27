@@ -44,6 +44,8 @@ export class ClientCatalog implements OnInit {
       return;
     }
 
+    if (this.cartAdding()[product.id]) return;
+    this.cartAdding.update((states) => ({ ...states, [product.id]: true }));
     this.cartService.addItem(product.id, 1).subscribe({
       next: () => {
         this.toastService.show('Producto añadido al carrito', 'success');
@@ -51,7 +53,7 @@ export class ClientCatalog implements OnInit {
       error: () => {
         this.toastService.show('Error al añadir producto al carrito', 'error');
       },
-    });
+    }).add(() => this.cartAdding.update((states) => ({ ...states, [product.id]: false })));
   }
 
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
@@ -61,8 +63,12 @@ export class ClientCatalog implements OnInit {
 
   private readonly catalogProducts = signal<ProductItem[]>([]);
   categories = signal<Category[]>([]);
+  categoriesLoading = signal(true);
+  categoryError = signal(false);
   loading = signal(true);
   error = signal(false);
+  readonly favoriteUpdating = signal<Record<string, boolean>>({});
+  readonly cartAdding = signal<Record<string, boolean>>({});
 
   products = computed(() => {
     let result = [...this.catalogProducts()];
@@ -117,9 +123,17 @@ export class ClientCatalog implements OnInit {
   }
 
   loadCategories(): void {
+    this.categoriesLoading.set(true);
+    this.categoryError.set(false);
     this.productsService.getCategories().subscribe({
-      next: (categories) => this.categories.set(categories),
-      error: () => { },
+      next: (categories) => {
+        this.categories.set(categories);
+        this.categoriesLoading.set(false);
+      },
+      error: () => {
+        this.categoriesLoading.set(false);
+        this.categoryError.set(true);
+      },
     });
   }
 
@@ -215,6 +229,8 @@ export class ClientCatalog implements OnInit {
       return;
     }
 
+    if (this.favoriteUpdating()[productId]) return;
+    this.favoriteUpdating.update((states) => ({ ...states, [productId]: true }));
     this.wishlistService.toggleWishlist(productId).subscribe({
       next: (res) => {
         this.toastService.show(res.message, 'success');
@@ -222,7 +238,7 @@ export class ClientCatalog implements OnInit {
       error: () => {
         this.toastService.show('Error al actualizar tu lista de deseos', 'error');
       },
-    });
+    }).add(() => this.favoriteUpdating.update((states) => ({ ...states, [productId]: false })));
   }
 
   categoryName(categoryId: string): string {
@@ -287,4 +303,3 @@ export class ClientCatalog implements OnInit {
     this.imageErrors.update((prev) => ({ ...prev, [productId]: true }));
   }
 }
-

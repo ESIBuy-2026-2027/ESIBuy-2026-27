@@ -117,7 +117,8 @@
       <!-- MENSAJE DE AVISO (ÉXITO / ERROR) -->
       @if (toastService.toast(); as t) {
       <output class="catalog-alert" [class.is-success]="t.type === 'success'" [class.is-error]="t.type === 'error'"
-        [class.is-info]="t.type === 'info'" aria-live="polite">
+        [class.is-info]="t.type === 'info'" [attr.role]="t.type === 'error' ? 'alert' : 'status'"
+        [attr.aria-live]="t.type === 'error' ? 'assertive' : 'polite'">
         @if (t.type === 'success') {
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="m5 12 4 4L19 6"></path>
@@ -158,6 +159,13 @@
               <option [value]="cat.id">{{ cat.name }}</option>
               }
             </select>
+            @if (categoriesLoading()) {
+            <small aria-live="polite">Cargando categorías…</small>
+            } @else if (categoryError()) {
+            <small role="alert">No se han podido cargar las categorías.
+              <button type="button" (click)="loadCategories()">Reintentar</button>
+            </small>
+            }
           </div>
 
           <div class="filter-control price-control">
@@ -266,7 +274,7 @@
 
               <!-- CORAZÓN CENTRADO AL HACER HOVER -->
               @if (!isAdmin()) {
-              <button type="button" class="heart-center-button"
+              <button type="button" class="heart-center-button" [disabled]="favoriteUpdating()[product.id]"
                 [class.is-favorite]="wishlistService.isFavorite(product.id)"
                 (click)="toggleFavorite(product.id, $event)"
                 [attr.aria-label]="wishlistService.isFavorite(product.id) ? 'Quitar de la lista de deseos' : 'Añadir a la lista de deseos'"
@@ -359,9 +367,10 @@
 
                 @if (!isAdmin()) {
                 <div class="card-btn-group">
-                  <button type="button" class="add-to-cart-action-btn" [disabled]="getRemainingStock(product) === 0"
+                  <button type="button" class="add-to-cart-action-btn"
+                    [disabled]="getRemainingStock(product) === 0 || cartAdding()[product.id]"
                     (click)="addToCart(product, $event)">
-                    Añadir al carrito
+                    {{ cartAdding()[product.id] ? 'Añadiendo...' : 'Añadir al carrito' }}
                   </button>
                 </div>
                 }

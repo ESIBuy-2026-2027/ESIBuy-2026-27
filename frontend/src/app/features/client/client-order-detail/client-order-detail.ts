@@ -9,6 +9,7 @@ import {
   PedidoService,
 } from '../../../core/services/pedido.service';
 import { ClientShipmentTracking } from '../client-shipment-tracking/client-shipment-tracking';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-client-order-detail',
@@ -39,6 +40,12 @@ export class ClientOrderDetail implements OnInit {
       this.loading.set(false);
       return;
     }
+    this.loadOrder(pedidoId);
+  }
+
+  loadOrder(pedidoId: string): void {
+    this.loading.set(true);
+    this.error.set(null);
     this.pedidoService.obtenerPedidoDelCliente(pedidoId).subscribe({
       next: (order) => {
         this.order.set(order);
@@ -48,7 +55,14 @@ export class ClientOrderDetail implements OnInit {
         this.error.set('No se pudo cargar el detalle del pedido.');
         this.loading.set(false);
       },
-    });
+    }).add(() => this.loading.set(false));
+  }
+
+  retryLoadOrder(): void {
+    const pedidoId = this.route.snapshot.paramMap.get('pedidoId');
+    if (pedidoId) {
+      this.loadOrder(pedidoId);
+    }
   }
 
   formatPrice(price: number): string {
@@ -93,11 +107,10 @@ export class ClientOrderDetail implements OnInit {
 
     this.actionError.set(null);
     this.addingProductId.set(productId);
-    this.cartService.addItem(productId, quantity).subscribe({
+    this.cartService.addItem(productId, quantity).pipe(finalize(() => this.addingProductId.set(null))).subscribe({
       next: () => this.addingProductId.set(null),
       error: () => {
         this.actionError.set('No se pudo añadir el producto al carrito. Puede que ya no esté disponible.');
-        this.addingProductId.set(null);
       },
     });
   }
