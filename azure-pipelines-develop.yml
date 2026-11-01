@@ -66,33 +66,34 @@ stages:
             condition: succeeded()
 
           # SonarQube Backend: ejecución obligatoria desde la VPN
+                    # SonarQube Backend: ejecución obligatoria desde la VPN
           - powershell: |
-            $ErrorActionPreference = 'Stop'
+              $ErrorActionPreference = 'Stop'
 
-            Write-Host "Comprobando disponibilidad de SonarQube..."
+              Write-Host "Comprobando disponibilidad de SonarQube..."
 
-            $status = Invoke-RestMethod `
-              -Uri "http://seralu4.esi.uclm.es:1521/api/system/status" `
-              -TimeoutSec 10
+              $status = Invoke-RestMethod `
+                -Uri "http://seralu4.esi.uclm.es:1521/api/system/status" `
+                -TimeoutSec 10
 
-            if ($status.status -ne 'UP') {
-              throw "SonarQube no está disponible."
-            }
+              if ($status.status -ne 'UP') {
+                throw "SonarQube no está disponible."
+              }
 
-            Write-Host "Ejecutando análisis de SonarQube Backend..."
+              Write-Host "Ejecutando análisis de SonarQube Backend..."
 
-            Set-Location "$(Build.SourcesDirectory)\backend"
+              Set-Location "$(Build.SourcesDirectory)\backend"
 
-            .\mvnw.cmd sonar:sonar `
-              "-Dsonar.host.url=http://seralu4.esi.uclm.es:1521/" `
-              "-Dsonar.projectKey=2026-g06-backend" `
-              "-Dsonar.token=$env:SONAR_TOKEN" `
-              "-Dsonar.exclusions=**/test/**,**/tests/**,**/*Test.java,**/*Tests.java,**/*TestCase.java" `
-              "-Dsonar.test.exclusions=**"
+              .\mvnw.cmd sonar:sonar `
+                "-Dsonar.host.url=http://seralu4.esi.uclm.es:1521/" `
+                "-Dsonar.projectKey=2026-g06-backend" `
+                "-Dsonar.token=$env:SONAR_TOKEN" `
+                "-Dsonar.exclusions=**/test/**,**/tests/**,**/*Test.java,**/*Tests.java,**/*TestCase.java" `
+                "-Dsonar.test.exclusions=**"
 
-            if ($LASTEXITCODE -ne 0) {
-              throw "El análisis de SonarQube Backend ha fallado."
-            }
+              if ($LASTEXITCODE -ne 0) {
+                throw "El análisis de SonarQube Backend ha fallado."
+              }
             displayName: 'Ejecutar análisis de SonarQube Backend'
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
@@ -127,32 +128,33 @@ stages:
             displayName: 'Compilación de verificación Frontend'
 
           # SonarQube Frontend: ejecución obligatoria desde la VPN
+                    # SonarQube Frontend: ejecución obligatoria desde la VPN
           - powershell: |
-            $ErrorActionPreference = 'Stop'
+              $ErrorActionPreference = 'Stop'
 
-            Write-Host "Comprobando disponibilidad de SonarQube..."
+              Write-Host "Comprobando disponibilidad de SonarQube..."
 
-            $status = Invoke-RestMethod `
-              -Uri "http://seralu4.esi.uclm.es:1521/api/system/status" `
-              -TimeoutSec 10
+              $status = Invoke-RestMethod `
+                -Uri "http://seralu4.esi.uclm.es:1521/api/system/status" `
+                -TimeoutSec 10
 
-            if ($status.status -ne 'UP') {
-              throw "SonarQube no está disponible."
-            }
+              if ($status.status -ne 'UP') {
+                throw "SonarQube no está disponible."
+              }
 
-            Write-Host "Ejecutando análisis de SonarQube Frontend..."
+              Write-Host "Ejecutando análisis de SonarQube Frontend..."
 
-            Set-Location "$(Build.SourcesDirectory)\frontend"
+              Set-Location "$(Build.SourcesDirectory)\frontend"
 
-            npx --yes sonar-scanner `
-              "-Dsonar.token=$env:SONAR_TOKEN"
+              npx --yes sonar-scanner `
+                "-Dsonar.token=$env:SONAR_TOKEN"
 
-            if ($LASTEXITCODE -ne 0) {
-              throw "El análisis de SonarQube Frontend ha fallado."
-            }
+              if ($LASTEXITCODE -ne 0) {
+                throw "El análisis de SonarQube Frontend ha fallado."
+              }
             displayName: 'Ejecutar análisis de SonarQube Frontend'
             env:
-            SONAR_TOKEN: $(SONAR_TOKEN)
+              SONAR_TOKEN: $(SONAR_TOKEN)
 
       # ------------------------------------------------------------------------
       # Sync_Azure_Repos: Sincronización automática a Azure Repos
