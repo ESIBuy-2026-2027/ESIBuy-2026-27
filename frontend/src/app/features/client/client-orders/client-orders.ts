@@ -244,7 +244,14 @@ export class ClientOrders implements OnInit {
     }
 
     const cutoff = new Date();
-    const months = period === 'year' ? 12 : period === '6months' ? 6 : 3;
+    let months = 3;
+
+    if (period === 'year') {
+      months = 12;
+    } else if (period === '6months') {
+      months = 6;
+    }
+
     cutoff.setMonth(cutoff.getMonth() - months);
     return cutoff;
   }
