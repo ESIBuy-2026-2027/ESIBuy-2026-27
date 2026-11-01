@@ -17,6 +17,7 @@ import es.uclm.esibuy.orders.model.OrderStatus;
 import es.uclm.esibuy.orders.repository.OrderRepository;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
+import es.uclm.esibuy.security.password.CompromisedPasswordService;
 import es.uclm.esibuy.security.repository.EmailOtpChallengeRepository;
 import es.uclm.esibuy.security.repository.LoginAttemptRepository;
 import es.uclm.esibuy.users.dto.UpdateOwnProfileRequestDTO;
@@ -55,6 +56,8 @@ class UserProfileServiceTest {
         private PasswordResetTokenRepository passwordResetTokenRepository;
         @Mock
         private LoginAttemptRepository loginAttemptRepository;
+        @Mock
+        private CompromisedPasswordService compromisedPasswordService;
 
         private UserService userService;
 
@@ -62,7 +65,8 @@ class UserProfileServiceTest {
         void setUp() {
                 userService = new UserService(userRepository, passwordEncoder, productRepository,
                                 orderRepository, cartRepository, wishlistRepository,
-                                emailOtpChallengeRepository, passwordResetTokenRepository, loginAttemptRepository);
+                                emailOtpChallengeRepository, passwordResetTokenRepository, loginAttemptRepository,
+                                compromisedPasswordService);
         }
 
         @Test

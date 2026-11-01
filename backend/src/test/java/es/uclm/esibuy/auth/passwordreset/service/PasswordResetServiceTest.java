@@ -18,6 +18,8 @@ import java.util.Optional;
 
 import es.uclm.esibuy.auth.passwordreset.model.PasswordResetToken;
 import es.uclm.esibuy.auth.passwordreset.repository.PasswordResetTokenRepository;
+import es.uclm.esibuy.security.password.CompromisedPasswordException;
+import es.uclm.esibuy.security.password.CompromisedPasswordService;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
@@ -65,6 +67,9 @@ class PasswordResetServiceTest {
         @Mock
         private PasswordResetEmailService emailService;
 
+        @Mock
+        private CompromisedPasswordService compromisedPasswordService;
+
         private PasswordResetService service;
         private User user;
 
@@ -77,6 +82,7 @@ class PasswordResetServiceTest {
                                 passwordEncoder,
                                 mongoTemplate,
                                 emailService,
+                                compromisedPasswordService,
                                 false,
                                 "https://esibuy.example/");
 
@@ -191,6 +197,7 @@ class PasswordResetServiceTest {
                                 passwordEncoder,
                                 mongoTemplate,
                                 emailService,
+                                compromisedPasswordService,
                                 true,
                                 "http://localhost:4200///");
 
@@ -389,4 +396,35 @@ class PasswordResetServiceTest {
                         throw new IllegalStateException(exception);
                 }
         }
+
+        @Test
+        void confirmResetShouldRejectCompromisedPasswordWithoutConsumingToken() {
+                PasswordResetToken candidate = token(RAW_TOKEN);
+
+                when(tokenRepository.findByTokenHashAndUsedAtIsNullAndExpiresAtAfter(
+                                eq(sha256(RAW_TOKEN)),
+                                any(Instant.class)))
+                                .thenReturn(Optional.of(candidate));
+
+                org.mockito.Mockito.doThrow(new CompromisedPasswordException())
+                                .when(compromisedPasswordService)
+                                .validatePassword(NEW_PASSWORD);
+
+                assertThrows(
+                                CompromisedPasswordException.class,
+                                () -> service.confirmReset(RAW_TOKEN, NEW_PASSWORD));
+
+                verify(compromisedPasswordService).validatePassword(NEW_PASSWORD);
+
+                verify(mongoTemplate, never()).findAndModify(
+                                any(Query.class),
+                                any(Update.class),
+                                any(FindAndModifyOptions.class),
+                                eq(PasswordResetToken.class));
+
+                verify(passwordEncoder, never()).encode(any());
+                verify(userRepository, never()).save(any(User.class));
+                verify(tokenRepository, never()).deleteAllByUserIdAndUsedAtIsNull(USER_ID);
+        }
+
 }

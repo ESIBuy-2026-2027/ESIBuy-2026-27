@@ -6,6 +6,7 @@ import java.util.Locale;
 
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.common.exception.UserNotFoundException;
+import es.uclm.esibuy.security.password.CompromisedPasswordService;
 import es.uclm.esibuy.users.dto.AltaAdminDTO;
 import es.uclm.esibuy.users.dto.UserAdminDTO;
 import es.uclm.esibuy.users.model.AdminProfile;
@@ -24,10 +25,13 @@ public class AdminService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CompromisedPasswordService compromisedPasswordService;
 
-    public AdminService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AdminService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            CompromisedPasswordService compromisedPasswordService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.compromisedPasswordService = compromisedPasswordService;
     }
 
     public User createAdmin(AltaAdminDTO request) {
@@ -35,6 +39,8 @@ public class AdminService {
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new DuplicateUserException(MSG_DUPLICATE_EMAIL);
         }
+
+        compromisedPasswordService.validatePassword(request.getPassword());
 
         User user = new User(email, request.getFirstName().trim(), request.getLastName().trim(), UserRole.ADMIN);
         user.setNationalId(request.getNationalId().trim());

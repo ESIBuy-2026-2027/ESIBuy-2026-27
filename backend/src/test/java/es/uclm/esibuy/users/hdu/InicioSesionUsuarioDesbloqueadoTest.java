@@ -21,26 +21,39 @@ import es.uclm.esibuy.common.exception.InvalidCredentialsException;
 import es.uclm.esibuy.orders.repository.OrderRepository;
 import es.uclm.esibuy.cart.repository.CartRepository;
 import es.uclm.esibuy.wishlist.repository.WishlistRepository;
+import es.uclm.esibuy.security.password.CompromisedPasswordService;
 import es.uclm.esibuy.security.repository.EmailOtpChallengeRepository;
 import es.uclm.esibuy.auth.passwordreset.repository.PasswordResetTokenRepository;
 import es.uclm.esibuy.security.repository.LoginAttemptRepository;
 
 @ExtendWith(MockitoExtension.class)
 class InicioSesionUsuarioDesbloqueadoTest {
-    @Mock private UserRepository userRepository;
-    @Mock private ProductRepository productRepository;
-    @Mock private PasswordEncoder passwordEncoder;
-    @Mock private OrderRepository orderRepository;
-    @Mock private CartRepository cartRepository;
-    @Mock private WishlistRepository wishlistRepository;
-    @Mock private EmailOtpChallengeRepository emailOtpChallengeRepository;
-    @Mock private PasswordResetTokenRepository passwordResetTokenRepository;
-    @Mock private LoginAttemptRepository loginAttemptRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private ProductRepository productRepository;
+    @Mock
+    private PasswordEncoder passwordEncoder;
+    @Mock
+    private OrderRepository orderRepository;
+    @Mock
+    private CartRepository cartRepository;
+    @Mock
+    private WishlistRepository wishlistRepository;
+    @Mock
+    private EmailOtpChallengeRepository emailOtpChallengeRepository;
+    @Mock
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+    @Mock
+    private LoginAttemptRepository loginAttemptRepository;
+    @Mock
+    private CompromisedPasswordService compromisedPasswordService;
 
     private UserService createService() {
         return new UserService(userRepository, passwordEncoder, productRepository,
                 orderRepository, cartRepository, wishlistRepository,
-                emailOtpChallengeRepository, passwordResetTokenRepository, loginAttemptRepository);
+                emailOtpChallengeRepository, passwordResetTokenRepository, loginAttemptRepository,
+                compromisedPasswordService);
     }
 
     private LoginRequest request(String email, String password) {
