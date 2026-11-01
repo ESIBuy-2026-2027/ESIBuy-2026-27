@@ -1,10 +1,10 @@
 import { Component, OnInit, inject, input, signal } from '@angular/core';
-import { CustomerOrderStatus, PedidoService, SeguimientoEnvio } from '../../../core/services/pedido.service';
+import { SellerOrderStatus, PedidoService, SeguimientoEnvio } from '../../../core/services/pedido.service';
 
 interface TrackingStep {
   label: string;
   icon: 'clipboard' | 'package' | 'truck' | 'check';
-  statuses: CustomerOrderStatus[];
+  statuses: SellerOrderStatus[];
 }
 
 @Component({
@@ -16,7 +16,7 @@ interface TrackingStep {
 export class ClientShipmentTracking implements OnInit {
   private readonly pedidoService = inject(PedidoService);
   readonly pedidoId = input.required<string>();
-  readonly currentStatus = input.required<CustomerOrderStatus>();
+  readonly currentStatus = input.required<SellerOrderStatus>();
   readonly displayMode = input<'progress' | 'history'>('progress');
   readonly tracking = signal<SeguimientoEnvio | null>(null);
   readonly loading = signal(true);
@@ -31,7 +31,7 @@ export class ClientShipmentTracking implements OnInit {
   private readonly dateFormatter = new Intl.DateTimeFormat('es-ES', {
     dateStyle: 'medium',
   });
-  private readonly statusLabels: Record<CustomerOrderStatus, string> = {
+  private readonly statusLabels: Record<SellerOrderStatus, string> = {
     PAGADO: 'Pagado',
     PENDIENTE: 'Pendiente',
     PREPARANDO: 'Preparando',
@@ -70,7 +70,7 @@ export class ClientShipmentTracking implements OnInit {
     this.loadTracking();
   }
 
-  statusLabel(status: CustomerOrderStatus): string {
+  statusLabel(status: SellerOrderStatus): string {
     return this.statusLabels[status];
   }
 
