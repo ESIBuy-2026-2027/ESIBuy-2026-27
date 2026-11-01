@@ -46,13 +46,6 @@ stages:
           name: 'UCLM-VPN-Agents'
 
         steps:
-          - task: JavaToolInstaller@0
-            displayName: 'Configurar JDK 21'
-            inputs:
-              versionSpec: '21'
-              jdkArchitectureOption: 'x64'
-              jdkSourceOption: 'PreInstalled'
-
           - task: Maven@4
             displayName: 'Compilar backend y ejecutar tests con JaCoCo'
             inputs:
