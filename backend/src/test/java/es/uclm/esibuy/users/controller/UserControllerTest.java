@@ -63,6 +63,8 @@ class UserControllerTest {
 
         private static final String SELLER_EMAIL = "seller@example.com";
         private static final String SELLER_ID = "seller-id";
+        private static final String CLIENT_EMAIL = "client@example.com";
+        private static final String CLIENT_ID = "client-id";
         private static final String LOGIN_API = "/api/users/login";
         private static final String VERIFY_OTP_API = "/api/users/login/verify-otp";
         private static final String CURRENT_USER_API = "/api/users/me";
@@ -392,26 +394,46 @@ class UserControllerTest {
         }
 
         @Test
-        void clientLoginDoesNotRequireEmailOtp() throws Exception {
+        void clientLoginRequiresEmailOtpWhenEnabled() throws Exception {
                 User client = mock(User.class);
-                when(client.getId()).thenReturn("client-id");
-                when(client.getEmail()).thenReturn("client@example.com");
+                when(client.getId()).thenReturn(CLIENT_ID);
+                when(client.getEmail()).thenReturn(CLIENT_EMAIL);
                 when(client.getRole()).thenReturn(UserRole.CLIENT);
                 when(client.isActive()).thenReturn(true);
-                when(client.isTotpEnabled()).thenReturn(false);
+                when(client.isBlocked()).thenReturn(false);
+                when(client.isTotpEnabled()).thenReturn(true);
+                when(client.isEmailOtpEnabled()).thenReturn(true);
 
                 when(userService.login(any(LoginRequest.class))).thenReturn(client);
+                when(twoFactorAuthenticationService.verifyLoginCode(client, TEST_OTP))
+                                .thenReturn(true);
+                when(userService.findById(CLIENT_ID)).thenReturn(client);
 
-                mockMvc.perform(post(LOGIN_API)
+                MvcResult loginResult = mockMvc.perform(post(LOGIN_API)
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                                {"email":"client@example.com","password":"Password123!"}
+                                                {"email":"client@example.com","password":"Password123!",
+                                                 "totpCode":"123456"}
+                                                """))
+                                .andExpect(status().isAccepted())
+                                .andExpect(jsonPath("$.requires3fa").value(true))
+                                .andReturn();
+
+                MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
+
+                mockMvc.perform(post(VERIFY_OTP_API)
+                                .with(csrf())
+                                .session(session)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"code":"123456"}
                                                 """))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.role").value("CLIENT"));
 
-                verify(emailOtpService, never()).issueChallenge(any());
+                verify(emailOtpService).issueChallenge(client);
+                verify(emailOtpService).verifyChallenge(CLIENT_ID, TEST_OTP);
                 verify(sessionAuthenticationService).authenticate(any(), any(), any());
         }
 
@@ -463,6 +485,27 @@ class UserControllerTest {
                                 .andExpect(status().isOk());
 
                 verify(userService).save(seller);
+        }
+
+        @Test
+        void shouldAllowClientToEnableEmailOtpWhenTotpIsEnabled() throws Exception {
+                User client = mock(User.class);
+                when(client.getId()).thenReturn(CLIENT_ID);
+                when(client.getEmail()).thenReturn(CLIENT_EMAIL);
+                when(client.getRole()).thenReturn(UserRole.CLIENT);
+                when(client.isTotpEnabled()).thenReturn(true);
+                when(userService.findById(CLIENT_ID)).thenReturn(client);
+
+                mockMvc.perform(put(EMAIL_OTP_SETTINGS_API)
+                                .with(clientAuthentication())
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"enabled":true}
+                                                """))
+                                .andExpect(status().isOk());
+
+                verify(userService).save(client);
         }
 
         @Test
@@ -527,6 +570,16 @@ class UserControllerTest {
                                 principal,
                                 null,
                                 AuthorityUtils.createAuthorityList("ROLE_SELLER")));
+        }
+
+        private RequestPostProcessor clientAuthentication() {
+                AuthenticatedUserPrincipal principal = new AuthenticatedUserPrincipal(
+                                CLIENT_ID, CLIENT_EMAIL, UserRole.CLIENT, true);
+
+                return authentication(UsernamePasswordAuthenticationToken.authenticated(
+                                principal,
+                                null,
+                                AuthorityUtils.createAuthorityList("ROLE_CLIENT")));
         }
 
         private ResultActions loginRequest() throws Exception {

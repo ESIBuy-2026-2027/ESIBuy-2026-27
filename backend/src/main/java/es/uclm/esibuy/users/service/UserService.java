@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import es.uclm.esibuy.auth.passwordreset.repository.PasswordResetTokenRepository;
@@ -54,7 +55,7 @@ public class UserService {
 
     public UserService(
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
+            @Qualifier("pepperedPasswordEncoder") PasswordEncoder passwordEncoder,
             ProductRepository productRepository,
             OrderRepository orderRepository,
             CartRepository cartRepository,
@@ -159,12 +160,21 @@ public class UserService {
 
     public User login(LoginRequest request) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
-        return userRepository.findByEmailIgnoreCase(email)
-                .filter(user -> user.isActive()
-                        && !user.isBlocked()
-                        && user.getPasswordHash() != null
-                        && passwordEncoder.matches(request.getPassword(), user.getPasswordHash()))
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .filter(candidate -> candidate.isActive()
+                        && !candidate.isBlocked()
+                        && candidate.getPasswordHash() != null)
                 .orElseThrow(InvalidCredentialsException::new);
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new InvalidCredentialsException();
+        }
+
+        if (passwordEncoder.upgradeEncoding(user.getPasswordHash())) {
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            userRepository.save(user);
+        }
+        return user;
     }
 
     public List<User> findAllUsers() {

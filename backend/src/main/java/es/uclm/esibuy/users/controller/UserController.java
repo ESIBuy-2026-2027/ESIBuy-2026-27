@@ -47,7 +47,7 @@ public class UserController {
     private static final String MESSAGE_KEY = "message";
     private static final String EMAIL_KEY = "email";
     private static final String ENABLED_KEY = "enabled";
-    private static final String SOLO_ADMINS_SELLERS_MESSAGE = "Esta configuración solo está disponible para administradores y vendedores";
+    private static final String SOLO_ADMINS_SELLERS_MESSAGE = "Esta configuración solo está disponible para administradores, vendedores y clientes";
 
     private final UserService userService;
     private final LoginAttemptService loginAttemptService;
@@ -129,9 +129,7 @@ public class UserController {
             }
         }
 
-        if ((user.getRole() == UserRole.ADMIN
-                || user.getRole() == UserRole.SELLER)
-                && user.isEmailOtpEnabled()) {
+        if (user.isEmailOtpEnabled()) {
 
             emailOtpService.issueChallenge(user);
 
@@ -324,9 +322,7 @@ public class UserController {
 
         User user = userService.findById(userId);
 
-        if (user == null
-                || (user.getRole() != UserRole.ADMIN
-                        && user.getRole() != UserRole.SELLER)) {
+        if (user == null || !supportsEmailOtp(user)) {
             session.removeAttribute(PENDING_OTP_USER_ID);
             throw new InvalidOtpException();
         }
@@ -493,6 +489,7 @@ public class UserController {
 
     private boolean supportsEmailOtp(User user) {
         return user.getRole() == UserRole.ADMIN
-                || user.getRole() == UserRole.SELLER;
+                || user.getRole() == UserRole.SELLER
+                || user.getRole() == UserRole.CLIENT;
     }
 }

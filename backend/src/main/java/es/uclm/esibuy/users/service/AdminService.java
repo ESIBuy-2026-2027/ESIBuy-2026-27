@@ -14,6 +14,7 @@ import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,7 +28,8 @@ public class AdminService {
     private final PasswordEncoder passwordEncoder;
     private final CompromisedPasswordService compromisedPasswordService;
 
-    public AdminService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+    public AdminService(UserRepository userRepository,
+            @Qualifier("pepperedPasswordEncoder") PasswordEncoder passwordEncoder,
             CompromisedPasswordService compromisedPasswordService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;

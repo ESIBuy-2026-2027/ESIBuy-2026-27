@@ -7,6 +7,7 @@ import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.common.exception.UserNotFoundException;
 import es.uclm.esibuy.security.password.CompromisedPasswordException;
 import es.uclm.esibuy.security.password.CompromisedPasswordService;
+import es.uclm.esibuy.security.password.PepperedPasswordEncoder;
 import es.uclm.esibuy.users.dto.AltaAdminDTO;
 import es.uclm.esibuy.users.dto.UserAdminDTO;
 import es.uclm.esibuy.users.model.User;
@@ -17,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -36,7 +36,7 @@ class AdminServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private PepperedPasswordEncoder passwordEncoder;
 
     @Mock
     private CompromisedPasswordService compromisedPasswordService;
