@@ -4,6 +4,7 @@
   <p aria-live="polite">Cargando seguimiento...</p>
   } @else if (error(); as message) {
   <p class="tracking-error" role="alert">{{ message }}</p>
+  <button type="button" class="tracking-retry-button" (click)="retryLoadTracking()">Reintentar</button>
   } @else if (tracking(); as shipment) {
   @if (displayMode() === 'history') {
   <ol class="status-history" aria-label="Historial de cambios de estado">

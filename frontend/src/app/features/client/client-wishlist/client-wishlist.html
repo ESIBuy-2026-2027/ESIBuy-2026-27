@@ -76,7 +76,9 @@
       <!-- MENSAJE DE AVISO (ÉXITO / ERROR) ESTILO BANNER -->
       @if (toastService.toast(); as t) {
       <output class="catalog-alert" [class.is-success]="t.type === 'success'"
-        [class.is-error]="t.type === 'error' || t.type === 'info'" aria-live="polite">
+        [class.is-error]="t.type === 'error' || t.type === 'info'"
+        [attr.role]="t.type === 'error' ? 'alert' : 'status'"
+        [attr.aria-live]="t.type === 'error' ? 'assertive' : 'polite'">
         @if (t.type === 'success') {
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="m5 12 4 4L19 6"></path>
@@ -133,7 +135,8 @@
                   <a [routerLink]="['/products', product.id]">{{ product.name }}</a>
                 </h3>
 
-                <button type="button" class="remove-btn" (click)="removeFromWishlist(product.id, $event)"
+                <button type="button" class="remove-btn" [disabled]="removingProducts()[product.id]"
+                  (click)="removeFromWishlist(product.id, $event)"
                   title="Eliminar de favoritos" aria-label="Eliminar de favoritos">
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -175,9 +178,10 @@
                     (click)="$event.stopPropagation()" class="qty-input" />
                 </div>
 
-                <button type="button" class="buy-action-btn" (click)="addToCart(product, $event)"
+                <button type="button" class="buy-action-btn" [disabled]="addingProducts()[product.id]"
+                  (click)="addToCart(product, $event)"
                   title="Añadir al carrito">
-                  Añadir al carrito
+                  {{ addingProducts()[product.id] ? 'Añadiendo...' : 'Añadir al carrito' }}
                 </button>
                 } @else {
                 <button type="button" class="buy-action-btn is-blocked" disabled aria-disabled="true"

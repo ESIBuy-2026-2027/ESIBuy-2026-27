@@ -12,6 +12,7 @@ import java.util.Optional;
 
 import es.uclm.esibuy.auth.passwordreset.model.PasswordResetToken;
 import es.uclm.esibuy.auth.passwordreset.repository.PasswordResetTokenRepository;
+import es.uclm.esibuy.security.password.CompromisedPasswordService;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.repository.UserRepository;
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ public class PasswordResetService {
     private final PasswordEncoder passwordEncoder;
     private final MongoTemplate mongoTemplate;
     private final boolean logRawTokenInDevelopment;
+    private final CompromisedPasswordService compromisedPasswordService;
 
     private final SecureRandom secureRandom = new SecureRandom();
 
@@ -52,6 +54,7 @@ public class PasswordResetService {
             PasswordEncoder passwordEncoder,
             MongoTemplate mongoTemplate,
             PasswordResetEmailService passwordResetEmailService,
+            CompromisedPasswordService compromisedPasswordService,
             @Value("${esibuy.password-reset.log-token:false}") boolean logRawTokenInDevelopment,
             @Value("${esibuy.password-reset.frontend-url:http://localhost:4200}") String passwordResetFrontendUrl) {
 
@@ -63,6 +66,7 @@ public class PasswordResetService {
         this.passwordResetEmailService = passwordResetEmailService;
         this.logRawTokenInDevelopment = logRawTokenInDevelopment;
         this.passwordResetFrontendUrl = passwordResetFrontendUrl;
+        this.compromisedPasswordService = compromisedPasswordService;
     }
 
     public void requestReset(String email, String ipAddress) {
@@ -156,6 +160,9 @@ public class PasswordResetService {
                 .findByTokenHashAndUsedAtIsNullAndExpiresAtAfter(
                         tokenHash, now)
                 .orElseThrow(InvalidPasswordResetTokenException::new);
+
+        // Comprobar la nueva contraseña antes de consumir el token.
+        compromisedPasswordService.validatePassword(newPassword);
 
         /*
          * Consumo atómico: solo una petición concurrente puede marcar

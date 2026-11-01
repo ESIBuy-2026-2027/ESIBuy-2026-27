@@ -339,7 +339,7 @@ export class Register {
         error: (err) => {
           this.serverError = this.getRegistrationErrorMessage(err);
           this.changeDetector.markForCheck();
-          this.scrollToEmailError();
+          this.scrollToServerError();
         }
 
       }).add(() => {
@@ -371,7 +371,7 @@ export class Register {
         error: (err) => {
           this.serverError = this.getRegistrationErrorMessage(err);
           this.changeDetector.markForCheck();
-          this.scrollToEmailError();
+          this.scrollToServerError();
         }
 
       }).add(() => {
@@ -442,9 +442,9 @@ export class Register {
       : 'No se ha podido completar el registro. Comprueba los datos introducidos e inténtalo de nuevo';
   }
 
-  private scrollToEmailError(): void {
+  private scrollToServerError(): void {
     setTimeout(() => {
-      document.querySelector('.server-field-error')?.scrollIntoView({
+      document.querySelector('.server-error-banner')?.scrollIntoView({
         behavior: 'smooth',
         block: 'center'
       });

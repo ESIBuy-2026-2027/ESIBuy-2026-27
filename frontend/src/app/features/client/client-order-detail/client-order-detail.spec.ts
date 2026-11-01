@@ -1,13 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
-import { describe, beforeEach, it, expect } from 'vitest';
-import { of } from 'rxjs';
+import { describe, beforeEach, it, expect, vi } from 'vitest';
+import { of, throwError } from 'rxjs';
 import { CartService } from '../../../core/services/cart.service';
 import { CustomerOrder, PedidoService } from '../../../core/services/pedido.service';
 import { ClientOrderDetail } from './client-order-detail';
 
 describe('ClientOrderDetail', () => {
   let fixture: ComponentFixture<ClientOrderDetail>;
+  let obtenerPedidoDelCliente: ReturnType<typeof vi.fn>;
   const order: CustomerOrder = {
     pedidoId: 'pedido-123',
     fechaCreacion: '2026-10-28T12:00:00',
@@ -38,7 +39,7 @@ describe('ClientOrderDetail', () => {
         {
           provide: PedidoService,
           useValue: {
-            obtenerPedidoDelCliente: () => of(order),
+            obtenerPedidoDelCliente: obtenerPedidoDelCliente = vi.fn(() => of(order)),
             obtenerHistorialEstadosEnvio: () => of({
               historialEstados: [
                 { estado: 'PENDIENTE', fecha: '2026-10-28T12:00:00' },
@@ -77,5 +78,19 @@ describe('ClientOrderDetail', () => {
     expect(Array.from(element.querySelectorAll('.progress-marker svg')).map((icon) => icon.getAttribute('viewBox')))
       .toEqual(['0 0 24 24', '0 0 24 24', '0 0 24 24', '0 0 24 24']);
     expect(element.querySelector('.buy-again-button')).toBeTruthy();
+  });
+
+  it('should retry loading the order after an error', () => {
+    obtenerPedidoDelCliente
+      .mockReturnValueOnce(throwError(() => new Error('network error')))
+      .mockReturnValueOnce(of(order));
+
+    fixture.componentInstance.loadOrder('pedido-123');
+    expect(fixture.componentInstance.error()).toBe('No se pudo cargar el detalle del pedido.');
+
+    fixture.componentInstance.retryLoadOrder();
+
+    expect(fixture.componentInstance.error()).toBeNull();
+    expect(fixture.componentInstance.order()).toEqual(order);
   });
 });

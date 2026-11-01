@@ -1,7 +1,7 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { NEVER, of } from 'rxjs';
 import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { ClientWishlist } from './client-wishlist';
 import { WishlistService } from '../../../core/services/wishlist.service';
@@ -106,6 +106,16 @@ describe('ClientWishlist', () => {
 
     expect(cartServiceMock.addItem).toHaveBeenCalledWith('p-1', 2);
     expect(toastServiceMock.show).toHaveBeenCalledWith('Producto añadido al carrito', 'success');
+  });
+
+  it('should ignore repeated add-to-cart clicks while the request is pending', () => {
+    cartServiceMock.addItem.mockReturnValue(NEVER);
+
+    component.addToCart(mockWishlistProducts[0]);
+    component.addToCart(mockWishlistProducts[0]);
+
+    expect(cartServiceMock.addItem).toHaveBeenCalledTimes(1);
+    expect(component.addingProducts()['p-1']).toBe(true);
   });
 
   it('should render items in wishlist and indicate unavailable products', () => {

@@ -1,10 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AuthService } from '../../../core/services/auth.service';
 import { AdminUserCreate } from './admin-user-create';
+import { HttpErrorResponse } from '@angular/common/http';
 
 describe('AdminUserCreate', () => {
   let component: AdminUserCreate;
@@ -179,5 +180,126 @@ describe('AdminUserCreate', () => {
     const backLink = fixture.nativeElement.querySelector('a[routerLink="/admin/usuarios"]') as HTMLAnchorElement;
     expect(backLink).toBeTruthy();
     expect(backLink.getAttribute('routerLink')).toBe('/admin/usuarios');
+  });
+
+  it.each([
+    {
+      status: 400,
+      message: 'La contraseña elegida aparece en filtraciones conocidas. Elige otra contraseña.',
+    },
+    {
+      status: 503,
+      message: 'No se ha podido comprobar la seguridad de la contraseña. Inténtalo de nuevo más tarde.',
+    },
+  ])('muestra el mensaje del servidor al crear un administrador con HTTP $status', ({ status, message }) => {
+    createAdmin.mockReturnValue(
+      throwError(() => new HttpErrorResponse({
+        status,
+        error: { message },
+      })),
+    );
+
+    component.form.patchValue({
+      nationalId: '12345678Z',
+      firstName: 'Carlos',
+      lastName: 'Gómez Pérez',
+      email: 'carlos.admin@esibuy.com',
+      password: 'Admin123456!#',
+      confirmPassword: 'Admin123456!#',
+      headquarters: 'Ciudad Real',
+      profileImage: component.avatars[0],
+    });
+
+    component.onSubmit();
+    fixture.detectChanges();
+
+    const alert = fixture.nativeElement.querySelector('[role="alert"]');
+
+    expect(component.errorMessage).toBe(message);
+    expect(alert).not.toBeNull();
+    expect(alert.textContent).toContain(message);
+    expect(component.submitting).toBe(false);
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('releases the loading state and renders an asynchronous server error', () => {
+    let failRequest: ((error: HttpErrorResponse) => void) | undefined;
+    createAdmin.mockReturnValue(
+      new Observable((subscriber) => {
+        failRequest = (error) => subscriber.error(error);
+      }),
+    );
+
+    component.form.patchValue({
+      nationalId: '12345678Z',
+      firstName: 'Carlos',
+      lastName: 'Gómez Pérez',
+      email: 'carlos.admin@esibuy.com',
+      password: 'Admin123456!#',
+      confirmPassword: 'Admin123456!#',
+      headquarters: 'Ciudad Real',
+      profileImage: component.avatars[0],
+    });
+
+    component.onSubmit();
+    expect(component.submitting).toBe(true);
+
+    failRequest?.(new HttpErrorResponse({
+      status: 503,
+      error: { message: 'Servicio no disponible' },
+    }));
+    fixture.detectChanges();
+
+    expect(component.submitting).toBe(false);
+    expect(fixture.nativeElement.querySelector('.alert-box.alert-danger')?.textContent)
+      .toContain('Servicio no disponible');
+  });
+
+  it('scrolls to the rendered server error alert', () => {
+    vi.useFakeTimers();
+    createAdmin.mockReturnValue(
+      throwError(() => new HttpErrorResponse({
+        status: 503,
+        error: { message: 'No se ha podido comprobar la seguridad de la contraseña.' },
+      })),
+    );
+
+    component.form.patchValue({
+      nationalId: '12345678Z',
+      firstName: 'Carlos',
+      lastName: 'Gómez Pérez',
+      email: 'carlos.admin@esibuy.com',
+      password: 'Admin123456!#',
+      confirmPassword: 'Admin123456!#',
+      headquarters: 'Ciudad Real',
+      profileImage: component.avatars[0],
+    });
+
+    component.onSubmit();
+    fixture.detectChanges();
+
+    const alert = fixture.nativeElement.querySelector('.alert-box.alert-danger') as HTMLElement;
+    const scrollIntoView = vi.fn();
+    alert.scrollIntoView = scrollIntoView;
+    vi.runAllTimers();
+
+    expect(scrollIntoView).toHaveBeenCalledWith({
+      behavior: 'smooth',
+      block: 'center',
+    });
+    vi.useRealTimers();
+  });
+
+  it.each(['copy', 'cut', 'paste'])('blocks %s on both password fields', (eventName) => {
+    const inputs = [
+      fixture.nativeElement.querySelector('#password') as HTMLInputElement,
+      fixture.nativeElement.querySelector('#confirmPassword') as HTMLInputElement,
+    ];
+
+    for (const input of inputs) {
+      const event = new Event(eventName, { cancelable: true });
+      input.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(true);
+    }
   });
 });

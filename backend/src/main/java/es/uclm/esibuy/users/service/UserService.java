@@ -31,6 +31,7 @@ import es.uclm.esibuy.users.repository.UserRepository;
 import es.uclm.esibuy.wishlist.repository.WishlistRepository;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
+import es.uclm.esibuy.security.password.CompromisedPasswordService;
 import es.uclm.esibuy.security.repository.EmailOtpChallengeRepository;
 import es.uclm.esibuy.security.repository.LoginAttemptRepository;
 
@@ -49,6 +50,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CompromisedPasswordService compromisedPasswordService;
 
     public UserService(
             UserRepository userRepository,
@@ -59,7 +61,8 @@ public class UserService {
             WishlistRepository wishlistRepository,
             EmailOtpChallengeRepository emailOtpChallengeRepository,
             PasswordResetTokenRepository passwordResetTokenRepository,
-            LoginAttemptRepository loginAttemptRepository) {
+            LoginAttemptRepository loginAttemptRepository,
+            CompromisedPasswordService compromisedPasswordService) {
 
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -70,6 +73,7 @@ public class UserService {
         this.emailOtpChallengeRepository = emailOtpChallengeRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.loginAttemptRepository = loginAttemptRepository;
+        this.compromisedPasswordService = compromisedPasswordService;
     }
 
     public User registerClient(ClientRegistrationRequest request) {
@@ -81,6 +85,8 @@ public class UserService {
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new DuplicateUserException(MSG_DUPLICATE_EMAIL);
         }
+
+        compromisedPasswordService.validatePassword(request.getPassword());
 
         User user = new User(email, request.getFirstName().trim(), request.getLastName().trim(), UserRole.CLIENT);
         user.setNationalId(request.getNationalId().trim());
@@ -112,6 +118,8 @@ public class UserService {
             throw new DuplicateUserException("Ya existe un vendedor con ese nombre comercial");
         }
 
+        compromisedPasswordService.validatePassword(request.getPassword());
+
         User user = new User(email, request.getFirstName().trim(), request.getLastName().trim(), UserRole.SELLER);
         user.setNationalId(request.getNationalId().trim());
         user.setPhone(blankToNull(request.getPhone()));
@@ -133,6 +141,8 @@ public class UserService {
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new DuplicateUserException(MSG_DUPLICATE_EMAIL);
         }
+
+        compromisedPasswordService.validatePassword(request.getPassword());
 
         User user = new User(email, request.getFirstName().trim(), request.getLastName().trim(), UserRole.ADMIN);
         user.setPhone(blankToNull(request.getPhone()));

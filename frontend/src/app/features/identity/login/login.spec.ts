@@ -44,6 +44,16 @@ describe('Login', () => {
     expect(component).toBeTruthy();
   });
 
+  it('allows clipboard actions on the login password field', () => {
+    fixture.detectChanges();
+    const password = fixture.nativeElement.querySelector('#password') as HTMLInputElement;
+    const event = new Event('paste', { cancelable: true });
+
+    password.dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(false);
+  });
+
   it('accepts an existing short password and routes sellers to their catalog', () => {
     login.mockReturnValue(of({
       id: 'seller-1',

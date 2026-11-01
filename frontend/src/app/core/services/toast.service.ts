@@ -12,15 +12,18 @@ export class ToastService {
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
   readonly toast = signal<ToastMessage | null>(null);
 
-  show(text: string, type: ToastType = 'success', durationMs = 3500): void {
+  show(text: string, type: ToastType = 'success', durationMs = type === 'error' ? 0 : 3500): void {
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
+      this.timeoutId = null;
     }
     this.toast.set({ text, type });
-    this.timeoutId = setTimeout(() => {
-      this.toast.set(null);
-      this.timeoutId = null;
-    }, durationMs);
+    if (durationMs > 0) {
+      this.timeoutId = setTimeout(() => {
+        this.toast.set(null);
+        this.timeoutId = null;
+      }, durationMs);
+    }
   }
 
   clear(): void {
@@ -31,4 +34,3 @@ export class ToastService {
     this.toast.set(null);
   }
 }
-

@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import es.uclm.esibuy.common.filter.CorrelationIdFilter;
+import es.uclm.esibuy.security.password.PasswordCheckUnavailableException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +20,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
+import es.uclm.esibuy.security.password.CompromisedPasswordException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -262,5 +264,29 @@ public class ApiExceptionHandler {
                         InvalidOtpException exception) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                                 .body(Map.of(MESSAGE, exception.getMessage()));
+        }
+
+        @ExceptionHandler(CompromisedPasswordException.class)
+        public ResponseEntity<Map<String, String>> handleCompromisedPassword(
+                        CompromisedPasswordException exception,
+                        HttpServletRequest request) {
+
+                return ResponseEntity.badRequest().body(Map.of(
+                                MESSAGE, exception.getMessage(),
+                                CORRELATION_ID, correlationId(request)));
+        }
+
+        @ExceptionHandler(PasswordCheckUnavailableException.class)
+        public ResponseEntity<Map<String, String>> handlePasswordCheckUnavailable(
+                        PasswordCheckUnavailableException exception,
+                        HttpServletRequest request) {
+
+                String id = correlationId(request);
+
+                LOGGER.warn("No se pudo comprobar la contraseña mediante el servicio externo. correlationId={}", id);
+
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of(
+                                MESSAGE, exception.getMessage(),
+                                CORRELATION_ID, id));
         }
 }

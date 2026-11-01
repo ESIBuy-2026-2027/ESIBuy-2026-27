@@ -10,7 +10,8 @@
     <!-- MENSAJE DE AVISO (ÉXITO / ERROR) -->
     @if (toastService.toast(); as t) {
     <output class="catalog-alert" [class.is-success]="t.type === 'success'" [class.is-error]="t.type === 'error'"
-      [class.is-info]="t.type === 'info'" aria-live="polite">
+      [class.is-info]="t.type === 'info'" [attr.role]="t.type === 'error' ? 'alert' : 'status'"
+      [attr.aria-live]="t.type === 'error' ? 'assertive' : 'polite'">
 
       @if (t.type === 'success') {
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -44,8 +45,8 @@
       <p>
         {{ errorMessage() || 'No se pudo encontrar el producto solicitado.' }}
       </p>
-      <button type="button" class="action-btn" (click)="goBack()">
-        Regresar al catálogo
+      <button type="button" class="action-btn" (click)="retryLoadProduct()">
+        Reintentar
       </button>
     </div>
     } @else if (product(); as p) {
@@ -81,7 +82,8 @@
 
           <!-- BOTÓN DE FAVORITOS -->
           @if (!isAdmin()) {
-          <button type="button" class="heart-toggle-btn" [class.is-favorite]="isFavorite()" (click)="toggleFavorite()"
+          <button type="button" class="heart-toggle-btn" [class.is-favorite]="isFavorite()"
+            [disabled]="favoriteUpdating()" (click)="toggleFavorite()"
             [title]="isFavorite() ? 'Quitar de lista de deseos' : 'Añadir a lista de deseos'"
             [attr.aria-label]="isFavorite() ? 'Quitar de lista de deseos' : 'Añadir a lista de deseos'">
 
@@ -96,6 +98,13 @@
 
       <!-- COLUMNA INFORMACIÓN -->
       <div class="product-info-panel">
+        @if (categoriesLoading()) {
+        <small aria-live="polite">Cargando categorías…</small>
+        } @else if (categoryError()) {
+        <small role="alert">No se han podido cargar las categorías.
+          <button type="button" (click)="loadCategories()">Reintentar</button>
+        </small>
+        }
         <div class="categories-strip">
           @for (catId of p.categoryIds; track catId) {
           <span class="category-chip">
@@ -312,7 +321,7 @@
             </div>
           </div>
 
-          <button type="button" class="secondary-buy-btn" (click)="toggleFavorite()">
+          <button type="button" class="secondary-buy-btn" [disabled]="favoriteUpdating()" (click)="toggleFavorite()">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
               aria-hidden="true">
               <path
@@ -324,8 +333,8 @@
         </div>
 
         <div class="cart-button-container">
-          <button type="button" class="primary-buy-btn" (click)="addToCart()">
-            Añadir al carrito
+          <button type="button" class="primary-buy-btn" [disabled]="cartAdding()" (click)="addToCart()">
+            {{ cartAdding() ? 'Añadiendo...' : 'Añadir al carrito' }}
           </button>
         </div>
         }

@@ -172,6 +172,21 @@ describe('AdminProductList', () => {
     expect(el.querySelector('.error-alert')?.textContent).toContain(ADMIN_READONLY_ERROR_MESSAGE);
   });
 
+  it('should expose a category error and recover on retry', () => {
+    productsServiceMock.getCategories.mockReturnValueOnce(
+      throwError(() => new Error('categories unavailable')),
+    );
+
+    component.loadCategories();
+    expect(component.categoryError()).toBe(true);
+
+    productsServiceMock.getCategories.mockReturnValueOnce(of(mockCategories));
+    component.loadCategories();
+
+    expect(component.categoryError()).toBe(false);
+    expect(component.categories()).toEqual(mockCategories);
+  });
+
   it('should display error message when attemptUnauthorizedAction encounters 403', () => {
     component.attemptUnauthorizedAction('prod-1');
     fixture.detectChanges();
@@ -221,4 +236,3 @@ describe('AdminProductList', () => {
     expect(sortBtn?.getAttribute('aria-sort')).toBe('descending');
   });
 });
-

@@ -21,6 +21,7 @@ export class ClientShipmentTracking implements OnInit {
   readonly tracking = signal<SeguimientoEnvio | null>(null);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
+  private trackingRequestInProgress = false;
   readonly steps: TrackingStep[] = [
     { label: 'Pendiente', icon: 'clipboard', statuses: ['PAGADO', 'PENDIENTE'] },
     { label: 'En preparación', icon: 'package', statuses: ['PREPARANDO'] },
@@ -39,6 +40,17 @@ export class ClientShipmentTracking implements OnInit {
     CANCELADO: 'Cancelado',
   };
   ngOnInit(): void {
+    this.loadTracking();
+  }
+
+  loadTracking(): void {
+    if (this.trackingRequestInProgress) {
+      return;
+    }
+
+    this.trackingRequestInProgress = true;
+    this.loading.set(true);
+    this.error.set(null);
     this.pedidoService.obtenerHistorialEstadosEnvio(this.pedidoId()).subscribe({
       next: (tracking) => {
         this.tracking.set(tracking);
@@ -48,7 +60,14 @@ export class ClientShipmentTracking implements OnInit {
         this.error.set('No se pudo cargar el seguimiento del envío.');
         this.loading.set(false);
       },
+    }).add(() => {
+      this.trackingRequestInProgress = false;
+      this.loading.set(false);
     });
+  }
+
+  retryLoadTracking(): void {
+    this.loadTracking();
   }
 
   statusLabel(status: CustomerOrderStatus): string {
