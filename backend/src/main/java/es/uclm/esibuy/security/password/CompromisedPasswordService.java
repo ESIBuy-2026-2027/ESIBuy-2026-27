@@ -41,6 +41,9 @@ public class CompromisedPasswordService {
 
     private String calculateSha1(String password) {
         try {
+            // SHA-1 se utiliza exclusivamente para consultar HIBP mediante k-anonymity.
+            // Solo se envía el prefijo de 5 caracteres del hash.
+            // No se utiliza para almacenar contraseñas ni para verificar credenciales.
             MessageDigest digest = MessageDigest.getInstance("SHA-1");
 
             byte[] hashBytes = digest.digest(
