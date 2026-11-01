@@ -1,3 +1,4 @@
+
 # ==============================================================================
 # Pipeline de CI - ESIBuy 2026-2027 (Rama DEVELOP)
 # Historia de Usuario: 301 (Integración Continua)
@@ -19,6 +20,7 @@ pr:
     include:
       - develop
 
+# Agente predeterminado para trabajos que no necesiten VPN
 pool:
   vmImage: 'ubuntu-24.04'
 
@@ -29,17 +31,20 @@ variables:
 
 stages:
   # ============================================================================
-  # STAGE 1: INTEGRACIÓN CONTINUA (CI) - Backend y Frontend
-  # En develop NO se ejecuta despliegue (CD) para no interrumpir el trabajo del equipo
+  # STAGE 1: INTEGRACIÓN CONTINUA (CI)
   # ============================================================================
   - stage: CI
     displayName: 'Stage 1: Integración Continua (Develop)'
     jobs:
+
       # ------------------------------------------------------------------------
-      # Backend CI: Compilación Java 21, Tests con JaCoCo y análisis SonarQube
+      # Backend CI: Java 21, Maven, JaCoCo y SonarQube
       # ------------------------------------------------------------------------
       - job: Backend_CI
         displayName: 'Backend CI (Java 21 / Maven / JaCoCo / SonarQube)'
+        pool:
+          name: 'UCLM-VPN-Agents'
+
         steps:
           - task: JavaToolInstaller@0
             displayName: 'Configurar JDK 21'
@@ -60,7 +65,6 @@ stages:
               jdkVersionOption: '1.21'
               mavenVersionOption: 'Default'
 
-          # Publicar reporte de cobertura JaCoCo
           - task: PublishCodeCoverageResults@2
             displayName: 'Publicar reporte de cobertura JaCoCo'
             inputs:
@@ -68,28 +72,32 @@ stages:
               pathToSources: '$(System.DefaultWorkingDirectory)/backend/src/main/java'
             condition: succeeded()
 
-          # Análisis SonarQube Backend
-          - script: |
-              echo "Comprobando disponibilidad del servidor SonarQube UCLM (seralu4.esi.uclm.es:1521)..."
-              if curl -s --connect-timeout 4 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
-                echo "Servidor SonarQube alcanzable. Ejecutando análisis de Backend..."
-                cd backend
-                mvn sonar:sonar -B \
-                  -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
-                  -Dsonar.token="$(SONAR_TOKEN)" \
-                  -Dsonar.coverage.jacoco.xmlReportPaths="target/site/jacoco/jacoco.xml"
-              else
-                echo "[INFO] Servidor SonarQube en red privada ESI/UCLM. Se omite análisis en agente público de Azure sin bloquear la integración."
-              fi
+          # SonarQube Backend: ejecución obligatoria desde la VPN
+          - bash: |
+              set -e
+              echo "Comprobando disponibilidad de SonarQube UCLM..."
+              curl --fail --silent --show-error --connect-timeout 5 \
+                http://seralu4.esi.uclm.es:1521/api/system/status
+
+              echo "Ejecutando análisis de SonarQube Backend..."
+              cd backend
+
+              mvn sonar:sonar -B \
+                -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
+                -Dsonar.token="$SONAR_TOKEN" \
+                -Dsonar.coverage.jacoco.xmlReportPaths="target/site/jacoco/jacoco.xml"
             displayName: 'Ejecutar análisis de SonarQube Backend'
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
 
       # ------------------------------------------------------------------------
-      # Frontend CI: Node 22, dependencias, tests unitarios, build y SonarQube
+      # Frontend CI: Node 22, Angular, tests y SonarQube
       # ------------------------------------------------------------------------
       - job: Frontend_CI
         displayName: 'Frontend CI (Node 22 / Angular / Tests / SonarQube)'
+        pool:
+          name: 'UCLM-VPN-Agents'
+
         steps:
           - task: UseNode@1
             displayName: 'Configurar Node.js 22.x'
@@ -111,41 +119,44 @@ stages:
               npm run build
             displayName: 'Compilación de verificación Frontend'
 
-          # Análisis SonarQube Frontend
-          - script: |
-              echo "Comprobando disponibilidad del servidor SonarQube UCLM (seralu4.esi.uclm.es:1521)..."
-              if curl -s --connect-timeout 4 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
-                echo "Servidor SonarQube alcanzable. Ejecutando análisis de Frontend..."
-                cd frontend
-                npx --yes sonar-scanner \
-                  -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
-                  -Dsonar.token="$(SONAR_TOKEN)"
-              else
-                echo "[INFO] Servidor SonarQube en red privada ESI/UCLM. Se omite análisis en agente público de Azure sin bloquear la integración."
-              fi
+          # SonarQube Frontend: ejecución obligatoria desde la VPN
+          - bash: |
+              set -e
+              echo "Comprobando disponibilidad de SonarQube UCLM..."
+              curl --fail --silent --show-error --connect-timeout 5 \
+                http://seralu4.esi.uclm.es:1521/api/system/status
+
+              echo "Ejecutando análisis de SonarQube Frontend..."
+              cd frontend
+
+              npx --yes sonar-scanner \
+                -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
+                -Dsonar.token="$SONAR_TOKEN"
             displayName: 'Ejecutar análisis de SonarQube Frontend'
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
 
       # ------------------------------------------------------------------------
       # Sync_Azure_Repos: Sincronización automática a Azure Repos
-      # Se ejecuta sólo si Backend_CI y Frontend_CI terminan con éxito
-      # y NO es una Pull Request (sólo en pushes reales a develop)
+      # Se mantiene en agente Microsoft-hosted
       # ------------------------------------------------------------------------
       - job: Sync_Azure_Repos
         displayName: 'Sincronizar rama con Azure Repos'
         dependsOn: [Backend_CI, Frontend_CI]
         condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+
         steps:
           - checkout: self
             persistCredentials: true
             fetchDepth: 0
+
           - script: |
               echo "Sincronizando rama $(Build.SourceBranchName) hacia Azure Repos..."
               if [ -z "$AZURE_REPO_TOKEN" ]; then
                 echo "##vso[task.logissue type=error]Falta la variable secreta AZURE_REPO_TOKEN en el grupo 'esibuy-secrets'."
                 exit 1
               fi
+
               echo "Intentando sincronizar con repositorio ESIBuy-G6..."
               if git push "https://pat:$AZURE_REPO_TOKEN@dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy-G6" HEAD:refs/heads/$(Build.SourceBranchName) --force; then
                 echo "Rama $(Build.SourceBranchName) sincronizada con exito en ESIBuy-G6."
