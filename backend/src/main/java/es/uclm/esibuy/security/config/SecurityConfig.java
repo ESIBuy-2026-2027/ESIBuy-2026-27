@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
@@ -31,6 +32,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import es.uclm.esibuy.common.filter.CorrelationIdFilter;
+import es.uclm.esibuy.security.password.PepperedPasswordEncoder;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -196,9 +198,16 @@ public class SecurityConfig {
                 return source;
         }
 
-        @Bean
+        @Bean("otpPasswordEncoder")
+        @Primary
         PasswordEncoder passwordEncoder() {
                 return new BCryptPasswordEncoder();
+        }
+
+        @Bean("pepperedPasswordEncoder")
+        PasswordEncoder pepperedPasswordEncoder(
+                        @Value("${esibuy.security.password.pepper}") String pepper) {
+                return new PepperedPasswordEncoder(pepper);
         }
 
         private static final class CsrfCookieFilter extends OncePerRequestFilter {

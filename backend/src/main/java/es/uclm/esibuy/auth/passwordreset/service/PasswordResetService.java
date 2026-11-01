@@ -18,6 +18,7 @@ import es.uclm.esibuy.users.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -51,7 +52,7 @@ public class PasswordResetService {
             UserRepository userRepository,
             PasswordResetTokenRepository tokenRepository,
             PasswordResetRateLimiter rateLimiter,
-            PasswordEncoder passwordEncoder,
+            @Qualifier("pepperedPasswordEncoder") PasswordEncoder passwordEncoder,
             MongoTemplate mongoTemplate,
             PasswordResetEmailService passwordResetEmailService,
             CompromisedPasswordService compromisedPasswordService,

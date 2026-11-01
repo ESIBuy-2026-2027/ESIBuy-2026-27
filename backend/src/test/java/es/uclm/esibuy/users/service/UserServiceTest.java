@@ -18,6 +18,7 @@ import es.uclm.esibuy.cart.repository.CartRepository;
 import es.uclm.esibuy.wishlist.repository.WishlistRepository;
 import es.uclm.esibuy.security.password.CompromisedPasswordException;
 import es.uclm.esibuy.security.password.CompromisedPasswordService;
+import es.uclm.esibuy.security.password.PepperedPasswordEncoder;
 import es.uclm.esibuy.security.repository.EmailOtpChallengeRepository;
 import es.uclm.esibuy.auth.passwordreset.repository.PasswordResetTokenRepository;
 import es.uclm.esibuy.security.repository.LoginAttemptRepository;
@@ -27,7 +28,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -58,7 +58,7 @@ class UserServiceTest {
         private ProductRepository productRepository;
 
         @Mock
-        private PasswordEncoder passwordEncoder;
+        private PepperedPasswordEncoder passwordEncoder;
 
         @Mock
         private OrderRepository orderRepository;
@@ -274,6 +274,45 @@ class UserServiceTest {
                 when(passwordEncoder.matches("Password123!", "hashed-pwd")).thenReturn(true);
 
                 assertEquals(seller, userService.login(request));
+        }
+
+        @Test
+        void shouldMigrateLegacyPasswordHashAfterSuccessfulLogin() {
+                LoginRequest request = new LoginRequest();
+                request.setEmail("seller@example.com");
+                request.setPassword("Password123!");
+                User seller = new User("seller@example.com", "Carlos", "Lopez", UserRole.SELLER);
+                seller.setActive(true);
+                seller.setPasswordHash("legacy-hash");
+
+                when(userRepository.findByEmailIgnoreCase("seller@example.com"))
+                                .thenReturn(Optional.of(seller));
+                when(passwordEncoder.matches("Password123!", "legacy-hash")).thenReturn(true);
+                when(passwordEncoder.upgradeEncoding("legacy-hash")).thenReturn(true);
+                when(passwordEncoder.encode("Password123!")).thenReturn("peppered-hash");
+
+                assertEquals(seller, userService.login(request));
+
+                assertEquals("peppered-hash", seller.getPasswordHash());
+                verify(userRepository).save(seller);
+        }
+
+        @Test
+        void shouldNotMigrateHashAfterFailedLogin() {
+                LoginRequest request = new LoginRequest();
+                request.setEmail("seller@example.com");
+                request.setPassword("wrong-password");
+                User seller = new User("seller@example.com", "Carlos", "Lopez", UserRole.SELLER);
+                seller.setActive(true);
+                seller.setPasswordHash("legacy-hash");
+
+                when(userRepository.findByEmailIgnoreCase("seller@example.com"))
+                                .thenReturn(Optional.of(seller));
+                when(passwordEncoder.matches("wrong-password", "legacy-hash")).thenReturn(false);
+
+                assertThrows(InvalidCredentialsException.class, () -> userService.login(request));
+
+                verify(userRepository, never()).save(any(User.class));
         }
 
         @Test

@@ -20,6 +20,7 @@ import es.uclm.esibuy.auth.passwordreset.model.PasswordResetToken;
 import es.uclm.esibuy.auth.passwordreset.repository.PasswordResetTokenRepository;
 import es.uclm.esibuy.security.password.CompromisedPasswordException;
 import es.uclm.esibuy.security.password.CompromisedPasswordService;
+import es.uclm.esibuy.security.password.PepperedPasswordEncoder;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
@@ -37,7 +38,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.mail.MailSendException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,7 +59,7 @@ class PasswordResetServiceTest {
         private PasswordResetRateLimiter rateLimiter;
 
         @Mock
-        private PasswordEncoder passwordEncoder;
+        private PepperedPasswordEncoder passwordEncoder;
 
         @Mock
         private MongoTemplate mongoTemplate;
