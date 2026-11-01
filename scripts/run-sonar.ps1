@@ -78,3 +78,4 @@ Write-Host "==========================================================" -Foregro
 Write-Host " ¡Analisis de Backend y Frontend completados con exito!" -ForegroundColor Green
 Write-Host " Consulta los resultados en: $sonarUrl" -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
+

@@ -41,3 +41,4 @@ echo "=========================================================="
 echo " Analisis completado con exito!"
 echo " Consulta los resultados en: $SONAR_URL"
 echo "=========================================================="
+

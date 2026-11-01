@@ -22,7 +22,7 @@ pr:
       - release/*
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'ubuntu-24.04'
 
 variables:
   - group: 'esibuy-secrets'
