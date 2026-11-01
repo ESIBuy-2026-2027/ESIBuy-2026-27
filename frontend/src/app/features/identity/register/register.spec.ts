@@ -171,4 +171,87 @@ describe('Register', () => {
         expect(fixture.nativeElement.querySelector('[role="alert"]').textContent)
             .toContain('Ya existe un usuario con ese email');
     });
+
+    it.each([
+        {
+            status: 400,
+            message: 'La contraseña elegida aparece en filtraciones conocidas. Elige otra contraseña.',
+        },
+        {
+            status: 503,
+            message: 'No se ha podido comprobar la seguridad de la contraseña. Inténtalo de nuevo más tarde.',
+        },
+    ])('muestra el mensaje del servidor cuando el registro devuelve HTTP $status', ({ status, message }) => {
+        registerSeller.mockReturnValue(
+            throwError(() => new HttpErrorResponse({
+                status,
+                error: { message },
+            })),
+        );
+
+        // Seleccionar el registro como vendedor.
+        fixture.nativeElement.querySelectorAll('.role-selector button')[1].click();
+        fixture.detectChanges();
+
+        component.form.setValue({
+            firstName: 'Celia',
+            lastName: 'López',
+            defaultCategory: 'Tecnología',
+            businessName: 'Comercial AC',
+            nationalId: '128391023h',
+            email: 'celia@example.com',
+            phone: '232313412',
+            password: 'Password123!',
+            repeatedPassword: 'Password123!',
+        });
+
+        component.onSubmit();
+        fixture.detectChanges();
+
+        const alert = fixture.nativeElement.querySelector('[role="alert"]');
+
+        expect(component.serverError).toBe(message);
+        expect(alert).not.toBeNull();
+        expect(alert.textContent).toContain(message);
+        expect(component.registrationSuccess).toBe(false);
+        expect(component.loading).toBe(false);
+    });
+
+    it('scrolls to the server error banner after rendering it', () => {
+        vi.useFakeTimers();
+        registerSeller.mockReturnValue(
+            throwError(() => new HttpErrorResponse({
+                status: 409,
+                error: { message: 'Ya existe un usuario con ese email' },
+            })),
+        );
+
+        fixture.nativeElement.querySelectorAll('.role-selector button')[1].click();
+        fixture.detectChanges();
+        component.form.setValue({
+            firstName: 'Celia',
+            lastName: 'López',
+            defaultCategory: 'Tecnología',
+            businessName: 'Comercial AC',
+            nationalId: '128391023h',
+            email: 'celia@example.com',
+            phone: '232313412',
+            password: 'Password123!',
+            repeatedPassword: 'Password123!',
+        });
+
+        component.onSubmit();
+        fixture.detectChanges();
+
+        const banner = fixture.nativeElement.querySelector('.server-error-banner') as HTMLElement;
+        const scrollIntoView = vi.fn();
+        banner.scrollIntoView = scrollIntoView;
+        vi.runAllTimers();
+
+        expect(scrollIntoView).toHaveBeenCalledWith({
+            behavior: 'smooth',
+            block: 'center',
+        });
+        vi.useRealTimers();
+    });
 });
