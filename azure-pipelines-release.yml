@@ -69,22 +69,34 @@ stages:
               pathToSources: '$(System.DefaultWorkingDirectory)/backend/src/main/java'
             condition: succeeded()
 
-          # Análisis SonarQube Backend (red interna UCLM)
+          # Análisis SonarQube Backend (con soporte VPN UCLM)
           - script: |
               echo "Comprobando disponibilidad del servidor SonarQube UCLM (seralu4.esi.uclm.es)..."
+              if ! curl -s --connect-timeout 4 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
+                if [ -n "$UCLM_VPN_USER" ] && [ -n "$UCLM_VPN_PASSWORD" ]; then
+                  echo "Servidor no alcanzable directamente. Intentando conexion VPN con portal.vpn.uclm.es..."
+                  sudo apt-get update -qq > /dev/null 2>&1
+                  sudo apt-get install -y -qq openconnect > /dev/null 2>&1
+                  echo "$UCLM_VPN_PASSWORD" | sudo timeout 20s openconnect --protocol=gp -u "$UCLM_VPN_USER" --passwd-on-stdin --background portal.vpn.uclm.es || true
+                  sleep 4
+                fi
+              fi
+
               if curl -s --connect-timeout 4 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
-                echo "Servidor SonarQube alcanzable. Ejecutando análisis de Backend..."
+                echo "Servidor SonarQube alcanzable! Ejecutando analisis de Backend..."
                 cd backend
                 mvn sonar:sonar -B \
                   -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
                   -Dsonar.token="$(SONAR_TOKEN)" \
                   -Dsonar.coverage.jacoco.xmlReportPaths="target/site/jacoco/jacoco.xml"
               else
-                echo "[INFO] Servidor SonarQube interno (red privada UCLM). Análisis omitido en la nube sin emitir warnings."
+                echo "[INFO] No se pudo acceder a seralu4.esi.uclm.es. Si la VPN requiere MFA interactivo (aprobacion movil), el acceso desatendido en la nube se omite limpiamente."
               fi
             displayName: 'Ejecutar análisis de SonarQube Backend'
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
+              UCLM_VPN_USER: $(UCLM_VPN_USER)
+              UCLM_VPN_PASSWORD: $(UCLM_VPN_PASSWORD)
 
       # ------------------------------------------------------------------------
       # Frontend CI: Node 22, dependencias, tests unitarios, build y SonarQube
@@ -112,21 +124,33 @@ stages:
               npm run build
             displayName: 'Compilación de verificación Frontend'
 
-          # Análisis SonarQube Frontend (red interna UCLM)
+          # Análisis SonarQube Frontend (con soporte VPN UCLM)
           - script: |
               echo "Comprobando disponibilidad del servidor SonarQube UCLM (seralu4.esi.uclm.es)..."
+              if ! curl -s --connect-timeout 4 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
+                if [ -n "$UCLM_VPN_USER" ] && [ -n "$UCLM_VPN_PASSWORD" ]; then
+                  echo "Servidor no alcanzable directamente. Intentando conexion VPN con portal.vpn.uclm.es..."
+                  sudo apt-get update -qq > /dev/null 2>&1
+                  sudo apt-get install -y -qq openconnect > /dev/null 2>&1
+                  echo "$UCLM_VPN_PASSWORD" | sudo timeout 20s openconnect --protocol=gp -u "$UCLM_VPN_USER" --passwd-on-stdin --background portal.vpn.uclm.es || true
+                  sleep 4
+                fi
+              fi
+
               if curl -s --connect-timeout 4 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
-                echo "Servidor SonarQube alcanzable. Ejecutando análisis de Frontend..."
+                echo "Servidor SonarQube alcanzable! Ejecutando analisis de Frontend..."
                 cd frontend
                 npx --yes sonar-scanner \
                   -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
                   -Dsonar.token="$(SONAR_TOKEN)"
               else
-                echo "[INFO] Servidor SonarQube interno (red privada UCLM). Análisis omitido en la nube sin emitir warnings."
+                echo "[INFO] No se pudo acceder a seralu4.esi.uclm.es. Si la VPN requiere MFA interactivo (aprobacion movil), el acceso desatendido en la nube se omite limpiamente."
               fi
             displayName: 'Ejecutar análisis de SonarQube Frontend'
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
+              UCLM_VPN_USER: $(UCLM_VPN_USER)
+              UCLM_VPN_PASSWORD: $(UCLM_VPN_PASSWORD)
 
       # ------------------------------------------------------------------------
       # Sync_Azure_Repos: Sincronización automática a Azure Repos (ESIBuy)
