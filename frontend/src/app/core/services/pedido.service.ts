@@ -71,16 +71,15 @@ export interface CustomerOrderItem {
   imageUrl: string | null;
 }
 
-export type CustomerOrderStatus = SellerOrderStatus;
 export type CustomerOrderPaymentStatus = 'PENDIENTE' | 'PAGADO';
-export type CustomerOrderFulfillmentStatus = Exclude<CustomerOrderStatus, 'PAGADO'>;
+export type CustomerOrderFulfillmentStatus = Exclude<SellerOrderStatus, 'PAGADO'>;
 
 export interface CustomerOrder {
   pedidoId: string;
   fechaCreacion: string;
   items: CustomerOrderItem[];
   total: number;
-  estado: CustomerOrderStatus;
+  estado: SellerOrderStatus;
   estadoPago: CustomerOrderPaymentStatus;
   direccionEnvio: CustomerShippingAddress | null;
   metodoPago: CustomerPaymentMethod | null;
@@ -114,7 +113,7 @@ export interface CustomerPaymentMethod {
 }
 
 export interface EstadoPedidoHistorial {
-  estado: CustomerOrderStatus;
+  estado: SellerOrderStatus;
   fecha: string;
 }
 
