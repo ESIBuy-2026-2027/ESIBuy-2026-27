@@ -224,18 +224,37 @@
         </div>
 
 
-        <div class="form-group">
+        <fieldset class="form-group customer-type-selector">
 
-          <label for="customerType">
+          <legend>
             Tipo de usuario <span class="required">*</span>
-          </label>
+          </legend>
 
-          <select id="customerType" formControlName="customerType">
-            <option value="STANDARD">Estándar</option>
-            <option value="PREMIUM">Premium</option>
-          </select>
+          <div class="customer-type-options">
+            <label class="customer-type-option" [class.selected]="form.get('customerType')?.value === 'STANDARD'">
+              <input id="customerTypeStandard" type="radio" formControlName="customerType" value="STANDARD"
+                aria-describedby="customerTypeStandardDescription" />
+              <span class="customer-type-content">
+                <span class="customer-type-title">Estándar</span>
+                <span id="customerTypeStandardDescription" class="customer-type-description">
+                  Cuenta de cliente estándar.
+                </span>
+              </span>
+            </label>
 
-        </div>
+            <label class="customer-type-option" [class.selected]="form.get('customerType')?.value === 'PREMIUM'">
+              <input id="customerTypePremium" type="radio" formControlName="customerType" value="PREMIUM"
+                aria-describedby="customerTypePremiumDescription" />
+              <span class="customer-type-content">
+                <span class="customer-type-title">Premium</span>
+                <span id="customerTypePremiumDescription" class="customer-type-description">
+                  Acceso a precios Premium cuando estén disponibles.
+                </span>
+              </span>
+            </label>
+          </div>
+
+        </fieldset>
 
       </ng-container>
 
@@ -484,19 +503,39 @@
 
           </div>
 
+          <p class="password-help">La contraseña debe cumplir estos requisitos:</p>
+          <ul class="password-requirements checklist">
+            @for (check of passwordChecks; track check.label) {
+            <li [class.valid]="check.met" [class.invalid]="!check.met && check.showErrors">
+              <span class="check-icon" aria-hidden="true">
+                <!-- Icono de Check (cumplido) -->
+                <svg *ngIf="check.met" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                    clip-rule="evenodd" />
+                </svg>
+                <!-- Icono de alerta / cruz (no cumplido y mostrando errores) -->
+                <svg *ngIf="!check.met && check.showErrors" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clip-rule="evenodd" />
+                </svg>
+              </span>
+              {{ check.label }}
+            </li>
+            }
+          </ul>
 
-          <span class="error" *ngIf="form.get('password')?.touched && form.get('password')?.hasError('required')">
+          <div *ngIf="serverError && isPasswordSecurityError" id="password-server-error"
+            class="server-error-banner password-server-error" role="alert" tabindex="-1">
+            <strong>No se ha podido completar el registro</strong>
+            <span>{{ serverError }}</span>
+          </div>
+
+          <span class="error" *ngIf="submitAttempted && form.get('password')?.hasError('required')">
             La contraseña es obligatoria
           </span>
-
-          <span class="error" *ngIf="form.get('password')?.touched && form.get('password')?.hasError('minlength')">
-            Debe tener al menos 12 caracteres
-          </span>
-
-          <span class="error" *ngIf="form.get('password')?.touched && form.get('password')?.hasError('pattern')">
-            La contraseña debe tener mayúscula, minúscula, número y un carácter especial
-          </span>
-
         </div>
 
 
@@ -515,12 +554,12 @@
           </div>
 
 
-          <span class="error" *ngIf="form.get('repeatedPassword')?.touched &&
+          <span class="error" *ngIf="submitAttempted &&
                    form.get('repeatedPassword')?.hasError('required')">
             Debe repetir la contraseña
           </span>
 
-          <span class="error" *ngIf="form.touched && form.hasError('passwordMismatch')">
+          <span class="error" *ngIf="submitAttempted && form.hasError('passwordMismatch')">
             Las contraseñas no coinciden
           </span>
 
@@ -535,7 +574,7 @@
 
       <button type="submit" class="btn-submit"
         [disabled]="loading || (userRole === 'vendedor' && (categoriesLoading || categoriesError || categories.length === 0))">
-        {{ loading ? 'Enviando al backend...' : 'Completar Registro' }}
+        {{ loading ? 'Enviando...' : 'Completar Registro' }}
       </button>
 
     </form>

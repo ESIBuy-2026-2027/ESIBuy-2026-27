@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize, timeout } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -71,6 +72,22 @@ export class Register {
   registrationSuccess = false;
   showCancelConfirmation = false;
   showPassword = false;
+  get passwordChecks() {
+    const pwdControl = this.form?.get('password');
+    const pwd = pwdControl?.value || '';
+    const showErrorStates = this.submitAttempted || pwd.length > 0;
+
+    return [
+      { label: 'Mínimo de 12 caracteres', met: pwd.length >= 12, showErrors: showErrorStates },
+      { label: 'Máximo de 128 caracteres', met: pwd.length > 0 && pwd.length <= 128, showErrors: showErrorStates },
+      { label: 'Al menos una letra mayúscula', met: /[A-Z]/.test(pwd), showErrors: showErrorStates },
+      { label: 'Al menos una letra minúscula', met: /[a-z]/.test(pwd), showErrors: showErrorStates },
+      { label: 'Al menos un número', met: /\d/.test(pwd), showErrors: showErrorStates },
+      { label: 'Al menos un carácter especial', met: /[^A-Za-z0-9]/.test(pwd), showErrors: showErrorStates },
+      { label: 'No puede contener espacios', met: pwd.length > 0 && !/\s/.test(pwd), showErrors: showErrorStates }
+    ];
+  }
+  submitAttempted = false;
 
   clientAvatars = CLIENT_AVATARS.map((path) => path.replace(/^\/+/, ''));
   sellerAvatars = SELLER_AVATARS.map((path) => path.replace(/^\/+/, ''));
@@ -306,6 +323,7 @@ export class Register {
   }
 
   onSubmit(): void {
+    this.submitAttempted = true;
     this.serverError = null;
 
     if (this.form.invalid) {
@@ -330,22 +348,17 @@ export class Register {
         repeatedPassword: this.form.value.repeatedPassword
       };
 
-      this.authService.registerClient(payload).subscribe({
-
-        next: () => {
-          this.registrationSuccess = true;
-        },
-
-        error: (err) => {
-          this.serverError = this.getRegistrationErrorMessage(err);
-          this.changeDetector.markForCheck();
-          this.scrollToServerError();
-        }
-
-      }).add(() => {
-        this.loading = false;
-        this.changeDetector.markForCheck();
-      });
+      this.authService.registerClient(payload)
+        .pipe(
+          timeout({ each: 10000 }),
+          finalize(() => this.finishRegistrationRequest())
+        )
+        .subscribe({
+          next: () => {
+            this.registrationSuccess = true;
+          },
+          error: (err) => this.showRegistrationError(err)
+        });
 
     } else {
 
@@ -362,23 +375,35 @@ export class Register {
         repeatedPassword: this.form.value.repeatedPassword
       };
 
-      this.authService.registerSeller(payload).subscribe({
-
-        next: () => {
-          this.registrationSuccess = true;
-        },
-
-        error: (err) => {
-          this.serverError = this.getRegistrationErrorMessage(err);
-          this.changeDetector.markForCheck();
-          this.scrollToServerError();
-        }
-
-      }).add(() => {
-        this.loading = false;
-        this.changeDetector.markForCheck();
-      });
+      this.authService.registerSeller(payload)
+        .pipe(
+          timeout({ each: 10000 }),
+          finalize(() => this.finishRegistrationRequest())
+        )
+        .subscribe({
+          next: () => {
+            this.registrationSuccess = true;
+          },
+          error: (err) => this.showRegistrationError(err)
+        });
     }
+  }
+
+  private showRegistrationError(error: unknown): void {
+    this.serverError = this.getRegistrationErrorMessage(error);
+    this.changeDetector.markForCheck();
+    this.scrollToServerError();
+  }
+
+  private finishRegistrationRequest(): void {
+    this.loading = false;
+    this.changeDetector.markForCheck();
+  }
+
+  get isPasswordSecurityError(): boolean {
+    const message = this.serverError?.toLocaleLowerCase() ?? '';
+    return message.includes('contraseña') &&
+      (message.includes('filtraciones') || message.includes('comprobar la seguridad'));
   }
 
   cancelRegistration(): void {
@@ -406,6 +431,10 @@ export class Register {
   }
 
   private getRegistrationErrorMessage(error: unknown): string {
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      return 'No se ha podido comprobar la seguridad de la contraseña. Inténtalo de nuevo más tarde.';
+    }
+
     if (error instanceof HttpErrorResponse) {
       const serverMessage = this.getServerMessage(error.error);
       if (serverMessage) {
@@ -444,7 +473,11 @@ export class Register {
 
   private scrollToServerError(): void {
     setTimeout(() => {
-      document.querySelector('.server-error-banner')?.scrollIntoView({
+      const selector = this.isPasswordSecurityError
+        ? '#password-server-error'
+        : '.server-error-banner';
+
+      document.querySelector<HTMLElement>(selector)?.scrollIntoView({
         behavior: 'smooth',
         block: 'center'
       });
