@@ -87,9 +87,7 @@ stages:
               .\mvnw.cmd sonar:sonar `
                 "-Dsonar.host.url=http://seralu4.esi.uclm.es:1521/" `
                 "-Dsonar.projectKey=2026-g06-backend" `
-                "-Dsonar.token=$env:SONAR_TOKEN" `
-                "-Dsonar.exclusions=**/test/**,**/tests/**,**/*Test.java,**/*Tests.java,**/*TestCase.java" `
-                "-Dsonar.test.exclusions=**"
+                "-Dsonar.token=$env:SONAR_TOKEN"
 
               if ($LASTEXITCODE -ne 0) {
                 throw "El análisis de SonarQube Backend ha fallado."
