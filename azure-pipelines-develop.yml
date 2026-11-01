@@ -66,19 +66,33 @@ stages:
             condition: succeeded()
 
           # SonarQube Backend: ejecución obligatoria desde la VPN
-          - bash: |
-              set -e
-              echo "Comprobando disponibilidad de SonarQube UCLM..."
-              curl --fail --silent --show-error --connect-timeout 5 \
-                http://seralu4.esi.uclm.es:1521/api/system/status
+          - powershell: |
+            $ErrorActionPreference = 'Stop'
 
-              echo "Ejecutando análisis de SonarQube Backend..."
-              cd backend
+            Write-Host "Comprobando disponibilidad de SonarQube..."
 
-              mvn sonar:sonar -B \
-                -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
-                -Dsonar.token="$SONAR_TOKEN" \
-                -Dsonar.coverage.jacoco.xmlReportPaths="target/site/jacoco/jacoco.xml"
+            $status = Invoke-RestMethod `
+              -Uri "http://seralu4.esi.uclm.es:1521/api/system/status" `
+              -TimeoutSec 10
+
+            if ($status.status -ne 'UP') {
+              throw "SonarQube no está disponible."
+            }
+
+            Write-Host "Ejecutando análisis de SonarQube Backend..."
+
+            Set-Location "$(Build.SourcesDirectory)\backend"
+
+            .\mvnw.cmd sonar:sonar `
+              "-Dsonar.host.url=http://seralu4.esi.uclm.es:1521/" `
+              "-Dsonar.projectKey=2026-g06-backend" `
+              "-Dsonar.token=$env:SONAR_TOKEN" `
+              "-Dsonar.exclusions=**/test/**,**/tests/**,**/*Test.java,**/*Tests.java,**/*TestCase.java" `
+              "-Dsonar.test.exclusions=**"
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "El análisis de SonarQube Backend ha fallado."
+            }
             displayName: 'Ejecutar análisis de SonarQube Backend'
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
@@ -113,21 +127,32 @@ stages:
             displayName: 'Compilación de verificación Frontend'
 
           # SonarQube Frontend: ejecución obligatoria desde la VPN
-          - bash: |
-              set -e
-              echo "Comprobando disponibilidad de SonarQube UCLM..."
-              curl --fail --silent --show-error --connect-timeout 5 \
-                http://seralu4.esi.uclm.es:1521/api/system/status
+          - powershell: |
+            $ErrorActionPreference = 'Stop'
 
-              echo "Ejecutando análisis de SonarQube Frontend..."
-              cd frontend
+            Write-Host "Comprobando disponibilidad de SonarQube..."
 
-              npx --yes sonar-scanner \
-                -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
-                -Dsonar.token="$SONAR_TOKEN"
+            $status = Invoke-RestMethod `
+              -Uri "http://seralu4.esi.uclm.es:1521/api/system/status" `
+              -TimeoutSec 10
+
+            if ($status.status -ne 'UP') {
+              throw "SonarQube no está disponible."
+            }
+
+            Write-Host "Ejecutando análisis de SonarQube Frontend..."
+
+            Set-Location "$(Build.SourcesDirectory)\frontend"
+
+            npx --yes sonar-scanner `
+              "-Dsonar.token=$env:SONAR_TOKEN"
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "El análisis de SonarQube Frontend ha fallado."
+            }
             displayName: 'Ejecutar análisis de SonarQube Frontend'
             env:
-              SONAR_TOKEN: $(SONAR_TOKEN)
+            SONAR_TOKEN: $(SONAR_TOKEN)
 
       # ------------------------------------------------------------------------
       # Sync_Azure_Repos: Sincronización automática a Azure Repos
