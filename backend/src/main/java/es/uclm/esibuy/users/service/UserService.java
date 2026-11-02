@@ -35,6 +35,9 @@ import es.uclm.esibuy.products.repository.ProductRepository;
 import es.uclm.esibuy.security.password.CompromisedPasswordService;
 import es.uclm.esibuy.security.repository.EmailOtpChallengeRepository;
 import es.uclm.esibuy.security.repository.LoginAttemptRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import es.uclm.esibuy.users.model.CustomerType;
 
 @Service
 public class UserService {
@@ -196,6 +199,38 @@ public class UserService {
 
     public UserProfileResponse getOwnProfile(String userId) {
         return UserProfileResponse.from(findById(userId));
+    }
+
+    public UserProfileResponse changeOwnCustomerType(
+            String userId,
+            CustomerType customerType) {
+
+        User user = findById(userId);
+
+        if (user.getRole() != UserRole.CLIENT) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Solo los clientes pueden cambiar su modalidad de cuenta");
+        }
+
+        if (customerType == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "El tipo de cliente es obligatorio");
+        }
+
+        ClientProfile clientProfile = user.getClientProfile();
+
+        if (clientProfile == null) {
+            clientProfile = new ClientProfile();
+            user.setClientProfile(clientProfile);
+        }
+
+        clientProfile.setCustomerType(customerType);
+
+        User savedUser = userRepository.save(user);
+
+        return UserProfileResponse.from(savedUser);
     }
 
     public void deleteOwnAccount(String userId) {

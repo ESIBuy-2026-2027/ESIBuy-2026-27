@@ -47,14 +47,13 @@ describe('ClientOrders', () => {
     expect(el.querySelector('#orders-status')).toBeTruthy();
 
     const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
-    expect(navLinks.length).toBe(5);
+    expect(navLinks.length).toBe(4);
     expect(navLinks[0].textContent).toContain('Catálogo');
     expect(navLinks[1].textContent).toContain('Lista de deseos');
     expect(navLinks[2].textContent).toContain('Mis pedidos');
     expect(navLinks[2].classList.contains('is-active')).toBe(true);
     expect(navLinks[2].querySelector('svg path')?.getAttribute('d')).toContain('M21 8');
     expect(navLinks[3].textContent).toContain('Carrito');
-    expect(navLinks[4].textContent).toContain('Perfil');
   });
 
   it('should show filters only when requested and apply the selected order status', async () => {

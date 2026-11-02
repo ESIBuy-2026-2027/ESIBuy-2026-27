@@ -39,6 +39,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import es.uclm.esibuy.users.dto.ChangeCustomerTypeRequest;
 
 @RestController
 @RequestMapping("/api/users")
@@ -177,6 +178,22 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok(userService.getOwnProfile(principal.id()));
+    }
+
+    @PutMapping("/me/customer-type")
+    public ResponseEntity<UserProfileResponse> changeOwnCustomerType(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
+            @Valid @RequestBody ChangeCustomerTypeRequest request) {
+
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserProfileResponse profile = userService.changeOwnCustomerType(
+                principal.id(),
+                request.customerType());
+
+        return ResponseEntity.ok(profile);
     }
 
     @PostMapping("/logout")
@@ -352,7 +369,8 @@ public class UserController {
         response.put("role", user.getRole());
         response.put("active", user.isActive());
         response.put("totpEnabled", user.isTotpEnabled());
-        if (user.getRole() == UserRole.CLIENT && user.getClientProfile() != null && user.getClientProfile().getCustomerType() != null) {
+        if (user.getRole() == UserRole.CLIENT && user.getClientProfile() != null
+                && user.getClientProfile().getCustomerType() != null) {
             response.put("customerType", user.getClientProfile().getCustomerType().name());
         }
         return response;
