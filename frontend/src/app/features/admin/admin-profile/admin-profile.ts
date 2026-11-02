@@ -7,6 +7,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { DeleteAccount } from '../../../shared/delete-account/delete-account';
 import { TwoFactorSettingsComponent } from '../../../shared/two-factor-settings/two-factor-settings';
 import { ProfileShellComponent } from '../../../shared/profile-shell/profile-shell';
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import type { ProfileNavigationItem } from '../../../shared/profile-shell/profile-shell';
 import { ADMIN_AVATARS } from '../../../core/constants/avatars';
 
@@ -33,7 +34,7 @@ interface UpdateAdminProfileRequest {
 @Component({
     selector: 'app-admin-profile',
     standalone: true,
-    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent, ProfileShellComponent],
+    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent, ProfileShellComponent, AppSidebarComponent],
     templateUrl: './admin-profile.html',
     styleUrl: './admin-profile.css',
 })

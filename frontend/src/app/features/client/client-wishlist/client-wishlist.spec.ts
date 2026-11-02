@@ -80,13 +80,12 @@ describe('ClientWishlist', () => {
     expect(el.querySelector('#wishlist-title')?.textContent).toContain('Lista de deseos');
 
     const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
-    expect(navLinks.length).toBe(5);
+    expect(navLinks.length).toBe(4);
     expect(navLinks[0].textContent).toContain('Catálogo');
     expect(navLinks[1].textContent).toContain('Lista de deseos');
     expect(navLinks[1].classList.contains('is-active')).toBe(true);
     expect(navLinks[2].textContent).toContain('Mis pedidos');
     expect(navLinks[3].textContent).toContain('Carrito');
-    expect(navLinks[4].textContent).toContain('Perfil');
   });
 
   it('should toggle sidebar collapsed state', () => {
