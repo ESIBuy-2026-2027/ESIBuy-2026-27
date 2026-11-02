@@ -58,10 +58,9 @@ describe('ClientProfile', () => {
         expect(el.querySelector('.section-title')?.textContent).toContain('Datos personales');
         el.querySelectorAll('input').forEach((input) => expect(input.readOnly).toBe(true));
         const clientLinks = el.querySelectorAll('.seller-navigation .navigation-link');
-        expect(clientLinks).toHaveLength(5);
+        expect(clientLinks).toHaveLength(4);
         expect(clientLinks[2].textContent).toContain('Mis pedidos');
-        expect(clientLinks[4].getAttribute('href')).toBe('/client/profile');
-        expect(clientLinks[4].getAttribute('aria-current')).toBe('page');
+        expect(el.querySelector('.seller-navigation a[href="/client/profile"]')).toBeNull();
     });
 
     it('permite plegar y desplegar la navegación global del cliente', () => {

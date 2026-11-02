@@ -47,7 +47,7 @@ describe('ClientCart', () => {
     expect(element.querySelector('.item-information h2 script')).toBeNull();
     expect(element.querySelector('.total-line')?.textContent).toContain('25,00 €');
     const navigationLinks = Array.from(element.querySelectorAll('.seller-navigation .navigation-link'));
-    expect(navigationLinks).toHaveLength(5);
+    expect(navigationLinks).toHaveLength(4);
     expect(navigationLinks[2].textContent).toContain('Mis pedidos');
     expect(navigationLinks[3].getAttribute('href')).toBe('/client/cart');
     expect(navigationLinks[3].getAttribute('aria-current')).toBe('page');
@@ -55,9 +55,6 @@ describe('ClientCart', () => {
     expect(orderIcon?.getAttribute('fill')).toBe('none');
     expect(orderIcon?.getAttribute('stroke')).toBe('currentColor');
     expect(orderIcon?.querySelector('path')?.getAttribute('d')).toContain('M21 8');
-    const profileIcon = navigationLinks[4].querySelector('svg');
-    expect(profileIcon?.getAttribute('fill')).toBe('none');
-    expect(profileIcon?.getAttribute('stroke')).toBe('currentColor');
   });
 
   it('should submit quantity changes and prevent concurrent updates for the same item', async () => {
