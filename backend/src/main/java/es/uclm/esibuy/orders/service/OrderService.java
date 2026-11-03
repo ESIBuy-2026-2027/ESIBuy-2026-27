@@ -280,6 +280,25 @@ public class OrderService {
         return new ShippingTrackingDTO(statusHistory, order.getEstimatedDeliveryDate());
     }
 
+    public void confirmOrderReceipt(String customerId, String orderId) {
+        getCustomer(customerId);
+
+        if (orderId == null || orderId.isBlank()) {
+            throw new IllegalArgumentException(ORDER_ID_REQUIRED_MESSAGE);
+        }
+
+        Order order = orderRepository.findByIdAndCustomerId(orderId, customerId)
+                .orElseThrow(PedidoNotFoundException::new);
+
+        if (order.getStatus() != OrderStatus.ENVIADO) {
+            throw new IllegalArgumentException(
+                    "Solo se puede confirmar la recepción de un pedido enviado");
+        }
+
+        order.setStatus(OrderStatus.ENTREGADO);
+        orderRepository.save(order);
+    }
+
     public void updateOrderStatus(
             String sellerId,
             String orderId,
@@ -296,6 +315,11 @@ public class OrderService {
 
         if (status == null) {
             throw new IllegalArgumentException("El estado es obligatorio");
+        }
+
+        if (status == OrderStatus.ENTREGADO) {
+            throw new IllegalArgumentException(
+                    "La recepción del pedido debe confirmarla el cliente");
         }
 
         if (isStatusRegression(order.getStatus(), status)

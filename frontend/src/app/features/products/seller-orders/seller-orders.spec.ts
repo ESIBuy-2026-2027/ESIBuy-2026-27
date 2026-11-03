@@ -74,6 +74,21 @@ describe('SellerOrders', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should not offer delivered as a seller status option', () => {
+    component.toggleOrderDetails('PED-101');
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    const statusSelects = Array.from(el.querySelectorAll('select')).filter(
+      (select) => select.id.startsWith('order-status-'),
+    );
+
+    expect(statusSelects).toHaveLength(1);
+    expect(statusSelects.every((select) =>
+      Array.from(select.options).every((option) => option.value !== 'Entregado'),
+    )).toBe(true);
+  });
+
   it('should render standard filters bar with search field and filter controls', () => {
     const el = fixture.nativeElement as HTMLElement;
 
@@ -200,4 +215,3 @@ describe('SellerOrders', () => {
     expect(detailsBtn.getAttribute('aria-expanded')).toBe('false');
   });
 });
-

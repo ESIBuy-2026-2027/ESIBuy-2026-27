@@ -30,6 +30,7 @@ export class ClientOrderDetail implements OnInit {
   readonly actionError = signal<string | null>(null);
   readonly addingProductId = signal<string | null>(null);
   readonly cancellingOrder = signal(false);
+  readonly confirmingReceipt = signal(false);
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -106,6 +107,31 @@ export class ClientOrderDetail implements OnInit {
     return order.estado === 'PENDIENTE' && getCustomerOrderPaymentStatus(order) === 'PAGADO';
   }
 
+  canConfirmReceipt(order: CustomerOrder): boolean {
+    return this.getFulfillmentStatus(order) === 'ENVIADO';
+  }
+
+  confirmReceipt(order: CustomerOrder): void {
+    if (this.confirmingReceipt() || !this.canConfirmReceipt(order)) {
+      return;
+    }
+
+    if (!window.confirm('¿Confirmas que has recibido tu pedido?')) {
+      return;
+    }
+
+    this.actionError.set(null);
+    this.confirmingReceipt.set(true);
+    this.pedidoService.confirmarRecepcionPedido(order.pedidoId)
+      .pipe(finalize(() => this.confirmingReceipt.set(false)))
+      .subscribe({
+        next: () => this.order.set({ ...order, estado: 'ENTREGADO' }),
+        error: (error: HttpErrorResponse) => this.actionError.set(
+          this.getReceiptConfirmationErrorMessage(error),
+        ),
+      });
+  }
+
   cancelOrder(order: CustomerOrder): void {
     if (this.cancellingOrder() || !this.canCancelOrder(order)) {
       return;
@@ -133,6 +159,14 @@ export class ClientOrderDetail implements OnInit {
       return message;
     }
     return 'No se pudo cancelar el pedido. Puede que ya no sea cancelable.';
+  }
+
+  private getReceiptConfirmationErrorMessage(error: HttpErrorResponse): string {
+    const message = error.error?.message;
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+    return 'No se pudo confirmar la recepción. Puede que el pedido ya no esté enviado.';
   }
 
   buyAgain(productId: string, quantity: number): void {

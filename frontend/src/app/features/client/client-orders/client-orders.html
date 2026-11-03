@@ -1,5 +1,5 @@
 <div class="seller-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
-  <aside class="sidebar app-sidebar" aria-label="Panel del cliente">
+  <aside class="sidebar app-sidebar app-sidebar--client" aria-label="Panel del cliente">
     <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()"
       aria-label="Ocultar barra lateral">
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -7,7 +7,7 @@
       </svg>
     </button>
     <div class="sidebar-caption">ÁREA DE CLIENTE</div>
-    <nav class="seller-navigation" aria-label="Navegación del cliente">
+    <nav class="seller-navigation app-navigation" aria-label="Navegación del cliente">
       <a class="navigation-link" routerLink="/client/catalog">
         <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -46,10 +46,6 @@
         </svg>
         <span>Carrito</span>
       </a>
-<<<<<<<<< Temporary merge branch 1
-=========
-
->>>>>>>>> Temporary merge branch 2
     </nav>
   </aside>
 
@@ -75,22 +71,6 @@
       <p class="orders-feedback is-error" role="alert">{{ error() }}</p>
       <button type="button" class="retry-button" (click)="loadOrders()">Volver a intentarlo</button>
       } @else {
-      <section class="order-summary" aria-label="Resumen de pedidos">
-        <button type="button" class="summary-card summary-total" [class.is-selected]="statusFilter() === 'TODOS'"
-          [attr.aria-pressed]="statusFilter() === 'TODOS'" (click)="setStatusFilter('TODOS')">
-          <span class="summary-label">Total de pedidos</span>
-          <strong>{{ orderCounts().total }}</strong>
-        </button>
-        @for (summary of statusSummaries(); track summary.status) {
-        <button type="button" [class]="'summary-card ' + summary.className"
-          [class.is-selected]="statusFilter() === summary.status"
-          [attr.aria-pressed]="statusFilter() === summary.status" (click)="selectStatus(summary.status)">
-          <span class="summary-label">{{ summary.label }}</span>
-          <strong>{{ summary.count }}</strong>
-        </button>
-        }
-      </section>
-
       <section class="orders-toolbar" aria-label="Buscar y filtrar pedidos">
         <label class="orders-search">
           <span class="visually-hidden">Buscar pedidos por número o producto</span>

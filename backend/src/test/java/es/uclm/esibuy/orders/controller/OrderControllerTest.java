@@ -298,6 +298,26 @@ class OrderControllerTest {
         }
 
         @Test
+        void shouldConfirmOrderReceiptForAuthenticatedClient() throws Exception {
+                mockMvc.perform(patch(API + "/pedido-123/recepcion")
+                                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                                .with(csrf()))
+                                .andExpect(status().isNoContent());
+
+                verify(orderService).confirmOrderReceipt(CUSTOMER_ID, "pedido-123");
+        }
+
+        @Test
+        void shouldRejectOrderReceiptConfirmationForSeller() throws Exception {
+                mockMvc.perform(patch(API + "/pedido-123/recepcion")
+                                .with(authentication(authenticationFor(UserRole.SELLER)))
+                                .with(csrf()))
+                                .andExpect(status().isForbidden());
+
+                verify(orderService, never()).confirmOrderReceipt(any(), any());
+        }
+
+        @Test
         void shouldValidateRequiredOrderStatus() throws Exception {
                 mockMvc.perform(patch(API + "/vendedor/pedido-123/estado")
                                 .with(authentication(authenticationFor(UserRole.SELLER)))

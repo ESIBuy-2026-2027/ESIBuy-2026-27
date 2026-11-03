@@ -99,6 +99,16 @@ public class OrderController {
                 orderService.getShippingStatusHistory(principal.id(), orderId));
     }
 
+    @PatchMapping("/{pedidoId}/recepcion")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'CLIENT')")
+    public ResponseEntity<Void> confirmOrderReceipt(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
+            @PathVariable("pedidoId") String orderId) {
+
+        orderService.confirmOrderReceipt(principal.id(), orderId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping({ "/vendedor", "/seller" })
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<List<SellerOrderDTO>> getSellerOrders(

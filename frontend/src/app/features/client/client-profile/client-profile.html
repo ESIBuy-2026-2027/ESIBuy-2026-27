@@ -1,82 +1,12 @@
-<<<<<<<<< Temporary merge branch 1
-<div class="profile-page">
-
-    <!-- BARRA LATERAL -->
-    <aside class="profile-card" aria-label="Menú de perfil">
-        <div class="sidebar-footer">
-            <button type="button" class="back-button" (click)="goBack()">
-            <span aria-hidden="true">←</span>
-                Volver
-        </button>
-        </div>
-        
-
-        <div class="sidebar-profile">
-            <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Perfil" />
-
-            <h2 class="sidebar-name">
-                {{ fullName() || 'Perfil' }}
-            </h2>
-
-            @if (isPremium()) {
-            <span class="role-badge premium-badge">
-                Cuenta premium
-            </span>
-            } @else {
-            <span class="role-badge">
-                Cuenta estándar
-            </span>
-            }
-        </div>
-
-
-        <nav class="sidebar-nav" aria-label="Secciones del perfil">
-            <button type="button" class="nav-item" [class.active]="activeSection() === 'personal'"
-                [attr.aria-current]="activeSection() === 'personal' ? 'page' : null"
-                (click)="selectSection('personal')">
-                Datos personales
-            </button>
-
-            <button type="button" class="nav-item" [class.active]="activeSection() === 'addresses'"
-                [attr.aria-current]="activeSection() === 'addresses' ? 'page' : null"
-                (click)="selectSection('addresses')">
-                Direcciones de envío
-            </button>
-
-            <button type="button" class="nav-item" [class.active]="activeSection() === 'security'"
-                [attr.aria-current]="activeSection() === 'security' ? 'page' : null"
-                (click)="selectSection('security')">
-                Seguridad
-            </button>
-
-            <button type="button" class="nav-item" [class.active]="activeSection() === 'payments'"
-                [attr.aria-current]="activeSection() === 'payments' ? 'page' : null"
-                (click)="selectSection('payments')">
-                Métodos de pago
-            </button>
-        </nav>
-
-
-
-        <div class="sidebar-footer">
-            @if (logoutError(); as error) {
-            <p class="form-error" role="alert">{{ error }}</p>
-            }
-            <button type="button" class="logout-button" (click)="logout()">
-                Cerrar sesión
-            </button>
-        </div>
-
-=========
 <div class="seller-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
-    <aside class="sidebar app-sidebar" aria-label="Panel del cliente">
+    <aside class="sidebar app-sidebar app-sidebar--client" aria-label="Panel del cliente">
         <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral">
             <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="m15 18-6-6 6-6" />
             </svg>
         </button>
         <div class="sidebar-caption">ÁREA DE CLIENTE</div>
-        <nav class="seller-navigation" aria-label="Navegación del cliente">
+        <nav class="seller-navigation app-navigation" aria-label="Navegación del cliente">
             <a class="navigation-link" routerLink="/client/catalog">
                 <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -114,7 +44,6 @@
                 <span>Carrito</span>
             </a>
         </nav>
->>>>>>>>> Temporary merge branch 2
     </aside>
 
     <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()" aria-label="Mostrar barra lateral"

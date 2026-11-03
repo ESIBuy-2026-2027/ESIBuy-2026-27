@@ -322,6 +322,37 @@ class OrderServiceTest {
         }
 
         @Test
+        void shouldRejectSellerSettingDeliveredStatus() {
+                Order order = new Order(
+                                CUSTOMER_ID,
+                                List.of(),
+                                PRICE,
+                                new OrderShippingAddress(
+                                                "direccion-1",
+                                                "Ana López",
+                                                "Calle Mayor 1",
+                                                null,
+                                                "13001",
+                                                "Ciudad Real",
+                                                "Ciudad Real",
+                                                "600123456"),
+                                new OrderPaymentMethod("pago-1", null, "1234"),
+                                OrderStatus.ENVIADO);
+
+                when(orderRepository.findById("pedido-123")).thenReturn(Optional.of(order));
+
+                assertThrows(
+                                IllegalArgumentException.class,
+                                () -> orderService.updateOrderStatus(
+                                                "seller-1",
+                                                "pedido-123",
+                                                OrderStatus.ENTREGADO,
+                                                null));
+
+                verify(orderRepository, never()).save(any(Order.class));
+        }
+
+        @Test
         void shouldRejectStockChangedAfterCheckoutSummaryWithoutChargingOrSavingOrder() {
                 Product firstProduct = productWithStock(5);
                 Product secondProduct = productWithStock(5);
@@ -678,6 +709,67 @@ class OrderServiceTest {
 
                 assertEquals(1, result.get(0).items().size());
                 assertEquals(PRICE, result.get(0).total());
+        }
+
+        @Test
+        void shouldConfirmReceiptOnlyForCustomerOrderInShippedState() {
+                Order order = new Order(
+                                CUSTOMER_ID,
+                                List.of(new OrderItem(
+                                                PRODUCT_ID,
+                                                "Auriculares",
+                                                1,
+                                                PRICE,
+                                                PRICE,
+                                                null,
+                                                "seller-1")),
+                                PRICE,
+                                new OrderShippingAddress(
+                                                "direccion-1",
+                                                "Ana López",
+                                                "Calle Mayor 1",
+                                                null,
+                                                "13001",
+                                                "Ciudad Real",
+                                                "Ciudad Real",
+                                                "600123456"),
+                                new OrderPaymentMethod("pago-1", null, "1234"),
+                                OrderStatus.ENVIADO);
+
+                when(orderRepository.findByIdAndCustomerId("pedido-123", CUSTOMER_ID))
+                                .thenReturn(Optional.of(order));
+
+                orderService.confirmOrderReceipt(CUSTOMER_ID, "pedido-123");
+
+                assertEquals(OrderStatus.ENTREGADO, order.getStatus());
+                verify(orderRepository).save(order);
+        }
+
+        @Test
+        void shouldRejectReceiptConfirmationWhenOrderIsNotShipped() {
+                Order order = new Order(
+                                CUSTOMER_ID,
+                                List.of(),
+                                PRICE,
+                                new OrderShippingAddress(
+                                                "direccion-1",
+                                                "Ana López",
+                                                "Calle Mayor 1",
+                                                null,
+                                                "13001",
+                                                "Ciudad Real",
+                                                "Ciudad Real",
+                                                "600123456"),
+                                new OrderPaymentMethod("pago-1", null, "1234"),
+                                OrderStatus.PREPARANDO);
+
+                when(orderRepository.findByIdAndCustomerId("pedido-123", CUSTOMER_ID))
+                                .thenReturn(Optional.of(order));
+
+                assertThrows(IllegalArgumentException.class,
+                                () -> orderService.confirmOrderReceipt(CUSTOMER_ID, "pedido-123"));
+
+                verify(orderRepository, never()).save(any());
         }
 
 }

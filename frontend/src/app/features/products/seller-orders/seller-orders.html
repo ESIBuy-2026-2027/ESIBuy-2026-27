@@ -225,15 +225,20 @@
                       <section class="expanded-management" aria-label="Gestionar estado del pedido">
                         <h3>Gestionar pedido</h3>
                         <label [for]="'order-status-' + order.id">Estado</label>
+                        @if (order.status === 'Entregado') {
+                        <select [id]="'order-status-' + order.id" [value]="order.status" disabled>
+                          <option value="Entregado">Entregado</option>
+                        </select>
+                        } @else {
                         <select [id]="'order-status-' + order.id" [ngModel]="order.status"
                           [disabled]="statusSavingOrderId() === order.id"
                           (ngModelChange)="updateOrderStatus(order, $event)">
                           <option value="Pendiente">Pendiente</option>
                           <option value="En preparación">En preparación</option>
                           <option value="Enviado">Enviado</option>
-                          <option value="Entregado">Entregado</option>
                           <option value="Cancelado">Cancelado</option>
                         </select>
+                        }
                         @if (pendingStatusChange(); as pending) {
                         @if (pending.order.id === order.id) {
                         <div class="rollback-confirmation">
