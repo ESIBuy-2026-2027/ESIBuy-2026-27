@@ -172,6 +172,10 @@ export class PedidoService {
     return this.http.get<CustomerOrder>(`/api/pedidos/${pedidoId}`);
   }
 
+  cancelarPedido(pedidoId: string): Observable<void> {
+    return this.http.delete<void>(`/api/pedidos/${pedidoId}`);
+  }
+
   obtenerHistorialEstadosEnvio(pedidoId: string): Observable<SeguimientoEnvio> {
     return this.http.get<SeguimientoEnvio>(`/api/pedidos/${pedidoId}/historial-estados`);
   }

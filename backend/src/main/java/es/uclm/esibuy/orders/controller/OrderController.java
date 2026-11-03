@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -76,6 +77,16 @@ public class OrderController {
 
         return ResponseEntity.ok(
                 orderService.getCustomerOrder(principal.id(), orderId));
+    }
+
+    @DeleteMapping("/{pedidoId}")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'CLIENT')")
+    public ResponseEntity<Void> cancelCustomerOrder(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
+            @PathVariable("pedidoId") String orderId) {
+
+        orderService.cancelCustomerOrder(principal.id(), orderId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{pedidoId}/historial-estados")
