@@ -123,6 +123,11 @@
   color: #176b4a;
 }
 
+.summary-cancelled {
+  background: #fff0ef;
+  color: #a63d35;
+}
+
 .orders-toolbar {
   position: relative;
   display: flex;

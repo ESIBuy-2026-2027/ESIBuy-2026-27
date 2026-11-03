@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
 import {
@@ -28,6 +29,7 @@ export class ClientOrderDetail implements OnInit {
   readonly error = signal<string | null>(null);
   readonly actionError = signal<string | null>(null);
   readonly addingProductId = signal<string | null>(null);
+  readonly cancellingOrder = signal(false);
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -98,6 +100,39 @@ export class ClientOrderDetail implements OnInit {
 
   getPaymentClass(order: CustomerOrder): string {
     return getCustomerOrderPaymentStatus(order) === 'PAGADO' ? 'payment-paid' : 'payment-pending';
+  }
+
+  canCancelOrder(order: CustomerOrder): boolean {
+    return order.estado === 'PENDIENTE' && getCustomerOrderPaymentStatus(order) === 'PAGADO';
+  }
+
+  cancelOrder(order: CustomerOrder): void {
+    if (this.cancellingOrder() || !this.canCancelOrder(order)) {
+      return;
+    }
+
+    if (!window.confirm('¿Quieres cancelar este pedido?')) {
+      return;
+    }
+
+    this.actionError.set(null);
+    this.cancellingOrder.set(true);
+    this.pedidoService.cancelarPedido(order.pedidoId)
+      .pipe(finalize(() => this.cancellingOrder.set(false)))
+      .subscribe({
+        next: () => this.order.set({ ...order, estado: 'CANCELADO' }),
+        error: (error: HttpErrorResponse) => this.actionError.set(
+          this.getCancellationErrorMessage(error),
+        ),
+      });
+  }
+
+  private getCancellationErrorMessage(error: HttpErrorResponse): string {
+    const message = error.error?.message;
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+    return 'No se pudo cancelar el pedido. Puede que ya no sea cancelable.';
   }
 
   buyAgain(productId: string, quantity: number): void {

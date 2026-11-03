@@ -54,6 +54,7 @@ export class ClientOrders implements OnInit {
       { label: 'En preparación', status: 'PREPARANDO' as const, count: counts.preparing, className: 'summary-preparing' },
       { label: 'Enviados', status: 'ENVIADO' as const, count: counts.shipped, className: 'summary-shipped' },
       { label: 'Entregados', status: 'ENTREGADO' as const, count: counts.delivered, className: 'summary-delivered' },
+      { label: 'Cancelados', status: 'CANCELADO' as const, count: counts.cancelled, className: 'summary-cancelled' },
     ];
   });
   readonly hasActiveFilters = computed(() =>

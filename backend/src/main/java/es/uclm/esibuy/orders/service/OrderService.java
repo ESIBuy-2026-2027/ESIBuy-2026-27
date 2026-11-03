@@ -62,6 +62,8 @@ import org.springframework.stereotype.Service;
 public class OrderService {
 
     private static final String STOCK_FIELD = "stock";
+    private static final String ORDER_ID_REQUIRED_MESSAGE =
+            "El identificador del pedido es obligatorio";
 
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
@@ -231,7 +233,7 @@ public class OrderService {
         getCustomer(customerId);
 
         if (orderId == null || orderId.isBlank()) {
-            throw new IllegalArgumentException("El identificador del pedido es obligatorio");
+            throw new IllegalArgumentException(ORDER_ID_REQUIRED_MESSAGE);
         }
 
         Order order = orderRepository.findByIdAndCustomerId(orderId, customerId)
@@ -240,11 +242,32 @@ public class OrderService {
         return toCustomerOrder(order);
     }
 
+    public void cancelCustomerOrder(String customerId, String orderId) {
+        getCustomer(customerId);
+
+        if (orderId == null || orderId.isBlank()) {
+            throw new IllegalArgumentException(ORDER_ID_REQUIRED_MESSAGE);
+        }
+
+        Order order = orderRepository.findByIdAndCustomerId(orderId, customerId)
+                .orElseThrow(PedidoNotFoundException::new);
+
+        if (order.getStatus() != OrderStatus.PENDIENTE
+                || order.getPaymentStatus() != OrderPaymentStatus.PAGADO) {
+            throw new IllegalArgumentException(
+                    "El pedido ya no se puede cancelar en su estado actual");
+        }
+
+        restoreCancelledOrderStock(order.getItems());
+        order.setStatus(OrderStatus.CANCELADO);
+        orderRepository.save(order);
+    }
+
     public ShippingTrackingDTO getShippingStatusHistory(String customerId, String orderId) {
         getCustomer(customerId);
 
         if (orderId == null || orderId.isBlank()) {
-            throw new IllegalArgumentException("El identificador del pedido es obligatorio");
+            throw new IllegalArgumentException(ORDER_ID_REQUIRED_MESSAGE);
         }
 
         Order order = orderRepository.findByIdAndCustomerId(orderId, customerId)
@@ -604,6 +627,16 @@ public class OrderService {
 
         if (releaseError != null) {
             throw releaseError;
+        }
+    }
+
+    private void restoreCancelledOrderStock(List<OrderItem> items) {
+        for (OrderItem item : items) {
+            Product product = productRepository.findById(item.productId())
+                    .orElseThrow(() -> new IllegalStateException(
+                            "No se pudo encontrar el producto para reponer el stock"));
+            product.setStock(product.getStock() + item.quantity());
+            productRepository.save(product);
         }
     }
 

@@ -39,6 +39,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -92,6 +93,26 @@ class OrderControllerTest {
                                 .andExpect(jsonPath("$.estadoPago").value("PAGADO"));
 
                 verify(orderService).createOrder(eq(CUSTOMER_ID), any());
+        }
+
+        @Test
+        void shouldCancelOrderForAuthenticatedClient() throws Exception {
+                mockMvc.perform(delete(API + "/pedido-123")
+                                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                                .with(csrf()))
+                                .andExpect(status().isNoContent());
+
+                verify(orderService).cancelCustomerOrder(CUSTOMER_ID, "pedido-123");
+        }
+
+        @Test
+        void shouldRejectOrderCancellationForSeller() throws Exception {
+                mockMvc.perform(delete(API + "/pedido-123")
+                                .with(authentication(authenticationFor(UserRole.SELLER)))
+                                .with(csrf()))
+                                .andExpect(status().isForbidden());
+
+                verify(orderService, never()).cancelCustomerOrder(any(), any());
         }
 
         @Test

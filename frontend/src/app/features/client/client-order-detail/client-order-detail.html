@@ -23,6 +23,12 @@
       [class.status-cancelled]="getFulfillmentStatus(currentOrder) === 'CANCELADO'">
       {{ getFulfillmentStatusLabel(currentOrder) }}
     </span>
+    @if (canCancelOrder(currentOrder)) {
+    <button type="button" class="cancel-order-button" [disabled]="cancellingOrder()"
+      (click)="cancelOrder(currentOrder)">
+      {{ cancellingOrder() ? 'Cancelando...' : 'Cancelar pedido' }}
+    </button>
+    }
   </header>
   <section class="detail-card" aria-labelledby="products-title">
     <h2 id="products-title">Productos</h2>
