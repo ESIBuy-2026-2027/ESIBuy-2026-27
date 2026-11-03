@@ -9,6 +9,7 @@ import { ClientOrderDetail } from './client-order-detail';
 describe('ClientOrderDetail', () => {
   let fixture: ComponentFixture<ClientOrderDetail>;
   let obtenerPedidoDelCliente: ReturnType<typeof vi.fn>;
+  let confirmarRecepcionPedido: ReturnType<typeof vi.fn>;
   const order: CustomerOrder = {
     pedidoId: 'pedido-123',
     fechaCreacion: '2026-10-28T12:00:00',
@@ -40,6 +41,7 @@ describe('ClientOrderDetail', () => {
           provide: PedidoService,
           useValue: {
             obtenerPedidoDelCliente: obtenerPedidoDelCliente = vi.fn(() => of(order)),
+            confirmarRecepcionPedido: confirmarRecepcionPedido = vi.fn(() => of(undefined)),
             obtenerHistorialEstadosEnvio: () => of({
               historialEstados: [
                 { estado: 'PENDIENTE', fecha: '2026-10-28T12:00:00' },

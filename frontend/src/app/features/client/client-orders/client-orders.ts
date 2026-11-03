@@ -36,27 +36,6 @@ export class ClientOrders implements OnInit {
   readonly pageSize = 10;
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-  readonly orderCounts = computed(() => {
-    const orders = this.orders();
-    return {
-      total: orders.length,
-      pending: orders.filter((order) => getCustomerOrderFulfillmentStatus(order) === 'PENDIENTE').length,
-      preparing: orders.filter((order) => getCustomerOrderFulfillmentStatus(order) === 'PREPARANDO').length,
-      shipped: orders.filter((order) => getCustomerOrderFulfillmentStatus(order) === 'ENVIADO').length,
-      delivered: orders.filter((order) => getCustomerOrderFulfillmentStatus(order) === 'ENTREGADO').length,
-      cancelled: orders.filter((order) => getCustomerOrderFulfillmentStatus(order) === 'CANCELADO').length,
-    };
-  });
-  readonly statusSummaries = computed(() => {
-    const counts = this.orderCounts();
-    return [
-      { label: 'Pendientes', status: 'PENDIENTE' as const, count: counts.pending, className: 'summary-pending' },
-      { label: 'En preparación', status: 'PREPARANDO' as const, count: counts.preparing, className: 'summary-preparing' },
-      { label: 'Enviados', status: 'ENVIADO' as const, count: counts.shipped, className: 'summary-shipped' },
-      { label: 'Entregados', status: 'ENTREGADO' as const, count: counts.delivered, className: 'summary-delivered' },
-      { label: 'Cancelados', status: 'CANCELADO' as const, count: counts.cancelled, className: 'summary-cancelled' },
-    ];
-  });
   readonly hasActiveFilters = computed(() =>
     this.statusFilter() !== 'TODOS'
     || this.paymentFilter() !== 'TODOS'
@@ -206,10 +185,6 @@ export class ClientOrders implements OnInit {
 
   closeFilters(): void {
     this.filtersOpen.set(false);
-  }
-
-  selectStatus(status: CustomerOrderFulfillmentStatus): void {
-    this.setStatusFilter(this.statusFilter() === status ? 'TODOS' : status);
   }
 
   clearFilters(): void {

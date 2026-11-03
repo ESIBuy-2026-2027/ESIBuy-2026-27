@@ -29,6 +29,12 @@
       {{ cancellingOrder() ? 'Cancelando...' : 'Cancelar pedido' }}
     </button>
     }
+    @if (canConfirmReceipt(currentOrder)) {
+    <button type="button" class="confirm-receipt-button" [disabled]="confirmingReceipt()"
+      (click)="confirmReceipt(currentOrder)">
+      {{ confirmingReceipt() ? 'Confirmando...' : 'He recibido mi pedido' }}
+    </button>
+    }
   </header>
   <section class="detail-card" aria-labelledby="products-title">
     <h2 id="products-title">Productos</h2>
