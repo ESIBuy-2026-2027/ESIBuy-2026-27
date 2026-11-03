@@ -1,8 +1,9 @@
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { computed, Injectable, signal } from '@angular/core';
-import { Observable, catchError, of, tap, throwError, timeout } from 'rxjs';
+import { Observable, catchError, of, tap, timeout } from 'rxjs';
 
 export type UserRole = 'CLIENT' | 'SELLER' | 'ADMIN';
+export type CustomerType = 'STANDARD' | 'PREMIUM';
 
 export interface AuthenticatedUser {
   id: string;
@@ -10,7 +11,7 @@ export interface AuthenticatedUser {
   role: UserRole;
   active: boolean;
   totpEnabled?: boolean;
-  customerType?: 'STANDARD' | 'PREMIUM' | string;
+  customerType?: CustomerType;
 }
 
 export interface LoginResponse {
@@ -22,12 +23,12 @@ export interface LoginResponse {
   role?: UserRole;
   active?: boolean;
   totpEnabled?: boolean;
-  customerType?: 'STANDARD' | 'PREMIUM' | string;
+  customerType?: CustomerType;
 }
 
 export interface ClientProfile {
   birthDate?: string;
-  customerType?: string;
+  customerType?: CustomerType;
 }
 
 export interface SellerProfile {

@@ -434,6 +434,10 @@
                 Esta acción no se puede deshacer.
             </p>
 
+            @if (deleteError(); as message) {
+            <p class="form-error" role="alert">{{ message }}</p>
+            }
+
             <div class="confirm-modal-actions">
                 <button type="button" class="secondary-button" (click)="cancelDelete()"
                     [disabled]="actionId() !== null">

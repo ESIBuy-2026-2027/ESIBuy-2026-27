@@ -138,7 +138,7 @@ p {
 .view-product-button {
   min-height: 36px;
   padding: 8px 13px;
-  border-radius: 999px;
+  border-radius: 8px;
   font: inherit;
   font-size: 12px;
   font-weight: 700;
@@ -179,9 +179,69 @@ p {
   outline-offset: 2px;
 }
 
+.cancel-order-button {
+  min-height: 36px;
+  padding: 8px 13px;
+  border: 1px solid #b42318;
+  border-radius: 8px;
+  background: #fff;
+  color: #b42318;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cancel-order-button:hover:not(:disabled),
+.cancel-order-button:focus-visible {
+  background: #fee4e2;
+}
+
+.cancel-order-button:focus-visible {
+  outline: 3px solid rgba(180, 35, 24, 0.25);
+  outline-offset: 2px;
+}
+
+.cancel-order-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .detail-total {
   border-bottom: 0;
   font-size: 18px;
+}
+
+.economic-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 0 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.unitemized-costs {
+  margin: 0;
+  padding: 8px 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.payment-status {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.payment-paid {
+  background: #dff7ef;
+  color: #087f5b;
+}
+
+.payment-pending {
+  background: #fff3cd;
+  color: #9a6700;
 }
 
 .feedback-error {
@@ -218,8 +278,11 @@ p {
   border-radius: 10px;
   background: #dff7ef;
   color: #087f5b;
-  font-size: 20px;
-  font-weight: 800;
+}
+
+.information-icon-svg {
+  width: 20px;
+  height: 20px;
 }
 
 .information-card h2 {

@@ -70,7 +70,7 @@
       <div class="main-container">
 
         <!-- Errores generales -->
-        <div *ngIf="errorMessage" class="alert-box alert-danger" role="alert">
+        <div *ngIf="errorMessage" class="alert-box alert-danger" role="alert" tabindex="-1">
           <div class="alert-title">
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -222,7 +222,9 @@
                 <div class="password-wrapper">
                   <input id="password" [type]="showPassword ? 'text' : 'password'" class="form-control"
                     formControlName="password" placeholder="Mínimo 12 caracteres"
-                    [attr.autocomplete]="showPassword ? 'off' : 'new-password'" />
+                    [attr.autocomplete]="showPassword ? 'off' : 'new-password'"
+                    (copy)="blockClipboardAction($event)" (cut)="blockClipboardAction($event)"
+                    (paste)="blockClipboardAction($event)" />
 
                   <button type="button" class="password-toggle" (click)="showPassword = !showPassword"
                     [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
@@ -268,7 +270,9 @@
                 <div class="password-wrapper">
                   <input id="confirmPassword" [type]="showPassword ? 'text' : 'password'" class="form-control"
                     formControlName="confirmPassword" placeholder="Repite la contraseña"
-                    [attr.autocomplete]="showPassword ? 'off' : 'new-password'" />
+                    [attr.autocomplete]="showPassword ? 'off' : 'new-password'"
+                    (copy)="blockClipboardAction($event)" (cut)="blockClipboardAction($event)"
+                    (paste)="blockClipboardAction($event)" />
                 </div>
 
                 <div *ngIf="form.get('confirmPassword')?.touched && form.get('confirmPassword')?.hasError('required')"

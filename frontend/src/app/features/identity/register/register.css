@@ -249,6 +249,95 @@
   line-height: 1.45;
 }
 
+.customer-type-selector {
+  min-inline-size: 0;
+  padding: 0;
+  border: 0;
+}
+
+.customer-type-selector legend {
+  margin-bottom: 7px;
+  color: #334e62;
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.customer-type-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.customer-type-option {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 112px;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 22px 18px 16px;
+  border: 1px solid #dce5ed;
+  border-top: 3px solid #dce5ed;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #334e62;
+  cursor: pointer;
+  text-align: center;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.customer-type-option:hover {
+  border-color: #8ddfd2;
+  border-top-color: #43c9b4;
+  background: #f4fcfa;
+}
+
+.customer-type-option.selected {
+  border-color: #43c9b4;
+  border-top-color: #0a8278;
+  background: #edfaf7;
+}
+
+.customer-type-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.customer-type-content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.customer-type-title {
+  color: var(--color-brand-dark);
+  font-size: 0.95rem;
+  font-weight: 750;
+}
+
+.customer-type-option.selected .customer-type-title {
+  color: #0a5c58;
+}
+
+.customer-type-description {
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 .required {
   color: #dc5555;
 }
@@ -316,6 +405,21 @@
   color: #c24141;
   font-size: 0.78rem;
   line-height: 1.5;
+}
+
+.password-help {
+  margin: 10px 0 4px;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.password-requirements {
+  margin: 0 0 2px;
+  padding-left: 18px;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.6;
 }
 
 /* ========================================
@@ -431,31 +535,7 @@
    BOTÓN DE REGISTRO
    ======================================== */
 
-.btn-submit {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 46px;
-  margin-top: 12px;
-  padding: 12px 18px;
-  border: 1px solid transparent;
-  border-radius: 9px;
-  background: #5ccfc0;
-  color: var(--color-brand-dark);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 0.92rem;
-  font-weight: 750;
-  line-height: 1.4;
-  text-align: center;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
-}
+
 
 .btn-submit:hover:not(:disabled) {
   background: var(--color-brand-dark);
@@ -478,6 +558,7 @@
 
 .register-back-button:focus-visible,
 .role-selector button:focus-visible,
+.customer-type-option:has(input:focus-visible),
 .password-toggle:focus-visible,
 .avatar-item:focus-visible,
 .btn-submit:focus-visible {
@@ -562,7 +643,6 @@
   margin-top: 25px;
 }
 
-.dialog-primary-button,
 .dialog-secondary-button,
 .dialog-danger-button {
   display: inline-flex;
@@ -660,6 +740,15 @@
     padding: 12px;
   }
 
+  .customer-type-options {
+    gap: 9px;
+  }
+
+  .customer-type-option {
+    min-height: 102px;
+    padding: 12px;
+  }
+
   .form-section {
     margin-top: 27px;
   }
@@ -708,6 +797,14 @@
     min-height: 68px;
   }
 
+  .customer-type-options {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-type-option {
+    min-height: 68px;
+  }
+
   .form-group input,
   .form-group select {
     font-size: 0.85rem;
@@ -732,4 +829,82 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
+/* ========================================
+   LISTA DE REQUISITOS (NUEVO)
+   ======================================== */
+.password-requirements.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.password-requirements.checklist li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  transition: color 0.2s ease;
+}
+
+.password-requirements.checklist li.valid {
+  color: #0a8278; /* Color corporativo cuando se cumple */
+}
+
+.check-icon {
+  display: flex;
+  width: 16px;
+  height: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+.check-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.password-requirements.checklist li.invalid .check-icon {
+  color: #c24141;
+}
+
+/* ========================================
+   REFINAMIENTO DE BOTONES
+   ======================================== */
+.btn-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 40px; /* Reducido de 46px */
+  margin-top: 12px;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: 6px; /* Reducido de 9px */
+  background: #5ccfc0;
+  color: var(--color-brand-dark);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem; /* Ligeramente más proporcionado */
+  font-weight: 650;
+  line-height: 1.4;
+  text-align: center;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* Aplicar la misma compactación a los botones del diálogo si quieres uniformidad */
+.dialog-primary-button,
+.dialog-secondary-button,
+.dialog-danger-button {
+  min-height: 38px; /* Reducido de 42px */
+  border-radius: 6px; /* Reducido de 9px */
+}
+
+.password-requirements.checklist li.invalid {
+  color: #c24141; /* Rojo error */
 }

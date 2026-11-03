@@ -1,330 +1,492 @@
-<div class="profile-page">
-
-    <!-- BARRA LATERAL -->
-    <aside class="profile-card" aria-label="Menú de perfil">
-        <div class="sidebar-footer">
-            <button type="button" class="back-button" (click)="goBack()">
-            <span aria-hidden="true">←</span>
-                Volver
+<div class="seller-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
+    <aside class="sidebar app-sidebar" aria-label="Panel del cliente">
+        <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m15 18-6-6 6-6" />
+            </svg>
         </button>
-        </div>
-        
-
-        <div class="sidebar-profile">
-            <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Perfil" />
-
-            <h2 class="sidebar-name">
-                {{ fullName() || 'Perfil' }}
-            </h2>
-
-            @if (isPremium()) {
-            <span class="role-badge premium-badge">
-                Cuenta premium
-            </span>
-            } @else {
-            <span class="role-badge">
-                Cuenta estándar
-            </span>
-            }
-        </div>
-
-
-        <nav class="sidebar-nav" aria-label="Secciones del perfil">
-            <button type="button" class="nav-item" [class.active]="activeSection() === 'personal'"
-                [attr.aria-current]="activeSection() === 'personal' ? 'page' : null"
-                (click)="selectSection('personal')">
-                Datos personales
-            </button>
-
-            <button type="button" class="nav-item" [class.active]="activeSection() === 'addresses'"
-                [attr.aria-current]="activeSection() === 'addresses' ? 'page' : null"
-                (click)="selectSection('addresses')">
-                Direcciones de envío
-            </button>
-
-            <button type="button" class="nav-item" [class.active]="activeSection() === 'security'"
-                [attr.aria-current]="activeSection() === 'security' ? 'page' : null"
-                (click)="selectSection('security')">
-                Seguridad
-            </button>
-
-            <button type="button" class="nav-item" [class.active]="activeSection() === 'payments'"
-                [attr.aria-current]="activeSection() === 'payments' ? 'page' : null"
-                (click)="selectSection('payments')">
-                Métodos de pago
-            </button>
+        <div class="sidebar-caption">ÁREA DE CLIENTE</div>
+        <nav class="seller-navigation" aria-label="Navegación del cliente">
+            <a class="navigation-link" routerLink="/client/catalog">
+                <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                    <path d="M3 6h18" />
+                    <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+                <span>Catálogo</span>
+            </a>
+            <a class="navigation-link" routerLink="/client/wishlist">
+                <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path
+                        d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                </svg>
+                <span>Lista de deseos</span>
+            </a>
+            <a class="navigation-link" routerLink="/client/orders">
+                <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path
+                        d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                    <path d="m3.3 7 8.7 5 8.7-5" />
+                    <path d="M12 22V12" />
+                </svg>
+                <span>Mis pedidos</span>
+            </a>
+            <a class="navigation-link" routerLink="/client/cart">
+                <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="9" cy="21" r="1" />
+                    <circle cx="20" cy="21" r="1" />
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                </svg>
+                <span>Carrito</span>
+            </a>
         </nav>
-
-
-
-        <div class="sidebar-footer">
-            @if (logoutError(); as error) {
-            <p class="form-error" role="alert">{{ error }}</p>
-            }
-            <button type="button" class="logout-button" (click)="logout()">
-                Cerrar sesión
-            </button>
-        </div>
-
     </aside>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="profile-main">
+    <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()" aria-label="Mostrar barra lateral"
+        [hidden]="!sidebarCollapsed()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m9 18 6-6-6-6" />
+        </svg>
+    </button>
 
-        @if (loading()) {
-        <section class="panel">
-            <output class="panel-description">
-                Cargando los datos de tu perfil...
-            </output>
-        </section>
-        } @else if (profileError(); as error) {
-        <section class="panel">
-            <h1 class="panel-title">Perfil</h1>
+    <div class="workspace app-workspace">
+        <div class="profile-page">
 
-            <p class="form-error" role="alert">{{ error }}</p>
+            <!-- BARRA LATERAL -->
+            <aside class="profile-card" aria-label="Menú de perfil">
 
-            <button type="button" class="primary-button" (click)="loadProfile()">
-                Reintentar
-            </button>
-        </section>
-        } @else if (profile(); as client) {
+                <div class="sidebar-profile">
+                    <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Perfil" />
 
-        <!-- BANNER PREMIUM -->
-        @if (activeSection() === 'personal' && isPremium()) {
-        <section class="premium-banner">
-            <div>
-                <span class="premium-eyebrow">CUENTA PREMIUM</span>
-
-                <h2>Disfruta de ventajas exclusivas</h2>
-
-                <p>
-                    Tu cuenta Premium te permite disfrutar
-                    de las ventajas disponibles para suscriptores.
-                </p>
-            </div>
-        </section>
-        }
-
-        <!-- DATOS PERSONALES -->
-        @if (activeSection() === 'personal') {
-        <section class="panel">
-
-            <div class="panel-heading">
-                <div class="panel-heading-text">
-                    <span class="eyebrow">CUENTA DE CLIENTE</span>
-
-                    <h1 class="panel-title">Perfil</h1>
-
-                    <p class="panel-description">
-                        Consulta y actualiza tus datos personales.
-                    </p>
-                </div>
-
-                @if (!editing()) {
-                <button type="button" class="primary-button" (click)="startEditing()">
-                    Editar perfil
-                </button>
-                }
-            </div>
-
-            @if (editSuccess(); as message) {
-            <output class="success-message">
-                {{ message }}
-            </output>
-            }
-
-            @if (editError(); as error) {
-            <p class="form-error" role="alert">
-                {{ error }}
-            </p>
-            }
-
-            <form #clientForm="ngForm" (ngSubmit)="saveProfile()">
-
-                <h2 class="section-title">Datos personales</h2>
-
-                <div class="field-grid">
-
-                    <!-- NOMBRE -->
-                    <div class="field">
-                        <label for="firstName">
-                            Nombre <span>*</span>
-                        </label>
-
-                        @if (editing()) {
-                        <input id="firstName" name="firstName" type="text" [(ngModel)]="editForm.firstName" required
-                            minlength="2" maxlength="25" autocomplete="given-name" [disabled]="saving()" />
-                        } @else {
-                        <input id="firstName" type="text" [value]="client.firstName || ''" readonly />
-                        }
-                    </div>
-
-                    <!-- APELLIDOS -->
-                    <div class="field">
-                        <label for="lastName">
-                            Apellidos <span>*</span>
-                        </label>
-
-                        @if (editing()) {
-                        <input id="lastName" name="lastName" type="text" [(ngModel)]="editForm.lastName" required
-                            minlength="2" maxlength="50" autocomplete="family-name" [disabled]="saving()" />
-                        } @else {
-                        <input id="lastName" type="text" [value]="client.lastName || ''" readonly />
-                        }
-                    </div>
-
-                    <!-- EMAIL -->
-                    <div class="field">
-                        <label for="email">Correo electrónico</label>
-
-                        <input id="email" type="email" [value]="client.email || ''" readonly />
-
-                        <small>
-                            El correo electrónico no se puede modificar.
-                        </small>
-                    </div>
-
-                    <!-- TELÉFONO -->
-                    <div class="field">
-                        <label for="phone">Teléfono</label>
-
-                        @if (editing()) {
-                        <input id="phone" name="phone" type="tel" inputmode="numeric" maxlength="9"
-                            [(ngModel)]="editForm.phone" pattern="[0-9]{9}" autocomplete="tel"
-                            placeholder="Teléfono de 9 cifras" [disabled]="saving()" />
-
-                        <small>
-                            Campo opcional. Introduce 9 cifras si
-                            deseas indicar tu teléfono.
-                        </small>
-                        } @else {
-                        <input id="phone" type="text" [value]="client.phone || 'No indicado'" readonly />
-                        }
-                    </div>
-
-                    <!-- FECHA DE NACIMIENTO -->
-                    <div class="field">
-                        <label for="birthDate">
-                            Fecha de nacimiento <span>*</span>
-                        </label>
-
-                        @if (editing()) {
-                        <input id="birthDate" name="birthDate" type="date" [(ngModel)]="editForm.birthDate"
-                            [max]="maxBirthDate" required [disabled]="saving()" />
-                        } @else {
-                        <input id="birthDate" type="text" [value]="client.birthDate || 'No indicada'" readonly />
-                        }
-
-                        @if (editing()) {
-                        <small>Debes tener al menos 18 años.</small>
-                        }
-                    </div>
-
-                    <!-- DNI -->
-                    <div class="field">
-                        <label for="nationalId">DNI</label>
-
-                        @if (editing()) {
-                        <input id="nationalId" name="nationalId" type="text" [(ngModel)]="editForm.nationalId"
-                            maxlength="20" placeholder="Introduce un DNI nuevo" autocomplete="off"
-                            [disabled]="saving()" />
-
-                        <small>
-                            Déjalo vacío para mantener el DNI actual.
-                        </small>
-                        } @else {
-                        <input id="nationalId" type="text" [value]="client.maskedNationalId || 'No disponible'"
-                            readonly />
-                        }
-                    </div>
-
-                    <!-- TIPO DE CLIENTE -->
-                    <div class="field">
-                        <label for="customerType">Tipo de cliente</label>
-
-                        <input id="customerType" type="text" [value]="customerTypeLabel() || 'No disponible'"
-                            readonly />
-                    </div>
-
-                </div>
-
-                <!-- AVATARES: SOLO EN MODO EDICIÓN -->
-                @if (editing()) {
-                <div class="avatar-section">
-                    <h2 class="section-title">Imagen de perfil</h2>
-
-                    <p class="section-description">
-                        Selecciona uno de los avatares disponibles.
-                    </p>
-
-                    <fieldset class="avatar-selector-grid">
-                        <legend>Seleccionar avatar</legend>
-
-                        @for (avatar of clientAvatars; track avatar; let i = $index) {
-                        <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
-                            [attr.aria-pressed]="selectedAvatar() === avatar"
-                            [attr.aria-label]="'Seleccionar avatar ' + (i + 1)" [disabled]="saving()"
-                            (click)="selectAvatar(avatar)">
-
-                            <img [src]="avatar" [alt]="'Avatar ' + (i + 1)" />
-
-                            @if (selectedAvatar() === avatar) {
-                            <span class="avatar-check" aria-hidden="true">✓</span>
-                            }
-                        </button>
-                        }
-                    </fieldset>
-                </div>
-                }
-
-                <!-- ACCIONES DEL FORMULARIO -->
-                @if (editing()) {
-                <div class="form-actions">
-                    <button type="button" class="secondary-button" [disabled]="saving()" (click)="cancelEditing()">
-                        Cancelar
-                    </button>
-
-                    <button type="submit" class="primary-button" [disabled]="saving()">
-                        {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
-                    </button>
-                </div>
-                }
-
-            </form>
-        </section>
-
-        <!-- ZONA DE PELIGRO: SOLO EN DATOS PERSONALES -->
-        <section class="panel danger-zone" aria-labelledby="danger-zone-title">
-            <div class="panel-heading">
-                <div class="panel-heading-text">
-                    <span class="eyebrow">ACCIONES IRREVERSIBLES</span>
-
-                    <h2 id="danger-zone-title" class="panel-title">
-                        Zona de peligro
+                    <h2 class="sidebar-name">
+                        {{ fullName() || 'Perfil' }}
                     </h2>
 
-                    <p class="panel-description">
-                        Desde aquí puedes iniciar el proceso de eliminación
-                        de tu cuenta de cliente.
-                    </p>
+                    @if (isPremium()) {
+                    <span class="role-badge premium-badge">
+                        Cuenta premium
+                    </span>
+                    } @else {
+                    <span class="role-badge">
+                        Cuenta estándar
+                    </span>
+                    }
                 </div>
-            </div>
 
-            <app-delete-account [role]="'CLIENT'" />
-        </section>
-        }
 
-        <!-- SEGURIDAD / AUTENTICACIÓN EN DOS FACTORES -->
-        @if (activeSection() === 'security') {
-        <app-two-factor-settings [enabled]="twoFactorEnabled()"
-            (enabledChange)="onTwoFactorEnabledChange($any($event))" />
-        }
-        @if (activeSection() === 'addresses') {
-        <app-shipping-addresses />
-        }
-        @if (activeSection() === 'payments') {
-        <app-payment-methods />
-        }
-        }
-    </main>
+                <nav class="sidebar-nav" aria-label="Secciones del perfil">
+                    <button type="button" class="nav-item" [class.active]="activeSection() === 'personal'"
+                        [attr.aria-current]="activeSection() === 'personal' ? 'page' : null"
+                        (click)="selectSection('personal')">
+                        Datos personales
+                    </button>
+
+                    <button type="button" class="nav-item" [class.active]="activeSection() === 'addresses'"
+                        [attr.aria-current]="activeSection() === 'addresses' ? 'page' : null"
+                        (click)="selectSection('addresses')">
+                        Direcciones de envío
+                    </button>
+
+                    <button type="button" class="nav-item" [class.active]="activeSection() === 'security'"
+                        [attr.aria-current]="activeSection() === 'security' ? 'page' : null"
+                        (click)="selectSection('security')">
+                        Seguridad
+                    </button>
+
+                    <button type="button" class="nav-item" [class.active]="activeSection() === 'payments'"
+                        [attr.aria-current]="activeSection() === 'payments' ? 'page' : null"
+                        (click)="selectSection('payments')">
+                        Métodos de pago
+                    </button>
+                </nav>
+
+
+
+                <div class="sidebar-footer">
+                    @if (logoutError(); as error) {
+                    <p class="form-error" role="alert">{{ error }}</p>
+                    }
+                    <button type="button" class="back-button" (click)="goBack()">
+                        <span aria-hidden="true">←</span>
+                        Volver
+                    </button>
+
+                    <button type="button" class="logout-button" (click)="logout()">
+                        Cerrar sesión
+                    </button>
+                </div>
+
+            </aside>
+
+            <!-- CONTENIDO PRINCIPAL -->
+            <main class="profile-main">
+
+                @if (loading()) {
+                <section class="panel">
+                    <output class="panel-description">
+                        Cargando los datos de tu perfil...
+                    </output>
+                </section>
+                } @else if (profileError(); as error) {
+                <section class="panel">
+                    <h1 class="panel-title">Perfil</h1>
+
+                    <p class="form-error" role="alert">{{ error }}</p>
+
+                    <button type="button" class="primary-button" (click)="loadProfile()">
+                        Reintentar
+                    </button>
+                </section>
+                } @else if (profile(); as client) {
+
+                <!-- BANNER PREMIUM -->
+                @if (activeSection() === 'personal' && isPremium()) {
+                <section class="premium-banner">
+                    <div>
+                        <span class="premium-eyebrow">CUENTA PREMIUM</span>
+
+                        <h2>Disfruta de ventajas exclusivas</h2>
+
+                        <p>
+                            Tu cuenta Premium te permite disfrutar
+                            de las ventajas disponibles para suscriptores.
+                        </p>
+                    </div>
+                </section>
+                }
+
+                <!-- DATOS PERSONALES -->
+                @if (activeSection() === 'personal') {
+                <section class="panel">
+
+                    <div class="panel-heading">
+                        <div class="panel-heading-text">
+                            <span class="eyebrow">CUENTA DE CLIENTE</span>
+
+                            <h1 class="panel-title">Perfil</h1>
+
+                            <p class="panel-description">
+                                Consulta y actualiza tus datos personales.
+                            </p>
+                        </div>
+
+                        @if (!editing()) {
+                        <button type="button" class="primary-button" (click)="startEditing()">
+                            Editar perfil
+                        </button>
+                        }
+                    </div>
+
+                    @if (editSuccess(); as message) {
+                    <output class="success-message">
+                        {{ message }}
+                    </output>
+                    }
+
+                    @if (editError(); as error) {
+                    <p class="form-error" role="alert">
+                        {{ error }}
+                    </p>
+                    }
+
+                    <form #clientForm="ngForm" (ngSubmit)="saveProfile()">
+
+                        <h2 class="section-title">Datos personales</h2>
+
+                        <div class="field-grid">
+
+                            <!-- NOMBRE -->
+                            <div class="field">
+                                <label for="firstName">
+                                    Nombre <span>*</span>
+                                </label>
+
+                                @if (editing()) {
+                                <input id="firstName" name="firstName" type="text" [(ngModel)]="editForm.firstName"
+                                    required minlength="2" maxlength="25" autocomplete="given-name"
+                                    [disabled]="saving()" />
+                                } @else {
+                                <input id="firstName" type="text" [value]="client.firstName || ''" readonly />
+                                }
+                            </div>
+
+                            <!-- APELLIDOS -->
+                            <div class="field">
+                                <label for="lastName">
+                                    Apellidos <span>*</span>
+                                </label>
+
+                                @if (editing()) {
+                                <input id="lastName" name="lastName" type="text" [(ngModel)]="editForm.lastName"
+                                    required minlength="2" maxlength="50" autocomplete="family-name"
+                                    [disabled]="saving()" />
+                                } @else {
+                                <input id="lastName" type="text" [value]="client.lastName || ''" readonly />
+                                }
+                            </div>
+
+                            <!-- EMAIL -->
+                            <div class="field">
+                                <label for="email">Correo electrónico</label>
+
+                                <input id="email" type="email" [value]="client.email || ''" readonly />
+
+                                <small>
+                                    El correo electrónico no se puede modificar.
+                                </small>
+                            </div>
+
+                            <!-- TELÉFONO -->
+                            <div class="field">
+                                <label for="phone">Teléfono</label>
+
+                                @if (editing()) {
+                                <input id="phone" name="phone" type="tel" inputmode="numeric" maxlength="9"
+                                    [(ngModel)]="editForm.phone" pattern="[0-9]{9}" autocomplete="tel"
+                                    placeholder="Teléfono de 9 cifras" [disabled]="saving()" />
+
+                                <small>
+                                    Campo opcional. Introduce 9 cifras si
+                                    deseas indicar tu teléfono.
+                                </small>
+                                } @else {
+                                <input id="phone" type="text" [value]="client.phone || 'No indicado'" readonly />
+                                }
+                            </div>
+
+                            <!-- FECHA DE NACIMIENTO -->
+                            <div class="field">
+                                <label for="birthDate">
+                                    Fecha de nacimiento <span>*</span>
+                                </label>
+
+                                @if (editing()) {
+                                <input id="birthDate" name="birthDate" type="date" [(ngModel)]="editForm.birthDate"
+                                    [max]="maxBirthDate" required [disabled]="saving()" />
+                                } @else {
+                                <input id="birthDate" type="text" [value]="client.birthDate || 'No indicada'"
+                                    readonly />
+                                }
+
+                                @if (editing()) {
+                                <small>Debes tener al menos 18 años.</small>
+                                }
+                            </div>
+
+                            <!-- DNI -->
+                            <div class="field">
+                                <label for="nationalId">DNI</label>
+
+                                @if (editing()) {
+                                <input id="nationalId" name="nationalId" type="text" [(ngModel)]="editForm.nationalId"
+                                    maxlength="20" placeholder="Introduce un DNI nuevo" autocomplete="off"
+                                    [disabled]="saving()" />
+
+                                <small>
+                                    Déjalo vacío para mantener el DNI actual.
+                                </small>
+                                } @else {
+                                <input id="nationalId" type="text" [value]="client.maskedNationalId || 'No disponible'"
+                                    readonly />
+                                }
+                            </div>
+                        </div>
+
+                        <!-- AVATARES: SOLO EN MODO EDICIÓN -->
+                        @if (editing()) {
+                        <div class="avatar-section">
+                            <h2 class="section-title">Imagen de perfil</h2>
+
+                            <p class="section-description">
+                                Selecciona uno de los avatares disponibles.
+                            </p>
+
+                            <fieldset class="avatar-selector-grid">
+                                <legend>Seleccionar avatar</legend>
+
+                                @for (avatar of clientAvatars; track avatar; let i = $index) {
+                                <button type="button" class="avatar-item" [class.selected]="selectedAvatar() === avatar"
+                                    [attr.aria-pressed]="selectedAvatar() === avatar"
+                                    [attr.aria-label]="'Seleccionar avatar ' + (i + 1)" [disabled]="saving()"
+                                    (click)="selectAvatar(avatar)">
+
+                                    <img [src]="avatar" [alt]="'Avatar ' + (i + 1)" />
+
+                                    @if (selectedAvatar() === avatar) {
+                                    <span class="avatar-check" aria-hidden="true">✓</span>
+                                    }
+                                </button>
+                                }
+                            </fieldset>
+                        </div>
+                        }
+
+                        <!-- ACCIONES DEL FORMULARIO -->
+                        @if (editing()) {
+                        <div class="form-actions">
+                            <button type="button" class="secondary-button" [disabled]="saving()"
+                                (click)="cancelEditing()">
+                                Cancelar
+                            </button>
+
+                            <button type="submit" class="primary-button" [disabled]="saving()">
+                                {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
+                            </button>
+                        </div>
+                        }
+
+                    </form>
+                </section>
+
+                <!-- CAMBIO DE MODALIDAD -->
+                <section class="panel customer-type-panel" aria-labelledby="customer-type-title">
+                    <div class="panel-heading">
+                        <div class="panel-heading-text">
+                            <span class="eyebrow">MODALIDAD DE CUENTA</span>
+
+                            <h2 id="customer-type-title" class="panel-title">
+                                Tu tipo de cuenta
+                            </h2>
+
+                            <p class="panel-description">
+                                Puedes cambiar entre una cuenta Estándar y Premium cuando quieras.
+                            </p>
+                        </div>
+
+                        <span class="role-badge" [class.premium-badge]="isPremium()">
+                            {{ customerTypeLabel() }}
+                        </span>
+                    </div>
+
+                    @if (customerTypeSuccess(); as message) {
+                    <output class="success-message">
+                        {{ message }}
+                    </output>
+                    }
+
+                    @if (customerTypeError(); as error) {
+                    <p class="form-error" role="alert">
+                        {{ error }}
+                    </p>
+                    }
+
+                    @if (isPremium()) {
+                    <div class="customer-type-benefit">
+                        <span class="benefit-icon" aria-hidden="true">★</span>
+                        <div>
+                            <strong>Ofertas Premium</strong>
+                            <p>
+                                Actualmente tienes acceso a las ofertas exclusivas para clientes Premium.
+                            </p>
+                        </div>
+                    </div>
+
+                    <p class="customer-type-warning">
+                        Si cambias a Estándar, perderás el acceso a las ofertas Premium.
+                    </p>
+
+                    <button type="button" class="secondary-button" [disabled]="changingCustomerType() || editing()"
+                        (click)="openCustomerTypeDialog()">
+                        Cambiar a Estándar
+                    </button>
+                    } @else {
+                    <div class="customer-type-benefit">
+                        <span class="benefit-icon" aria-hidden="true">★</span>
+                        <div>
+                            <strong>Accede a las ofertas Premium</strong>
+                            <p>
+                                Cambia tu cuenta a Premium para disfrutar de las ofertas exclusivas
+                                disponibles para esta modalidad.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button type="button" class="primary-button" [disabled]="changingCustomerType() || editing()"
+                        (click)="openCustomerTypeDialog()">
+                        Cambiar a Premium
+                    </button>
+                    }
+                </section>
+
+                <!-- CONFIRMACIÓN DEL CAMBIO -->
+                @if (customerTypeDialogOpen()) {
+                <dialog class="customer-type-modal" open aria-labelledby="customer-type-modal-title"
+                    (click)="onCustomerTypeDialogClick($event)" (keydown)="$event.stopPropagation()">
+
+                    <span class="eyebrow">CONFIRMAR CAMBIO</span>
+
+                    <h2 id="customer-type-modal-title">
+                        ¿Cambiar a {{ pendingCustomerType() === 'PREMIUM' ? 'Premium' : 'Estándar' }}?
+                    </h2>
+
+                    @if (pendingCustomerType() === 'PREMIUM') {
+                    <p>
+                        Tu cuenta pasará a ser Premium y tendrás acceso a las ofertas exclusivas
+                        disponibles para esta modalidad.
+                    </p>
+                    } @else {
+                    <p>
+                        Tu cuenta pasará a ser Estándar y dejarás de tener acceso a las ofertas
+                        exclusivas para clientes Premium.
+                    </p>
+                    }
+
+                    @if (customerTypeError(); as error) {
+                    <p class="form-error" role="alert">{{ error }}</p>
+                    }
+
+                    <div class="customer-type-modal-actions">
+                        <button type="button" class="secondary-button" [disabled]="changingCustomerType()"
+                            (click)="closeCustomerTypeDialog()">
+                            Cancelar
+                        </button>
+
+                        <button type="button" class="primary-button" [disabled]="changingCustomerType()"
+                            (click)="confirmCustomerTypeChange()">
+                            {{ changingCustomerType() ? 'Actualizando...' : 'Confirmar cambio' }}
+                        </button>
+                    </div>
+                </dialog>
+                }
+
+                <!-- ZONA DE PELIGRO: SOLO EN DATOS PERSONALES -->
+                <section class="panel danger-zone" aria-labelledby="danger-zone-title">
+                    <div class="panel-heading">
+                        <div class="panel-heading-text">
+                            <span class="eyebrow">ACCIONES IRREVERSIBLES</span>
+
+                            <h2 id="danger-zone-title" class="panel-title">
+                                Zona de peligro
+                            </h2>
+
+                            <p class="panel-description">
+                                Desde aquí puedes iniciar el proceso de eliminación
+                                de tu cuenta de cliente.
+                            </p>
+                        </div>
+                    </div>
+
+                    <app-delete-account [role]="'CLIENT'" />
+                </section>
+                }
+
+                <!-- SEGURIDAD / AUTENTICACIÓN EN DOS FACTORES -->
+                @if (activeSection() === 'security') {
+                <app-two-factor-settings [enabled]="twoFactorEnabled()"
+                    (enabledChange)="onTwoFactorEnabledChange($any($event))" />
+                }
+                @if (activeSection() === 'addresses') {
+                <app-shipping-addresses />
+                }
+                @if (activeSection() === 'payments') {
+                <app-payment-methods />
+                }
+                }
+            </main>
+        </div>
+    </div>
 </div>

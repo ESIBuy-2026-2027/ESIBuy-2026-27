@@ -137,6 +137,13 @@
               <option [value]="cat.name">{{ cat.name }}</option>
               }
             </select>
+            @if (categoriesLoading()) {
+            <small aria-live="polite">Cargando categorías…</small>
+            } @else if (categoryError()) {
+            <small role="alert">No se han podido cargar las categorías.
+              <button type="button" (click)="loadCategories()">Reintentar</button>
+            </small>
+            }
           </div>
         </section>
 

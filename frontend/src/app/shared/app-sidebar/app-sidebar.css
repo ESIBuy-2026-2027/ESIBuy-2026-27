@@ -1,5 +1,5 @@
 :host { display: block; }
-.app-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 20; display: flex; box-sizing: border-box; width: 260px; flex-direction: column; padding: 32px 20px 24px; overflow-y: auto; color: #edf5f8; background: linear-gradient(180deg,var(--color-brand-dark) 0%,#0c2638 100%); box-shadow: 8px 0 28px rgb(16 44 64 / 7%); }
+.app-sidebar { position: fixed; inset: var(--app-header-height) auto 0 0; z-index: 20; display: flex; box-sizing: border-box; width: 260px; flex-direction: column; padding: 32px 20px 24px; overflow-y: auto; color: #edf5f8; background: linear-gradient(180deg,var(--color-brand-dark) 0%,#0c2638 100%); box-shadow: 8px 0 28px rgb(16 44 64 / 7%); }
 .app-sidebar--seller { width: 248px; padding: 30px 18px 20px; background: #102c40; box-shadow: none; }
 .app-sidebar--seller .app-brand { gap: 11px; margin: 0 0 54px 8px; font-size: 21px; font-weight: 750; letter-spacing: -.7px; }
 .app-sidebar--seller .brand-mark { width: 34px; height: 34px; border-radius: 11px; font-size: 18px; box-shadow: 0 4px 12px rgb(25 157 130 / 20%); }

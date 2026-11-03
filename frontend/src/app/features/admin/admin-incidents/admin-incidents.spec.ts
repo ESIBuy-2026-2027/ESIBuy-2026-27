@@ -140,6 +140,13 @@ describe('AdminIncidents', () => {
     expect(component.sidebarCollapsed()).toBe(false);
   });
 
+  it('does not render a duplicate brand logo in the sidebar', () => {
+    const fixture = TestBed.createComponent(AdminIncidents);
+    fixture.detectChanges();
+    const rendered = fixture.nativeElement as HTMLElement;
+    expect(rendered.querySelector('.admin-brand')).toBeNull();
+  });
+
   it('should load incidents on init and render rows and calculate summary cards correctly', () => {
     const list: Incident[] = [
       {

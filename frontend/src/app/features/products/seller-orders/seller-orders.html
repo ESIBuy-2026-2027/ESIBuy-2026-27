@@ -116,7 +116,8 @@
             </button>
             }
 
-            <span class="order-count">{{ visibleOrders().length }} {{ visibleOrders().length === 1 ? 'pedido' : 'pedidos' }}</span>
+            <span class="order-count">{{ visibleOrders().length }} {{ visibleOrders().length === 1 ? 'pedido' :
+              'pedidos' }}</span>
           </div>
         </section>
 
@@ -161,11 +162,11 @@
                     <div class="product-summary">
                       <div class="order-preview" aria-hidden="true">
                         @for (item of order.items.slice(0, 3); track item.productId) {
-                          @if (item.imageUrl) {
-                            <img [src]="item.imageUrl" [alt]="item.name" />
-                          } @else {
-                            <span class="image-placeholder">{{ item.name.charAt(0) }}</span>
-                          }
+                        @if (item.imageUrl) {
+                        <img [src]="item.imageUrl" [alt]="item.name" />
+                        } @else {
+                        <span class="image-placeholder">{{ item.name.charAt(0) }}</span>
+                        }
                         }
                       </div>
                       <span class="product-names">{{ order.products }}</span>
@@ -180,25 +181,14 @@
                   </td>
                   <td class="order-total">{{ formatPrice(order.total) }}</td>
                   <td class="order-action">
-                    <button
-                      type="button"
-                      class="details-button"
-                      [class.action-button]="expandedOrderId() !== order.id"
-                      (click)="toggleOrderDetails(order.id)"
-                      [attr.aria-expanded]="expandedOrderId() === order.id"
+                    <button type="button" class="details-button" [class.action-button]="expandedOrderId() !== order.id"
+                      (click)="toggleOrderDetails(order.id)" [attr.aria-expanded]="expandedOrderId() === order.id"
                       [attr.aria-controls]="'order-details-' + order.id"
                       [attr.aria-label]="(expandedOrderId() === order.id ? 'Ocultar' : 'Mostrar') + ' detalles del pedido ' + order.id">
 
-                      <svg
-                        class="profile-chevron"
-                        [class.is-expanded]="expandedOrderId() === order.id"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        aria-hidden="true">
+                      <svg class="profile-chevron" [class.is-expanded]="expandedOrderId() === order.id"
+                        viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" aria-hidden="true">
                         <path d="m4 6 4 4 4-4"></path>
                       </svg>
                     </button>
@@ -268,10 +258,10 @@
                         }
                         }
                         @if (statusSavingOrderId() === order.id) {
-                        <span class="status-saving" role="status">Guardando...</span>
+                        <output class="status-saving">Guardando...</output>
                         }
                         @if (statusUpdateSuccess(); as success) {
-                        <p class="status-update-success" role="status">{{ success }}</p>
+                        <output class="status-update-success">{{ success }}</output>
                         }
                         @if (statusUpdateError(); as error) {
                         <p class="status-update-error" role="alert">{{ error }}</p>

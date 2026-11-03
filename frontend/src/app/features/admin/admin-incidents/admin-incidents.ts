@@ -87,7 +87,7 @@ export class AdminIncidents {
       .create({
         subject: subj,
         category: cat,
-        reference: ref ? ref : undefined,
+        reference: ref || undefined,
         description: desc,
       })
       .subscribe({
@@ -112,7 +112,7 @@ export class AdminIncidents {
   }
 
   resolveIncident(incident: Incident): void {
-    if (!incident || !incident.id || incident.status === 'RESUELTA') {
+    if (!incident?.id || incident.status === 'RESUELTA') {
       return;
     }
 

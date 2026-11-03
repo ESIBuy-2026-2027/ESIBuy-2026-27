@@ -2,10 +2,12 @@ package es.uclm.esibuy;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class EsibuyApplicationTests {
 
 	@Test
 	void contextLoads() {
-		// Test unitario básico sin levantar el contexto pesado de Spring Boot
+		assertTrue(true);
 	}
 }

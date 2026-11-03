@@ -39,6 +39,10 @@ function passwordMatchValidator(
     styleUrl: './password-recovery.css',
 })
 export class PasswordRecovery {
+    blockClipboardAction($event: ClipboardEvent): void {
+        $event.preventDefault();
+    }
+
     readonly requestForm;
     readonly resetForm;
     readonly tokenFromUrl: string;

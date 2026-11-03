@@ -10,11 +10,13 @@ import { Register } from './register';
 describe('Register', () => {
     let component: Register;
     let fixture: ComponentFixture<Register>;
+    let registerClient: ReturnType<typeof vi.fn>;
     let registerSeller: ReturnType<typeof vi.fn>;
     let getCategories: ReturnType<typeof vi.fn>;
     let navigate: ReturnType<typeof vi.fn>;
 
     beforeEach(async () => {
+        registerClient = vi.fn().mockReturnValue(of({}));
         registerSeller = vi.fn().mockReturnValue(of({}));
         getCategories = vi.fn().mockReturnValue(of([
             { id: 'category-1', name: 'Tecnología' },
@@ -24,7 +26,7 @@ describe('Register', () => {
             imports: [Register],
             providers: [
                 { provide: Router, useValue: { navigate } },
-                { provide: AuthService, useValue: { registerClient: vi.fn(), registerSeller } },
+                { provide: AuthService, useValue: { registerClient, registerSeller } },
                 { provide: ProductsService, useValue: { getCategories } },
             ],
         }).compileComponents();
@@ -37,6 +39,59 @@ describe('Register', () => {
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+
+    it('shows password requirements before the user enters a password', () => {
+        const rendered = fixture.nativeElement as HTMLElement;
+        const requirements = Array.from(
+            rendered.querySelectorAll<HTMLLIElement>('.password-requirements li')
+        ).map((item) => {
+            // Extraer solo el texto ignorando los SVGs ocultos
+            return item.textContent?.trim();
+        });
+
+        expect(requirements).toEqual([
+            'Mínimo de 12 caracteres',
+            'Máximo de 128 caracteres',
+            'Al menos una letra mayúscula',
+            'Al menos una letra minúscula',
+            'Al menos un número',
+            'Al menos un carácter especial',
+            'No puede contener espacios',
+        ]);
+    });
+
+    it('allows selecting Premium and then Standard again', () => {
+        const premium = fixture.nativeElement.querySelector('#customerTypePremium') as HTMLInputElement;
+        const standard = fixture.nativeElement.querySelector('#customerTypeStandard') as HTMLInputElement;
+
+        premium.click();
+        fixture.detectChanges();
+        expect(component.form.get('customerType')?.value).toBe('PREMIUM');
+
+        standard.click();
+        fixture.detectChanges();
+        expect(component.form.get('customerType')?.value).toBe('STANDARD');
+    });
+
+    it('sends the selected customer type in the client registration payload', () => {
+        component.form.patchValue({
+            firstName: 'Celia',
+            lastName: 'López',
+            birthDate: '1990-01-01',
+            nationalId: '128391023h',
+            email: 'celia@example.com',
+            phone: '232313412',
+            customerType: 'PREMIUM',
+            password: 'Password123!',
+            repeatedPassword: 'Password123!',
+        });
+
+        component.onSubmit();
+
+        expect(registerClient).toHaveBeenCalledWith(expect.objectContaining({
+            customerType: 'PREMIUM',
+        }));
     });
 
     it('places the Other category last in the seller registration options', async () => {
@@ -170,5 +225,117 @@ describe('Register', () => {
         expect(component.serverError).toBe('Ya existe un usuario con ese email');
         expect(fixture.nativeElement.querySelector('[role="alert"]').textContent)
             .toContain('Ya existe un usuario con ese email');
+    });
+
+    it('shows the compromised-password response and stops loading', () => {
+        registerClient.mockReturnValue(throwError(() => new HttpErrorResponse({
+            status: 400,
+            error: { message: 'La contraseña elegida aparece en filtraciones conocidas. Elige otra contraseña.' },
+        })));
+
+        component.form.setValue({
+            firstName: 'Celia',
+            lastName: 'López',
+            birthDate: '1990-01-01',
+            nationalId: '128391023h',
+            email: 'celia@example.com',
+            phone: '232313412',
+            customerType: 'STANDARD',
+            password: 'Password123!',
+            repeatedPassword: 'Password123!',
+        });
+
+        component.onSubmit();
+        fixture.detectChanges();
+
+        expect(component.serverError).toContain('filtraciones conocidas');
+        expect(component.loading).toBe(false);
+        const alert = fixture.nativeElement.querySelector('#password-server-error');
+        expect(alert).not.toBeNull();
+        expect(alert.textContent)
+            .toContain('filtraciones conocidas');
+    });
+
+    it.each([
+        {
+            status: 400,
+            message: 'La contraseña elegida aparece en filtraciones conocidas. Elige otra contraseña.',
+        },
+        {
+            status: 503,
+            message: 'No se ha podido comprobar la seguridad de la contraseña. Inténtalo de nuevo más tarde.',
+        },
+    ])('muestra el mensaje del servidor cuando el registro devuelve HTTP $status', ({ status, message }) => {
+        registerSeller.mockReturnValue(
+            throwError(() => new HttpErrorResponse({
+                status,
+                error: { message },
+            })),
+        );
+
+        // Seleccionar el registro como vendedor.
+        fixture.nativeElement.querySelectorAll('.role-selector button')[1].click();
+        fixture.detectChanges();
+
+        component.form.setValue({
+            firstName: 'Celia',
+            lastName: 'López',
+            defaultCategory: 'Tecnología',
+            businessName: 'Comercial AC',
+            nationalId: '128391023h',
+            email: 'celia@example.com',
+            phone: '232313412',
+            password: 'Password123!',
+            repeatedPassword: 'Password123!',
+        });
+
+        component.onSubmit();
+        fixture.detectChanges();
+
+        const alert = fixture.nativeElement.querySelector('[role="alert"]');
+
+        expect(component.serverError).toBe(message);
+        expect(alert).not.toBeNull();
+        expect(alert.textContent).toContain(message);
+        expect(component.registrationSuccess).toBe(false);
+        expect(component.loading).toBe(false);
+    });
+
+    it('scrolls to the server error banner after rendering it', () => {
+        vi.useFakeTimers();
+        registerSeller.mockReturnValue(
+            throwError(() => new HttpErrorResponse({
+                status: 409,
+                error: { message: 'Ya existe un usuario con ese email' },
+            })),
+        );
+
+        fixture.nativeElement.querySelectorAll('.role-selector button')[1].click();
+        fixture.detectChanges();
+        component.form.setValue({
+            firstName: 'Celia',
+            lastName: 'López',
+            defaultCategory: 'Tecnología',
+            businessName: 'Comercial AC',
+            nationalId: '128391023h',
+            email: 'celia@example.com',
+            phone: '232313412',
+            password: 'Password123!',
+            repeatedPassword: 'Password123!',
+        });
+
+        component.onSubmit();
+        fixture.detectChanges();
+
+        const banner = fixture.nativeElement.querySelector('.server-error-banner') as HTMLElement;
+        const scrollIntoView = vi.fn();
+        banner.scrollIntoView = scrollIntoView;
+        vi.runAllTimers();
+
+        expect(scrollIntoView).toHaveBeenCalledWith({
+            behavior: 'smooth',
+            block: 'center',
+        });
+        vi.useRealTimers();
     });
 });

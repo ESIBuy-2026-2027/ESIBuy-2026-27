@@ -8,6 +8,7 @@ import { DeleteAccount } from '../../../shared/delete-account/delete-account';
 import { Category, ProductsService } from '../../../core/services/products.service';
 import { TwoFactorSettingsComponent } from '../../../shared/two-factor-settings/two-factor-settings';
 import { ProfileShellComponent } from '../../../shared/profile-shell/profile-shell';
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import type { ProfileNavigationItem } from '../../../shared/profile-shell/profile-shell';
 import { SELLER_AVATARS } from '../../../core/constants/avatars';
 
@@ -37,7 +38,7 @@ interface UpdateSellerProfileRequest {
 @Component({
     selector: 'app-seller-profile',
     standalone: true,
-    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent, ProfileShellComponent],
+    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent, ProfileShellComponent, AppSidebarComponent],
     templateUrl: './seller-profile.html',
     styleUrl: './seller-profile.css',
 })

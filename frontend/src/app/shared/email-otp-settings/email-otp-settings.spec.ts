@@ -66,4 +66,19 @@ describe('EmailOtpSettingsComponent', () => {
     expect(service.updateEnabled).toHaveBeenCalledWith(true);
     enabledFixture.destroy();
   });
+
+  it('allows a client with TOTP enabled to activate email OTP', () => {
+    service.getSettings.mockReturnValue(of({
+      enabled: false,
+      email: 'client@example.com',
+      totpEnabled: true,
+    }));
+    const clientFixture = TestBed.createComponent(EmailOtpSettingsComponent);
+    clientFixture.detectChanges();
+
+    clientFixture.componentInstance.enableEmailOtp();
+
+    expect(service.updateEnabled).toHaveBeenCalledWith(true);
+    clientFixture.destroy();
+  });
 });

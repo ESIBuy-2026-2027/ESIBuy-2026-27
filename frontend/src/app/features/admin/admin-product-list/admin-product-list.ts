@@ -30,6 +30,8 @@ export class AdminProductList implements OnInit {
   sidebarCollapsed = signal(false);
   products = signal<AdminProductSummary[]>([]);
   categories = signal<Category[]>([]);
+  categoriesLoading = signal(true);
+  categoryError = signal(false);
   loading = signal(true);
   error = signal('');
   successMessage = signal('');
@@ -105,9 +107,17 @@ export class AdminProductList implements OnInit {
   }
 
   loadCategories(): void {
+    this.categoriesLoading.set(true);
+    this.categoryError.set(false);
     this.productsService.getCategories().subscribe({
-      next: (data) => this.categories.set(data),
-      error: () => { },
+      next: (data) => {
+        this.categories.set(data);
+        this.categoriesLoading.set(false);
+      },
+      error: () => {
+        this.categoriesLoading.set(false);
+        this.categoryError.set(true);
+      },
     });
   }
 
@@ -168,4 +178,3 @@ export class AdminProductList implements OnInit {
     });
   }
 }
-

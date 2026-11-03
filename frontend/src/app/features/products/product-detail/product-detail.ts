@@ -35,9 +35,13 @@ export class ProductDetail implements OnInit {
 
   product = signal<ProductItem | null>(null);
   categories = signal<Category[]>([]);
+  categoriesLoading = signal(true);
+  categoryError = signal(false);
   loading = signal(true);
   error = signal(false);
   errorMessage = signal<string | null>(null);
+  readonly favoriteUpdating = signal(false);
+  readonly cartAdding = signal(false);
 
   isClient = computed(() => this.authService.currentUser()?.role === 'CLIENT');
   isAdmin = computed(() => this.authService.currentUser()?.role === 'ADMIN');
@@ -139,15 +143,24 @@ export class ProductDetail implements OnInit {
   }
 
   loadCategories(): void {
+    this.categoriesLoading.set(true);
+    this.categoryError.set(false);
     this.productsService.getCategories().subscribe({
-      next: (categories) => this.categories.set(categories),
-      error: () => { },
+      next: (categories) => {
+        this.categories.set(categories);
+        this.categoriesLoading.set(false);
+      },
+      error: () => {
+        this.categoriesLoading.set(false);
+        this.categoryError.set(true);
+      },
     });
   }
 
   loadProduct(id: string): void {
     this.loading.set(true);
     this.error.set(false);
+    this.errorMessage.set(null);
     this.imageError.set(false);
 
     this.productsService.getProductById(id).subscribe({
@@ -165,6 +178,13 @@ export class ProductDetail implements OnInit {
         }
       },
     });
+  }
+
+  retryLoadProduct(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.loadProduct(id);
+    }
   }
 
   toggleFavorite(): void {
@@ -188,6 +208,8 @@ export class ProductDetail implements OnInit {
       return;
     }
 
+    if (this.favoriteUpdating()) return;
+    this.favoriteUpdating.set(true);
     this.wishlistService.toggleWishlist(p.id).subscribe({
       next: (res) => {
         this.toastService.show(res.message, 'success');
@@ -195,7 +217,7 @@ export class ProductDetail implements OnInit {
       error: () => {
         this.toastService.show('Error al actualizar la lista de deseos', 'error');
       },
-    });
+    }).add(() => this.favoriteUpdating.set(false));
   }
 
   goBack(): void {
@@ -314,6 +336,8 @@ export class ProductDetail implements OnInit {
       return;
     }
     const qty = Math.min(this.quantity(), avail);
+    if (this.cartAdding()) return;
+    this.cartAdding.set(true);
     this.cartService.addItem(p.id, qty).subscribe({
       next: () => {
         this.toastService.show('Producto añadido al carrito', 'success');
@@ -322,7 +346,7 @@ export class ProductDetail implements OnInit {
       error: () => {
         this.toastService.show('Error al añadir producto al carrito', 'error');
       },
-    });
+    }).add(() => this.cartAdding.set(false));
   }
 
   readonly imageError = signal(false);

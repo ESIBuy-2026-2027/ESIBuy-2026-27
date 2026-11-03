@@ -35,6 +35,7 @@ export interface ConfirmedOrder {
   pedidoId: string;
   precioTotal: number;
   estado: 'PAGADO' | 'PENDIENTE' | 'CANCELADO';
+  estadoPago: CustomerOrderPaymentStatus;
   fechaCreacion: string;
 }
 
@@ -70,16 +71,30 @@ export interface CustomerOrderItem {
   imageUrl: string | null;
 }
 
-export type CustomerOrderStatus = SellerOrderStatus | 'PAGADO';
+export type CustomerOrderPaymentStatus = 'PENDIENTE' | 'PAGADO';
+export type CustomerOrderFulfillmentStatus = Exclude<SellerOrderStatus, 'PAGADO'>;
 
 export interface CustomerOrder {
   pedidoId: string;
   fechaCreacion: string;
   items: CustomerOrderItem[];
   total: number;
-  estado: CustomerOrderStatus;
+  estado: SellerOrderStatus;
+  estadoPago: CustomerOrderPaymentStatus;
   direccionEnvio: CustomerShippingAddress | null;
   metodoPago: CustomerPaymentMethod | null;
+}
+
+export function getCustomerOrderFulfillmentStatus(
+  order: Pick<CustomerOrder, 'estado'>,
+): CustomerOrderFulfillmentStatus {
+  return order.estado === 'PAGADO' ? 'PENDIENTE' : order.estado;
+}
+
+export function getCustomerOrderPaymentStatus(
+  order: Pick<CustomerOrder, 'estado' | 'estadoPago'>,
+): CustomerOrderPaymentStatus {
+  return order.estadoPago ?? 'PAGADO';
 }
 
 export interface CustomerShippingAddress {
@@ -95,6 +110,16 @@ export interface CustomerShippingAddress {
 export interface CustomerPaymentMethod {
   tipo: 'CARD' | 'PAYPAL' | 'BIZUM';
   lastFourDigits: string | null;
+}
+
+export interface EstadoPedidoHistorial {
+  estado: SellerOrderStatus;
+  fecha: string;
+}
+
+export interface SeguimientoEnvio {
+  historialEstados: EstadoPedidoHistorial[];
+  estimatedDeliveryDate: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -145,6 +170,14 @@ export class PedidoService {
 
   obtenerPedidoDelCliente(pedidoId: string): Observable<CustomerOrder> {
     return this.http.get<CustomerOrder>(`/api/pedidos/${pedidoId}`);
+  }
+
+  cancelarPedido(pedidoId: string): Observable<void> {
+    return this.http.delete<void>(`/api/pedidos/${pedidoId}`);
+  }
+
+  obtenerHistorialEstadosEnvio(pedidoId: string): Observable<SeguimientoEnvio> {
+    return this.http.get<SeguimientoEnvio>(`/api/pedidos/${pedidoId}/historial-estados`);
   }
 
   obtenerPedidosDelVendedor(): Observable<SellerOrder[]> {
