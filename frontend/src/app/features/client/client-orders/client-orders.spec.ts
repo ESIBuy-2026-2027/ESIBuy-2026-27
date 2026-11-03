@@ -292,6 +292,64 @@ describe('ClientOrders', () => {
     expect(orderCard.querySelector('.order-item-info p')?.textContent).toContain('2 ×');
   });
 
+  it('should reveal and dismiss the shipping address when hovering the recipient', () => {
+    component.orders.set([
+      {
+        pedidoId: 'pedido-direccion',
+        fechaCreacion: '2026-10-28T12:00:00',
+        items: [],
+        total: 45,
+        estado: 'ENVIADO',
+        estadoPago: 'PAGADO',
+        direccionEnvio: {
+          recipientName: 'Pepe',
+          street: 'Calle Mayor, 10',
+          additionalInfo: '2.º izquierda',
+          postalCode: '23001',
+          city: 'Jaén',
+          province: 'Jaén',
+          phone: null,
+        },
+        metodoPago: null,
+      },
+    ]);
+    fixture.detectChanges();
+
+    const element: HTMLElement = fixture.nativeElement;
+    const recipient = element.querySelector('.shipping-recipient') as HTMLElement;
+
+    expect(element.querySelector('.shipping-address-popover')).toBeNull();
+    recipient.dispatchEvent(new MouseEvent('mouseenter'));
+    fixture.detectChanges();
+
+    const popover = element.querySelector('.shipping-address-popover') as HTMLElement;
+    expect(popover.textContent).toContain('Pepe');
+    expect(popover.textContent).toContain('Calle Mayor, 10');
+    expect(popover.textContent).toContain('2.º izquierda');
+    expect(popover.textContent).toContain('23001 Jaén, Jaén');
+
+    recipient.dispatchEvent(new MouseEvent('mouseleave'));
+    fixture.detectChanges();
+    expect(element.querySelector('.shipping-address-popover')).toBeNull();
+
+    recipient.dispatchEvent(new MouseEvent('mouseenter'));
+    fixture.detectChanges();
+    const reopenedPopover = element.querySelector('.shipping-address-popover') as HTMLElement;
+    (reopenedPopover.querySelector('.close-shipping-address') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(element.querySelector('.shipping-address-popover')).toBeNull();
+
+    const trigger = recipient.querySelector('.shipping-recipient-trigger') as HTMLButtonElement;
+    trigger.focus();
+    trigger.click();
+    fixture.detectChanges();
+    expect(element.querySelector('.shipping-address-popover')).toBeTruthy();
+
+    recipient.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    expect(element.querySelector('.shipping-address-popover')).toBeNull();
+  });
+
   it('should show every order item with its image or an accessible placeholder', () => {
     component.orders.set([
       {

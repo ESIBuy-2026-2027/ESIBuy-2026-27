@@ -256,7 +256,56 @@
                   </div>
                   <div class="order-meta-group">
                     <span class="order-meta-label">Enviar a</span>
-                    <strong>{{ order.direccionEnvio?.recipientName ?? 'No disponible' }}</strong>
+                    @if (order.direccionEnvio; as address) {
+                      <div
+                        class="shipping-recipient"
+                        (mouseenter)="showShippingAddress(order.pedidoId)"
+                        (mouseleave)="hideShippingAddress(order.pedidoId)"
+                        (focusin)="showShippingAddress(order.pedidoId)"
+                        (focusout)="closeShippingAddress(order.pedidoId, $event)"
+                        (keydown.escape)="hideShippingAddress(order.pedidoId)"
+                      >
+                        <button
+                          type="button"
+                          class="shipping-recipient-trigger"
+                          [attr.aria-expanded]="shippingAddressOrderId() === order.pedidoId"
+                          [attr.aria-controls]="'shipping-address-' + order.pedidoId"
+                          (click)="showShippingAddress(order.pedidoId)"
+                        >
+                          {{ address.recipientName }}
+                          <svg viewBox="0 0 16 16" aria-hidden="true">
+                            <path d="m3.5 6 4.5 4 4.5-4" />
+                          </svg>
+                        </button>
+                        @if (shippingAddressOrderId() === order.pedidoId) {
+                          <section
+                            class="shipping-address-popover"
+                            [id]="'shipping-address-' + order.pedidoId"
+                            [attr.aria-label]="'Dirección de envío de ' + address.recipientName"
+                          >
+                            <button
+                              type="button"
+                              class="close-shipping-address"
+                              [attr.aria-label]="'Cerrar dirección de ' + address.recipientName"
+                              (click)="hideShippingAddress(order.pedidoId)"
+                            >
+                              ×
+                            </button>
+                            <strong>{{ address.recipientName }}</strong>
+                            <span>{{ address.street }}</span>
+                            @if (address.additionalInfo) {
+                              <span>{{ address.additionalInfo }}</span>
+                            }
+                            <span
+                              >{{ address.postalCode }} {{ address.city }},
+                              {{ address.province }}</span
+                            >
+                          </section>
+                        }
+                      </div>
+                    } @else {
+                      <strong>No disponible</strong>
+                    }
                   </div>
                   <div class="order-meta-group order-number">
                     <span class="order-meta-label">ID pedido:</span>

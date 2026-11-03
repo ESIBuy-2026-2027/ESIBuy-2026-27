@@ -34,6 +34,7 @@ export class ClientOrders implements OnInit {
   ];
   readonly sidebarCollapsed = signal(false);
   readonly orders = signal<CustomerOrder[]>([]);
+  readonly shippingAddressOrderId = signal<string | null>(null);
   readonly searchQuery = signal('');
   readonly filtersOpen = signal(false);
   readonly period = signal<PeriodFilter>('all');
@@ -148,6 +149,31 @@ export class ClientOrders implements OnInit {
 
   getPaymentClass(order: CustomerOrder): string {
     return getCustomerOrderPaymentStatus(order) === 'PAGADO' ? 'payment-paid' : 'payment-pending';
+  }
+
+  showShippingAddress(orderId: string): void {
+    this.shippingAddressOrderId.set(orderId);
+  }
+
+  hideShippingAddress(orderId: string): void {
+    if (this.shippingAddressOrderId() === orderId) {
+      this.shippingAddressOrderId.set(null);
+    }
+  }
+
+  closeShippingAddress(orderId: string, event: FocusEvent): void {
+    const container = event.currentTarget;
+    const nextTarget = event.relatedTarget;
+
+    if (
+      container instanceof HTMLElement &&
+      nextTarget instanceof Node &&
+      container.contains(nextTarget)
+    ) {
+      return;
+    }
+
+    this.hideShippingAddress(orderId);
   }
 
   toggleSidebar(): void {

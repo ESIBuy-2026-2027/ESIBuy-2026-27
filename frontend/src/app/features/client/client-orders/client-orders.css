@@ -287,7 +287,7 @@
 }
 
 .order-card {
-  overflow: hidden;
+  position: relative;
   border: 1px solid #d5dde1;
   border-radius: 10px;
   background: #fff;
@@ -300,6 +300,7 @@
   gap: 16px;
   padding: 14px 16px;
   background: #f1f3f3;
+  border-radius: 9px 9px 0 0;
 }
 
 .order-meta-group {
@@ -322,6 +323,100 @@
 .order-meta-group strong {
   overflow-wrap: anywhere;
   font-weight: 550;
+}
+
+.shipping-recipient {
+  position: relative;
+  align-self: flex-start;
+}
+
+.shipping-recipient-trigger {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #176b70;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.shipping-recipient-trigger:hover {
+  color: #0f4b4e;
+}
+
+.shipping-recipient-trigger:focus-visible,
+.close-shipping-address:focus-visible {
+  border-radius: 3px;
+  outline: 3px solid rgba(66, 214, 178, 0.4);
+  outline-offset: 2px;
+}
+
+.shipping-recipient-trigger svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.shipping-address-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: -12px;
+  z-index: 5;
+  display: grid;
+  width: min(250px, calc(100vw - 56px));
+  gap: 3px;
+  padding: 14px 16px;
+  border: 1px solid #cbd5d1;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 5px 16px rgba(16, 44, 64, 0.18);
+  color: #172b3a;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.shipping-address-popover strong {
+  padding-right: 22px;
+  font-weight: 700;
+}
+
+.shipping-address-popover span {
+  overflow-wrap: anywhere;
+}
+
+.close-shipping-address {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #172b3a;
+  cursor: pointer;
+  font: inherit;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.close-shipping-address:hover {
+  background: #edf2f2;
 }
 
 .order-number {
