@@ -62,6 +62,8 @@ import org.springframework.stereotype.Service;
 public class OrderService {
 
     private static final String STOCK_FIELD = "stock";
+    private static final String ORDER_ID_REQUIRED_MESSAGE =
+            "El identificador del pedido es obligatorio";
 
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
@@ -231,7 +233,7 @@ public class OrderService {
         getCustomer(customerId);
 
         if (orderId == null || orderId.isBlank()) {
-            throw new IllegalArgumentException("El identificador del pedido es obligatorio");
+            throw new IllegalArgumentException(ORDER_ID_REQUIRED_MESSAGE);
         }
 
         Order order = orderRepository.findByIdAndCustomerId(orderId, customerId)
@@ -244,7 +246,7 @@ public class OrderService {
         getCustomer(customerId);
 
         if (orderId == null || orderId.isBlank()) {
-            throw new IllegalArgumentException("El identificador del pedido es obligatorio");
+            throw new IllegalArgumentException(ORDER_ID_REQUIRED_MESSAGE);
         }
 
         Order order = orderRepository.findByIdAndCustomerId(orderId, customerId)
@@ -265,7 +267,7 @@ public class OrderService {
         getCustomer(customerId);
 
         if (orderId == null || orderId.isBlank()) {
-            throw new IllegalArgumentException("El identificador del pedido es obligatorio");
+            throw new IllegalArgumentException(ORDER_ID_REQUIRED_MESSAGE);
         }
 
         Order order = orderRepository.findByIdAndCustomerId(orderId, customerId)
