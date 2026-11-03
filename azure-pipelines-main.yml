@@ -36,17 +36,14 @@ stages:
     jobs:
       # ------------------------------------------------------------------------
       # Backend CI: Compilación Java 21, Tests con JaCoCo y análisis SonarQube
+      # Ejecución en agente conectado a la VPN de la UCLM
       # ------------------------------------------------------------------------
       - job: Backend_CI
         displayName: 'Backend CI (Java 21 / Maven / JaCoCo / SonarQube)'
-        steps:
-          - task: JavaToolInstaller@0
-            displayName: 'Configurar JDK 21'
-            inputs:
-              versionSpec: '21'
-              jdkArchitectureOption: 'x64'
-              jdkSourceOption: 'PreInstalled'
+        pool:
+          name: 'UCLM-VPN-Agents'
 
+        steps:
           - task: Maven@4
             displayName: 'Compilar backend y ejecutar tests con JaCoCo'
             inputs:
@@ -67,28 +64,45 @@ stages:
               pathToSources: '$(System.DefaultWorkingDirectory)/backend/src/main/java'
             condition: succeeded()
 
-          # Análisis SonarQube Backend
-          - script: |
-              echo "Comprobando disponibilidad del servidor SonarQube UCLM (seralu4.esi.uclm.es:1521)..."
-              if curl -s --connect-timeout 4 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
-                echo "Servidor SonarQube alcanzable. Ejecutando análisis de Backend..."
-                cd backend
-                mvn sonar:sonar -B \
-                  -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
-                  -Dsonar.token="$(SONAR_TOKEN)" \
-                  -Dsonar.coverage.jacoco.xmlReportPaths="target/site/jacoco/jacoco.xml"
-              else
-                echo "[INFO] Servidor SonarQube en red privada ESI/UCLM. Se omite análisis en agente público de Azure sin bloquear la integración."
-              fi
+          # SonarQube Backend: ejecución obligatoria desde la VPN (Agente UCLM-VPN-Agents)
+          - powershell: |
+              $ErrorActionPreference = 'Stop'
+
+              Write-Host "Comprobando disponibilidad de SonarQube..."
+
+              $status = Invoke-RestMethod `
+                -Uri "http://seralu4.esi.uclm.es:1521/api/system/status" `
+                -TimeoutSec 10
+
+              if ($status.status -ne 'UP') {
+                throw "SonarQube no está disponible."
+              }
+
+              Write-Host "Ejecutando análisis de SonarQube Backend..."
+
+              Set-Location "$(Build.SourcesDirectory)\backend"
+
+              .\mvnw.cmd sonar:sonar `
+                "-Dsonar.host.url=http://seralu4.esi.uclm.es:1521/" `
+                "-Dsonar.projectKey=2026-g06-backend" `
+                "-Dsonar.token=$env:SONAR_TOKEN"
+
+              if ($LASTEXITCODE -ne 0) {
+                throw "El análisis de SonarQube Backend ha fallado."
+              }
             displayName: 'Ejecutar análisis de SonarQube Backend'
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
 
       # ------------------------------------------------------------------------
       # Frontend CI: Node 22, dependencias, tests unitarios, build y SonarQube
+      # Ejecución en agente conectado a la VPN de la UCLM
       # ------------------------------------------------------------------------
       - job: Frontend_CI
         displayName: 'Frontend CI (Node 22 / Angular / Tests / SonarQube)'
+        pool:
+          name: 'UCLM-VPN-Agents'
+
         steps:
           - task: UseNode@1
             displayName: 'Configurar Node.js 22.x'
@@ -110,18 +124,30 @@ stages:
               npm run build
             displayName: 'Compilación de verificación Frontend'
 
-          # Análisis SonarQube Frontend
-          - script: |
-              echo "Comprobando disponibilidad del servidor SonarQube UCLM (seralu4.esi.uclm.es:1521)..."
-              if curl -s --connect-timeout 4 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
-                echo "Servidor SonarQube alcanzable. Ejecutando análisis de Frontend..."
-                cd frontend
-                npx --yes sonar-scanner \
-                  -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
-                  -Dsonar.token="$(SONAR_TOKEN)"
-              else
-                echo "[INFO] Servidor SonarQube en red privada ESI/UCLM. Se omite análisis en agente público de Azure sin bloquear la integración."
-              fi
+          # SonarQube Frontend: ejecución obligatoria desde la VPN (Agente UCLM-VPN-Agents)
+          - powershell: |
+              $ErrorActionPreference = 'Stop'
+
+              Write-Host "Comprobando disponibilidad de SonarQube..."
+
+              $status = Invoke-RestMethod `
+                -Uri "http://seralu4.esi.uclm.es:1521/api/system/status" `
+                -TimeoutSec 10
+
+              if ($status.status -ne 'UP') {
+                throw "SonarQube no está disponible."
+              }
+
+              Write-Host "Ejecutando análisis de SonarQube Frontend..."
+
+              Set-Location "$(Build.SourcesDirectory)\frontend"
+
+              npx --yes sonar-scanner `
+                "-Dsonar.token=$env:SONAR_TOKEN"
+
+              if ($LASTEXITCODE -ne 0) {
+                throw "El análisis de SonarQube Frontend ha fallado."
+              }
             displayName: 'Ejecutar análisis de SonarQube Frontend'
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
