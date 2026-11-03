@@ -138,7 +138,7 @@ p {
 .view-product-button {
   min-height: 36px;
   padding: 8px 13px;
-  border-radius: 999px;
+  border-radius: 8px;
   font: inherit;
   font-size: 12px;
   font-weight: 700;
@@ -250,8 +250,11 @@ p {
   border-radius: 10px;
   background: #dff7ef;
   color: #087f5b;
-  font-size: 20px;
-  font-weight: 800;
+}
+
+.information-icon-svg {
+  width: 20px;
+  height: 20px;
 }
 
 .information-card h2 {
