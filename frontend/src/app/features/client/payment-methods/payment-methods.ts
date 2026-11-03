@@ -33,6 +33,7 @@ export class PaymentMethods implements OnInit {
     readonly actionId = signal<string | null>(null);
     readonly formVisible = signal(false);
     readonly error = signal<string | null>(null);
+    readonly deleteError = signal<string | null>(null);
     readonly success = signal<string | null>(null);
 
     readonly currentYear = new Date().getFullYear();
@@ -410,6 +411,7 @@ export class PaymentMethods implements OnInit {
 
         this.error.set(null);
         this.success.set(null);
+        this.deleteError.set(null);
         this.methodToDelete.set(method);
     }
 
@@ -417,6 +419,7 @@ export class PaymentMethods implements OnInit {
         if (this.actionId()) return;
 
         this.methodToDelete.set(null);
+        this.deleteError.set(null);
     }
 
     confirmDelete(): void {
@@ -426,6 +429,7 @@ export class PaymentMethods implements OnInit {
 
         this.error.set(null);
         this.success.set(null);
+        this.deleteError.set(null);
         this.actionId.set(method.id);
 
         this.paymentMethodService.delete(method.id).subscribe({
@@ -436,6 +440,7 @@ export class PaymentMethods implements OnInit {
 
                 this.actionId.set(null);
                 this.methodToDelete.set(null);
+                this.deleteError.set(null);
                 this.success.set('El método de pago se ha eliminado.');
 
                 // El servidor puede asignar otro método como predeterminado.
@@ -443,8 +448,7 @@ export class PaymentMethods implements OnInit {
             },
             error: () => {
                 this.actionId.set(null);
-                this.methodToDelete.set(null);
-                this.error.set('No se ha podido eliminar el método de pago.');
+                this.deleteError.set('No se ha podido eliminar el método de pago.');
             },
         });
     }

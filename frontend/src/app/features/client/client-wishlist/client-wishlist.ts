@@ -28,6 +28,8 @@ export class ClientWishlist implements OnInit {
   error = signal(false);
   readonly sidebarCollapsed = signal(false);
   readonly quantities = signal<Record<string, number>>({});
+  readonly addingProducts = signal<Record<string, boolean>>({});
+  readonly removingProducts = signal<Record<string, boolean>>({});
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update((collapsed) => !collapsed);
@@ -54,6 +56,8 @@ export class ClientWishlist implements OnInit {
     }
 
     const qty = this.getQuantity(product.id);
+    if (this.addingProducts()[product.id]) return;
+    this.addingProducts.update((states) => ({ ...states, [product.id]: true }));
     this.cartService.addItem(product.id, qty).subscribe({
       next: () => {
         this.toastService.show('Producto añadido al carrito', 'success');
@@ -61,7 +65,7 @@ export class ClientWishlist implements OnInit {
       error: () => {
         this.toastService.show('Error al añadir producto al carrito', 'error');
       },
-    });
+    }).add(() => this.addingProducts.update((states) => ({ ...states, [product.id]: false })));
   }
 
   ngOnInit(): void {
@@ -88,6 +92,8 @@ export class ClientWishlist implements OnInit {
     event.stopPropagation();
     event.preventDefault();
 
+    if (this.removingProducts()[productId]) return;
+    this.removingProducts.update((states) => ({ ...states, [productId]: true }));
     this.wishlistService.removeFromWishlist(productId).subscribe({
       next: (res) => {
         this.items.update((current) => current.filter((p) => p.id !== productId));
@@ -96,11 +102,10 @@ export class ClientWishlist implements OnInit {
       error: () => {
         this.toastService.show('Error al eliminar producto de la lista de deseos', 'error');
       },
-    });
+    }).add(() => this.removingProducts.update((states) => ({ ...states, [productId]: false })));
   }
 
   formatPrice(price: number): string {
     return this.currencyFormatter.format(price);
   }
 }
-

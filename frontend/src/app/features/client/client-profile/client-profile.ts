@@ -2,14 +2,15 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService, CustomerType } from '../../../core/services/auth.service';
 import { DeleteAccount } from '../../../shared/delete-account/delete-account';
 import { TwoFactorSettingsComponent } from '../../../shared/two-factor-settings/two-factor-settings';
 import { ShippingAddresses } from '../shipping-addresses/shipping-addresses';
 import { PaymentMethods } from '../payment-methods/payment-methods';
 import { CLIENT_AVATARS } from '../../../core/constants/avatars';
+
 
 export interface ProfileSection {
     label: string;
@@ -40,7 +41,7 @@ interface UpdateClientProfileRequest {
 @Component({
     selector: 'app-client-profile',
     standalone: true,
-    imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent, ShippingAddresses, PaymentMethods],
+    imports: [FormsModule, RouterLink, DeleteAccount, TwoFactorSettingsComponent, ShippingAddresses, PaymentMethods],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     templateUrl: './client-profile.html',
     styleUrl: './client-profile.css',
@@ -53,6 +54,7 @@ export class ClientProfile implements OnInit {
     private readonly apiUrl = '/api/users/me/profile';
 
     readonly profile = signal<ClientProfileResponse | null>(null);
+    readonly sidebarCollapsed = signal(false);
     readonly loading = signal(true);
     readonly profileError = signal<string | null>(null);
     readonly logoutError = signal<string | null>(null);
@@ -71,6 +73,15 @@ export class ClientProfile implements OnInit {
     readonly selectedAvatar = signal(this.clientAvatars[0]);
 
     editForm: UpdateClientProfileRequest = this.emptyForm();
+
+    readonly changingCustomerType = signal(false);
+    readonly customerTypeDialogOpen = signal(false);
+    readonly customerTypeError = signal<string | null>(null);
+    readonly customerTypeSuccess = signal<string | null>(null);
+
+    readonly pendingCustomerType = computed<CustomerType>(
+        () => this.isPremium() ? 'STANDARD' : 'PREMIUM',
+    );
 
     readonly email = computed(
         () => this.profile()?.email ?? this.authService.currentUser()?.email ?? '',
@@ -111,6 +122,10 @@ export class ClientProfile implements OnInit {
     ];
 
     readonly activeSection = signal('personal');
+
+    toggleSidebar(): void {
+        this.sidebarCollapsed.update((collapsed) => !collapsed);
+    }
 
     readonly initials = computed(() => {
         const profile = this.profile();
@@ -382,6 +397,65 @@ export class ClientProfile implements OnInit {
             this.location.back();
         } else {
             window.history.replaceState(null, '', '/client/dashboard');
+        }
+    }
+
+    openCustomerTypeDialog(): void {
+        if (this.changingCustomerType()) return;
+
+        this.customerTypeError.set(null);
+        this.customerTypeDialogOpen.set(true);
+    }
+
+    closeCustomerTypeDialog(): void {
+        if (this.changingCustomerType()) return;
+
+        this.customerTypeDialogOpen.set(false);
+        this.customerTypeError.set(null);
+    }
+
+    confirmCustomerTypeChange(): void {
+        if (this.changingCustomerType()) return;
+
+        const customerType = this.pendingCustomerType();
+
+        this.changingCustomerType.set(true);
+        this.customerTypeError.set(null);
+        this.customerTypeSuccess.set(null);
+
+        this.http.put<ClientProfileResponse>(
+            '/api/users/me/customer-type',
+            { customerType },
+            { withCredentials: true },
+        ).subscribe({
+            next: profile => {
+                this.profile.set(profile);
+                this.customerTypeDialogOpen.set(false);
+                this.changingCustomerType.set(false);
+
+                this.customerTypeSuccess.set(
+                    customerType === 'PREMIUM'
+                        ? 'Tu cuenta se ha actualizado a Premium correctamente.'
+                        : 'Tu cuenta se ha actualizado a Estándar correctamente.',
+                );
+
+                // Sincronizar el tipo de cliente utilizado por el resto de la aplicación.
+                this.authService.loadCurrentUser().subscribe();
+            },
+            error: () => {
+                this.changingCustomerType.set(false);
+                this.customerTypeError.set(
+                    'No se ha podido cambiar tu modalidad de cuenta. Inténtalo de nuevo.',
+                );
+            },
+        });
+    }
+
+    onCustomerTypeDialogClick(event: MouseEvent): void {
+        const dialog = event.currentTarget as HTMLDialogElement;
+
+        if (event.target === dialog) {
+            this.closeCustomerTypeDialog();
         }
     }
 }

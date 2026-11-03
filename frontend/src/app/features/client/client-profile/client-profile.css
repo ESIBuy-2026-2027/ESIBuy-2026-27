@@ -657,6 +657,31 @@
     }
 }
 
+@media (max-width: 1100px) and (min-width: 761px) {
+    .profile-page {
+        grid-template-columns: 210px minmax(0, 1fr);
+        gap: 16px;
+        padding: 28px 20px 48px;
+    }
+
+    .panel {
+        padding: 22px 20px 24px;
+    }
+}
+
+@media (max-width: 760px) {
+    .profile-page {
+        width: 100%;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 18px;
+        padding: 24px 18px 40px;
+    }
+
+    .profile-card {
+        min-height: 0;
+    }
+}
+
 /* Estilos definitivos de los botones del perfil del cliente */
 .profile-card .sidebar-footer button.back-button {
     background: #fff !important;
@@ -680,4 +705,123 @@
     background: #ffe9e9 !important;
     border-color: #e9bebe !important;
     color: #8f2525 !important;
+}
+
+/* MODALIDAD DE CUENTA */
+
+.customer-type-panel {
+    margin-top: 1.5rem;
+}
+
+.customer-type-benefit {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    margin: 8px 0 18px;
+    padding: 16px;
+    border: 1px solid #d9e3eb;
+    border-radius: 10px;
+    background: #f4f8f9;
+}
+
+.benefit-icon {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    place-items: center;
+    border-radius: 9px;
+    background: #dff7ef;
+    color: #176b59;
+    font-size: 19px;
+}
+
+.customer-type-benefit strong {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--color-text-primary);
+    font-size: 13px;
+}
+
+.customer-type-benefit p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.customer-type-warning {
+    margin: 0 0 16px;
+    color: #8b5b27;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.customer-type-modal {
+    position: fixed;
+    inset: 0;
+    width: min(calc(100% - 40px), 460px);
+    max-width: 460px;
+    max-height: calc(100% - 40px);
+    margin: auto;
+    padding: 28px;
+    overflow-y: auto;
+    border: 1px solid #d9e3eb;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 20px 60px rgb(10 29 43 / 22%);
+}
+
+.customer-type-modal::backdrop {
+    background: rgb(10 29 43 / 55%);
+}
+
+.customer-type-modal h2 {
+    margin: 8px 0 12px;
+    color: var(--color-text-primary);
+    font-size: 20px;
+    font-weight: 750;
+}
+
+.customer-type-modal > p:not(.form-error) {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.customer-type-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+@media (max-width: 480px) {
+    .customer-type-modal {
+        padding: 22px 18px;
+    }
+
+    .customer-type-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .customer-type-modal-actions button {
+        width: 100%;
+    }
+}
+    
+@media (max-width: 480px) {
+    .customer-type-modal {
+        padding: 22px 18px;
+    }
+
+    .customer-type-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .customer-type-modal-actions button {
+        width: 100%;
+    }
 }

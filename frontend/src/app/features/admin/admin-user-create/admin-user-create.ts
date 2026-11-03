@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
@@ -36,6 +36,10 @@ export function passwordsMatchValidator(
   styleUrls: ['./admin-user-create.css'],
 })
 export class AdminUserCreate {
+  blockClipboardAction($event: ClipboardEvent): void {
+    $event.preventDefault();
+  }
+
   sidebarCollapsed = signal(false);
 
   toggleSidebar(): void {
@@ -45,6 +49,7 @@ export class AdminUserCreate {
   private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
 
   submitting = false;
   showPassword = false;
@@ -145,7 +150,6 @@ export class AdminUserCreate {
 
     this.authService.createAdmin(payload).subscribe({
       next: () => {
-        this.submitting = false;
         this.successMessage = 'Administrador creado con éxito';
 
         setTimeout(() => {
@@ -153,8 +157,6 @@ export class AdminUserCreate {
         }, 1200);
       },
       error: (error: unknown) => {
-        this.submitting = false;
-
         const response = error as {
           error?: {
             errors?: Record<string, string>;
@@ -169,7 +171,21 @@ export class AdminUserCreate {
         this.errorMessage =
           response.error?.message ??
           'Ha ocurrido un error al crear el administrador';
+        this.changeDetectorRef.detectChanges();
+        this.scrollToError();
       },
+    }).add(() => {
+      this.submitting = false;
+      this.changeDetectorRef.detectChanges();
+    });
+  }
+
+  private scrollToError(): void {
+    setTimeout(() => {
+      document.querySelector<HTMLElement>('.alert-box.alert-danger')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
     });
   }
 }

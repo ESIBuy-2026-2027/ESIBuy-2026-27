@@ -70,7 +70,8 @@ describe('DeleteAccount', () => {
         await click('.danger-zone .danger-button');
 
         expect(el.textContent).toContain('todos tus productos');
-        expect(el.textContent).toContain('pedidos en curso');
+        expect(el.textContent).toContain('pedidos pendientes');
+        expect(el.textContent).toContain('en preparación');
     });
 
     it('pide una segunda confirmación y solo habilita el botón al escribir ELIMINAR', async () => {
@@ -168,5 +169,13 @@ describe('DeleteAccount', () => {
         button.click();
         await fixture.whenStable();
         expect(el.querySelector('.modal')).toBeNull();
+    });
+
+    it('informa de los estados de pedido que impiden la baja del vendedor', async () => {
+        await render('SELLER');
+        await click('.danger-zone .danger-button');
+
+        expect(el.textContent).toContain('pedidos pendientes o en preparación');
+        expect(el.textContent).toContain('pedidos históricos');
     });
 });

@@ -20,7 +20,7 @@ pr:
       - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'ubuntu-24.04'
 
 variables:
   - group: 'esibuy-secrets'
@@ -36,17 +36,14 @@ stages:
     jobs:
       # ------------------------------------------------------------------------
       # Backend CI: Compilación Java 21, Tests con JaCoCo y análisis SonarQube
+      # Ejecución en agente conectado a la VPN de la UCLM
       # ------------------------------------------------------------------------
       - job: Backend_CI
         displayName: 'Backend CI (Java 21 / Maven / JaCoCo / SonarQube)'
-        steps:
-          - task: JavaToolInstaller@0
-            displayName: 'Configurar JDK 21'
-            inputs:
-              versionSpec: '21'
-              jdkArchitectureOption: 'x64'
-              jdkSourceOption: 'PreInstalled'
+        pool:
+          name: 'UCLM-VPN-Agents'
 
+        steps:
           - task: Maven@4
             displayName: 'Compilar backend y ejecutar tests con JaCoCo'
             inputs:
@@ -59,37 +56,53 @@ stages:
               jdkVersionOption: '1.21'
               mavenVersionOption: 'Default'
 
-          # Publicar reporte de cobertura JaCoCo (tolerante a fallos)
+          # Publicar reporte de cobertura JaCoCo
           - task: PublishCodeCoverageResults@2
             displayName: 'Publicar reporte de cobertura JaCoCo'
             inputs:
               summaryFileLocation: '$(System.DefaultWorkingDirectory)/backend/target/site/jacoco/jacoco.xml'
-              pathToSources: '$(System.DefaultWorkingDirectory)/backend/src/main/java/'
-            condition: succeededOrFailed()
+              pathToSources: '$(System.DefaultWorkingDirectory)/backend/src/main/java'
+            condition: succeeded()
 
-          # Análisis SonarQube con validación limpia de red UCLM
-          - script: |
-              echo "Comprobando disponibilidad del servidor SonarQube UCLM..."
-              if curl -s --connect-timeout 5 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
-                echo "Servidor SonarQube alcanzable. Ejecutando análisis de Backend..."
-                cd backend
-                mvn sonar:sonar -B \
-                  -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
-                  -Dsonar.token="$(SONAR_TOKEN)" \
-                  -Dsonar.coverage.jacoco.xmlReportPaths="target/site/jacoco/jacoco.xml"
-              else
-                echo "##vso[task.logissue type=warning]El servidor SonarQube es interno de la red UCLM y no es alcanzable desde agentes públicos de Microsoft. Se omite el análisis en la nube sin bloquear el pipeline."
-                exit 0
-              fi
-            displayName: 'Ejecutar análisis de SonarQube Backend (con fallback de red)'
+          # SonarQube Backend: ejecución obligatoria desde la VPN (Agente UCLM-VPN-Agents)
+          - powershell: |
+              $ErrorActionPreference = 'Stop'
+
+              Write-Host "Comprobando disponibilidad de SonarQube..."
+
+              $status = Invoke-RestMethod `
+                -Uri "http://seralu4.esi.uclm.es:1521/api/system/status" `
+                -TimeoutSec 10
+
+              if ($status.status -ne 'UP') {
+                throw "SonarQube no está disponible."
+              }
+
+              Write-Host "Ejecutando análisis de SonarQube Backend..."
+
+              Set-Location "$(Build.SourcesDirectory)\backend"
+
+              .\mvnw.cmd sonar:sonar `
+                "-Dsonar.host.url=http://seralu4.esi.uclm.es:1521/" `
+                "-Dsonar.projectKey=2026-g06-backend" `
+                "-Dsonar.token=$env:SONAR_TOKEN"
+
+              if ($LASTEXITCODE -ne 0) {
+                throw "El análisis de SonarQube Backend ha fallado."
+              }
+            displayName: 'Ejecutar análisis de SonarQube Backend'
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
 
       # ------------------------------------------------------------------------
       # Frontend CI: Node 22, dependencias, tests unitarios, build y SonarQube
+      # Ejecución en agente conectado a la VPN de la UCLM
       # ------------------------------------------------------------------------
       - job: Frontend_CI
         displayName: 'Frontend CI (Node 22 / Angular / Tests / SonarQube)'
+        pool:
+          name: 'UCLM-VPN-Agents'
+
         steps:
           - task: UseNode@1
             displayName: 'Configurar Node.js 22.x'
@@ -111,22 +124,65 @@ stages:
               npm run build
             displayName: 'Compilación de verificación Frontend'
 
-          # Análisis SonarQube Frontend con validación limpia de red UCLM
-          - script: |
-              echo "Comprobando disponibilidad del servidor SonarQube UCLM..."
-              if curl -s --connect-timeout 5 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
-                echo "Servidor SonarQube alcanzable. Ejecutando análisis de Frontend..."
-                cd frontend
-                npx --yes sonar-scanner \
-                  -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
-                  -Dsonar.token="$(SONAR_TOKEN)"
-              else
-                echo "##vso[task.logissue type=warning]El servidor SonarQube es interno de la red UCLM y no es alcanzable desde agentes públicos de Microsoft. Se omite el análisis en la nube sin bloquear el pipeline."
-                exit 0
-              fi
-            displayName: 'Ejecutar análisis de SonarQube Frontend (con fallback de red)'
+          # SonarQube Frontend: ejecución obligatoria desde la VPN (Agente UCLM-VPN-Agents)
+          - powershell: |
+              $ErrorActionPreference = 'Stop'
+
+              Write-Host "Comprobando disponibilidad de SonarQube..."
+
+              $status = Invoke-RestMethod `
+                -Uri "http://seralu4.esi.uclm.es:1521/api/system/status" `
+                -TimeoutSec 10
+
+              if ($status.status -ne 'UP') {
+                throw "SonarQube no está disponible."
+              }
+
+              Write-Host "Ejecutando análisis de SonarQube Frontend..."
+
+              Set-Location "$(Build.SourcesDirectory)\frontend"
+
+              npx --yes sonar-scanner `
+                "-Dsonar.token=$env:SONAR_TOKEN"
+
+              if ($LASTEXITCODE -ne 0) {
+                throw "El análisis de SonarQube Frontend ha fallado."
+              }
+            displayName: 'Ejecutar análisis de SonarQube Frontend'
             env:
               SONAR_TOKEN: $(SONAR_TOKEN)
+
+      # ------------------------------------------------------------------------
+      # Sync_Azure_Repos: Sincronización automática a Azure Repos (ESIBuy)
+      # Se ejecuta sólo si Backend_CI y Frontend_CI terminan con éxito
+      # y NO es una Pull Request (sólo en pushes reales a main)
+      # ------------------------------------------------------------------------
+      - job: Sync_Azure_Repos
+        displayName: 'Sincronizar rama con Azure Repos (ESIBuy)'
+        dependsOn: [Backend_CI, Frontend_CI]
+        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+        steps:
+          - checkout: self
+            persistCredentials: true
+            fetchDepth: 0
+          - script: |
+              echo "Sincronizando rama $(Build.SourceBranchName) hacia Azure Repos..."
+              if [ -z "$AZURE_REPO_TOKEN" ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta AZURE_REPO_TOKEN en el grupo 'esibuy-secrets'."
+                exit 1
+              fi
+              echo "Intentando sincronizar con repositorio ESIBuy-G6..."
+              if git push "https://pat:$AZURE_REPO_TOKEN@dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy-G6" HEAD:refs/heads/$(Build.SourceBranchName) --force; then
+                echo "Rama $(Build.SourceBranchName) sincronizada con exito en ESIBuy-G6."
+              elif git push "https://pat:$AZURE_REPO_TOKEN@dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy" HEAD:refs/heads/$(Build.SourceBranchName) --force; then
+                echo "Rama $(Build.SourceBranchName) sincronizada con exito en ESIBuy."
+              else
+                echo "##vso[task.logissue type=error]No se pudo sincronizar con Azure Repos. Verifica el nombre del repositorio y los permisos del token."
+                exit 1
+              fi
+            displayName: 'Push a Azure Repos'
+            env:
+              AZURE_REPO_TOKEN: $(AZURE_REPO_TOKEN)
 
   # ============================================================================
   # STAGE 2: DESPLIEGUE CONTINUO (CD) - Producción Final
@@ -217,7 +273,7 @@ stages:
           # Despliegue automatizado en Firebase Hosting
           - script: |
               cd frontend
-              npx --yes firebase-tools deploy --only hosting --project esibuy-2627 --token "$FIREBASE_TOKEN" --non-interactive
+              npx --yes firebase-tools deploy --only hosting --project esibuy-2627 --non-interactive
             displayName: 'Desplegar Frontend en Firebase Hosting (esibuy-2627)'
             env:
               FIREBASE_TOKEN: $(FIREBASE_TOKEN)

@@ -16,12 +16,19 @@
 
 .profile-page {
     display: grid;
-    width: min(1200px, 100%);
+    position: relative;
+    width: min(1200px, calc(100% - 248px));
     grid-template-columns: 250px minmax(0, 1fr);
     align-items: start;
     gap: 24px;
-    margin: 0 auto;
+    margin: 0 0 0 248px;
     padding: 40px 32px 64px;
+}
+
+.profile-page > app-shared-sidebar {
+    position: absolute;
+    width: 0;
+    height: 0;
 }
 
 /* =========================
@@ -633,8 +640,10 @@ app-delete-account {
 
 @media (max-width: 760px) {
     .profile-page {
+        width: 100%;
         grid-template-columns: minmax(0, 1fr);
         gap: 20px;
+        margin-left: 0;
         padding: 24px 18px 40px;
     }
 

@@ -32,7 +32,7 @@ export class WishlistService {
     return this.http.get<ProductItem[]>('/api/wishlist').pipe(
       map((products) =>
         products.map((p) => {
-          if (!p || p.imageUrl === undefined) {
+          if (p?.imageUrl === undefined) {
             return p;
           }
           return {

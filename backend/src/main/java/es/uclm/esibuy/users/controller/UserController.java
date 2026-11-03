@@ -39,6 +39,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import es.uclm.esibuy.users.dto.ChangeCustomerTypeRequest;
 
 @RestController
 @RequestMapping("/api/users")
@@ -47,7 +48,7 @@ public class UserController {
     private static final String MESSAGE_KEY = "message";
     private static final String EMAIL_KEY = "email";
     private static final String ENABLED_KEY = "enabled";
-    private static final String SOLO_ADMINS_SELLERS_MESSAGE = "Esta configuración solo está disponible para administradores y vendedores";
+    private static final String SOLO_ADMINS_SELLERS_MESSAGE = "Esta configuración solo está disponible para administradores, vendedores y clientes";
 
     private final UserService userService;
     private final LoginAttemptService loginAttemptService;
@@ -129,9 +130,7 @@ public class UserController {
             }
         }
 
-        if ((user.getRole() == UserRole.ADMIN
-                || user.getRole() == UserRole.SELLER)
-                && user.isEmailOtpEnabled()) {
+        if (user.isEmailOtpEnabled()) {
 
             emailOtpService.issueChallenge(user);
 
@@ -179,6 +178,22 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok(userService.getOwnProfile(principal.id()));
+    }
+
+    @PutMapping("/me/customer-type")
+    public ResponseEntity<UserProfileResponse> changeOwnCustomerType(
+            @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
+            @Valid @RequestBody ChangeCustomerTypeRequest request) {
+
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserProfileResponse profile = userService.changeOwnCustomerType(
+                principal.id(),
+                request.customerType());
+
+        return ResponseEntity.ok(profile);
     }
 
     @PostMapping("/logout")
@@ -324,9 +339,7 @@ public class UserController {
 
         User user = userService.findById(userId);
 
-        if (user == null
-                || (user.getRole() != UserRole.ADMIN
-                        && user.getRole() != UserRole.SELLER)) {
+        if (user == null || !supportsEmailOtp(user)) {
             session.removeAttribute(PENDING_OTP_USER_ID);
             throw new InvalidOtpException();
         }
@@ -356,7 +369,8 @@ public class UserController {
         response.put("role", user.getRole());
         response.put("active", user.isActive());
         response.put("totpEnabled", user.isTotpEnabled());
-        if (user.getRole() == UserRole.CLIENT && user.getClientProfile() != null && user.getClientProfile().getCustomerType() != null) {
+        if (user.getRole() == UserRole.CLIENT && user.getClientProfile() != null
+                && user.getClientProfile().getCustomerType() != null) {
             response.put("customerType", user.getClientProfile().getCustomerType().name());
         }
         return response;
@@ -493,6 +507,7 @@ public class UserController {
 
     private boolean supportsEmailOtp(User user) {
         return user.getRole() == UserRole.ADMIN
-                || user.getRole() == UserRole.SELLER;
+                || user.getRole() == UserRole.SELLER
+                || user.getRole() == UserRole.CLIENT;
     }
 }

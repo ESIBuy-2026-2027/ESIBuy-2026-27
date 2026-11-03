@@ -5,6 +5,9 @@ import java.util.Optional;
 
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.common.exception.UserNotFoundException;
+import es.uclm.esibuy.security.password.CompromisedPasswordException;
+import es.uclm.esibuy.security.password.CompromisedPasswordService;
+import es.uclm.esibuy.security.password.PepperedPasswordEncoder;
 import es.uclm.esibuy.users.dto.AltaAdminDTO;
 import es.uclm.esibuy.users.dto.UserAdminDTO;
 import es.uclm.esibuy.users.model.User;
@@ -15,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -34,13 +36,19 @@ class AdminServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private PepperedPasswordEncoder passwordEncoder;
+
+    @Mock
+    private CompromisedPasswordService compromisedPasswordService;
 
     private AdminService adminService;
 
     @BeforeEach
     void setUp() {
-        adminService = new AdminService(userRepository, passwordEncoder);
+        adminService = new AdminService(
+                userRepository,
+                passwordEncoder,
+                compromisedPasswordService);
     }
 
     @Test
@@ -211,4 +219,33 @@ class AdminServiceTest {
 
         assertThrows(DuplicateUserException.class, () -> adminService.createAdmin(request));
     }
+
+    @Test
+    void shouldRejectAdminCreationWhenPasswordIsCompromised() {
+        AltaAdminDTO request = new AltaAdminDTO(
+                "12345678Z",
+                "Carlos",
+                "Gómez Pérez",
+                "admin.comprometido@esibuy.com",
+                "Admin123456!#",
+                "Admin123456!#",
+                "Ciudad Real",
+                null);
+
+        when(userRepository.existsByEmailIgnoreCase("admin.comprometido@esibuy.com"))
+                .thenReturn(false);
+
+        org.mockito.Mockito.doThrow(new CompromisedPasswordException())
+                .when(compromisedPasswordService)
+                .validatePassword("Admin123456!#");
+
+        assertThrows(
+                CompromisedPasswordException.class,
+                () -> adminService.createAdmin(request));
+
+        verify(compromisedPasswordService).validatePassword("Admin123456!#");
+        verify(userRepository, never()).save(any(User.class));
+        verify(passwordEncoder, never()).encode(any());
+    }
+
 }

@@ -1,7 +1,7 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { NEVER, of } from 'rxjs';
 import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { ClientWishlist } from './client-wishlist';
 import { WishlistService } from '../../../core/services/wishlist.service';
@@ -80,13 +80,12 @@ describe('ClientWishlist', () => {
     expect(el.querySelector('#wishlist-title')?.textContent).toContain('Lista de deseos');
 
     const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
-    expect(navLinks.length).toBe(5);
+    expect(navLinks.length).toBe(4);
     expect(navLinks[0].textContent).toContain('Catálogo');
     expect(navLinks[1].textContent).toContain('Lista de deseos');
     expect(navLinks[1].classList.contains('is-active')).toBe(true);
-    expect(navLinks[2].textContent).toContain('Mis compras');
+    expect(navLinks[2].textContent).toContain('Mis pedidos');
     expect(navLinks[3].textContent).toContain('Carrito');
-    expect(navLinks[4].textContent).toContain('Perfil');
   });
 
   it('should toggle sidebar collapsed state', () => {
@@ -106,6 +105,16 @@ describe('ClientWishlist', () => {
 
     expect(cartServiceMock.addItem).toHaveBeenCalledWith('p-1', 2);
     expect(toastServiceMock.show).toHaveBeenCalledWith('Producto añadido al carrito', 'success');
+  });
+
+  it('should ignore repeated add-to-cart clicks while the request is pending', () => {
+    cartServiceMock.addItem.mockReturnValue(NEVER);
+
+    component.addToCart(mockWishlistProducts[0]);
+    component.addToCart(mockWishlistProducts[0]);
+
+    expect(cartServiceMock.addItem).toHaveBeenCalledTimes(1);
+    expect(component.addingProducts()['p-1']).toBe(true);
   });
 
   it('should render items in wishlist and indicate unavailable products', () => {
