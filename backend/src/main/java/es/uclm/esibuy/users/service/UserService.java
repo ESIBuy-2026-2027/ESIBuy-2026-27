@@ -4,11 +4,19 @@ import java.util.List;
 import java.util.Locale;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import es.uclm.esibuy.auth.passwordreset.repository.PasswordResetTokenRepository;
+import es.uclm.esibuy.cart.model.Cart;
+import es.uclm.esibuy.cart.repository.CartRepository;
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.common.exception.InvalidCredentialsException;
+import es.uclm.esibuy.common.exception.UserDeletionConflictException;
 import es.uclm.esibuy.common.exception.UserNotFoundException;
+import es.uclm.esibuy.orders.model.Order;
+import es.uclm.esibuy.orders.model.OrderStatus;
+import es.uclm.esibuy.orders.repository.OrderRepository;
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
 import es.uclm.esibuy.users.dto.LoginRequest;
@@ -21,22 +29,55 @@ import es.uclm.esibuy.users.model.SellerProfile;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
+import es.uclm.esibuy.wishlist.repository.WishlistRepository;
+import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
+import es.uclm.esibuy.security.password.CompromisedPasswordService;
+import es.uclm.esibuy.security.repository.EmailOtpChallengeRepository;
+import es.uclm.esibuy.security.repository.LoginAttemptRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import es.uclm.esibuy.users.model.CustomerType;
 
 @Service
 public class UserService {
 
     private static final String MSG_DUPLICATE_EMAIL = "No se ha podido completar el registro. Comprueba los datos introducidos e inténtalo de nuevo";
+    private static final String DELETED_CUSTOMER_EMAIL = "cliente.eliminado@esibuy.local";
 
+    private final OrderRepository orderRepository;
+    private final CartRepository cartRepository;
+    private final WishlistRepository wishlistRepository;
+    private final EmailOtpChallengeRepository emailOtpChallengeRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final LoginAttemptRepository loginAttemptRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CompromisedPasswordService compromisedPasswordService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-            ProductRepository productRepository) {
+    public UserService(
+            UserRepository userRepository,
+            @Qualifier("pepperedPasswordEncoder") PasswordEncoder passwordEncoder,
+            ProductRepository productRepository,
+            OrderRepository orderRepository,
+            CartRepository cartRepository,
+            WishlistRepository wishlistRepository,
+            EmailOtpChallengeRepository emailOtpChallengeRepository,
+            PasswordResetTokenRepository passwordResetTokenRepository,
+            LoginAttemptRepository loginAttemptRepository,
+            CompromisedPasswordService compromisedPasswordService) {
+
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.productRepository = productRepository;
+        this.orderRepository = orderRepository;
+        this.cartRepository = cartRepository;
+        this.wishlistRepository = wishlistRepository;
+        this.emailOtpChallengeRepository = emailOtpChallengeRepository;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.loginAttemptRepository = loginAttemptRepository;
+        this.compromisedPasswordService = compromisedPasswordService;
     }
 
     public User registerClient(ClientRegistrationRequest request) {
@@ -48,6 +89,8 @@ public class UserService {
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new DuplicateUserException(MSG_DUPLICATE_EMAIL);
         }
+
+        compromisedPasswordService.validatePassword(request.getPassword());
 
         User user = new User(email, request.getFirstName().trim(), request.getLastName().trim(), UserRole.CLIENT);
         user.setNationalId(request.getNationalId().trim());
@@ -79,6 +122,8 @@ public class UserService {
             throw new DuplicateUserException("Ya existe un vendedor con ese nombre comercial");
         }
 
+        compromisedPasswordService.validatePassword(request.getPassword());
+
         User user = new User(email, request.getFirstName().trim(), request.getLastName().trim(), UserRole.SELLER);
         user.setNationalId(request.getNationalId().trim());
         user.setPhone(blankToNull(request.getPhone()));
@@ -101,6 +146,8 @@ public class UserService {
             throw new DuplicateUserException(MSG_DUPLICATE_EMAIL);
         }
 
+        compromisedPasswordService.validatePassword(request.getPassword());
+
         User user = new User(email, request.getFirstName().trim(), request.getLastName().trim(), UserRole.ADMIN);
         user.setPhone(blankToNull(request.getPhone()));
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
@@ -116,12 +163,21 @@ public class UserService {
 
     public User login(LoginRequest request) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
-        return userRepository.findByEmailIgnoreCase(email)
-                .filter(user -> user.isActive()
-                        && !user.isBlocked()
-                        && user.getPasswordHash() != null
-                        && passwordEncoder.matches(request.getPassword(), user.getPasswordHash()))
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .filter(candidate -> candidate.isActive()
+                        && !candidate.isBlocked()
+                        && candidate.getPasswordHash() != null)
                 .orElseThrow(InvalidCredentialsException::new);
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new InvalidCredentialsException();
+        }
+
+        if (passwordEncoder.upgradeEncoding(user.getPasswordHash())) {
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            userRepository.save(user);
+        }
+        return user;
     }
 
     public List<User> findAllUsers() {
@@ -145,25 +201,160 @@ public class UserService {
         return UserProfileResponse.from(findById(userId));
     }
 
+    public UserProfileResponse changeOwnCustomerType(
+            String userId,
+            CustomerType customerType) {
+
+        User user = findById(userId);
+
+        if (user.getRole() != UserRole.CLIENT) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Solo los clientes pueden cambiar su modalidad de cuenta");
+        }
+
+        if (customerType == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "El tipo de cliente es obligatorio");
+        }
+
+        ClientProfile clientProfile = user.getClientProfile();
+
+        if (clientProfile == null) {
+            clientProfile = new ClientProfile();
+            user.setClientProfile(clientProfile);
+        }
+
+        clientProfile.setCustomerType(customerType);
+
+        User savedUser = userRepository.save(user);
+
+        return UserProfileResponse.from(savedUser);
+    }
+
     public void deleteOwnAccount(String userId) {
         User user = findById(userId);
 
-        // Un administrador no puede eliminar su propia cuenta.
-        // Su eliminación debe realizarla otro administrador.
         if (user.getRole() == UserRole.ADMIN) {
-            throw new IllegalStateException(
+            throw new UserDeletionConflictException(
                     "No puedes eliminar tu propia cuenta de administrador. "
                             + "Solicita a otro administrador que la elimine.");
         }
 
-        // Si es vendedor, eliminar también sus productos.
         if (user.getRole() == UserRole.SELLER) {
-            productRepository.deleteAll(
-                    productRepository.findAllBySellerId(user.getId()));
+            deleteSellerAccount(user);
+        } else if (user.getRole() == UserRole.CLIENT) {
+            deleteClientAccount(user);
         }
 
-        // Eliminar la cuenta del usuario.
+        cleanSecurityData(user);
         userRepository.delete(user);
+    }
+
+    private void deleteClientAccount(User user) {
+        User deletedCustomer = getOrCreateDeletedCustomer();
+
+        List<Order> orders = orderRepository
+                .findAllByCustomerIdOrderByCreatedAtDesc(user.getId());
+
+        for (Order order : orders) {
+            order.setCustomerId(deletedCustomer.getId());
+            order.anonymizeCustomerData();
+            orderRepository.save(order);
+        }
+
+        cartRepository.deleteByCustomerId(user.getId());
+        wishlistRepository.deleteAllByUserId(user.getId());
+    }
+
+    private User getOrCreateDeletedCustomer() {
+        return userRepository.findByEmailIgnoreCase(DELETED_CUSTOMER_EMAIL)
+                .orElseGet(() -> {
+                    User deletedCustomer = new User(
+                            DELETED_CUSTOMER_EMAIL,
+                            "Cliente",
+                            "eliminado",
+                            UserRole.CLIENT);
+
+                    deletedCustomer.setActive(false);
+                    deletedCustomer.setBlocked(true);
+                    deletedCustomer.setPasswordHash(null);
+
+                    return userRepository.save(deletedCustomer);
+                });
+    }
+
+    private void deleteSellerAccount(User seller) {
+        List<Product> products = productRepository.findAllBySellerId(seller.getId());
+
+        List<String> productIds = products.stream()
+                .map(Product::getId)
+                .toList();
+
+        if (!productIds.isEmpty()) {
+            List<Order> blockingOrders = orderRepository
+                    .findAllByItemsProductIdInAndStatusIn(
+                            productIds,
+                            List.of(OrderStatus.PENDIENTE, OrderStatus.PREPARANDO));
+
+            if (!blockingOrders.isEmpty()) {
+                throw new UserDeletionConflictException(
+                        "No puedes eliminar la cuenta porque tienes "
+                                + blockingOrders.size()
+                                + " pedidos pendientes o en preparación. "
+                                + "Gestiona esos pedidos antes de solicitar la baja.");
+            }
+
+            // Conservar la relación histórica entre los pedidos y el vendedor.
+            List<Order> sellerOrders = orderRepository
+                    .findAllByItemsProductIdInAndStatusIn(
+                            productIds,
+                            List.of(
+                                    OrderStatus.PAGADO,
+                                    OrderStatus.ENVIADO,
+                                    OrderStatus.ENTREGADO,
+                                    OrderStatus.CANCELADO));
+
+            for (Order order : sellerOrders) {
+                order.assignSellerToItems(seller.getId(), productIds);
+                orderRepository.save(order);
+            }
+
+            // Eliminar referencias a productos que van a desaparecer.
+            cleanProductReferences(productIds);
+
+            productRepository.deleteAll(products);
+        }
+
+        cartRepository.deleteByCustomerId(seller.getId());
+        wishlistRepository.deleteAllByUserId(seller.getId());
+    }
+
+    private void cleanProductReferences(List<String> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return;
+        }
+
+        for (Cart cart : cartRepository.findAll()) {
+            boolean modified = false;
+
+            for (String productId : productIds) {
+                modified |= cart.removeItem(productId);
+            }
+
+            if (modified) {
+                cartRepository.save(cart);
+            }
+        }
+
+        wishlistRepository.deleteAllByProductIdIn(productIds);
+    }
+
+    private void cleanSecurityData(User user) {
+        emailOtpChallengeRepository.deleteAllByUserId(user.getId());
+        passwordResetTokenRepository.deleteAllByUserId(user.getId());
+        loginAttemptRepository.deleteAllByEmail(user.getEmail());
     }
 
     public UserProfileResponse updateOwnProfile(

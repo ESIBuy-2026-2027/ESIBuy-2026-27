@@ -46,6 +46,9 @@
         <sonar.sources>src/main/java</sonar.sources>
         <sonar.tests>src/test/java</sonar.tests>
 
+        <sonar.exclusions>**/test/**,**/tests/**,**/*Test.java,**/*Tests.java,**/*TestCase.java</sonar.exclusions>
+        <sonar.test.exclusions>**</sonar.test.exclusions>
+
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 
         <sonar.coverage.exclusions>

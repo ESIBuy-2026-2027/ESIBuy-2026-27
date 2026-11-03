@@ -20,7 +20,7 @@ public class EmailOtpSender {
 
     public void sendOtp(String email, String code) {
         if (logOtpCode) {
-            LOGGER.info("[DEV ONLY] Código OTP generado: {}", code);
+            LOGGER.info("[DEV ONLY] Código OTP generado: {} para el usuario: {}", code, email);
         }
     }
 }

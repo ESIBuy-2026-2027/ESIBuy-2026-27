@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { signal } from '@angular/core';
-import { of } from 'rxjs';
+import { NEVER, of, throwError } from 'rxjs';
 import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { Home } from './home';
 import { ProductsService, ProductItem, Category } from '../../core/services/products.service';
@@ -147,6 +147,24 @@ describe('Home', () => {
     expect(toastServiceMock.show).toHaveBeenCalledWith('Producto añadido al carrito', 'success');
   });
 
+  it('should ignore repeated add-to-cart clicks while the request is pending', () => {
+    currentUserSignal.set({
+      id: 'c-1',
+      email: 'client@example.com',
+      role: 'CLIENT',
+      active: true,
+    });
+    cartServiceMock.addItem.mockReturnValue(NEVER);
+    fixture.detectChanges();
+
+    const addBtn = fixture.nativeElement.querySelector('.add-to-cart-action-btn') as HTMLButtonElement;
+    addBtn.click();
+    addBtn.click();
+
+    expect(cartServiceMock.addItem).toHaveBeenCalledTimes(1);
+    expect(component.cartAdding()['p-1']).toBe(true);
+  });
+
   it('should toggle favorite when authenticated as CLIENT', () => {
     currentUserSignal.set({
       id: 'c-1',
@@ -162,6 +180,21 @@ describe('Home', () => {
 
     expect(wishlistServiceMock.toggleWishlist).toHaveBeenCalledWith('p-1');
     expect(toastServiceMock.show).toHaveBeenCalledWith('Añadido a favoritos', 'success');
+  });
+
+  it('should expose a category error and recover on retry', () => {
+    productsServiceMock.getCategories.mockReturnValueOnce(
+      throwError(() => new Error('categories unavailable')),
+    );
+
+    component.loadCategories();
+    expect(component.categoryError()).toBe(true);
+
+    productsServiceMock.getCategories.mockReturnValueOnce(of(mockCategories));
+    component.loadCategories();
+
+    expect(component.categoryError()).toBe(false);
+    expect(component.categories()).toEqual(mockCategories);
   });
   it('should redirect logged in CLIENT to /client/catalog on initialization', () => {
     currentUserSignal.set({

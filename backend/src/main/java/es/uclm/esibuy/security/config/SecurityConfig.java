@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
@@ -31,6 +32,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import es.uclm.esibuy.common.filter.CorrelationIdFilter;
+import es.uclm.esibuy.security.password.PepperedPasswordEncoder;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,6 +47,7 @@ public class SecurityConfig {
         private static final String ROLE_CLIENT = "CLIENT";
         private static final String ROLE_ADMIN = "ADMIN";
         private static final String ROLE_SELLER = "SELLER";
+        private static final String API_PRODUCT_PREFIX = "/api/products/**";
 
         @Bean
         SecurityContextRepository securityContextRepository() {
@@ -116,11 +119,11 @@ public class SecurityConfig {
                                                                         "/api/products/resumen")
                                                         .hasRole(ROLE_SELLER)
                                                         .requestMatchers(HttpMethod.POST, "/api/products",
-                                                                        "/api/products/**")
+                                                                        API_PRODUCT_PREFIX)
                                                         .hasRole(ROLE_SELLER)
-                                                        .requestMatchers(HttpMethod.PUT, "/api/products/**")
+                                                        .requestMatchers(HttpMethod.PUT, API_PRODUCT_PREFIX)
                                                         .hasRole(ROLE_SELLER)
-                                                        .requestMatchers(HttpMethod.DELETE, "/api/products/**")
+                                                        .requestMatchers(HttpMethod.DELETE, API_PRODUCT_PREFIX)
                                                         .hasRole(ROLE_SELLER)
                                                         .requestMatchers(HttpMethod.PATCH, "/api/products/*/status")
                                                         .hasAnyRole(ROLE_SELLER, ROLE_ADMIN)
@@ -128,10 +131,10 @@ public class SecurityConfig {
                                                                         "/api/products",
                                                                         "/api/products/*",
                                                                         "/api/products/*/image",
-                                                                        "/api/products/**")
+                                                                        API_PRODUCT_PREFIX)
                                                         .permitAll()
                                                         .requestMatchers("/api/catalog/**").hasRole(ROLE_CLIENT)
-                                                        .requestMatchers("/api/products/**").hasRole(ROLE_SELLER)
+                                                        .requestMatchers(API_PRODUCT_PREFIX).hasRole(ROLE_SELLER)
                                                         .requestMatchers("/api/wishlist/**").hasRole(ROLE_CLIENT)
                                                         .requestMatchers(HttpMethod.GET, "/api/users/me/profile")
                                                         .hasAnyRole(ROLE_CLIENT, ROLE_SELLER, ROLE_ADMIN)
@@ -186,7 +189,8 @@ public class SecurityConfig {
                                 "https://esibuy-2627.firebaseapp.com"));
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                 configuration.setAllowedHeaders(List.of("*"));
-                configuration.setExposedHeaders(List.of("Retry-After", CorrelationIdFilter.HEADER, "X-CSRF-TOKEN", "X-XSRF-TOKEN"));
+                configuration.setExposedHeaders(
+                                List.of("Retry-After", CorrelationIdFilter.HEADER, "X-CSRF-TOKEN", "X-XSRF-TOKEN"));
                 configuration.setAllowCredentials(true);
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -194,9 +198,16 @@ public class SecurityConfig {
                 return source;
         }
 
-        @Bean
+        @Bean("otpPasswordEncoder")
+        @Primary
         PasswordEncoder passwordEncoder() {
                 return new BCryptPasswordEncoder();
+        }
+
+        @Bean("pepperedPasswordEncoder")
+        PasswordEncoder pepperedPasswordEncoder(
+                        @Value("${esibuy.security.password.pepper}") String pepper) {
+                return new PepperedPasswordEncoder(pepper);
         }
 
         private static final class CsrfCookieFilter extends OncePerRequestFilter {

@@ -10,4 +10,6 @@ public interface LoginAttemptRepository extends MongoRepository<LoginAttempt, St
     Optional<LoginAttempt> findByEmailAndIpAddress(String email, String ipAddress);
 
     void deleteByEmailAndIpAddress(String email, String ipAddress);
+
+    void deleteAllByEmail(String email);
 }

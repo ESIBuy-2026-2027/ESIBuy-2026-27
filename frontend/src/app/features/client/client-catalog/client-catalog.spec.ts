@@ -1,7 +1,7 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { NEVER, of, throwError } from 'rxjs';
 import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { ClientCatalog } from './client-catalog';
 import { ProductsService, ProductItem, Category } from '../../../core/services/products.service';
@@ -107,13 +107,12 @@ describe('ClientCatalog', () => {
 
     expect(el.querySelector('#catalog-title')?.textContent).toContain('Catálogo de productos');
     const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
-    expect(navLinks.length).toBe(5);
+    expect(navLinks.length).toBe(4);
     expect(navLinks[0].textContent).toContain('Catálogo');
     expect(navLinks[0].classList.contains('is-active')).toBe(true);
     expect(navLinks[1].textContent).toContain('Lista de deseos');
-    expect(navLinks[2].textContent).toContain('Mis compras');
+    expect(navLinks[2].textContent).toContain('Mis pedidos');
     expect(navLinks[3].textContent).toContain('Carrito');
-    expect(navLinks[4].textContent).toContain('Perfil');
   });
 
   it('should toggle sidebar collapsed state', () => {
@@ -130,6 +129,17 @@ describe('ClientCatalog', () => {
 
     expect(cartServiceMock.addItem).toHaveBeenCalledWith('p-1', 1);
     expect(toastServiceMock.show).toHaveBeenCalledWith('Producto añadido al carrito', 'success');
+  });
+
+  it('should ignore repeated add-to-cart clicks while the request is pending', () => {
+    cartServiceMock.addItem.mockReturnValue(NEVER);
+    const addBtn = fixture.nativeElement.querySelector('.add-to-cart-action-btn') as HTMLButtonElement;
+
+    addBtn.click();
+    addBtn.click();
+
+    expect(cartServiceMock.addItem).toHaveBeenCalledTimes(1);
+    expect(component.cartAdding()['p-1']).toBe(true);
   });
 
   it('should render products and allow toggling favorite with feedback', () => {
@@ -195,5 +205,20 @@ describe('ClientCatalog', () => {
     expect(el.querySelector('.sidebar')).toBeNull();
     expect(el.querySelector('.app-sidebar')).toBeNull();
     expect(el.querySelectorAll('.navigation-link').length).toBe(0);
+  });
+
+  it('should expose a category error and recover on retry', () => {
+    productsServiceMock.getCategories.mockReturnValueOnce(
+      throwError(() => new Error('categories unavailable')),
+    );
+
+    component.loadCategories();
+    expect(component.categoryError()).toBe(true);
+
+    productsServiceMock.getCategories.mockReturnValueOnce(of(mockCategories));
+    component.loadCategories();
+
+    expect(component.categoryError()).toBe(false);
+    expect(component.categories()).toEqual(mockCategories);
   });
 });

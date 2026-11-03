@@ -19,6 +19,7 @@ import es.uclm.esibuy.users.repository.UserRepository;
 import es.uclm.esibuy.users.service.AdminService;
 
 import es.uclm.esibuy.common.exception.UserNotFoundException;
+import es.uclm.esibuy.security.password.CompromisedPasswordService;
 
 @ExtendWith(MockitoExtension.class)
 class BloqueoDesbloqueoUsuarioTest {
@@ -27,6 +28,9 @@ class BloqueoDesbloqueoUsuarioTest {
 
         @Mock
         private PasswordEncoder passwordEncoder;
+
+        @Mock
+        private CompromisedPasswordService compromisedPasswordService;
 
         private AdminService adminService;
 
@@ -45,7 +49,7 @@ class BloqueoDesbloqueoUsuarioTest {
                 when(userRepository.findById("123"))
                                 .thenReturn(Optional.of(usuario));
 
-                adminService = new AdminService(userRepository, passwordEncoder);
+                adminService = new AdminService(userRepository, passwordEncoder, compromisedPasswordService);
 
                 // Act
                 adminService.blockUser("123");
@@ -60,7 +64,7 @@ class BloqueoDesbloqueoUsuarioTest {
                 when(userRepository.findById("999"))
                                 .thenReturn(Optional.empty());
 
-                adminService = new AdminService(userRepository, passwordEncoder);
+                adminService = new AdminService(userRepository, passwordEncoder, compromisedPasswordService);
 
                 // Act + Assert
                 assertThrows(
@@ -81,7 +85,7 @@ class BloqueoDesbloqueoUsuarioTest {
                 when(userRepository.findById("123"))
                                 .thenReturn(Optional.of(usuario));
 
-                adminService = new AdminService(userRepository, passwordEncoder);
+                adminService = new AdminService(userRepository, passwordEncoder, compromisedPasswordService);
 
                 // Act
                 adminService.unblockUser("123");
@@ -96,7 +100,7 @@ class BloqueoDesbloqueoUsuarioTest {
                 when(userRepository.findById("999"))
                                 .thenReturn(Optional.empty());
 
-                adminService = new AdminService(userRepository, passwordEncoder);
+                adminService = new AdminService(userRepository, passwordEncoder, compromisedPasswordService);
 
                 // Act + Assert
                 assertThrows(

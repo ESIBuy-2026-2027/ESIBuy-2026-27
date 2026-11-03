@@ -29,11 +29,11 @@
       <a class="navigation-link" routerLink="/client/orders">
         <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="9" cy="21" r="1" />
-          <circle cx="20" cy="21" r="1" />
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+          <path d="m3.3 7 8.7 5 8.7-5" />
+          <path d="M12 22V12" />
         </svg>
-        <span>Mis compras</span>
+        <span>Mis pedidos</span>
       </a>
 
       <a class="navigation-link" routerLink="/client/cart">
@@ -46,14 +46,6 @@
         <span>Carrito</span>
       </a>
 
-      <a class="navigation-link" routerLink="/client/profile">
-        <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
-        <span>Perfil</span>
-      </a>
     </nav>
   </aside>
 
@@ -76,7 +68,9 @@
       <!-- MENSAJE DE AVISO (ÉXITO / ERROR) ESTILO BANNER -->
       @if (toastService.toast(); as t) {
       <output class="catalog-alert" [class.is-success]="t.type === 'success'"
-        [class.is-error]="t.type === 'error' || t.type === 'info'" aria-live="polite">
+        [class.is-error]="t.type === 'error' || t.type === 'info'"
+        [attr.role]="t.type === 'error' ? 'alert' : 'status'"
+        [attr.aria-live]="t.type === 'error' ? 'assertive' : 'polite'">
         @if (t.type === 'success') {
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="m5 12 4 4L19 6"></path>
@@ -133,7 +127,8 @@
                   <a [routerLink]="['/products', product.id]">{{ product.name }}</a>
                 </h3>
 
-                <button type="button" class="remove-btn" (click)="removeFromWishlist(product.id, $event)"
+                <button type="button" class="remove-btn" [disabled]="removingProducts()[product.id]"
+                  (click)="removeFromWishlist(product.id, $event)"
                   title="Eliminar de favoritos" aria-label="Eliminar de favoritos">
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -175,9 +170,10 @@
                     (click)="$event.stopPropagation()" class="qty-input" />
                 </div>
 
-                <button type="button" class="buy-action-btn" (click)="addToCart(product, $event)"
+                <button type="button" class="buy-action-btn" [disabled]="addingProducts()[product.id]"
+                  (click)="addToCart(product, $event)"
                   title="Añadir al carrito">
-                  Añadir al carrito
+                  {{ addingProducts()[product.id] ? 'Añadiendo...' : 'Añadir al carrito' }}
                 </button>
                 } @else {
                 <button type="button" class="buy-action-btn is-blocked" disabled aria-disabled="true"
