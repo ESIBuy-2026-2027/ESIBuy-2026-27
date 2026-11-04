@@ -122,6 +122,10 @@ export class ClientOrders implements OnInit {
       : new Intl.DateTimeFormat('es-ES', { dateStyle: 'long' }).format(parsedDate);
   }
 
+  getItemCount(order: CustomerOrder): number {
+    return order.items.reduce((count, item) => count + item.cantidad, 0);
+  }
+
   getStatusLabel(order: CustomerOrder): string {
     const status = getCustomerOrderFulfillmentStatus(order);
     const labels: Record<CustomerOrderFulfillmentStatus, string> = {

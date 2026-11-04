@@ -103,79 +103,6 @@
           <h1 id="orders-title">Mis pedidos</h1>
           <p>Consulta tus compras, su estado y el seguimiento de tus envíos.</p>
         </div>
-        <section class="orders-toolbar" aria-label="Buscar y filtrar pedidos">
-          <label class="orders-search">
-            <span class="visually-hidden">Buscar pedidos por número o producto</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="11" cy="11" r="6.5"></circle>
-              <path d="m16 16 4.5 4.5"></path>
-            </svg>
-            <input
-              id="orders-search-input"
-              type="search"
-              placeholder="Buscar todos los pedidos"
-              [ngModel]="searchQuery()"
-              (ngModelChange)="setSearchQuery($event)"
-              name="ordersSearch"
-            />
-          </label>
-          <div class="orders-filter">
-            <button
-              type="button"
-              class="filter-button"
-              [class.is-active]="hasAdvancedFilters()"
-              [attr.aria-expanded]="filtersOpen()"
-              aria-controls="client-orders-filter-panel"
-              (click)="toggleFilters()"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"></path>
-              </svg>
-              Filtrar
-              @if (hasAdvancedFilters()) {
-                <span class="filter-indicator" aria-label="Hay filtros avanzados activos"></span>
-              }
-            </button>
-            @if (filtersOpen()) {
-              <div class="orders-filter-panel" id="client-orders-filter-panel">
-                <button
-                  type="button"
-                  class="close-orders-filter"
-                  aria-label="Cerrar filtros"
-                  (click)="closeFilters()"
-                >
-                  ×
-                </button>
-                <label for="orders-payment">Estado del pago</label>
-                <select
-                  id="orders-payment"
-                  [ngModel]="paymentFilter()"
-                  (ngModelChange)="setPaymentFilter($event)"
-                  name="ordersPayment"
-                >
-                  <option value="TODOS">Todos los pagos</option>
-                  <option value="PAGADO">Pagado</option>
-                  <option value="PENDIENTE">Pendiente</option>
-                </select>
-                <label for="orders-sort">Ordenar por</label>
-                <select
-                  id="orders-sort"
-                  [ngModel]="sortOrder()"
-                  (ngModelChange)="setSortOrder($event)"
-                  name="ordersSort"
-                >
-                  <option value="date-desc">Fecha: más recientes</option>
-                  <option value="date-asc">Fecha: más antiguos</option>
-                  <option value="amount-desc">Importe: mayor a menor</option>
-                  <option value="amount-asc">Importe: menor a mayor</option>
-                </select>
-                <button type="button" class="clear-order-filter" (click)="clearFilters()">
-                  Limpiar filtros
-                </button>
-              </div>
-            }
-          </div>
-        </section>
       </section>
 
       @if (loading()) {
@@ -232,8 +159,18 @@
               <option value="6months">Últimos 6 meses</option>
               <option value="year">Último año</option>
             </select>
-          </label>
+            <label for="orders-sort">Ordenar por</label>
+            <select id="orders-sort" [ngModel]="sortOrder()" (ngModelChange)="setSortOrder($event)"
+              name="ordersSort">
+              <option value="date-desc">Fecha: más recientes</option>
+              <option value="date-asc">Fecha: más antiguos</option>
+              <option value="amount-desc">Importe: mayor a menor</option>
+              <option value="amount-asc">Importe: menor a mayor</option>
+            </select>
+          </div>
+          }
         </div>
+      </section>
 
         @if (filteredOrders().length === 0) {
           <div class="empty-state">
@@ -252,6 +189,7 @@
         } @else {
           <div class="orders-results-meta">
             <p class="orders-result-count" aria-live="polite">{{ pageLabel() }}</p>
+            <span class="order-count">{{ filteredOrders().length }} pedidos</span>
           </div>
           <section class="orders-list" aria-label="Pedidos">
             @for (order of visibleOrders(); track order.pedidoId) {
@@ -322,11 +260,12 @@
                     <span class="order-meta-label">ID pedido:</span>
                     <strong>#{{ order.pedidoId }}</strong>
                     <a class="order-detail-link" [routerLink]="['/client/orders', order.pedidoId]">
-                      Ver los detalles del pedido
+                      Ver detalle del pedido
                     </a>
                   </div>
                 </header>
                 <div class="order-card-content">
+                  @let itemCount = getItemCount(order);
                   <div class="order-status-heading">
                     <h2 [class]="'order-status ' + getStatusClass(order)">
                       <span class="status-dot" aria-hidden="true"></span>{{ getStatusLabel(order) }}
@@ -334,6 +273,9 @@
                     <span [class]="'payment-badge ' + getPaymentClass(order)"
                       >Pago: {{ getPaymentLabel(order) }}</span
                     >
+                    <span class="order-item-count">
+                      {{ itemCount }} {{ itemCount === 1 ? 'artículo' : 'artículos' }}
+                    </span>
                   </div>
                   @if (order.items.length > 0) {
                     <ul class="order-items">
@@ -341,7 +283,7 @@
                         <li class="order-item">
                           @if (item.imageUrl) {
                             <img
-                              class="order-item-image"
+                              class="order-item-image order-item-thumbnail"
                               [src]="item.imageUrl"
                               [alt]="item.nombre"
                             />
