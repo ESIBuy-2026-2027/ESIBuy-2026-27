@@ -116,7 +116,7 @@
               <circle cx="11" cy="11" r="7"></circle>
               <line x1="21" y1="21" x2="16" y2="16"></line>
             </svg>
-            <input type="search" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+            <input type="search" [ngModel]="searchTerm()" (ngModelChange)="onSearchChange($event)"
               placeholder="Buscar por producto o vendedor..." aria-label="Buscar producto o vendedor">
           </label>
 
@@ -184,7 +184,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (prod of filteredProducts(); track prod.id) {
+              @for (prod of visibleProducts(); track prod.id) {
               <tr>
                 <td class="cell-product-name">
                   <span class="product-title">{{ prod.name }}</span>
@@ -228,6 +228,13 @@
             </tbody>
           </table>
         </div>
+        @if (filteredProducts().length > pageSize) {
+        <nav class="orders-pagination" aria-label="Paginación de productos">
+          <button type="button" (click)="previousPage()" [disabled]="pageIndex() === 0">Anterior</button>
+          <span>Página {{ pageIndex() + 1 }} de {{ pageCount() }}</span>
+          <button type="button" (click)="nextPage()" [disabled]="pageIndex() >= pageCount() - 1">Siguiente</button>
+        </nav>
+        }
         }
       </div>
     </main>

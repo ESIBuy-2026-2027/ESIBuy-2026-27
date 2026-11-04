@@ -27,6 +27,9 @@ export class AdminUserList implements OnInit {
   roleFilter: string = '';
   statusFilter: string = '';
   nameSearch = signal('');
+  pageIndex = signal(0);
+  readonly pageSize = 10;
+
   filteredUsers = computed(() => {
     const query = this.nameSearch().trim().toLocaleLowerCase();
     if (!query) {
@@ -35,6 +38,12 @@ export class AdminUserList implements OnInit {
 
     return this.users().filter((user) =>
       `${user.firstName} ${user.lastName}`.toLocaleLowerCase().includes(query));
+  });
+
+  pageCount = computed(() => Math.max(1, Math.ceil(this.filteredUsers().length / this.pageSize)));
+  visibleUsers = computed(() => {
+    const start = this.pageIndex() * this.pageSize;
+    return this.filteredUsers().slice(start, start + this.pageSize);
   });
   private lastFocusedElement: HTMLElement | null = null;
 
@@ -52,6 +61,7 @@ export class AdminUserList implements OnInit {
   }
 
   loadUsers(): void {
+    this.pageIndex.set(0);
     this.loading.set(true);
     this.error.set('');
     this.cdr.markForCheck();
@@ -75,7 +85,31 @@ export class AdminUserList implements OnInit {
   }
 
   applyFilters(): void {
+    this.pageIndex.set(0);
     this.loadUsers();
+  }
+
+  onSearchChange(val: string): void {
+    this.nameSearch.set(val);
+    this.pageIndex.set(0);
+  }
+
+  previousPage(): void {
+    this.pageIndex.update((page) => Math.max(0, page - 1));
+  }
+
+  nextPage(): void {
+    this.pageIndex.update((page) => Math.min(this.pageCount() - 1, page + 1));
+  }
+
+  pageLabel(): string {
+    const userCount = this.filteredUsers().length;
+    if (userCount === 0) {
+      return '0 usuarios';
+    }
+    const firstItem = this.pageIndex() * this.pageSize + 1;
+    const lastItem = Math.min(firstItem + this.pageSize - 1, userCount);
+    return `${firstItem}–${lastItem} de ${userCount}`;
   }
 
   @ViewChild('deleteDialog')

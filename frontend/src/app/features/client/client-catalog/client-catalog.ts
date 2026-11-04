@@ -99,6 +99,14 @@ export class ClientCatalog implements OnInit {
     return result;
   });
 
+  readonly pageIndex = signal(0);
+  readonly pageSize = 12;
+  readonly pageCount = computed(() => Math.max(1, Math.ceil(this.products().length / this.pageSize)));
+  readonly visibleProducts = computed(() => {
+    const start = this.pageIndex() * this.pageSize;
+    return this.products().slice(start, start + this.pageSize);
+  });
+
   // Filtros del catálogo
   searchQuery = signal('');
   selectedCategory = signal('');
@@ -138,6 +146,7 @@ export class ClientCatalog implements OnInit {
   }
 
   loadProducts(): void {
+    this.pageIndex.set(0);
     this.loading.set(true);
     this.error.set(false);
 
@@ -171,7 +180,26 @@ export class ClientCatalog implements OnInit {
   }
 
   onFilterChange(): void {
+    this.pageIndex.set(0);
     this.loadProducts();
+  }
+
+  previousPage(): void {
+    this.pageIndex.update((page) => Math.max(0, page - 1));
+  }
+
+  nextPage(): void {
+    this.pageIndex.update((page) => Math.min(this.pageCount() - 1, page + 1));
+  }
+
+  pageLabel(): string {
+    const count = this.products().length;
+    if (count === 0) {
+      return '0 productos';
+    }
+    const firstItem = this.pageIndex() * this.pageSize + 1;
+    const lastItem = Math.min(firstItem + this.pageSize - 1, count);
+    return `${firstItem}–${lastItem} de ${count}`;
   }
 
   minPricePercent(): number {
@@ -217,6 +245,7 @@ export class ClientCatalog implements OnInit {
     this.onlyInStock.set(false);
     this.onlyOffers.set(false);
     this.sortOrder.set('recommended');
+    this.pageIndex.set(0);
 
     this.loadProducts();
   }

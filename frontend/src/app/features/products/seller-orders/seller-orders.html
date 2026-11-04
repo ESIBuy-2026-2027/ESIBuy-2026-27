@@ -95,7 +95,7 @@
               <circle cx="11" cy="11" r="6.5"></circle>
               <path d="m16 16 4.5 4.5"></path>
             </svg>
-            <input type="search" [ngModel]="orderSearch()" (ngModelChange)="orderSearch.set($event)"
+            <input type="search" [ngModel]="orderSearch()" (ngModelChange)="onSearchChange($event)"
               placeholder="Buscar por ID, cliente o producto..." aria-label="Buscar pedido, cliente o producto">
           </label>
 
@@ -103,10 +103,10 @@
 
             <div class="date-filter-group">
               <label for="order-date-from" class="date-filter-label">Desde</label>
-              <input id="order-date-from" type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event)"
+              <input id="order-date-from" type="date" [ngModel]="dateFrom()" (ngModelChange)="onDateFromChange($event)"
                 aria-label="Fecha desde">
               <label for="order-date-to" class="date-filter-label">Hasta</label>
-              <input id="order-date-to" type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event)"
+              <input id="order-date-to" type="date" [ngModel]="dateTo()" (ngModelChange)="onDateToChange($event)"
                 aria-label="Fecha hasta">
             </div>
 
@@ -116,7 +116,7 @@
             </button>
             }
 
-            <span class="order-count">{{ visibleOrders().length }} {{ visibleOrders().length === 1 ? 'pedido' :
+            <span class="order-count">{{ filteredOrders().length }} {{ filteredOrders().length === 1 ? 'pedido' :
               'pedidos' }}</span>
           </div>
         </section>
@@ -133,7 +133,7 @@
             <p>{{ error }}</p>
             <button type="button" class="secondary-button" (click)="loadOrders()">Reintentar</button>
           </div>
-          } @else if (visibleOrders().length === 0) {
+          } @else if (filteredOrders().length === 0) {
           <div class="empty-state">
             <span class="empty-icon" aria-hidden="true">⌕</span>
             <h3>No se encontraron pedidos</h3>
@@ -285,6 +285,13 @@
               </tbody>
             </table>
           </div>
+          @if (filteredOrders().length > pageSize) {
+          <nav class="orders-pagination" aria-label="Paginación de pedidos">
+            <button type="button" (click)="previousPage()" [disabled]="pageIndex() === 0">Anterior</button>
+            <span>Página {{ pageIndex() + 1 }} de {{ pageCount() }}</span>
+            <button type="button" (click)="nextPage()" [disabled]="pageIndex() >= pageCount() - 1">Siguiente</button>
+          </nav>
+          }
           }
         </section>
       </div>
