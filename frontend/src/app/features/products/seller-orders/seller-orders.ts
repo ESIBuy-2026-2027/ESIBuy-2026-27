@@ -69,6 +69,8 @@ export class SellerOrders implements OnInit {
     'Otro motivo operativo',
   ];
   readonly sidebarCollapsed = signal(this.readSidebarPreference());
+  readonly pageIndex = signal(0);
+  readonly pageSize = 10;
   readonly statusSummary = computed(() => ([
     { label: 'Pendientes', status: 'Pendiente' as const },
     { label: 'En preparación', status: 'En preparación' as const },
@@ -80,7 +82,7 @@ export class SellerOrders implements OnInit {
     count: this.orders().filter((order) => order.status === summary.status).length,
   }))));
 
-  readonly visibleOrders = computed(() => {
+  readonly filteredOrders = computed(() => {
     const query = this.orderSearch().trim().toLocaleLowerCase();
     const status = this.selectedStatus();
     const from = this.dateFrom();
@@ -98,11 +100,18 @@ export class SellerOrders implements OnInit {
     });
   });
 
+  readonly pageCount = computed(() => Math.max(1, Math.ceil(this.filteredOrders().length / this.pageSize)));
+  readonly visibleOrders = computed(() => {
+    const start = this.pageIndex() * this.pageSize;
+    return this.filteredOrders().slice(start, start + this.pageSize);
+  });
+
   ngOnInit(): void {
     this.loadOrders();
   }
 
   loadOrders(): void {
+    this.pageIndex.set(0);
     this.ordersLoading.set(true);
     this.ordersError.set(null);
     this.pedidoService.obtenerPedidosDelVendedor().subscribe({
@@ -179,6 +188,7 @@ export class SellerOrders implements OnInit {
   }
 
   clearFilters(): void {
+    this.pageIndex.set(0);
     this.orderSearch.set('');
     this.selectedStatus.set('Todos');
     this.dateFrom.set('');
@@ -186,7 +196,41 @@ export class SellerOrders implements OnInit {
   }
 
   selectStatus(status: OrderStatus): void {
+    this.pageIndex.set(0);
     this.selectedStatus.set(this.selectedStatus() === status ? 'Todos' : status);
+  }
+
+  onSearchChange(value: string): void {
+    this.orderSearch.set(value);
+    this.pageIndex.set(0);
+  }
+
+  onDateFromChange(value: string): void {
+    this.dateFrom.set(value);
+    this.pageIndex.set(0);
+  }
+
+  onDateToChange(value: string): void {
+    this.dateTo.set(value);
+    this.pageIndex.set(0);
+  }
+
+  previousPage(): void {
+    this.pageIndex.update((page) => Math.max(0, page - 1));
+  }
+
+  nextPage(): void {
+    this.pageIndex.update((page) => Math.min(this.pageCount() - 1, page + 1));
+  }
+
+  pageLabel(): string {
+    const orderCount = this.filteredOrders().length;
+    if (orderCount === 0) {
+      return '0 pedidos';
+    }
+    const firstItem = this.pageIndex() * this.pageSize + 1;
+    const lastItem = Math.min(firstItem + this.pageSize - 1, orderCount);
+    return `${firstItem}–${lastItem} de ${orderCount}`;
   }
 
   toggleOrderDetails(orderId: string): void {

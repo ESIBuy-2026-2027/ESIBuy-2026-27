@@ -44,6 +44,8 @@ export class SellerCatalog implements OnInit {
   onlyOffers = signal(false);
   sortOrder = signal<SortOrder>('recommended');
   priceLimit = signal(1);
+  pageIndex = signal(0);
+  readonly pageSize = 10;
   inlineEdit = signal<{ productId: string; field: InlineField } | null>(null);
   inlineValue = signal<number | null>(null);
   inlineSaving = signal(false);
@@ -51,7 +53,7 @@ export class SellerCatalog implements OnInit {
   visibilitySaving = signal<string | null>(null);
   visibilityError = signal<string | null>(null);
   sidebarCollapsed = signal(this.readSidebarPreference());
-  visibleProducts = computed(() => {
+  filteredProducts = computed(() => {
     const query = this.productSearch().trim().toLocaleLowerCase();
     const minPrice = this.minPrice();
     const maxPrice = this.maxPrice();
@@ -93,12 +95,19 @@ export class SellerCatalog implements OnInit {
     });
   });
 
+  pageCount = computed(() => Math.max(1, Math.ceil(this.filteredProducts().length / this.pageSize)));
+  visibleProducts = computed(() => {
+    const start = this.pageIndex() * this.pageSize;
+    return this.filteredProducts().slice(start, start + this.pageSize);
+  });
+
   ngOnInit(): void {
     this.loadProducts();
     this.loadCategories();
   }
 
   loadProducts(): void {
+    this.pageIndex.set(0);
     this.productsLoading.set(true);
     this.productsError.set(false);
 
@@ -145,6 +154,7 @@ export class SellerCatalog implements OnInit {
   }
 
   clearFilters(): void {
+    this.pageIndex.set(0);
     this.productSearch.set('');
     this.selectedCategory.set('');
     this.minPrice.set(null);
@@ -153,6 +163,24 @@ export class SellerCatalog implements OnInit {
     this.onlyInStock.set(false);
     this.onlyOffers.set(false);
     this.sortOrder.set('recommended');
+  }
+
+  previousPage(): void {
+    this.pageIndex.update((page) => Math.max(0, page - 1));
+  }
+
+  nextPage(): void {
+    this.pageIndex.update((page) => Math.min(this.pageCount() - 1, page + 1));
+  }
+
+  pageLabel(): string {
+    const count = this.filteredProducts().length;
+    if (count === 0) {
+      return '0 productos';
+    }
+    const firstItem = this.pageIndex() * this.pageSize + 1;
+    const lastItem = Math.min(firstItem + this.pageSize - 1, count);
+    return `${firstItem}–${lastItem} de ${count}`;
   }
 
   toggleSidebar(): void {

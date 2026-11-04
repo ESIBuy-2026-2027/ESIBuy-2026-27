@@ -40,6 +40,8 @@ export class AdminProductList implements OnInit {
   stockFilter = signal<string>('ALL');
   categoryFilter = signal<string>('ALL');
   sellerSort = signal<'ASC' | 'DESC' | null>(null);
+  pageIndex = signal(0);
+  readonly pageSize = 10;
 
   sellerSortTitle = computed(() => {
     const sort = this.sellerSort();
@@ -88,6 +90,12 @@ export class AdminProductList implements OnInit {
     return filtered;
   });
 
+  pageCount = computed(() => Math.max(1, Math.ceil(this.filteredProducts().length / this.pageSize)));
+  visibleProducts = computed(() => {
+    const start = this.pageIndex() * this.pageSize;
+    return this.filteredProducts().slice(start, start + this.pageSize);
+  });
+
   toggleSellerSort(): void {
     const current = this.sellerSort();
     if (current === 'ASC') {
@@ -122,6 +130,7 @@ export class AdminProductList implements OnInit {
   }
 
   loadProducts(): void {
+    this.pageIndex.set(0);
     this.loading.set(true);
     this.error.set('');
     this.cdr.markForCheck();
@@ -157,7 +166,31 @@ export class AdminProductList implements OnInit {
   }
 
   applyFilters(): void {
+    this.pageIndex.set(0);
     this.loadProducts();
+  }
+
+  onSearchChange(val: string): void {
+    this.searchTerm.set(val);
+    this.pageIndex.set(0);
+  }
+
+  previousPage(): void {
+    this.pageIndex.update((page) => Math.max(0, page - 1));
+  }
+
+  nextPage(): void {
+    this.pageIndex.update((page) => Math.min(this.pageCount() - 1, page + 1));
+  }
+
+  pageLabel(): string {
+    const count = this.filteredProducts().length;
+    if (count === 0) {
+      return '0 productos';
+    }
+    const firstItem = this.pageIndex() * this.pageSize + 1;
+    const lastItem = Math.min(firstItem + this.pageSize - 1, count);
+    return `${firstItem}–${lastItem} de ${count}`;
   }
 
   formatPrice(price: number): string {
