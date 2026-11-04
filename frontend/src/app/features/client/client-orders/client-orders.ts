@@ -24,8 +24,17 @@ type PaymentStatusFilter = CustomerOrderPaymentStatus | 'TODOS';
 })
 export class ClientOrders implements OnInit {
   private readonly pedidoService = inject(PedidoService);
+  readonly orderStatusTabs: ReadonlyArray<{ label: string; status: OrderStatusFilter }> = [
+    { label: 'Todos', status: 'TODOS' },
+    { label: 'Pendientes', status: 'PENDIENTE' },
+    { label: 'En preparación', status: 'PREPARANDO' },
+    { label: 'Enviados', status: 'ENVIADO' },
+    { label: 'Entregados', status: 'ENTREGADO' },
+    { label: 'Cancelados', status: 'CANCELADO' },
+  ];
   readonly sidebarCollapsed = signal(false);
   readonly orders = signal<CustomerOrder[]>([]);
+  readonly shippingAddressOrderId = signal<string | null>(null);
   readonly searchQuery = signal('');
   readonly filtersOpen = signal(false);
   readonly period = signal<PeriodFilter>('all');
@@ -36,27 +45,6 @@ export class ClientOrders implements OnInit {
   readonly pageSize = 10;
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-  readonly orderCounts = computed(() => {
-    const orders = this.orders();
-    return {
-      total: orders.length,
-      pending: orders.filter((order) => getCustomerOrderFulfillmentStatus(order) === 'PENDIENTE').length,
-      preparing: orders.filter((order) => getCustomerOrderFulfillmentStatus(order) === 'PREPARANDO').length,
-      shipped: orders.filter((order) => getCustomerOrderFulfillmentStatus(order) === 'ENVIADO').length,
-      delivered: orders.filter((order) => getCustomerOrderFulfillmentStatus(order) === 'ENTREGADO').length,
-      cancelled: orders.filter((order) => getCustomerOrderFulfillmentStatus(order) === 'CANCELADO').length,
-    };
-  });
-  readonly statusSummaries = computed(() => {
-    const counts = this.orderCounts();
-    return [
-      { label: 'Pendientes', status: 'PENDIENTE' as const, count: counts.pending, className: 'summary-pending' },
-      { label: 'En preparación', status: 'PREPARANDO' as const, count: counts.preparing, className: 'summary-preparing' },
-      { label: 'Enviados', status: 'ENVIADO' as const, count: counts.shipped, className: 'summary-shipped' },
-      { label: 'Entregados', status: 'ENTREGADO' as const, count: counts.delivered, className: 'summary-delivered' },
-      { label: 'Cancelados', status: 'CANCELADO' as const, count: counts.cancelled, className: 'summary-cancelled' },
-    ];
-  });
   readonly hasActiveFilters = computed(() =>
     this.statusFilter() !== 'TODOS'
     || this.paymentFilter() !== 'TODOS'
@@ -68,15 +56,17 @@ export class ClientOrders implements OnInit {
     const cutoff = this.getPeriodCutoff(this.period());
 
     const filtered = this.orders().filter((order) => {
-      const matchesSearch = !query
-        || order.pedidoId.toLocaleLowerCase().includes(query)
-        || order.items.some((item) => item.nombre.toLocaleLowerCase().includes(query));
+      const matchesSearch =
+        !query ||
+        order.pedidoId.toLocaleLowerCase().includes(query) ||
+        order.items.some((item) => item.nombre.toLocaleLowerCase().includes(query));
       const matchesPeriod = !cutoff || new Date(order.fechaCreacion) >= cutoff;
       const fulfillmentStatus = getCustomerOrderFulfillmentStatus(order);
-      const matchesStatus = this.statusFilter() === 'TODOS'
-        || fulfillmentStatus === this.statusFilter();
-      const matchesPayment = this.paymentFilter() === 'TODOS'
-        || getCustomerOrderPaymentStatus(order) === this.paymentFilter();
+      const matchesStatus =
+        this.statusFilter() === 'TODOS' || fulfillmentStatus === this.statusFilter();
+      const matchesPayment =
+        this.paymentFilter() === 'TODOS' ||
+        getCustomerOrderPaymentStatus(order) === this.paymentFilter();
       return matchesSearch && matchesPeriod && matchesStatus && matchesPayment;
     });
     const sort = this.sortOrder();
@@ -89,7 +79,9 @@ export class ClientOrders implements OnInit {
       return sort === 'amount-desc' ? -difference : difference;
     });
   });
-  readonly pageCount = computed(() => Math.max(1, Math.ceil(this.filteredOrders().length / this.pageSize)));
+  readonly pageCount = computed(() =>
+    Math.max(1, Math.ceil(this.filteredOrders().length / this.pageSize)),
+  );
   readonly visibleOrders = computed(() => {
     const start = this.pageIndex() * this.pageSize;
     return this.filteredOrders().slice(start, start + this.pageSize);
@@ -127,7 +119,11 @@ export class ClientOrders implements OnInit {
     const parsedDate = new Date(date);
     return Number.isNaN(parsedDate.getTime())
       ? 'No disponible'
-      : new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeStyle: 'short' }).format(parsedDate);
+      : new Intl.DateTimeFormat('es-ES', { dateStyle: 'long' }).format(parsedDate);
+  }
+
+  getItemCount(order: CustomerOrder): number {
+    return order.items.reduce((count, item) => count + item.cantidad, 0);
   }
 
   getStatusLabel(order: CustomerOrder): string {
@@ -162,8 +158,29 @@ export class ClientOrders implements OnInit {
     return getCustomerOrderPaymentStatus(order) === 'PAGADO' ? 'payment-paid' : 'payment-pending';
   }
 
-  getItemCount(order: CustomerOrder): number {
-    return order.items.reduce((count, item) => count + item.cantidad, 0);
+  showShippingAddress(orderId: string): void {
+    this.shippingAddressOrderId.set(orderId);
+  }
+
+  hideShippingAddress(orderId: string): void {
+    if (this.shippingAddressOrderId() === orderId) {
+      this.shippingAddressOrderId.set(null);
+    }
+  }
+
+  closeShippingAddress(orderId: string, event: FocusEvent): void {
+    const container = event.currentTarget;
+    const nextTarget = event.relatedTarget;
+
+    if (
+      container instanceof HTMLElement &&
+      nextTarget instanceof Node &&
+      container.contains(nextTarget)
+    ) {
+      return;
+    }
+
+    this.hideShippingAddress(orderId);
   }
 
   toggleSidebar(): void {
@@ -206,10 +223,6 @@ export class ClientOrders implements OnInit {
 
   closeFilters(): void {
     this.filtersOpen.set(false);
-  }
-
-  selectStatus(status: CustomerOrderFulfillmentStatus): void {
-    this.setStatusFilter(this.statusFilter() === status ? 'TODOS' : status);
   }
 
   clearFilters(): void {

@@ -33,7 +33,6 @@ interface UpdateAdminProfileRequest {
 
 @Component({
     selector: 'app-admin-profile',
-    standalone: true,
     imports: [FormsModule, DeleteAccount, TwoFactorSettingsComponent, ProfileShellComponent, AppSidebarComponent],
     templateUrl: './admin-profile.html',
     styleUrl: './admin-profile.css',

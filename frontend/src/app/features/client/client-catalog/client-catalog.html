@@ -1,14 +1,14 @@
 <div class="seller-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed() || isAdmin()"
   [class.admin-catalog-view]="isAdmin()">
   @if (!isAdmin()) {
-  <aside class="sidebar app-sidebar" aria-label="Panel del cliente">
+  <aside class="sidebar app-sidebar app-sidebar--client" aria-label="Panel del cliente">
     <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="m15 18-6-6 6-6" />
       </svg>
     </button>
     <div class="sidebar-caption">{{ isAdmin() ? 'GESTIÓN DE ADMINISTRACIÓN' : 'ÁREA DE CLIENTE' }}</div>
-    <nav class="seller-navigation"
+    <nav class="seller-navigation app-navigation"
       [attr.aria-label]="isAdmin() ? 'Navegación de administración' : 'Navegación del cliente'">
       <a class="navigation-link is-active" routerLink="/client/catalog" aria-current="page">
         <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -254,7 +254,7 @@
         </div>
         } @else {
         <div class="product-grid">
-          @for (product of products(); track product.id) {
+          @for (product of visibleProducts(); track product.id) {
           <article class="product-card" [routerLink]="['/products', product.id]">
             <div class="product-image-container">
               @if (product.imageUrl && !imageErrors()[product.id]) {
@@ -371,6 +371,13 @@
           </article>
           }
         </div>
+        @if (products().length > pageSize) {
+        <nav class="orders-pagination" aria-label="Paginación del catálogo">
+          <button type="button" (click)="previousPage()" [disabled]="pageIndex() === 0">Anterior</button>
+          <span>Página {{ pageIndex() + 1 }} de {{ pageCount() }}</span>
+          <button type="button" (click)="nextPage()" [disabled]="pageIndex() >= pageCount() - 1">Siguiente</button>
+        </nav>
+        }
         }
       </section>
     </main>

@@ -159,8 +159,24 @@
     margin-bottom: 8px;
 }
 
+.back-button {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, opacity 0.2s ease;
+}
+
 .logout-button,
-.sidebar-footer .back-button {
+.sidebar-footer{
     display: flex;
     width: 100%;
     min-height: 40px;

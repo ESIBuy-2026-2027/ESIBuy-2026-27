@@ -207,6 +207,34 @@ p {
   opacity: 0.65;
 }
 
+.confirm-receipt-button {
+  min-height: 36px;
+  padding: 8px 13px;
+  border: 0;
+  border-radius: 8px;
+  background: #42d6b2;
+  color: #102c40;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.confirm-receipt-button:hover:not(:disabled),
+.confirm-receipt-button:focus-visible {
+  background: #2fc19f;
+}
+
+.confirm-receipt-button:focus-visible {
+  outline: 3px solid rgba(66, 214, 178, 0.45);
+  outline-offset: 2px;
+}
+
+.confirm-receipt-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .detail-total {
   border-bottom: 0;
   font-size: 18px;

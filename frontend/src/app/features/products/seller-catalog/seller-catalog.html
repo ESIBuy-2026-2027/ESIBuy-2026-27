@@ -361,6 +361,13 @@
               </tbody>
             </table>
           </div>
+          @if (filteredProducts().length > pageSize) {
+          <nav class="orders-pagination" aria-label="Paginación de productos">
+            <button type="button" (click)="previousPage()" [disabled]="pageIndex() === 0">Anterior</button>
+            <span>Página {{ pageIndex() + 1 }} de {{ pageCount() }}</span>
+            <button type="button" (click)="nextPage()" [disabled]="pageIndex() >= pageCount() - 1">Siguiente</button>
+          </nav>
+          }
           }
         </section>
       </div>

@@ -1,5 +1,5 @@
 <div class="client-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
-  <aside class="client-sidebar app-sidebar" aria-label="Panel del cliente">
+  <aside class="client-sidebar app-sidebar app-sidebar--client" aria-label="Panel del cliente">
     <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="m15 18-6-6 6-6" />
@@ -8,7 +8,7 @@
 
     <p class="sidebar-caption">ÁREA DE CLIENTE</p>
 
-    <nav class="client-navigation" aria-label="Navegación del cliente">
+    <nav class="client-navigation app-navigation" aria-label="Navegación del cliente">
       <a class="navigation-link is-active" routerLink="/client/catalog" aria-current="page">
         <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -47,7 +47,6 @@
         </svg>
         <span>Carrito ({{ cartService.itemCount() }})</span>
       </a>
-
     </nav>
   </aside>
 

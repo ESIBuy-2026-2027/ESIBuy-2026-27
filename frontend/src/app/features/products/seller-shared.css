@@ -1,9 +1,17 @@
-.seller-layout {
+.seller-layout,
+.seller-shell {
   --navy: #102c40;
   --teal: #42d6b2;
   --ink: #173247;
   --muted: #718694;
   --line: #dfe8ed;
+  --sidebar-width: 248px;
+  --sidebar-background: #102c40;
+  --sidebar-padding: 30px 18px 20px;
+  --sidebar-link-height: 44px;
+  --sidebar-link-gap: 12px;
+  --sidebar-link-padding: 0 12px;
+  --sidebar-link-radius: 8px;
 
   min-height: 100vh;
   color: var(--ink);
@@ -14,7 +22,7 @@
 }
 
 .seller-shell {
-  --seller-sidebar-width: 248px;
+  --seller-sidebar-width: var(--sidebar-width);
   position: relative;
 }
 
@@ -22,11 +30,11 @@
   position: fixed;
   inset: var(--app-header-height) auto 0 0;
   box-sizing: border-box;
-  width: var(--seller-sidebar-width);
+  width: var(--sidebar-width);
   height: calc(100vh - var(--app-header-height));
   z-index: 40;
   overflow-y: auto;
-  background: #102c40;
+  background: var(--sidebar-background);
   color: #edf5f8;
   transition: transform 0.25s ease;
 }
@@ -114,7 +122,7 @@
   padding: 0;
   border: 1px solid rgb(237 245 248 / 12%);
   border-radius: 9px;
-  background: #102c40;
+  background: var(--sidebar-background);
   color: #edf5f8;
   cursor: pointer;
   box-shadow: 0 3px 10px rgb(16 44 64 / 18%);
@@ -183,12 +191,12 @@
 .seller-shell .app-sidebar .navigation-link {
   box-sizing: border-box;
   display: flex;
-  min-height: 44px;
+  min-height: var(--sidebar-link-height);
   align-items: center;
-  gap: 12px;
-  padding: 0 12px;
+  gap: var(--sidebar-link-gap);
+  padding: var(--sidebar-link-padding);
   border-left: 3px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--sidebar-link-radius);
   color: #c1d0d8;
   font-size: 13px;
   font-weight: 550;
@@ -202,8 +210,8 @@
 }
 
 .seller-shell .app-sidebar .navigation-link.is-active {
-  border-left-color: #42d6b2;
-  box-shadow: none;
+  border-left-color: transparent;
+  box-shadow: inset 3px 0 var(--color-brand-accent);
 }
 
 .seller-shell .app-sidebar .navigation-icon {
@@ -211,7 +219,12 @@
   width: 20px;
   height: 20px;
   flex: 0 0 20px;
-  color: currentColor;
+  color: var(--teal);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .seller-shell.app-sidebar-collapsed .app-sidebar {
@@ -233,11 +246,11 @@
   inset: var(--app-header-height) auto 0 0;
   z-index: 40;
   display: flex;
-  width: 248px;
+  width: var(--sidebar-width);
   height: calc(100vh - var(--app-header-height));
   flex-direction: column;
-  padding: 30px 18px 20px;
-  background: var(--navy);
+  padding: var(--sidebar-padding);
+  background: var(--sidebar-background);
   color: #edf5f8;
   transition: transform 0.25s ease;
 }
@@ -291,12 +304,12 @@
 
 .seller-layout .navigation-link {
   display: flex;
-  min-height: 44px;
+  min-height: var(--sidebar-link-height);
   align-items: center;
-  gap: 12px;
-  padding: 0 12px;
+  gap: var(--sidebar-link-gap);
+  padding: var(--sidebar-link-padding);
   border-left: 3px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--sidebar-link-radius);
   color: #c1d0d8;
   font-size: 13px;
   font-weight: 550;
@@ -310,7 +323,8 @@
 }
 
 .seller-layout .navigation-link.is-active {
-  border-left-color: var(--teal);
+  border-left-color: transparent;
+  box-shadow: inset 3px 0 var(--color-brand-accent);
 }
 
 .seller-layout .navigation-link.is-disabled {
@@ -323,7 +337,7 @@
   display: inline-block;
   width: 20px;
   flex: 0 0 20px;
-  color: currentColor;
+  color: var(--teal);
   font-family: "Segoe UI Symbol", "Segoe UI", sans-serif;
   font-size: 16px;
   line-height: 20px;

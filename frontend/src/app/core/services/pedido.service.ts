@@ -180,6 +180,10 @@ export class PedidoService {
     return this.http.get<SeguimientoEnvio>(`/api/pedidos/${pedidoId}/historial-estados`);
   }
 
+  confirmarRecepcionPedido(pedidoId: string): Observable<void> {
+    return this.http.patch<void>(`/api/pedidos/${pedidoId}/recepcion`, {});
+  }
+
   obtenerPedidosDelVendedor(): Observable<SellerOrder[]> {
     return this.http.get<SellerOrder[]>('/api/pedidos/vendedor').pipe(
       map((orders) =>

@@ -258,14 +258,6 @@ describe('ClientOrders', () => {
       },
     ]);
 
-    expect(component.orderCounts()).toEqual({
-      total: 3,
-      pending: 2,
-      preparing: 0,
-      shipped: 0,
-      delivered: 1,
-      cancelled: 0,
-    });
     expect(component.getPaymentLabel(component.orders()[0])).toBe('Pagado');
     expect(component.getStatusLabel(component.orders()[0])).toBe('Pendiente');
 
