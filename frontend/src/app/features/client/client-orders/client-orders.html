@@ -1,17 +1,13 @@
 <div class="seller-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
-  <aside class="sidebar app-sidebar" aria-label="Panel del cliente">
-    <button
-      type="button"
-      class="app-sidebar-toggle"
-      (click)="toggleSidebar()"
-      aria-label="Ocultar barra lateral"
-    >
+  <aside class="sidebar app-sidebar app-sidebar--client" aria-label="Panel del cliente">
+    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()"
+      aria-label="Ocultar barra lateral">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="m15 18-6-6 6-6" />
       </svg>
     </button>
     <div class="sidebar-caption">ÁREA DE CLIENTE</div>
-    <nav class="seller-navigation" aria-label="Navegación del cliente">
+    <nav class="seller-navigation app-navigation" aria-label="Navegación del cliente">
       <a class="navigation-link" routerLink="/client/catalog">
         <svg
           class="navigation-icon"
@@ -185,37 +181,52 @@
       @if (loading()) {
         <p class="orders-feedback" aria-live="polite">Cargando tus pedidos...</p>
       } @else if (error()) {
-        <p class="orders-feedback is-error" role="alert">{{ error() }}</p>
-        <button type="button" class="retry-button" (click)="loadOrders()">
-          Volver a intentarlo
-        </button>
+      <p class="orders-feedback is-error" role="alert">{{ error() }}</p>
+      <button type="button" class="retry-button" (click)="loadOrders()">Volver a intentarlo</button>
       } @else {
-        <nav class="orders-tabs" aria-label="Filtrar pedidos por estado">
-          @for (tab of orderStatusTabs; track tab.status) {
-            <button
-              type="button"
-              class="orders-tab"
-              [class.is-selected]="statusFilter() === tab.status"
-              [attr.aria-pressed]="statusFilter() === tab.status"
-              (click)="setStatusFilter(tab.status)"
-            >
-              {{ tab.label }}
-            </button>
-          }
-        </nav>
-
-        <div class="orders-period-row">
-          <p>
-            <strong>{{ filteredOrders().length }}</strong> pedidos encontrados
-          </p>
-          <label for="orders-period"
-            >Periodo
-            <select
-              id="orders-period"
-              [ngModel]="period()"
-              (ngModelChange)="setPeriod($event)"
-              name="ordersPeriod"
-            >
+      <section class="orders-toolbar" aria-label="Buscar y filtrar pedidos">
+        <label class="orders-search">
+          <span class="visually-hidden">Buscar pedidos por número o producto</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5"></circle>
+            <path d="m16 16 4.5 4.5"></path>
+          </svg>
+          <input id="orders-search-input" type="search" placeholder="Buscar pedido o producto..."
+            [ngModel]="searchQuery()" (ngModelChange)="setSearchQuery($event)" name="ordersSearch" />
+        </label>
+        <div class="orders-filter">
+          <button type="button" class="filter-button" [class.is-active]="hasActiveFilters()"
+            [attr.aria-expanded]="filtersOpen()" aria-controls="client-orders-filter-panel" (click)="toggleFilters()">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"></path>
+            </svg>
+            Filtrar
+            @if (hasActiveFilters()) {
+            <span class="filter-indicator" aria-label="Hay filtros activos"></span>
+            }
+          </button>
+          @if (filtersOpen()) {
+          <div class="orders-filter-panel" id="client-orders-filter-panel">
+            <button type="button" class="close-orders-filter" aria-label="Cerrar filtros" (click)="closeFilters()">×</button>
+            <label for="orders-status">Estado del pedido</label>
+            <select id="orders-status" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)"
+              name="ordersStatus">
+              <option value="TODOS">Todos los estados</option>
+              <option value="PENDIENTE">Pendiente</option>
+              <option value="PREPARANDO">En preparación</option>
+              <option value="ENVIADO">Enviado</option>
+              <option value="ENTREGADO">Entregado</option>
+              <option value="CANCELADO">Cancelado</option>
+            </select>
+            <label for="orders-payment">Estado del pago</label>
+            <select id="orders-payment" [ngModel]="paymentFilter()" (ngModelChange)="setPaymentFilter($event)"
+              name="ordersPayment">
+              <option value="TODOS">Todos los pagos</option>
+              <option value="PAGADO">Pagado</option>
+              <option value="PENDIENTE">Pendiente</option>
+            </select>
+            <label for="orders-period">Periodo</label>
+            <select id="orders-period" [ngModel]="period()" (ngModelChange)="setPeriod($event)" name="ordersPeriod">
               <option value="all">Todo el historial</option>
               <option value="3months">Últimos 3 meses</option>
               <option value="6months">Últimos 6 meses</option>

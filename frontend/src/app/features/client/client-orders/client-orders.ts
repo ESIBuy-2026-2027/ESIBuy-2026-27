@@ -45,8 +45,11 @@ export class ClientOrders implements OnInit {
   readonly pageSize = 10;
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-  readonly hasAdvancedFilters = computed(
-    () => this.paymentFilter() !== 'TODOS' || this.sortOrder() !== 'date-desc',
+  readonly hasActiveFilters = computed(() =>
+    this.statusFilter() !== 'TODOS'
+    || this.paymentFilter() !== 'TODOS'
+    || this.period() !== 'all'
+    || this.sortOrder() !== 'date-desc'
   );
   readonly filteredOrders = computed(() => {
     const query = this.searchQuery().trim().toLocaleLowerCase();

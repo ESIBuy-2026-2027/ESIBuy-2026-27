@@ -159,6 +159,83 @@ body {
   }
 }
 
+/* La navegación lateral mantiene las mismas métricas en todos los roles. */
+.seller-shell .app-sidebar,
+.seller-shell .sidebar,
+.seller-shell .client-sidebar {
+  width: 248px;
+  padding: 30px 18px 20px;
+  background: var(--color-brand-dark);
+}
+
+.seller-shell .app-sidebar .admin-navigation,
+.seller-shell .app-sidebar .client-navigation,
+.seller-shell .app-sidebar .seller-navigation,
+.seller-shell .sidebar .seller-navigation,
+.seller-shell .client-sidebar .client-navigation {
+  display: grid;
+  gap: 7px;
+}
+
+.seller-shell .app-sidebar .navigation-link,
+.seller-shell .sidebar .navigation-link,
+.seller-shell .client-sidebar .navigation-link {
+  min-height: 42px;
+  gap: 12px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 550;
+}
+
+.seller-shell .app-sidebar .navigation-icon,
+.seller-shell .sidebar .navigation-icon,
+.seller-shell .client-sidebar .navigation-icon {
+  width: 19px;
+  height: 19px;
+  flex-basis: 19px;
+  color: var(--color-brand-accent);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.seller-shell .app-sidebar .navigation-link.is-active,
+.seller-shell .sidebar .navigation-link.is-active,
+.seller-shell .client-sidebar .navigation-link.is-active {
+  box-shadow: inset 3px 0 var(--color-brand-accent);
+}
+
+@media (max-width: 760px) {
+  .seller-shell .app-sidebar,
+  .seller-shell .sidebar,
+  .seller-shell .client-sidebar {
+    width: 100%;
+    min-height: auto;
+    padding: 14px 18px 12px;
+  }
+
+  .seller-shell .app-sidebar .admin-navigation,
+  .seller-shell .app-sidebar .client-navigation,
+  .seller-shell .app-sidebar .seller-navigation,
+  .seller-shell .sidebar .seller-navigation,
+  .seller-shell .client-sidebar .client-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .seller-shell .app-sidebar .navigation-link,
+  .seller-shell .sidebar .navigation-link,
+  .seller-shell .client-sidebar .navigation-link {
+    min-height: 38px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+}
+
 /* Mensajes de aviso / alerta inline reutilizables en toda la aplicación */
 .catalog-alert {
   display: flex;
