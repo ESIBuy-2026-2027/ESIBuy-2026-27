@@ -9,8 +9,16 @@
     <div class="sidebar-caption">ÁREA DE CLIENTE</div>
     <nav class="seller-navigation app-navigation" aria-label="Navegación del cliente">
       <a class="navigation-link" routerLink="/client/catalog">
-        <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg
+          class="navigation-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
           <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
           <path d="M3 6h18" />
           <path d="M16 10a4 4 0 0 1-8 0" />
@@ -19,18 +27,37 @@
       </a>
 
       <a class="navigation-link" routerLink="/client/wishlist">
-        <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg
+          class="navigation-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
           <path
-            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+          />
         </svg>
         <span>Lista de deseos</span>
       </a>
 
       <a class="navigation-link is-active" routerLink="/client/orders" aria-current="page">
-        <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+        <svg
+          class="navigation-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path
+            d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"
+          />
           <path d="m3.3 7 8.7 5 8.7-5" />
           <path d="M12 22V12" />
         </svg>
@@ -38,8 +65,16 @@
       </a>
 
       <a class="navigation-link" routerLink="/client/cart">
-        <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg
+          class="navigation-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
           <circle cx="9" cy="21" r="1" />
           <circle cx="20" cy="21" r="1" />
           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
@@ -49,8 +84,13 @@
     </nav>
   </aside>
 
-  <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()"
-    aria-label="Mostrar barra lateral" [hidden]="!sidebarCollapsed()">
+  <button
+    type="button"
+    class="app-sidebar-toggle-open"
+    (click)="toggleSidebar()"
+    aria-label="Mostrar barra lateral"
+    [hidden]="!sidebarCollapsed()"
+  >
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="m9 18 6-6-6-6" />
     </svg>
@@ -63,10 +103,83 @@
           <h1 id="orders-title">Mis pedidos</h1>
           <p>Consulta tus compras, su estado y el seguimiento de tus envíos.</p>
         </div>
+        <section class="orders-toolbar" aria-label="Buscar y filtrar pedidos">
+          <label class="orders-search">
+            <span class="visually-hidden">Buscar pedidos por número o producto</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5"></circle>
+              <path d="m16 16 4.5 4.5"></path>
+            </svg>
+            <input
+              id="orders-search-input"
+              type="search"
+              placeholder="Buscar todos los pedidos"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="setSearchQuery($event)"
+              name="ordersSearch"
+            />
+          </label>
+          <div class="orders-filter">
+            <button
+              type="button"
+              class="filter-button"
+              [class.is-active]="hasAdvancedFilters()"
+              [attr.aria-expanded]="filtersOpen()"
+              aria-controls="client-orders-filter-panel"
+              (click)="toggleFilters()"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"></path>
+              </svg>
+              Filtrar
+              @if (hasAdvancedFilters()) {
+                <span class="filter-indicator" aria-label="Hay filtros avanzados activos"></span>
+              }
+            </button>
+            @if (filtersOpen()) {
+              <div class="orders-filter-panel" id="client-orders-filter-panel">
+                <button
+                  type="button"
+                  class="close-orders-filter"
+                  aria-label="Cerrar filtros"
+                  (click)="closeFilters()"
+                >
+                  ×
+                </button>
+                <label for="orders-payment">Estado del pago</label>
+                <select
+                  id="orders-payment"
+                  [ngModel]="paymentFilter()"
+                  (ngModelChange)="setPaymentFilter($event)"
+                  name="ordersPayment"
+                >
+                  <option value="TODOS">Todos los pagos</option>
+                  <option value="PAGADO">Pagado</option>
+                  <option value="PENDIENTE">Pendiente</option>
+                </select>
+                <label for="orders-sort">Ordenar por</label>
+                <select
+                  id="orders-sort"
+                  [ngModel]="sortOrder()"
+                  (ngModelChange)="setSortOrder($event)"
+                  name="ordersSort"
+                >
+                  <option value="date-desc">Fecha: más recientes</option>
+                  <option value="date-asc">Fecha: más antiguos</option>
+                  <option value="amount-desc">Importe: mayor a menor</option>
+                  <option value="amount-asc">Importe: menor a mayor</option>
+                </select>
+                <button type="button" class="clear-order-filter" (click)="clearFilters()">
+                  Limpiar filtros
+                </button>
+              </div>
+            }
+          </div>
+        </section>
       </section>
 
       @if (loading()) {
-      <p class="orders-feedback" aria-live="polite">Cargando tus pedidos...</p>
+        <p class="orders-feedback" aria-live="polite">Cargando tus pedidos...</p>
       } @else if (error()) {
       <p class="orders-feedback is-error" role="alert">{{ error() }}</p>
       <button type="button" class="retry-button" (click)="loadOrders()">Volver a intentarlo</button>
@@ -119,100 +232,159 @@
               <option value="6months">Últimos 6 meses</option>
               <option value="year">Último año</option>
             </select>
-            <label for="orders-sort">Ordenar por</label>
-            <select id="orders-sort" [ngModel]="sortOrder()" (ngModelChange)="setSortOrder($event)" name="ordersSort">
-              <option value="date-desc">Fecha: más recientes</option>
-              <option value="date-asc">Fecha: más antiguos</option>
-              <option value="amount-desc">Importe: mayor a menor</option>
-              <option value="amount-asc">Importe: menor a mayor</option>
-            </select>
-            <button type="button" class="clear-order-filter" (click)="clearFilters()">Limpiar filtros</button>
-          </div>
-          }
+          </label>
         </div>
-      </section>
 
-      @if (filteredOrders().length === 0) {
-      <div class="empty-state">
-        <span class="empty-icon" aria-hidden="true">🛍</span>
-        @if (orders().length === 0) {
-        <h3>Aún no tienes pedidos</h3>
-        <p>Cuando completes una compra, podrás consultar aquí su estado y sus detalles.</p>
+        @if (filteredOrders().length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">🛍</span>
+            @if (orders().length === 0) {
+              <h3>Aún no tienes pedidos</h3>
+              <p>Cuando completes una compra, podrás consultar aquí su estado y sus detalles.</p>
+            } @else {
+              <h3>No hay pedidos que coincidan</h3>
+              <p>Prueba a cambiar la búsqueda o los filtros seleccionados.</p>
+              <button type="button" class="clear-filters-button" (click)="clearFilters()">
+                Limpiar filtros
+              </button>
+            }
+          </div>
         } @else {
-        <h3>No hay pedidos que coincidan</h3>
-        <p>Prueba a cambiar la búsqueda o los filtros seleccionados.</p>
-        <button type="button" class="clear-filters-button" (click)="clearFilters()">Limpiar filtros</button>
-        }
-      </div>
-      } @else {
-      <div class="orders-results-meta">
-        <p class="orders-result-count" aria-live="polite">{{ pageLabel() }}</p>
-        <span class="order-count">{{ filteredOrders().length }} pedidos</span>
-      </div>
-      <div class="orders-table-scroll">
-        <table class="orders-table">
-          <caption class="visually-hidden">Pedidos de tu cuenta</caption>
-          <thead>
-            <tr>
-              <th scope="col">Pedido</th>
-              <th scope="col">Cliente</th>
-              <th scope="col">Fecha y hora</th>
-              <th scope="col">Artículos</th>
-              <th scope="col">Importe</th>
-              <th scope="col">Pago</th>
-              <th scope="col">Estado del pedido</th>
-              <th scope="col"><span class="visually-hidden">Acciones</span></th>
-            </tr>
-          </thead>
-          <tbody>
+          <div class="orders-results-meta">
+            <p class="orders-result-count" aria-live="polite">{{ pageLabel() }}</p>
+          </div>
+          <section class="orders-list" aria-label="Pedidos">
             @for (order of visibleOrders(); track order.pedidoId) {
-            <tr class="order-row">
-              <th scope="row">#{{ order.pedidoId }}</th>
-              <td>Tu cuenta</td>
-              <td>{{ formatDate(order.fechaCreacion) }}</td>
-              <td>
-                <div class="order-items-preview" [attr.aria-label]="getItemCount(order) + ' artículos del pedido'">
-                  @for (item of order.items.slice(0, 3); track item.productoId) {
-                  @if (item.imageUrl) {
-                  <img class="order-item-thumbnail" [src]="item.imageUrl" [alt]="item.nombre" [title]="item.nombre" />
+              <article class="order-row order-card">
+                <header class="order-card-header">
+                  <div class="order-meta-group">
+                    <span class="order-meta-label">Pedido realizado</span>
+                    <strong>{{ formatDate(order.fechaCreacion) }}</strong>
+                  </div>
+                  <div class="order-meta-group">
+                    <span class="order-meta-label">Total</span>
+                    <strong>{{ formatPrice(order.total) }}</strong>
+                  </div>
+                  <div class="order-meta-group">
+                    <span class="order-meta-label">Enviar a</span>
+                    @if (order.direccionEnvio; as address) {
+                      <div
+                        class="shipping-recipient"
+                        (mouseenter)="showShippingAddress(order.pedidoId)"
+                        (mouseleave)="hideShippingAddress(order.pedidoId)"
+                        (focusin)="showShippingAddress(order.pedidoId)"
+                        (focusout)="closeShippingAddress(order.pedidoId, $event)"
+                        (keydown.escape)="hideShippingAddress(order.pedidoId)"
+                      >
+                        <button
+                          type="button"
+                          class="shipping-recipient-trigger"
+                          [attr.aria-expanded]="shippingAddressOrderId() === order.pedidoId"
+                          [attr.aria-controls]="'shipping-address-' + order.pedidoId"
+                          (click)="showShippingAddress(order.pedidoId)"
+                        >
+                          {{ address.recipientName }}
+                          <svg viewBox="0 0 16 16" aria-hidden="true">
+                            <path d="m3.5 6 4.5 4 4.5-4" />
+                          </svg>
+                        </button>
+                        @if (shippingAddressOrderId() === order.pedidoId) {
+                          <section
+                            class="shipping-address-popover"
+                            [id]="'shipping-address-' + order.pedidoId"
+                            [attr.aria-label]="'Dirección de envío de ' + address.recipientName"
+                          >
+                            <button
+                              type="button"
+                              class="close-shipping-address"
+                              [attr.aria-label]="'Cerrar dirección de ' + address.recipientName"
+                              (click)="hideShippingAddress(order.pedidoId)"
+                            >
+                              ×
+                            </button>
+                            <strong>{{ address.recipientName }}</strong>
+                            <span>{{ address.street }}</span>
+                            @if (address.additionalInfo) {
+                              <span>{{ address.additionalInfo }}</span>
+                            }
+                            <span
+                              >{{ address.postalCode }} {{ address.city }},
+                              {{ address.province }}</span
+                            >
+                          </section>
+                        }
+                      </div>
+                    } @else {
+                      <strong>No disponible</strong>
+                    }
+                  </div>
+                  <div class="order-meta-group order-number">
+                    <span class="order-meta-label">ID pedido:</span>
+                    <strong>#{{ order.pedidoId }}</strong>
+                    <a class="order-detail-link" [routerLink]="['/client/orders', order.pedidoId]">
+                      Ver los detalles del pedido
+                    </a>
+                  </div>
+                </header>
+                <div class="order-card-content">
+                  <div class="order-status-heading">
+                    <h2 [class]="'order-status ' + getStatusClass(order)">
+                      <span class="status-dot" aria-hidden="true"></span>{{ getStatusLabel(order) }}
+                    </h2>
+                    <span [class]="'payment-badge ' + getPaymentClass(order)"
+                      >Pago: {{ getPaymentLabel(order) }}</span
+                    >
+                  </div>
+                  @if (order.items.length > 0) {
+                    <ul class="order-items">
+                      @for (item of order.items; track item.productoId) {
+                        <li class="order-item">
+                          @if (item.imageUrl) {
+                            <img
+                              class="order-item-image"
+                              [src]="item.imageUrl"
+                              [alt]="item.nombre"
+                            />
+                          } @else {
+                            <span class="order-item-placeholder" aria-hidden="true">{{
+                              item.nombre.charAt(0)
+                            }}</span>
+                          }
+                          <div class="order-item-info">
+                            <h3>{{ item.nombre }}</h3>
+                            <p>{{ item.cantidad }} × {{ formatPrice(item.precioUnitario) }}</p>
+                          </div>
+                          <strong class="order-item-subtotal">{{
+                            formatPrice(item.subtotal)
+                          }}</strong>
+                        </li>
+                      }
+                    </ul>
                   } @else {
-                  <span class="order-item-thumbnail order-item-placeholder" [title]="item.nombre"
-                    [attr.aria-label]="item.nombre">{{ item.nombre.charAt(0) }}</span>
-                  }
-                  }
-                  @if (order.items.length > 3) {
-                  <span class="order-items-more" [attr.aria-label]="(order.items.length - 3) + ' artículos más'">
-                    +{{ order.items.length - 3 }}
-                  </span>
+                    <p class="order-items-empty">
+                      Este pedido no tiene artículos disponibles para mostrar.
+                    </p>
                   }
                 </div>
-                <span class="order-item-count">
-                  {{ getItemCount(order) }} {{ getItemCount(order) === 1 ? 'artículo' : 'artículos' }}
-                </span>
-              </td>
-              <td class="order-amount">{{ formatPrice(order.total) }}</td>
-              <td><span [class]="'payment-badge ' + getPaymentClass(order)">{{ getPaymentLabel(order) }}</span></td>
-              <td>
-                <span [class]="'order-status ' + getStatusClass(order)">
-                  <span class="status-dot" aria-hidden="true"></span>{{ getStatusLabel(order) }}
-                </span>
-              </td>
-              <td class="order-actions">
-                <a class="order-detail-link" [routerLink]="['/client/orders', order.pedidoId]">Ver detalle</a>
-              </td>
-            </tr>
+              </article>
             }
-          </tbody>
-        </table>
-      </div>
-      @if (filteredOrders().length > pageSize) {
-      <nav class="orders-pagination" aria-label="Paginación de pedidos">
-        <button type="button" (click)="previousPage()" [disabled]="pageIndex() === 0">Anterior</button>
-        <span>Página {{ pageIndex() + 1 }} de {{ pageCount() }}</span>
-        <button type="button" (click)="nextPage()" [disabled]="pageIndex() >= pageCount() - 1">Siguiente</button>
-      </nav>
-      }
-      }
+          </section>
+          @if (filteredOrders().length > pageSize) {
+            <nav class="orders-pagination" aria-label="Paginación de pedidos">
+              <button type="button" (click)="previousPage()" [disabled]="pageIndex() === 0">
+                Anterior
+              </button>
+              <span>Página {{ pageIndex() + 1 }} de {{ pageCount() }}</span>
+              <button
+                type="button"
+                (click)="nextPage()"
+                [disabled]="pageIndex() >= pageCount() - 1"
+              >
+                Siguiente
+              </button>
+            </nav>
+          }
+        }
       }
     </main>
   </div>
