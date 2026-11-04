@@ -254,7 +254,7 @@
         </div>
         } @else {
         <div class="product-grid">
-          @for (product of products(); track product.id) {
+          @for (product of visibleProducts(); track product.id) {
           <article class="product-card" [routerLink]="['/products', product.id]">
             <div class="product-image-container">
               @if (product.imageUrl && !imageErrors()[product.id]) {
@@ -371,6 +371,13 @@
           </article>
           }
         </div>
+        @if (products().length > pageSize) {
+        <nav class="orders-pagination" aria-label="Paginación del catálogo">
+          <button type="button" (click)="previousPage()" [disabled]="pageIndex() === 0">Anterior</button>
+          <span>Página {{ pageIndex() + 1 }} de {{ pageCount() }}</span>
+          <button type="button" (click)="nextPage()" [disabled]="pageIndex() >= pageCount() - 1">Siguiente</button>
+        </nav>
+        }
         }
       </section>
     </main>

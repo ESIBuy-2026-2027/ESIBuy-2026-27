@@ -39,7 +39,9 @@
                 [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
                 <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="m7.5 4.27 9 5.15"></path>
-                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                    <path
+                        d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z">
+                    </path>
                     <path d="m3.3 7 8.7 5 8.7-5"></path>
                     <path d="M12 22V12"></path>
                 </svg>
@@ -102,7 +104,7 @@
                             <circle cx="11" cy="11" r="6.5"></circle>
                             <path d="m16 16 4.5 4.5"></path>
                         </svg>
-                        <input type="search" [ngModel]="nameSearch()" (ngModelChange)="nameSearch.set($event)"
+                        <input type="search" [ngModel]="nameSearch()" (ngModelChange)="onSearchChange($event)"
                             placeholder="Buscar por nombre..." aria-label="Buscar usuario por nombre">
                     </label>
 
@@ -153,7 +155,7 @@
                         </thead>
 
                         <tbody>
-                            @for (user of filteredUsers(); track user.email) {
+                            @for (user of visibleUsers(); track user.email) {
                             <tr>
                                 <td class="col-user">
                                     <div class="user-cell-wrapper">
@@ -307,6 +309,14 @@
                         </tbody>
                     </table>
                 </div>
+                @if (filteredUsers().length > pageSize) {
+                <nav class="orders-pagination" aria-label="Paginación de usuarios">
+                    <button type="button" (click)="previousPage()" [disabled]="pageIndex() === 0">Anterior</button>
+                    <span>Página {{ pageIndex() + 1 }} de {{ pageCount() }}</span>
+                    <button type="button" (click)="nextPage()"
+                        [disabled]="pageIndex() >= pageCount() - 1">Siguiente</button>
+                </nav>
+                }
                 }
             </div>
 
