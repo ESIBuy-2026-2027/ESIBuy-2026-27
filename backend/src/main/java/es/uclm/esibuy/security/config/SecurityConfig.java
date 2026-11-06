@@ -114,6 +114,8 @@ public class SecurityConfig {
                                                         .hasRole(ROLE_ADMIN)
                                                         .requestMatchers("/api/admin/**", "/api/v1/admin/**")
                                                         .hasRole(ROLE_ADMIN)
+                                                        .requestMatchers("/api/configuracion", "/api/configuracion/**")
+                                                        .hasRole(ROLE_ADMIN)
                                                         .requestMatchers(HttpMethod.GET, "/api/products/mine",
                                                                         "/api/products/summary",
                                                                         "/api/products/resumen")

@@ -15,6 +15,14 @@ public record CheckoutSummaryDTO(
 
         List<CartItemDTO> items,
 
+        BigDecimal subtotal,
+
+        @JsonProperty("ivaPorcentaje") BigDecimal taxPercentage,
+
+        @JsonProperty("ivaImporte") BigDecimal taxAmount,
+
+        @JsonProperty("gastosEnvio") BigDecimal shippingCost,
+
         @JsonProperty("precioTotal") BigDecimal totalPrice) {
 
     public CheckoutSummaryDTO {

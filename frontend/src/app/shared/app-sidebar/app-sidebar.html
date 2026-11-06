@@ -24,6 +24,10 @@
         <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
         <span>Incidencias</span>
       </a>
+      <a class="navigation-link" routerLink="/admin/configuracion" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.6 2.77-.08-.03a1.7 1.7 0 0 0-1.83.36l-.06.06h-3.2l-.02-.08a1.7 1.7 0 0 0-1.24-1.26l-.08-.02-1.6-2.77.06-.06A1.7 1.7 0 0 0 10.4 14l-.03-.08v-3.2l.08-.02a1.7 1.7 0 0 0 1.26-1.24l.02-.08 2.77-1.6.06.06A1.7 1.7 0 0 0 16.44 7.5l.08-.03 2.77 1.6-.03.08a1.7 1.7 0 0 0 .36 1.83l.06.06v3.2Z"></path></svg>
+        <span>Configuración general</span>
+      </a>
     </nav>
   } @else if (variant === 'client') {
     <nav class="app-navigation" aria-label="Navegación del cliente">

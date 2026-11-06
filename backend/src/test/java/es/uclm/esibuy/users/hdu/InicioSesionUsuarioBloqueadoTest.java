@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import es.uclm.esibuy.users.dto.LoginRequest;
+import es.uclm.esibuy.configuration.service.GeneralConfigurationService;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.repository.UserRepository;
@@ -48,12 +49,14 @@ class InicioSesionUsuarioBloqueadoTest {
     private LoginAttemptRepository loginAttemptRepository;
     @Mock
     private CompromisedPasswordService compromisedPasswordService;
+    @Mock
+    private GeneralConfigurationService generalConfigurationService;
 
     private UserService createService() {
         return new UserService(userRepository, passwordEncoder, productRepository,
                 orderRepository, cartRepository, wishlistRepository,
                 emailOtpChallengeRepository, passwordResetTokenRepository, loginAttemptRepository,
-                compromisedPasswordService);
+                compromisedPasswordService, generalConfigurationService);
     }
 
     private LoginRequest request(String email, String password) {

@@ -8,6 +8,8 @@ import java.util.Optional;
 import com.mongodb.client.result.UpdateResult;
 import es.uclm.esibuy.cart.model.Cart;
 import es.uclm.esibuy.cart.repository.CartRepository;
+import es.uclm.esibuy.configuration.model.GeneralConfiguration;
+import es.uclm.esibuy.configuration.service.GeneralConfigurationService;
 import es.uclm.esibuy.common.exception.PagoFallidoException;
 import es.uclm.esibuy.common.exception.PedidoNotFoundException;
 import es.uclm.esibuy.common.exception.RecursoCheckoutNoEncontradoException;
@@ -81,6 +83,9 @@ class OrderServiceTest {
         @Mock
         private PaymentGateway paymentGateway;
 
+        @Mock
+        private GeneralConfigurationService generalConfigurationService;
+
         private OrderService orderService;
         private Cart cart;
 
@@ -92,7 +97,15 @@ class OrderServiceTest {
                                 productRepository,
                                 orderRepository,
                                 mongoTemplate,
-                                paymentGateway);
+                                paymentGateway,
+                                generalConfigurationService);
+
+                lenient().when(generalConfigurationService.getCurrent())
+                                .thenReturn(new GeneralConfiguration(
+                                                BigDecimal.ZERO,
+                                                BigDecimal.ZERO,
+                                                BigDecimal.ZERO,
+                                                true));
 
                 User customer = new User(
                                 "cliente@example.com",
@@ -175,6 +188,31 @@ class OrderServiceTest {
 
                 assertEquals(List.of(), cart.getItems());
                 assertEquals(BigDecimal.ZERO, cart.getTotalPrice());
+        }
+
+        @Test
+        void shouldUseCurrentVatAndShippingSettingsWhenChargingOrder() {
+                prepareCartAndProduct(productWithStock(5));
+                enableStockReservation();
+                when(generalConfigurationService.getCurrent())
+                                .thenReturn(new GeneralConfiguration(
+                                                new BigDecimal("21"),
+                                                new BigDecimal("4.99"),
+                                                new BigDecimal("50"),
+                                                true));
+                when(paymentGateway.charge(any(), any())).thenReturn(true);
+                when(orderRepository.save(any(Order.class)))
+                                .thenAnswer(invocation -> invocation.getArgument(0));
+
+                orderService.createOrder(CUSTOMER_ID, new CreateOrderDTO("direccion-1", "pago-1"));
+
+                ArgumentCaptor<BigDecimal> chargedAmount = ArgumentCaptor.forClass(BigDecimal.class);
+                verify(paymentGateway).charge(any(), chargedAmount.capture());
+                assertEquals(new BigDecimal("53.37"), chargedAmount.getValue());
+
+                ArgumentCaptor<Order> savedOrder = ArgumentCaptor.forClass(Order.class);
+                verify(orderRepository).save(savedOrder.capture());
+                assertEquals(new BigDecimal("53.37"), savedOrder.getValue().getTotalPrice());
         }
 
         @Test

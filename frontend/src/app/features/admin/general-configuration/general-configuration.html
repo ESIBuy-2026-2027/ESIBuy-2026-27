@@ -1,0 +1,69 @@
+<app-shared-sidebar variant="admin"></app-shared-sidebar>
+
+<main class="admin-page">
+  <div class="settings-content">
+    <header class="page-heading">
+      <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
+      <h1>Configuración general</h1>
+      <p class="page-description">
+        Ajusta los importes de compra y controla el registro de nuevos usuarios.
+      </p>
+    </header>
+
+    @if (loading()) {
+      <output class="state-message" aria-live="polite">Cargando la configuración…</output>
+    } @else {
+      @if (errorMessage(); as message) {
+        <p class="alert is-error" role="alert">{{ message }}</p>
+        <button class="secondary-button retry-button" type="button" (click)="loadConfiguration()">
+          Reintentar
+        </button>
+      } @else {
+        @if (successMessage(); as message) {
+          <output class="alert is-success" aria-live="polite">{{ message }}</output>
+        }
+
+        <form #configurationForm="ngForm" (ngSubmit)="save(configurationForm)" class="settings-card">
+          <div class="field-grid">
+            <div class="field">
+              <label for="ivaPorcentaje">IVA (%)</label>
+              <input id="ivaPorcentaje" name="ivaPorcentaje" type="number" min="0" max="100" step="0.01"
+                required [(ngModel)]="form.ivaPorcentaje" [disabled]="saving()" />
+              <small>Porcentaje aplicado al subtotal de los productos.</small>
+            </div>
+
+            <div class="field">
+              <label for="gastosEnvio">Gastos de envío (€)</label>
+              <input id="gastosEnvio" name="gastosEnvio" type="number" min="0" step="0.01"
+                required [(ngModel)]="form.gastosEnvio" [disabled]="saving()" />
+              <small>Se cobran cuando el pedido no alcanza el umbral de envío gratuito.</small>
+            </div>
+
+            <div class="field">
+              <label for="envioGratuitoDesde">Envío gratuito desde (€)</label>
+              <input id="envioGratuitoDesde" name="envioGratuitoDesde" type="number" min="0" step="0.01"
+                required [(ngModel)]="form.envioGratuitoDesde" [disabled]="saving()" />
+              <small>Se compara con el subtotal de los productos.</small>
+            </div>
+          </div>
+
+          <fieldset class="registration-setting">
+            <legend>Registro de usuarios</legend>
+            <label class="toggle-label" for="registroHabilitado">
+              <input id="registroHabilitado" name="registroHabilitado" type="checkbox"
+                [(ngModel)]="form.registroHabilitado" [disabled]="saving()" />
+              <span>Permitir el registro de clientes y vendedores</span>
+            </label>
+          </fieldset>
+
+          <div class="form-actions">
+            <button class="primary-button" type="submit"
+              [disabled]="saving() || configurationForm.invalid">
+              {{ saving() ? 'Guardando…' : 'Guardar cambios' }}
+            </button>
+          </div>
+        </form>
+      }
+    }
+  </div>
+</main>
