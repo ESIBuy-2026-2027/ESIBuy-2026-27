@@ -78,6 +78,23 @@
     gap: 22px;
 }
 
+/* =========================================================
+   CONTENEDOR EXTERIOR DEL PERFIL
+   ========================================================= */
+
+.profile-content-shell {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    padding: 22px;
+    border: 1px solid #d2e0e9;
+    border-radius: 22px;
+    background: rgb(255 255 255 / 72%);
+    box-shadow: 0 14px 34px rgb(16 44 64 / 7%);
+}
+
 .profile-main > *,
 .panel > *,
 .danger-zone > * {
@@ -588,6 +605,12 @@ app-delete-account {
     .panel-heading {
         margin-bottom: 22px;
     }
+    
+    .profile-content-shell {
+    gap: 18px;
+    padding: 17px;
+    border-radius: 18px;
+}
 }
 
 /* =========================================================
@@ -658,6 +681,12 @@ app-delete-account {
         height: 58px;
         flex-basis: 58px;
     }
+
+    .profile-content-shell {
+    gap: 15px;
+    padding: 12px;
+    border-radius: 16px;
+    }   
 }
 
 @media (prefers-reduced-motion: reduce) {
