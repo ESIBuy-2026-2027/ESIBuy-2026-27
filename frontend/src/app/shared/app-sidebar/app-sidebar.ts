@@ -17,7 +17,9 @@ export class AppSidebarComponent implements OnInit {
   @Input() collapsed = false;
   @Output() readonly collapsedChange = new EventEmitter<boolean>();
 
-  constructor(@Inject(PLATFORM_ID) private readonly platformId: object) {}
+  animateTransition = false;
+
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: object) { }
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) {
@@ -31,18 +33,27 @@ export class AppSidebarComponent implements OnInit {
   }
 
   toggle(): void {
+    this.animateTransition = true;
     const collapsed = !this.collapsed;
+
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem(this.storageKey(), String(collapsed));
     }
+
     this.collapsedChange.emit(collapsed);
   }
 
   private storageKey(): string {
-    return this.variant === 'admin'
-      ? 'admin-sidebar-collapsed'
-      : this.variant === 'seller' || this.variant === 'seller-compact'
-        ? 'seller-sidebar-collapsed'
-        : 'client-sidebar-collapsed';
+    switch (this.variant) {
+      case 'admin':
+        return 'admin-sidebar-collapsed';
+      case 'seller':
+      case 'seller-compact':
+        return 'seller-sidebar-collapsed';
+      case 'client':
+        return 'client-sidebar-collapsed';
+      default:
+        return 'seller-sidebar-collapsed';
+    }
   }
 }
