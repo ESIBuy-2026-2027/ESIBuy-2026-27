@@ -150,6 +150,13 @@
               <button type="button" class="reset-filter-btn" (click)="clearFilters()">
                 Limpiar filtros
               </button>
+
+              @if (!productsLoading() && !productsError()) {
+              <span class="product-count filter-product-count" aria-live="polite">
+                {{ visibleProducts().length }}
+                {{ visibleProducts().length === 1 ? 'producto' : 'productos' }}
+              </span>
+              }
             </div>
           </section>
 
@@ -188,15 +195,6 @@
             <button type="button" (click)="loadCategories()">Reintentar</button>
           </div>
           }
-
-          <div class="filter-actions-group">
-                @if (!productsLoading() && !productsError()) {
-                <span class="product-count filter-product-count" aria-live="polite">
-                  {{ visibleProducts().length }}
-                  {{ visibleProducts().length === 1 ? 'producto' : 'productos' }}
-                </span>
-                }
-              </div>
 
           <div class="table-scroll">
             <table class="seller-data-table product-table">
