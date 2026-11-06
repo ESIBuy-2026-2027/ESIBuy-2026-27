@@ -303,6 +303,7 @@ export class AdminProfile implements OnInit {
                 };
 
                 this.profile.set(updatedProfile);
+                this.authService.updateProfileImage(updatedProfile.profileImage);
                 this.selectedAvatar.set(
                     this.getValidAvatar(updatedProfile.profileImage),
                 );

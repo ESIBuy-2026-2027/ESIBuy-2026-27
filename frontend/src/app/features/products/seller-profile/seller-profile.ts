@@ -287,6 +287,7 @@ export class SellerProfile implements OnInit {
                 };
 
                 this.profile.set(profile);
+                this.authService.updateProfileImage(profile.profileImage);
                 this.selectedAvatar.set(
                     this.normalizeAvatarPath(profile.profileImage)
                         ? this.normalizeAvatarPath(profile.profileImage)

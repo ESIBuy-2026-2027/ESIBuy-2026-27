@@ -333,6 +333,7 @@ export class ClientProfile implements OnInit {
                     ...profile,
                     profileImage: avatar,
                 });
+                this.authService.updateProfileImage(avatar);
 
                 this.selectedAvatar.set(avatar);
                 this.saving.set(false);
