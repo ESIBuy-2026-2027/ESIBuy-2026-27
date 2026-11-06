@@ -33,6 +33,8 @@ export class ClientOrderDetail implements OnInit {
   readonly cancellationDialogOpen = signal(false);
   readonly orderToCancel = signal<CustomerOrder | null>(null);
   readonly confirmingReceipt = signal(false);
+  readonly receiptDialogOpen = signal(false);
+  readonly orderToConfirmReceipt = signal<CustomerOrder | null>(null);
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -113,12 +115,33 @@ export class ClientOrderDetail implements OnInit {
     return this.getFulfillmentStatus(order) === 'ENVIADO';
   }
 
-  confirmReceipt(order: CustomerOrder): void {
+  openReceiptDialog(order: CustomerOrder): void {
     if (this.confirmingReceipt() || !this.canConfirmReceipt(order)) {
       return;
     }
 
-    if (!window.confirm('¿Confirmas que has recibido tu pedido?')) {
+    this.actionError.set(null);
+    this.orderToConfirmReceipt.set(order);
+    this.receiptDialogOpen.set(true);
+  }
+
+  @HostListener('document:keydown.escape')
+  closeOpenDialog(): void {
+    this.closeCancellationDialog();
+    this.closeReceiptDialog();
+  }
+
+  closeReceiptDialog(): void {
+    if (this.confirmingReceipt()) {
+      return;
+    }
+    this.receiptDialogOpen.set(false);
+    this.orderToConfirmReceipt.set(null);
+  }
+
+  confirmReceipt(): void {
+    const order = this.orderToConfirmReceipt();
+    if (this.confirmingReceipt() || !order || !this.canConfirmReceipt(order)) {
       return;
     }
 
@@ -127,7 +150,11 @@ export class ClientOrderDetail implements OnInit {
     this.pedidoService.confirmarRecepcionPedido(order.pedidoId)
       .pipe(finalize(() => this.confirmingReceipt.set(false)))
       .subscribe({
-        next: () => this.order.set({ ...order, estado: 'ENTREGADO' }),
+        next: () => {
+          this.order.set({ ...order, estado: 'ENTREGADO' });
+          this.receiptDialogOpen.set(false);
+          this.orderToConfirmReceipt.set(null);
+        },
         error: (error: HttpErrorResponse) => this.actionError.set(
           this.getReceiptConfirmationErrorMessage(error),
         ),
@@ -144,7 +171,6 @@ export class ClientOrderDetail implements OnInit {
     this.cancellationDialogOpen.set(true);
   }
 
-  @HostListener('document:keydown.escape')
   closeCancellationDialog(): void {
     if (this.cancellingOrder()) {
       return;

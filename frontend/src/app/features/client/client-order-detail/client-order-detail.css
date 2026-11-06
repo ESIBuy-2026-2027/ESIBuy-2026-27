@@ -230,6 +230,76 @@ p {
   color: #172b3a;
 }
 
+.receipt-dialog {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  width: min(500px, 100%);
+  gap: 0 14px;
+  padding: 28px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgb(16 44 64 / 30%);
+  color: #172b3a;
+}
+
+.receipt-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: #dff7ef;
+  color: #087f5b;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.receipt-dialog h2 {
+  margin: 0 0 12px;
+  color: #102c40;
+  font-size: 20px;
+}
+
+.receipt-dialog #receipt-description {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.receipt-error {
+  color: #b42318;
+}
+
+.receipt-modal-button {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #42d6b2;
+  color: #102c40;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.receipt-modal-button:hover:not(:disabled),
+.receipt-modal-button:focus-visible {
+  background: #2fc19f;
+}
+
+.receipt-modal-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.receipt-modal-button:focus-visible {
+  outline: 3px solid rgb(66 214 178 / 40%);
+  outline-offset: 2px;
+}
+
 .cancellation-icon {
   display: grid;
   width: 38px;
@@ -472,12 +542,17 @@ p {
     padding: 22px;
   }
 
+  .receipt-dialog {
+    padding: 22px;
+  }
+
   .modal-actions {
     flex-direction: column-reverse;
   }
 
   .secondary-button,
-  .danger-modal-button {
+  .danger-modal-button,
+  .receipt-modal-button {
     width: 100%;
   }
 }
