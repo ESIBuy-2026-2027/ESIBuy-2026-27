@@ -1,3 +1,4 @@
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { ChangeDetectorRef, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -31,7 +32,7 @@ export function passwordsMatchValidator(
 @Component({
   selector: 'app-admin-user-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive],
+  imports: [AppSidebarComponent, CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive],
   templateUrl: './admin-user-create.html',
   styleUrls: ['./admin-user-create.css'],
 })

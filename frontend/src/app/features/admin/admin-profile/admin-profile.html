@@ -1,5 +1,6 @@
-<div class="profile-page">
-    <app-shared-sidebar variant="admin"></app-shared-sidebar>
+<div class="profile-page" [class.app-sidebar-collapsed]="sidebarCollapsed()">
+    <app-shared-sidebar variant="admin" [collapsed]="sidebarCollapsed()"
+        (collapsedChange)="sidebarCollapsed.set($event)"></app-shared-sidebar>
 
     <!-- BARRA LATERAL -->
     <app-profile-shell [avatar]="selectedAvatar()" [displayName]="fullName()" fallbackName="Administrador"

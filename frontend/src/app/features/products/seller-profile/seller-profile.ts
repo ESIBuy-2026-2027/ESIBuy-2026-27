@@ -53,6 +53,7 @@ export class SellerProfile implements OnInit {
     readonly sellerAvatars: readonly string[] = SELLER_AVATARS;
 
     readonly selectedAvatar = signal(this.sellerAvatars[0]);
+    readonly sidebarCollapsed = signal(false);
 
     readonly categories = signal<Category[]>([]);
     readonly categoriesLoading = signal(true);
@@ -120,6 +121,10 @@ export class SellerProfile implements OnInit {
     readonly activeSection = signal<'personal' | 'security'>('personal');
 
     readonly twoFactorEnabled = signal(false);
+
+    toggleSidebar(): void {
+        this.sidebarCollapsed.update((collapsed) => !collapsed);
+    }
 
     selectSection(section: 'personal' | 'security'): void {
         this.activeSection.set(section);

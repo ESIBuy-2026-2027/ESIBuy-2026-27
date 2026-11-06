@@ -47,6 +47,7 @@ export class AdminProfile implements OnInit {
     readonly adminAvatars: readonly string[] = ADMIN_AVATARS;
 
     readonly selectedAvatar = signal(this.adminAvatars[0]);
+    readonly sidebarCollapsed = signal(false);
 
     readonly profile = signal<AdminProfileResponse | null>(null);
     readonly loading = signal(true);
@@ -66,6 +67,10 @@ export class AdminProfile implements OnInit {
     ];
 
     readonly activeSection = signal<'personal' | 'security'>('personal');
+
+    toggleSidebar(): void {
+        this.sidebarCollapsed.update((collapsed) => !collapsed);
+    }
 
     selectSection(section: 'personal' | 'security'): void {
         this.activeSection.set(section);

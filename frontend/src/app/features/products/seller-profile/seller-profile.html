@@ -1,5 +1,6 @@
-<div class="profile-page">
-    <app-shared-sidebar variant="seller"></app-shared-sidebar>
+<div class="profile-page" [class.app-sidebar-collapsed]="sidebarCollapsed()">
+    <app-shared-sidebar variant="seller" [collapsed]="sidebarCollapsed()"
+        (collapsedChange)="sidebarCollapsed.set($event)"></app-shared-sidebar>
 
     <!-- BARRA LATERAL -->
     <app-profile-shell [avatar]="displayAvatar()" [initials]="initials()" [displayName]="fullName()"

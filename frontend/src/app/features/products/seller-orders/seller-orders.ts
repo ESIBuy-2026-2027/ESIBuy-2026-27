@@ -1,6 +1,7 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
   PedidoService,
@@ -36,7 +37,7 @@ interface SellerOrder {
 @Component({
   selector: 'app-seller-orders',
   standalone: true,
-  imports: [FormsModule, RouterLink, RouterLinkActive],
+  imports: [AppSidebarComponent, FormsModule, RouterLink, RouterLinkActive],
   templateUrl: './seller-orders.html',
   styleUrl: './seller-orders.css',
 })

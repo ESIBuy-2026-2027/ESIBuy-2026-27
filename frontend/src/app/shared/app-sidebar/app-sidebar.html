@@ -1,5 +1,12 @@
-<aside class="app-sidebar" [class.app-sidebar--admin]="variant === 'admin'" [class.app-sidebar--seller]="variant === 'seller'" [class.app-sidebar--seller-compact]="variant === 'seller-compact'" [class.app-sidebar--client]="variant === 'client'"
+<aside class="app-sidebar" [class.app-sidebar--admin]="variant === 'admin'" [class.app-sidebar--seller]="variant === 'seller'" [class.app-sidebar--seller-compact]="variant === 'seller-compact'" [class.app-sidebar--client]="variant === 'client'" [class.app-sidebar--collapsed]="collapsed"
   [attr.aria-label]="variant === 'admin' ? 'Panel de administración' : variant === 'client' ? 'Panel del cliente' : 'Panel del vendedor'">
+  <button type="button" class="app-sidebar-toggle" (click)="toggle()"
+    [attr.aria-label]="collapsed ? 'Mostrar barra lateral' : 'Ocultar barra lateral'"
+    [attr.aria-expanded]="!collapsed">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path [attr.d]="collapsed ? 'm9 18 6-6-6-6' : 'm15 18-6-6 6-6'" />
+    </svg>
+  </button>
   <p class="sidebar-caption">{{ variant === 'admin' ? 'GESTIÓN DE ADMINISTRACIÓN' : variant === 'client' ? 'ÁREA DE CLIENTE' : 'GESTIÓN DE VENTA' }}</p>
 
   @if (variant === 'admin') {

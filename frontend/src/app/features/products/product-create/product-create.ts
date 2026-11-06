@@ -1,3 +1,4 @@
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { DestroyRef, Component, OnInit, inject, signal, PLATFORM_ID } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -41,7 +42,7 @@ const SERVER_FIELD_TO_FORM_FIELD: Readonly<Partial<Record<string, ProductFormFie
 @Component({
   selector: 'app-product-create',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, RouterLinkActive],
+  imports: [AppSidebarComponent, ReactiveFormsModule, RouterLink, RouterLinkActive],
   templateUrl: './product-create.html',
   styleUrl: './product-create.css',
 })

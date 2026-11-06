@@ -36,11 +36,40 @@
   overflow-y: auto;
   background: var(--sidebar-background);
   color: #edf5f8;
-  transition: transform 0.25s ease;
+  transition: width 220ms ease, padding 220ms ease, transform 220ms ease;
 }
 
 .seller-shell .app-workspace {
   margin-left: var(--seller-sidebar-width);
+}
+
+/* The shared sidebar remains part of the layout when compact, so content
+   keeps a consistent gutter instead of jumping to the viewport edge. */
+.seller-layout.sidebar-collapsed .workspace {
+  margin-left: 72px;
+}
+
+.seller-shell.app-sidebar-collapsed .app-workspace {
+  margin-left: 72px;
+}
+
+.admin-layout .admin-workspace {
+  margin-left: 248px;
+  transition: margin-left 220ms ease;
+}
+
+.admin-layout.app-sidebar-collapsed .admin-workspace {
+  margin-left: 72px;
+}
+
+.admin-layout .app-sidebar.app-sidebar--collapsed .app-sidebar-toggle {
+  right: auto;
+  left: 20px;
+  transform: none;
+}
+
+.seller-shell.product-create-page.app-sidebar-collapsed {
+  padding-left: 108px;
 }
 
 .seller-shell.product-create-page {
@@ -63,7 +92,14 @@
   background: #1d4357;
   color: #edf5f8;
   cursor: pointer;
-  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+  transition: right 220ms ease, left 220ms ease, background-color 0.18s ease,
+    border-color 0.18s ease, transform 220ms ease;
+}
+
+.seller-shell .app-sidebar.app-sidebar--collapsed .app-sidebar-toggle {
+  right: auto;
+  left: 20px;
+  transform: none;
 }
 
 .seller-shell .app-sidebar-toggle svg,
@@ -255,6 +291,47 @@
   transition: transform 0.25s ease;
 }
 
+/* La navegación compacta es común a los paneles de vendedor y administración. */
+.seller-layout.app-sidebar-collapsed .sidebar,
+.seller-shell.app-sidebar-collapsed .app-sidebar {
+  width: 72px;
+  align-items: center;
+  padding-right: 9px;
+  padding-left: 9px;
+  transform: none;
+}
+
+.seller-layout.app-sidebar-collapsed .sidebar-caption,
+.seller-layout.app-sidebar-collapsed .navigation-link > span,
+.seller-shell.app-sidebar-collapsed .sidebar-caption,
+.seller-shell.app-sidebar-collapsed .navigation-link > span {
+  display: none;
+}
+
+.seller-layout.app-sidebar-collapsed .seller-navigation,
+.seller-shell.app-sidebar-collapsed .app-navigation {
+  width: 100%;
+}
+
+.seller-layout.app-sidebar-collapsed .navigation-link,
+.seller-shell.app-sidebar-collapsed .navigation-link {
+  justify-content: center;
+  gap: 0;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.seller-layout.app-sidebar-collapsed .sidebar-toggle,
+.seller-shell.app-sidebar-collapsed .app-sidebar-toggle {
+  right: 20px;
+  transform: translateX(50%);
+}
+
+.seller-layout.app-sidebar-collapsed .sidebar-toggle-open,
+.seller-shell.app-sidebar-collapsed .app-sidebar-toggle-open {
+  display: none;
+}
+
 .seller-layout .brand {
   display: flex;
   align-items: center;
@@ -354,7 +431,7 @@
 }
 
 .seller-layout.sidebar-collapsed .workspace {
-  margin-left: 0;
+  margin-left: 72px;
 }
 
 .seller-layout .topbar {

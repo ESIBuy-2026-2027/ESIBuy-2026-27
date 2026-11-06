@@ -1,3 +1,4 @@
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -11,7 +12,7 @@ import { ADMIN_AVATARS, CLIENT_AVATARS, SELLER_AVATARS } from '../../../core/con
 @Component({
   selector: 'app-admin-user-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive],
+  imports: [AppSidebarComponent, CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive],
   templateUrl: './admin-user-detail.html',
   styleUrl: './admin-user-detail.css'
 })
