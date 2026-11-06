@@ -98,11 +98,27 @@
 
   <div class="workspace app-workspace">
     <main class="catalog-content">
-      <section class="page-heading" aria-labelledby="orders-title">
+      <section class="page-heading orders-page-heading" aria-labelledby="orders-title">
         <div>
+          <nav class="orders-breadcrumb" aria-label="Migas de pan">
+            <a routerLink="/client/profile">Mi cuenta</a>
+            <span aria-hidden="true">›</span>
+            <span aria-current="page">Mis pedidos</span>
+          </nav>
           <h1 id="orders-title">Mis pedidos</h1>
-          <p>Consulta tus compras, su estado y el seguimiento de tus envíos.</p>
         </div>
+        <form class="orders-search-form" (ngSubmit)="searchOrders()">
+          <label class="orders-search">
+            <span class="visually-hidden">Buscar pedidos por número o producto</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5"></circle>
+              <path d="m16 16 4.5 4.5"></path>
+            </svg>
+            <input id="orders-search-input" type="search" placeholder="Buscar todos los pedidos"
+              [ngModel]="searchQuery()" (ngModelChange)="setSearchQuery($event)" name="ordersSearch" />
+          </label>
+          <button type="submit" class="orders-search-submit">Buscar pedidos</button>
+        </form>
       </section>
 
       @if (loading()) {
@@ -117,16 +133,15 @@
         <button type="button" (click)="loadReviewedPurchases()">Reintentar</button>
       </div>
       }
-      <section class="orders-toolbar" aria-label="Buscar y filtrar pedidos">
-        <label class="orders-search">
-          <span class="visually-hidden">Buscar pedidos por número o producto</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="6.5"></circle>
-            <path d="m16 16 4.5 4.5"></path>
-          </svg>
-          <input id="orders-search-input" type="search" placeholder="Buscar pedido o producto..."
-            [ngModel]="searchQuery()" (ngModelChange)="setSearchQuery($event)" name="ordersSearch" />
-        </label>
+      <nav class="orders-tabs" aria-label="Filtrar pedidos por estado">
+        @for (tab of orderStatusTabs; track tab.status) {
+        <button type="button" class="orders-tab" [class.is-selected]="statusFilter() === tab.status"
+          [attr.aria-pressed]="statusFilter() === tab.status" (click)="setStatusFilter(tab.status)">
+          {{ tab.label }}
+        </button>
+        }
+      </nav>
+      <section class="orders-toolbar" aria-label="Filtros adicionales de pedidos">
         <div class="orders-filter">
           <button type="button" class="filter-button" [class.is-active]="hasActiveFilters()"
             [attr.aria-expanded]="filtersOpen()" aria-controls="client-orders-filter-panel" (click)="toggleFilters()">
@@ -141,29 +156,12 @@
           @if (filtersOpen()) {
           <div class="orders-filter-panel" id="client-orders-filter-panel">
             <button type="button" class="close-orders-filter" aria-label="Cerrar filtros" (click)="closeFilters()">×</button>
-            <label for="orders-status">Estado del pedido</label>
-            <select id="orders-status" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)"
-              name="ordersStatus">
-              <option value="TODOS">Todos los estados</option>
-              <option value="PENDIENTE">Pendiente</option>
-              <option value="PREPARANDO">En preparación</option>
-              <option value="ENVIADO">Enviado</option>
-              <option value="ENTREGADO">Entregado</option>
-              <option value="CANCELADO">Cancelado</option>
-            </select>
             <label for="orders-payment">Estado del pago</label>
             <select id="orders-payment" [ngModel]="paymentFilter()" (ngModelChange)="setPaymentFilter($event)"
               name="ordersPayment">
               <option value="TODOS">Todos los pagos</option>
               <option value="PAGADO">Pagado</option>
               <option value="PENDIENTE">Pendiente</option>
-            </select>
-            <label for="orders-period">Periodo</label>
-            <select id="orders-period" [ngModel]="period()" (ngModelChange)="setPeriod($event)" name="ordersPeriod">
-              <option value="all">Todo el historial</option>
-              <option value="3months">Últimos 3 meses</option>
-              <option value="6months">Últimos 6 meses</option>
-              <option value="year">Último año</option>
             </select>
             <label for="orders-sort">Ordenar por</label>
             <select id="orders-sort" [ngModel]="sortOrder()" (ngModelChange)="setSortOrder($event)"
@@ -176,6 +174,25 @@
           </div>
           }
         </div>
+      </section>
+
+      <section class="orders-period-row" aria-label="Resumen y periodo de pedidos">
+        <div class="orders-results-meta">
+          <p class="orders-result-count" aria-live="polite">
+            <strong class="order-count">{{ filteredOrders().length }} {{ filteredOrders().length === 1 ? 'pedido' : 'pedidos' }}</strong>
+            {{ filteredOrders().length === 1 ? 'realizado' : 'realizados' }} en
+          </p>
+          <label for="orders-period">
+            <span class="visually-hidden">Periodo de pedidos</span>
+            <select id="orders-period" [ngModel]="period()" (ngModelChange)="setPeriod($event)" name="ordersPeriod">
+              <option value="all">Todo el historial</option>
+              <option value="3months">Últimos 3 meses</option>
+              <option value="6months">Últimos 6 meses</option>
+              <option value="year">Último año</option>
+            </select>
+          </label>
+        </div>
+        <span class="orders-page-range">{{ pageLabel() }}</span>
       </section>
 
         @if (filteredOrders().length === 0) {
@@ -193,10 +210,6 @@
             }
           </div>
         } @else {
-          <div class="orders-results-meta">
-            <p class="orders-result-count" aria-live="polite">{{ pageLabel() }}</p>
-            <span class="order-count">{{ filteredOrders().length }} pedidos</span>
-          </div>
           <section class="orders-list" aria-label="Pedidos">
             @for (order of visibleOrders(); track order.pedidoId) {
               <article class="order-row order-card">

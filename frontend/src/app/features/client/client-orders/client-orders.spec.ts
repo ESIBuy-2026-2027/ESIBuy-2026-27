@@ -48,13 +48,16 @@ describe('ClientOrders', () => {
 
     expect(el.querySelector('#orders-title')?.textContent).toContain('Mis pedidos');
     expect(el.querySelector('#orders-search-input')).toBeTruthy();
-    expect(el.querySelector('.orders-tabs')).toBeNull();
+    expect(el.querySelector('.orders-search-submit')?.textContent).toContain('Buscar pedidos');
+    expect(el.querySelectorAll('.orders-tabs .orders-tab')).toHaveLength(6);
+    expect(el.querySelector('.orders-tab.is-selected')?.textContent).toContain('Pedidos');
     expect(el.querySelector('.filter-button')?.textContent).toContain('Filtrar');
-    expect(el.querySelector('#orders-status')).toBeNull();
+    expect(el.querySelector('#orders-payment')).toBeNull();
 
     (el.querySelector('.filter-button') as HTMLButtonElement).click();
     fixture.detectChanges();
-    expect(el.querySelector('#orders-status')).toBeTruthy();
+    expect(el.querySelector('#orders-payment')).toBeTruthy();
+    expect(el.querySelector('#orders-sort')).toBeTruthy();
 
     const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
     expect(navLinks.length).toBe(4);
@@ -140,32 +143,18 @@ describe('ClientOrders', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.open-review-button')).toBeNull();
   });
 
-  it('should show filters only when requested and apply the selected order status', async () => {
-    component.orders.set([
-      { pedidoId: 'pending', fechaCreacion: '2026-10-28T12:00:00', items: [], total: 0, estado: 'PENDIENTE', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
-      { pedidoId: 'delivered', fechaCreacion: '2026-10-28T12:00:00', items: [], total: 0, estado: 'ENTREGADO', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
-    ]);
-    fixture.detectChanges();
-
+  it('should show additional filters only when requested', () => {
     const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('#orders-status')).toBeNull();
+    expect(element.querySelector('#orders-payment')).toBeNull();
     (element.querySelector('.filter-button') as HTMLButtonElement).click();
     fixture.detectChanges();
 
-    const statusSelect = element.querySelector('#orders-status') as HTMLSelectElement;
-    statusSelect.value = 'PENDIENTE';
-    statusSelect.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    expect(component.statusFilter()).toBe('PENDIENTE');
-    expect(element.querySelectorAll('.order-row')).toHaveLength(1);
-    expect(element.textContent).toContain('#pending');
-    expect(element.textContent).not.toContain('#delivered');
+    expect(element.querySelector('#orders-payment')).toBeTruthy();
+    expect(element.querySelector('#orders-sort')).toBeTruthy();
 
     (element.querySelector('.close-orders-filter') as HTMLButtonElement).click();
     fixture.detectChanges();
-    expect(element.querySelector('#orders-status')).toBeNull();
+    expect(element.querySelector('#orders-payment')).toBeNull();
   });
 
   it('should toggle sidebar collapsed state', () => {
@@ -209,11 +198,51 @@ describe('ClientOrders', () => {
     fixture.detectChanges();
 
     const element: HTMLElement = fixture.nativeElement;
-    const resultsMeta = element.querySelector('.orders-results-meta') as HTMLElement;
+    const periodRow = element.querySelector('.orders-period-row') as HTMLElement;
 
-    expect(resultsMeta.textContent).toContain('1–2 de 2');
-    expect(resultsMeta.querySelector('.order-count')?.textContent).toContain('2 pedidos');
+    expect(periodRow.querySelector('.orders-result-count')?.textContent).toContain('2 pedidos realizados en');
+    expect(periodRow.querySelector('.orders-page-range')?.textContent).toContain('1–2 de 2');
+    expect(periodRow.querySelector('#orders-period')).toBeTruthy();
     expect(element.querySelector('.orders-toolbar .order-count')).toBeNull();
+  });
+
+  it('filters orders from the status tabs', () => {
+    component.orders.set([
+      { pedidoId: 'pending', fechaCreacion: '2026-10-28T12:00:00', items: [], total: 0, estado: 'PENDIENTE', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
+      { pedidoId: 'delivered', fechaCreacion: '2026-10-28T12:00:00', items: [], total: 0, estado: 'ENTREGADO', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
+    ]);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const pendingTab = Array.from(element.querySelectorAll('.orders-tab'))
+      .find((tab) => tab.textContent?.includes('Pendientes')) as HTMLButtonElement;
+    pendingTab.click();
+    fixture.detectChanges();
+
+    expect(component.statusFilter()).toBe('PENDIENTE');
+    expect(element.querySelectorAll('.order-row')).toHaveLength(1);
+    expect(element.textContent).toContain('#pending');
+    expect(element.textContent).not.toContain('#delivered');
+    expect(pendingTab.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('filters orders using the period selector shown beside the result count', () => {
+    component.orders.set([
+      { pedidoId: 'old-order', fechaCreacion: '2026-01-01T10:00:00', items: [], total: 0, estado: 'ENTREGADO', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
+      { pedidoId: 'recent-order', fechaCreacion: '2026-10-28T10:00:00', items: [], total: 0, estado: 'ENTREGADO', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
+    ]);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const periodSelect = element.querySelector('#orders-period') as HTMLSelectElement;
+    periodSelect.value = '3months';
+    periodSelect.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(component.period()).toBe('3months');
+    expect(element.querySelectorAll('.order-row')).toHaveLength(1);
+    expect(element.textContent).toContain('#recent-order');
+    expect(element.textContent).not.toContain('#old-order');
   });
 
   it('should provide a clear details link without a reorder button on the order list', () => {

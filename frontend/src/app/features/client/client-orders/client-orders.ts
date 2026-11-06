@@ -28,7 +28,7 @@ export class ClientOrders implements OnInit {
   private readonly pedidoService = inject(PedidoService);
   private readonly reviewsService = inject(ReviewsService);
   readonly orderStatusTabs: ReadonlyArray<{ label: string; status: OrderStatusFilter }> = [
-    { label: 'Todos', status: 'TODOS' },
+    { label: 'Pedidos', status: 'TODOS' },
     { label: 'Pendientes', status: 'PENDIENTE' },
     { label: 'En preparación', status: 'PREPARANDO' },
     { label: 'Enviados', status: 'ENVIADO' },
