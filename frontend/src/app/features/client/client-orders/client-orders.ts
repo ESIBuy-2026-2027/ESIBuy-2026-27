@@ -37,6 +37,7 @@ export class ClientOrders implements OnInit {
   ];
   readonly sidebarCollapsed = signal(false);
   readonly orders = signal<CustomerOrder[]>([]);
+  readonly showingTransactions = signal(false);
   readonly shippingAddressOrderId = signal<string | null>(null);
   readonly searchQuery = signal('');
   readonly filtersOpen = signal(false);
@@ -102,6 +103,11 @@ export class ClientOrders implements OnInit {
     const start = this.pageIndex() * this.pageSize;
     return this.filteredOrders().slice(start, start + this.pageSize);
   });
+  readonly transactions = computed(() =>
+    this.orders()
+      .filter((order) => getCustomerOrderPaymentStatus(order) === 'PAGADO')
+      .sort((first, second) => Date.parse(second.fechaCreacion) - Date.parse(first.fechaCreacion)),
+  );
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -237,6 +243,17 @@ export class ClientOrders implements OnInit {
       : new Intl.DateTimeFormat('es-ES', { dateStyle: 'long' }).format(parsedDate);
   }
 
+  formatTransactionDate(date: string): string {
+    const parsedDate = new Date(date);
+    return Number.isNaN(parsedDate.getTime())
+      ? 'No disponible'
+      : new Intl.DateTimeFormat('es-ES', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      }).format(parsedDate);
+  }
+
   getItemCount(order: CustomerOrder): number {
     return order.items.reduce((count, item) => count + item.cantidad, 0);
   }
@@ -271,6 +288,24 @@ export class ClientOrders implements OnInit {
 
   getPaymentClass(order: CustomerOrder): string {
     return getCustomerOrderPaymentStatus(order) === 'PAGADO' ? 'payment-paid' : 'payment-pending';
+  }
+
+  getPaymentMethodLabel(order: CustomerOrder): string {
+    const payment = order.metodoPago;
+    if (!payment) {
+      return 'Método de pago no disponible';
+    }
+
+    switch (payment.tipo) {
+      case 'CARD':
+        return `Tarjeta terminada en ${payment.lastFourDigits || '----'}`;
+      case 'PAYPAL':
+        return 'PayPal';
+      case 'BIZUM':
+        return payment.lastFourDigits
+          ? `Bizum •••• ${payment.lastFourDigits}`
+          : 'Bizum';
+    }
   }
 
   showShippingAddress(orderId: string): void {
@@ -320,6 +355,16 @@ export class ClientOrders implements OnInit {
   setPaymentFilter(status: PaymentStatusFilter): void {
     this.paymentFilter.set(status);
     this.pageIndex.set(0);
+  }
+
+  showTransactions(): void {
+    this.clearFilters();
+    this.showingTransactions.set(true);
+  }
+
+  showOrders(): void {
+    this.clearFilters();
+    this.showingTransactions.set(false);
   }
 
   setPeriod(period: PeriodFilter): void {

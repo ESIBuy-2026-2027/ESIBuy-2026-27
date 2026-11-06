@@ -133,6 +133,7 @@
         <button type="button" (click)="loadReviewedPurchases()">Reintentar</button>
       </div>
       }
+      @if (!showingTransactions()) {
       <nav class="orders-tabs" aria-label="Filtrar pedidos por estado">
         @for (tab of orderStatusTabs; track tab.status) {
         <button type="button" class="orders-tab" [class.is-selected]="statusFilter() === tab.status"
@@ -141,6 +142,8 @@
         </button>
         }
       </nav>
+      }
+      @if (!showingTransactions()) {
       <section class="orders-toolbar" aria-label="Filtros adicionales de pedidos">
         <div class="orders-filter">
           <button type="button" class="filter-button" [class.is-active]="hasActiveFilters()"
@@ -163,6 +166,13 @@
               <option value="PAGADO">Pagado</option>
               <option value="PENDIENTE">Pendiente</option>
             </select>
+            <label for="orders-period">Periodo</label>
+            <select id="orders-period" [ngModel]="period()" (ngModelChange)="setPeriod($event)" name="ordersPeriod">
+              <option value="all">Todo el historial</option>
+              <option value="3months">Últimos 3 meses</option>
+              <option value="6months">Últimos 6 meses</option>
+              <option value="year">Último año</option>
+            </select>
             <label for="orders-sort">Ordenar por</label>
             <select id="orders-sort" [ngModel]="sortOrder()" (ngModelChange)="setSortOrder($event)"
               name="ordersSort">
@@ -176,23 +186,14 @@
         </div>
       </section>
 
-      <section class="orders-period-row" aria-label="Resumen y periodo de pedidos">
-        <div class="orders-results-meta">
-          <p class="orders-result-count" aria-live="polite">
-            <strong class="order-count">{{ filteredOrders().length }} {{ filteredOrders().length === 1 ? 'pedido' : 'pedidos' }}</strong>
-            {{ filteredOrders().length === 1 ? 'realizado' : 'realizados' }} en
-          </p>
-          <label for="orders-period">
-            <span class="visually-hidden">Periodo de pedidos</span>
-            <select id="orders-period" [ngModel]="period()" (ngModelChange)="setPeriod($event)" name="ordersPeriod">
-              <option value="all">Todo el historial</option>
-              <option value="3months">Últimos 3 meses</option>
-              <option value="6months">Últimos 6 meses</option>
-              <option value="year">Último año</option>
-            </select>
-          </label>
-        </div>
-        <span class="orders-page-range">{{ pageLabel() }}</span>
+      <section class="orders-period-row" aria-label="Resumen de pedidos">
+        <p class="orders-result-count" aria-live="polite">
+          <strong>{{ filteredOrders().length }} {{ filteredOrders().length === 1 ? 'pedido' : 'pedidos' }}</strong>
+          {{ filteredOrders().length === 1 ? 'realizado' : 'realizados' }}
+        </p>
+        <button type="button" class="transactions-link" (click)="showTransactions()">
+          Ver transacciones
+        </button>
       </section>
 
         @if (filteredOrders().length === 0) {
@@ -418,6 +419,38 @@
             </nav>
           }
         }
+      } @else {
+      <section class="transactions-heading" aria-labelledby="transactions-title">
+        <div>
+          <h2 id="transactions-title">Transacciones</h2>
+          <p>Pagos realizados de tus pedidos</p>
+        </div>
+        <button type="button" class="transactions-link" (click)="showOrders()">Volver a mis pedidos</button>
+      </section>
+      @if (transactions().length === 0) {
+      <div class="empty-state">
+        <h3>No tienes transacciones</h3>
+        <p>Los pagos completados de tus pedidos aparecerán aquí.</p>
+      </div>
+      } @else {
+      <section class="transactions-list" aria-label="Pagos realizados">
+        @for (transaction of transactions(); track transaction.pedidoId) {
+        <a class="transaction-row" [routerLink]="['/client/orders', transaction.pedidoId]">
+          <span class="transaction-details">
+            <strong>{{ formatTransactionDate(transaction.fechaCreacion) }}</strong>
+            <span>{{ getPaymentMethodLabel(transaction) }}</span>
+            <span>Pedido n.º {{ transaction.pedidoId }}</span>
+          </span>
+          <span class="transaction-payment">
+            <strong>−{{ formatPrice(transaction.total) }}</strong>
+            <span>Cobrado</span>
+          </span>
+          <span class="transaction-chevron" aria-hidden="true">›</span>
+        </a>
+        }
+      </section>
+      }
+      }
       }
     </main>
   </div>

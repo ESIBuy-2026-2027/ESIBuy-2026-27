@@ -53,10 +53,12 @@ describe('ClientOrders', () => {
     expect(el.querySelector('.orders-tab.is-selected')?.textContent).toContain('Pedidos');
     expect(el.querySelector('.filter-button')?.textContent).toContain('Filtrar');
     expect(el.querySelector('#orders-payment')).toBeNull();
+    expect(el.querySelector('#orders-period')).toBeNull();
 
     (el.querySelector('.filter-button') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(el.querySelector('#orders-payment')).toBeTruthy();
+    expect(el.querySelector('#orders-period')).toBeTruthy();
     expect(el.querySelector('#orders-sort')).toBeTruthy();
 
     const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
@@ -190,7 +192,7 @@ describe('ClientOrders', () => {
     expect(element.textContent).not.toContain('#pending');
   });
 
-  it('should place the total count beside the visible range below the search and filter toolbar', () => {
+  it('should show the order count and transactions action below the toolbar', () => {
     component.orders.set([
       { pedidoId: 'order-1', fechaCreacion: '2026-10-28T12:00:00', items: [], total: 0, estado: 'PENDIENTE', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
       { pedidoId: 'order-2', fechaCreacion: '2026-10-27T12:00:00', items: [], total: 0, estado: 'ENTREGADO', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
@@ -198,11 +200,11 @@ describe('ClientOrders', () => {
     fixture.detectChanges();
 
     const element: HTMLElement = fixture.nativeElement;
-    const periodRow = element.querySelector('.orders-period-row') as HTMLElement;
+    const summaryRow = element.querySelector('.orders-period-row') as HTMLElement;
 
-    expect(periodRow.querySelector('.orders-result-count')?.textContent).toContain('2 pedidos realizados en');
-    expect(periodRow.querySelector('.orders-page-range')?.textContent).toContain('1–2 de 2');
-    expect(periodRow.querySelector('#orders-period')).toBeTruthy();
+    expect(summaryRow.querySelector('.orders-result-count')?.textContent).toContain('2 pedidos realizados');
+    expect(summaryRow.querySelector('.transactions-link')?.textContent).toContain('Ver transacciones');
+    expect(summaryRow.querySelector('#orders-period')).toBeNull();
     expect(element.querySelector('.orders-toolbar .order-count')).toBeNull();
   });
 
@@ -226,7 +228,7 @@ describe('ClientOrders', () => {
     expect(pendingTab.getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('filters orders using the period selector shown beside the result count', () => {
+  it('filters orders using the period selector in additional filters', () => {
     component.orders.set([
       { pedidoId: 'old-order', fechaCreacion: '2026-01-01T10:00:00', items: [], total: 0, estado: 'ENTREGADO', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
       { pedidoId: 'recent-order', fechaCreacion: '2026-10-28T10:00:00', items: [], total: 0, estado: 'ENTREGADO', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: null },
@@ -234,6 +236,8 @@ describe('ClientOrders', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
+    (element.querySelector('.filter-button') as HTMLButtonElement).click();
+    fixture.detectChanges();
     const periodSelect = element.querySelector('#orders-period') as HTMLSelectElement;
     periodSelect.value = '3months';
     periodSelect.dispatchEvent(new Event('change'));
@@ -243,6 +247,41 @@ describe('ClientOrders', () => {
     expect(element.querySelectorAll('.order-row')).toHaveLength(1);
     expect(element.textContent).toContain('#recent-order');
     expect(element.textContent).not.toContain('#old-order');
+  });
+
+  it('shows completed payments as transactions and clears other filters', () => {
+    component.orders.set([
+      { pedidoId: 'paid-order', fechaCreacion: '2026-10-28T10:00:00', items: [], total: 25, estado: 'ENTREGADO', estadoPago: 'PAGADO', direccionEnvio: null, metodoPago: { tipo: 'CARD', lastFourDigits: '5534' } },
+      { pedidoId: 'pending-payment', fechaCreacion: '2026-10-27T10:00:00', items: [], total: 12, estado: 'PENDIENTE', estadoPago: 'PENDIENTE', direccionEnvio: null, metodoPago: null },
+    ]);
+    component.setSearchQuery('no coincide');
+    component.setPeriod('3months');
+    component.setStatusFilter('ENTREGADO');
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    (element.querySelector('.transactions-link') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(component.searchQuery()).toBe('');
+    expect(component.period()).toBe('all');
+    expect(component.statusFilter()).toBe('TODOS');
+    expect(component.paymentFilter()).toBe('TODOS');
+    expect(component.showingTransactions()).toBe(true);
+    expect(element.querySelectorAll('.transaction-row')).toHaveLength(1);
+    expect(element.textContent).toContain('Transacciones');
+    expect(element.textContent).toContain('Tarjeta terminada en 5534');
+    expect(element.textContent).toContain('Pedido n.º paid-order');
+    expect(element.textContent).not.toContain('pending-payment');
+    expect(element.querySelector('.orders-tabs')).toBeNull();
+    expect((element.querySelector('.transaction-row') as HTMLAnchorElement).getAttribute('href'))
+      .toBe('/client/orders/paid-order');
+
+    (element.querySelector('.transactions-heading .transactions-link') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(component.showingTransactions()).toBe(false);
+    expect(component.paymentFilter()).toBe('TODOS');
+    expect(element.querySelector('.orders-tabs')).toBeTruthy();
   });
 
   it('should provide a clear details link without a reorder button on the order list', () => {
