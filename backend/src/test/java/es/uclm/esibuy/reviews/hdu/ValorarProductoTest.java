@@ -1,37 +1,39 @@
 package es.uclm.esibuy.reviews.hdu;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.verify;
-
-import es.uclm.esibuy.reviews.model.Review;
-
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.api.function.Executable;
+import org.springframework.dao.DuplicateKeyException;
 
 import es.uclm.esibuy.orders.model.Order;
 import es.uclm.esibuy.orders.model.OrderItem;
 import es.uclm.esibuy.orders.model.OrderStatus;
 import es.uclm.esibuy.orders.repository.OrderRepository;
+import es.uclm.esibuy.products.model.Product;
+import es.uclm.esibuy.products.model.ProductDetails;
+import es.uclm.esibuy.products.repository.ProductRepository;
+import es.uclm.esibuy.reviews.dto.ReviewSummaryResponse;
 import es.uclm.esibuy.reviews.model.Review;
 import es.uclm.esibuy.reviews.repository.ReviewRepository;
 import es.uclm.esibuy.reviews.service.ReviewService;
-import es.uclm.esibuy.reviews.repository.ReviewRepository;
 
 @ExtendWith(MockitoExtension.class)
 class ValorarProductoTest {
@@ -49,6 +51,9 @@ class ValorarProductoTest {
         private ReviewRepository reviewRepository;
 
         @Mock
+        private ProductRepository productRepository;
+
+        @Mock
         private Order order;
 
         private ReviewService reviewService;
@@ -57,7 +62,8 @@ class ValorarProductoTest {
         void setUp() {
                 reviewService = new ReviewService(
                                 orderRepository,
-                                reviewRepository);
+                                reviewRepository,
+                                productRepository);
         }
 
         @Test
@@ -75,6 +81,12 @@ class ValorarProductoTest {
 
                 // Assert
                 assertDoesNotThrow(accion);
+                verify(reviewRepository).save(argThat(review ->
+                                review.getCustomerId().equals(CUSTOMER_ID)
+                                                && review.getOrderId().equals(ORDER_ID)
+                                                && review.getProductId().equals(PRODUCT_ID)
+                                                && review.getRating() == RATING
+                                                && review.getComment().equals(COMMENT)));
         }
 
         private void prepararPedidoEntregadoConProducto() {
@@ -137,13 +149,18 @@ class ValorarProductoTest {
         @Test
         void unClientePuedeValorarUnProductoSinComentario() {
                 // Arrange
-                String comentario = null;
+                prepararPedidoEntregadoConProducto();
 
                 // Act
-                boolean esComentarioValido = reviewService.isValidComment(comentario);
+                reviewService.createReview(
+                                CUSTOMER_ID,
+                                ORDER_ID,
+                                PRODUCT_ID,
+                                RATING,
+                                null);
 
                 // Assert
-                assertTrue(esComentarioValido);
+                verify(reviewRepository).save(argThat(review -> review.getComment() == null));
         }
 
         @Test
@@ -177,6 +194,98 @@ class ValorarProductoTest {
 
                 // Assert
                 verify(reviewRepository).save(review);
+        }
+
+        @Test
+        void unClienteNoPuedeCrearDosValoracionesParaElMismoProductoEnLaCompra() {
+                prepararPedidoEntregadoConProducto();
+                when(reviewRepository.existsByCustomerIdAndOrderIdAndProductId(
+                                CUSTOMER_ID,
+                                ORDER_ID,
+                                PRODUCT_ID))
+                                .thenReturn(true);
+
+                assertThrows(IllegalArgumentException.class, () -> reviewService.createReview(
+                                CUSTOMER_ID,
+                                ORDER_ID,
+                                PRODUCT_ID,
+                                RATING,
+                                COMMENT));
+
+                verify(reviewRepository, never()).save(org.mockito.ArgumentMatchers.any(Review.class));
+        }
+
+        @Test
+        void rechazaUnDuplicadoDetectadoPorElIndiceUnicoDeMongo() {
+                prepararPedidoEntregadoConProducto();
+                when(reviewRepository.save(org.mockito.ArgumentMatchers.any(Review.class)))
+                                .thenThrow(new DuplicateKeyException("duplicate review"));
+
+                IllegalArgumentException exception = assertThrows(
+                                IllegalArgumentException.class,
+                                () -> reviewService.createReview(
+                                                CUSTOMER_ID,
+                                                ORDER_ID,
+                                                PRODUCT_ID,
+                                                RATING,
+                                                COMMENT));
+
+                assertTrue(exception.getMessage().contains("ya ha valorado"));
+                verify(productRepository, never()).save(org.mockito.ArgumentMatchers.any(Product.class));
+        }
+
+        @Test
+        void alGuardarValoracionActualizaElPromedioYElContadorDelProducto() {
+                prepararPedidoEntregadoConProducto();
+                Product product = new Product(new ProductDetails(
+                                "Producto de prueba",
+                                List.of(),
+                                1,
+                                null,
+                                BigDecimal.TEN,
+                                null,
+                                null,
+                                null,
+                                true,
+                                "vendedor-1"));
+                when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
+
+                reviewService.createReview(CUSTOMER_ID, ORDER_ID, PRODUCT_ID, RATING, COMMENT);
+
+                assertEquals(5.0, product.getRating());
+                assertEquals(1, product.getReviewCount());
+                verify(productRepository).save(product);
+
+                product.addRating(3);
+
+                assertEquals(4.0, product.getRating());
+                assertEquals(2, product.getReviewCount());
+        }
+
+        @Test
+        void devuelveElPromedioElTotalYLasValoracionesDelProducto() {
+                Review firstReview = new Review(CUSTOMER_ID, ORDER_ID, PRODUCT_ID, 4, "Correcto");
+                Review secondReview = new Review("cliente-2", "pedido-2", PRODUCT_ID, 2, "Regular");
+                when(reviewRepository.findAllByProductIdOrderByCreatedAtDesc(PRODUCT_ID))
+                                .thenReturn(List.of(firstReview, secondReview));
+
+                ReviewSummaryResponse summary = reviewService.getProductReviewSummary(PRODUCT_ID);
+
+                assertEquals(3.0, summary.averageRating());
+                assertEquals(2, summary.reviewCount());
+                assertEquals(2, summary.reviews().size());
+        }
+
+        @Test
+        void productoSinValoracionesNoTienePromedioNiResenas() {
+                when(reviewRepository.findAllByProductIdOrderByCreatedAtDesc(PRODUCT_ID))
+                                .thenReturn(List.of());
+
+                ReviewSummaryResponse summary = reviewService.getProductReviewSummary(PRODUCT_ID);
+
+                assertNull(summary.averageRating());
+                assertEquals(0, summary.reviewCount());
+                assertTrue(summary.reviews().isEmpty());
         }
 
         private Review prepararValoracion() {

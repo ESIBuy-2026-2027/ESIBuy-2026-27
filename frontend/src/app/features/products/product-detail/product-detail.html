@@ -118,11 +118,21 @@
         <!-- VALORACIÓN Y DISPONIBILIDAD -->
         <div class="rating-availability-row">
           <div class="stars-badge">
-            <span class="star-icon">★</span>
-            <span class="rating-value">
-              {{ (p.rating ?? 5.0).toFixed(1) }}
-            </span>
-            <span class="rating-label">/ 5.0</span>
+            @if (reviewsLoading()) {
+              <span class="rating-label">Cargando valoraciones...</span>
+            } @else if (reviewSummary(); as summary) {
+              @if (summary.reviewCount > 0 && summary.averageRating !== null) {
+                <span class="star-icon" aria-hidden="true">★</span>
+                <span class="rating-value">{{ formatRating(summary.averageRating) }}</span>
+                <span class="rating-label">({{ summary.reviewCount }} valoraciones)</span>
+              } @else {
+                <span class="rating-label">Sin valoraciones</span>
+              }
+            } @else if (reviewsError()) {
+              <span class="rating-label">Valoraciones no disponibles</span>
+            } @else {
+              <span class="rating-label">Sin valoraciones</span>
+            }
           </div>
 
           <span class="separator">·</span>
@@ -259,6 +269,40 @@
             {{ p.description || 'El vendedor no ha incluido una descripción para este producto.' }}
           </p>
         </div>
+
+        <section class="product-reviews" aria-labelledby="product-reviews-title">
+          <h2 id="product-reviews-title">Valoraciones de clientes</h2>
+          @if (reviewsLoading()) {
+            <p class="reviews-feedback" aria-live="polite">Cargando valoraciones...</p>
+          } @else if (reviewsError()) {
+            <p class="reviews-feedback is-error" role="alert">
+              No se pudieron cargar las valoraciones.
+              <button type="button" (click)="loadProductReviews(p.id)">Reintentar</button>
+            </p>
+          } @else if (reviewSummary(); as summary) {
+            @if (summary.reviewCount === 0) {
+              <p class="reviews-feedback">Este producto todavía no tiene valoraciones.</p>
+            } @else {
+              <ol class="product-review-list">
+                @for (review of summary.reviews; track review.createdAt + $index) {
+                  <li class="product-review">
+                    <div class="product-review-heading">
+                      <span class="product-review-rating" [attr.aria-label]="review.rating + ' de 5 estrellas'">
+                        <span aria-hidden="true">★</span> {{ review.rating }}/5
+                      </span>
+                      <time [attr.datetime]="review.createdAt">{{ formatReviewDate(review.createdAt) }}</time>
+                    </div>
+                    @if (review.comment?.trim()) {
+                      <p>{{ review.comment }}</p>
+                    } @else {
+                      <p class="review-no-comment">Sin comentario</p>
+                    }
+                  </li>
+                }
+              </ol>
+            }
+          }
+        </section>
 
         <!-- BLOQUE DE COMPRA -->
         <div class="purchase-box">

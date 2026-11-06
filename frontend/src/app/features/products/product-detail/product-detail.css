@@ -542,6 +542,86 @@
   overflow-wrap: anywhere;
 }
 
+.product-reviews {
+  margin-bottom: 28px;
+}
+
+.product-reviews h2 {
+  margin: 0 0 12px;
+  color: #334155;
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.reviews-feedback {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.reviews-feedback.is-error {
+  color: #b42318;
+}
+
+.reviews-feedback button {
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #176b70;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.product-review-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.product-review {
+  padding: 12px 14px;
+  border: 1px solid #dce6ea;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.product-review-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.product-review-rating {
+  color: #8a5a00;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.product-review-heading time {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.product-review p {
+  margin: 8px 0 0;
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.product-review p.review-no-comment {
+  color: #64748b;
+  font-style: italic;
+}
+
 /* Zona de compra */
 .purchase-box {
   width: 100%;

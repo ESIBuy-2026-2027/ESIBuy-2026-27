@@ -2,7 +2,9 @@ package es.uclm.esibuy.reviews.controller;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
@@ -17,7 +19,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 import es.uclm.esibuy.common.exception.ApiExceptionHandler;
 import es.uclm.esibuy.reviews.service.ReviewService;
@@ -95,5 +96,34 @@ class ReviewControllerTest {
                 .content(reviewRequest()))
                 .andExpect(status().isCreated())
                 .andExpect(content().string("Valoración creada correctamente"));
+    }
+
+    @Test
+    void noPermiteUnaPuntuacionFueraDelRango() throws Exception {
+        mockMvc.perform(post(API)
+                .with(authentication(authenticationFor(UserRole.CLIENT)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                            "orderId": "pedido-123",
+                            "productId": "producto-1",
+                            "rating": 6
+                        }
+                        """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void lasValoracionesDeUnProductoSonPublicas() throws Exception {
+        mockMvc.perform(get(API + "/product/producto-1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void soloElClientePuedeConsultarSusComprasValoradas() throws Exception {
+        mockMvc.perform(get(API + "/mine")
+                .with(authentication(authenticationFor(UserRole.SELLER))))
+                .andExpect(status().isForbidden());
     }
 }

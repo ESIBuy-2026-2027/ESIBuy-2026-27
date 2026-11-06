@@ -20,7 +20,8 @@ export interface ProductItem {
   imageUrl?: string | null;
   available: boolean;
   sellerId: string;
-  rating?: number;
+  rating?: number | null;
+  reviewCount?: number;
   sellerName?: string | null;
 }
 
@@ -61,7 +62,8 @@ export interface ProductDetails {
   imageUrl: string | null;
   available: boolean;
   sellerId: string;
-  rating?: number;
+  rating?: number | null;
+  reviewCount?: number;
   sellerName?: string | null;
 }
 
