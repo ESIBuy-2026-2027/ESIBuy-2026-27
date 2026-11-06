@@ -1,5 +1,6 @@
 <div class="admin-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
-  <app-shared-sidebar variant="admin" [collapsed]="sidebarCollapsed()" (collapsedChange)="sidebarCollapsed.set($event)"></app-shared-sidebar>
+  <app-shared-sidebar variant="admin" [collapsed]="sidebarCollapsed()"
+    (collapsedChange)="sidebarCollapsed.set($event)"></app-shared-sidebar>
 
 
   <div class="admin-workspace app-workspace">
