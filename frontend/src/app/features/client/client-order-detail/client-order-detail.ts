@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
@@ -30,6 +30,8 @@ export class ClientOrderDetail implements OnInit {
   readonly actionError = signal<string | null>(null);
   readonly addingProductId = signal<string | null>(null);
   readonly cancellingOrder = signal(false);
+  readonly cancellationDialogOpen = signal(false);
+  readonly orderToCancel = signal<CustomerOrder | null>(null);
   readonly confirmingReceipt = signal(false);
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
@@ -132,12 +134,28 @@ export class ClientOrderDetail implements OnInit {
       });
   }
 
-  cancelOrder(order: CustomerOrder): void {
+  openCancellationDialog(order: CustomerOrder): void {
     if (this.cancellingOrder() || !this.canCancelOrder(order)) {
       return;
     }
 
-    if (!window.confirm('¿Quieres cancelar este pedido?')) {
+    this.actionError.set(null);
+    this.orderToCancel.set(order);
+    this.cancellationDialogOpen.set(true);
+  }
+
+  @HostListener('document:keydown.escape')
+  closeCancellationDialog(): void {
+    if (this.cancellingOrder()) {
+      return;
+    }
+    this.cancellationDialogOpen.set(false);
+    this.orderToCancel.set(null);
+  }
+
+  confirmCancellation(): void {
+    const order = this.orderToCancel();
+    if (this.cancellingOrder() || !order || !this.canCancelOrder(order)) {
       return;
     }
 
@@ -146,7 +164,11 @@ export class ClientOrderDetail implements OnInit {
     this.pedidoService.cancelarPedido(order.pedidoId)
       .pipe(finalize(() => this.cancellingOrder.set(false)))
       .subscribe({
-        next: () => this.order.set({ ...order, estado: 'CANCELADO' }),
+        next: () => {
+          this.order.set({ ...order, estado: 'CANCELADO' });
+          this.cancellationDialogOpen.set(false);
+          this.orderToCancel.set(null);
+        },
         error: (error: HttpErrorResponse) => this.actionError.set(
           this.getCancellationErrorMessage(error),
         ),
