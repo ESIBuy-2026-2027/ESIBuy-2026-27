@@ -3,8 +3,48 @@
 @import './styles/tokens.css';
 @import './app/features/products/seller-shared.css';
 
+/* ========================================
+   GLOBAL DESIGN FOUNDATIONS
+   ======================================== */
+
+html {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background: var(--color-page-background);
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
+  min-width: 320px;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background: var(--color-page-background);
+}
+
+::selection {
+  color: var(--color-text-inverse);
+  background: var(--color-brand-dark);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Sidebar común del panel de administración */
