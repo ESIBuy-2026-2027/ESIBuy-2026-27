@@ -9,6 +9,7 @@ import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService, AuthenticatedUser } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
+import { ReviewsService } from '../../../core/services/reviews.service';
 import { ADMIN_READONLY_ERROR_MESSAGE } from '../../../core/services/admin-product.service';
 
 describe('ProductDetail', () => {
@@ -18,6 +19,7 @@ describe('ProductDetail', () => {
   let wishlistServiceMock: any;
   let toastServiceMock: any;
   let cartServiceMock: any;
+  let reviewsServiceMock: any;
   let currentUserSignal = signal<AuthenticatedUser | null>(null);
   let cartSignal = signal<any>(null);
 
@@ -72,6 +74,17 @@ describe('ProductDetail', () => {
       itemCount: vi.fn(() => 0),
     };
 
+    reviewsServiceMock = {
+      getProductReviews: vi.fn(() => of({
+        averageRating: 4.5,
+        reviewCount: 2,
+        reviews: [
+          { rating: 5, comment: 'Muy buen producto', createdAt: '2026-11-01T10:00:00' },
+          { rating: 4, comment: null, createdAt: '2026-10-28T10:00:00' },
+        ],
+      })),
+    };
+
     await TestBed.configureTestingModule({
       imports: [ProductDetail],
       providers: [
@@ -85,6 +98,7 @@ describe('ProductDetail', () => {
         { provide: ToastService, useValue: toastServiceMock },
         { provide: AuthService, useValue: { currentUser: currentUserSignal } },
         { provide: CartService, useValue: cartServiceMock },
+        { provide: ReviewsService, useValue: reviewsServiceMock },
       ],
     }).compileComponents();
 
@@ -113,6 +127,16 @@ describe('ProductDetail', () => {
     expect(vendorRow).not.toBeNull();
     expect(vendorRow?.textContent).toContain('Proveedor:');
     expect(vendorRow?.textContent).toContain('Móviles del Sur SL');
+  });
+
+  it('renders the real review average, count and public comments', () => {
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('.rating-value')?.textContent).toContain('4,5');
+    expect(element.querySelector('.rating-label')?.textContent).toContain('2 valoraciones');
+    expect(element.querySelectorAll('.product-review')).toHaveLength(2);
+    expect(element.querySelector('.product-review')?.textContent).toContain('Muy buen producto');
+    expect(element.textContent).toContain('Sin comentario');
   });
 
   it('shows low positive stock with the warning color', () => {

@@ -131,6 +131,7 @@ public class SecurityConfig {
                                                                         "/api/products",
                                                                         "/api/products/*",
                                                                         "/api/products/*/image",
+                                                                        "/api/reviews/product/*",
                                                                         API_PRODUCT_PREFIX)
                                                         .permitAll()
                                                         .requestMatchers("/api/catalog/**").hasRole(ROLE_CLIENT)

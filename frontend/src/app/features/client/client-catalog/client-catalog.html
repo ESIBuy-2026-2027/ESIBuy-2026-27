@@ -307,7 +307,14 @@
               </div>
               }
 
-              <span class="rating-tag">★ {{ (product.rating ?? 5.0).toFixed(1) }}</span>
+              @if (product.rating != null) {
+              <span class="rating-tag">
+                ★ {{ product.rating.toFixed(1) }}
+                @if (product.reviewCount) { <span>({{ product.reviewCount }})</span> }
+              </span>
+              } @else {
+              <span class="rating-tag">Sin valoraciones</span>
+              }
             </div>
 
             <div class="product-card-body">

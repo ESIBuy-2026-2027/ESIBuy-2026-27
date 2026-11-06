@@ -24,7 +24,8 @@ public class Product {
     private String imageContentType;
     private boolean available;
     private String sellerId;
-    private Double rating = 5.0;
+    private Double rating;
+    private int reviewCount;
 
     protected Product() {
     }
@@ -149,11 +150,22 @@ public class Product {
     }
 
     public Double getRating() {
-        return rating != null ? rating : 5.0;
+        return reviewCount > 0 ? rating : null;
     }
 
     public void setRating(Double rating) {
         this.rating = rating;
+    }
+
+    public int getReviewCount() {
+        return reviewCount;
+    }
+
+    public void addRating(int newRating) {
+        Double previousRating = getRating();
+        double previousTotal = previousRating == null ? 0.0 : previousRating * reviewCount;
+        this.rating = (previousTotal + newRating) / (reviewCount + 1);
+        reviewCount++;
     }
 
     public void updateDetails(ProductDetails details) {

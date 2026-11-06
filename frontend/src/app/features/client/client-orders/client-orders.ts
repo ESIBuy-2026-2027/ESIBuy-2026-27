@@ -1,6 +1,8 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { ReviewsService } from '../../../core/services/reviews.service';
 import {
   CustomerOrder,
   CustomerOrderFulfillmentStatus,
@@ -24,6 +26,7 @@ type PaymentStatusFilter = CustomerOrderPaymentStatus | 'TODOS';
 })
 export class ClientOrders implements OnInit {
   private readonly pedidoService = inject(PedidoService);
+  private readonly reviewsService = inject(ReviewsService);
   readonly orderStatusTabs: ReadonlyArray<{ label: string; status: OrderStatusFilter }> = [
     { label: 'Todos', status: 'TODOS' },
     { label: 'Pendientes', status: 'PENDIENTE' },
@@ -45,6 +48,19 @@ export class ClientOrders implements OnInit {
   readonly pageSize = 10;
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
+  readonly ratingOptions = [1, 2, 3, 4, 5];
+  readonly reviewedPurchaseKeys = signal<ReadonlySet<string>>(new Set());
+  readonly reviewStateLoading = signal(true);
+  readonly reviewStateError = signal<string | null>(null);
+  readonly activeReviewKey = signal<string | null>(null);
+  readonly reviewRating = signal(0);
+  readonly reviewComment = signal('');
+  readonly reviewSubmitting = signal(false);
+  readonly reviewFeedback = signal<{
+    key: string;
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
   readonly hasActiveFilters = computed(() =>
     this.statusFilter() !== 'TODOS'
     || this.paymentFilter() !== 'TODOS'
@@ -103,12 +119,111 @@ export class ClientOrders implements OnInit {
       next: (orders) => {
         this.orders.set(orders);
         this.loading.set(false);
+        this.loadReviewedPurchases();
       },
       error: () => {
         this.error.set('No se pudo cargar tu historial de compras. Inténtalo de nuevo.');
         this.loading.set(false);
       },
     });
+  }
+
+  loadReviewedPurchases(): void {
+    this.reviewStateLoading.set(true);
+    this.reviewStateError.set(null);
+    this.reviewsService.getMyReviewedPurchases().subscribe({
+      next: (purchases) => {
+        this.reviewedPurchaseKeys.set(new Set(
+          purchases.map((purchase) => this.reviewKey(purchase.orderId, purchase.productId)),
+        ));
+        this.reviewStateLoading.set(false);
+      },
+      error: () => {
+        this.reviewStateError.set('No se pudo comprobar qué productos ya has valorado.');
+        this.reviewStateLoading.set(false);
+      },
+    });
+  }
+
+  reviewKey(orderId: string, productId: string): string {
+    return `${orderId}::${productId}`;
+  }
+
+  isReviewed(orderId: string, productId: string): boolean {
+    return this.reviewedPurchaseKeys().has(this.reviewKey(orderId, productId));
+  }
+
+  isReviewFormOpen(orderId: string, productId: string): boolean {
+    return this.activeReviewKey() === this.reviewKey(orderId, productId);
+  }
+
+  openReviewForm(orderId: string, productId: string): void {
+    const key = this.reviewKey(orderId, productId);
+    if (this.reviewStateLoading() || this.isReviewed(orderId, productId)) {
+      return;
+    }
+
+    this.activeReviewKey.set(key);
+    this.reviewRating.set(0);
+    this.reviewComment.set('');
+    this.reviewFeedback.set(null);
+  }
+
+  closeReviewForm(): void {
+    this.activeReviewKey.set(null);
+    this.reviewFeedback.set(null);
+  }
+
+  submitReview(orderId: string, productId: string): void {
+    const rating = this.reviewRating();
+    if (this.reviewSubmitting() || rating < 1 || rating > 5) {
+      return;
+    }
+
+    const key = this.reviewKey(orderId, productId);
+    this.reviewSubmitting.set(true);
+    this.reviewFeedback.set(null);
+    this.reviewsService.createReview({
+      orderId,
+      productId,
+      rating,
+      comment: this.reviewComment().trim() || null,
+    }).subscribe({
+      next: () => {
+        this.reviewedPurchaseKeys.update((keys) => new Set(keys).add(key));
+        this.reviewFeedback.set({
+          key,
+          type: 'success',
+          message: 'Tu valoración se ha guardado correctamente.',
+        });
+        this.activeReviewKey.set(null);
+        this.reviewSubmitting.set(false);
+      },
+      error: (error: unknown) => {
+        this.reviewFeedback.set({
+          key,
+          type: 'error',
+          message: this.getReviewErrorMessage(error),
+        });
+        this.reviewSubmitting.set(false);
+      },
+    });
+  }
+
+  private getReviewErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const response: unknown = error.error;
+      if (
+        response !== null
+        && typeof response === 'object'
+        && 'message' in response
+        && typeof response.message === 'string'
+      ) {
+        return response.message;
+      }
+    }
+
+    return 'No se pudo guardar la valoración. Inténtalo de nuevo.';
   }
 
   formatPrice(price: number): string {

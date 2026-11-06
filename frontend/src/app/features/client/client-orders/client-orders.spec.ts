@@ -1,16 +1,25 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { describe, beforeEach, it, expect } from 'vitest';
+import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { ClientOrders } from './client-orders';
 import { CartService } from '../../../core/services/cart.service';
 import { PedidoService } from '../../../core/services/pedido.service';
+import { ReviewsService } from '../../../core/services/reviews.service';
 import { of } from 'rxjs';
 
 describe('ClientOrders', () => {
   let component: ClientOrders;
   let fixture: ComponentFixture<ClientOrders>;
+  let reviewsServiceMock: {
+    getMyReviewedPurchases: ReturnType<typeof vi.fn>;
+    createReview: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
+    reviewsServiceMock = {
+      getMyReviewedPurchases: vi.fn(() => of([])),
+      createReview: vi.fn(() => of('Valoración creada correctamente')),
+    };
     await TestBed.configureTestingModule({
       imports: [ClientOrders],
       providers: [
@@ -23,6 +32,7 @@ describe('ClientOrders', () => {
             obtenerHistorialEstadosEnvio: () => of({ historialEstados: [], estimatedDeliveryDate: null }),
           },
         },
+        { provide: ReviewsService, useValue: reviewsServiceMock },
       ],
     }).compileComponents();
 
@@ -54,6 +64,80 @@ describe('ClientOrders', () => {
     expect(navLinks[2].classList.contains('is-active')).toBe(true);
     expect(navLinks[2].querySelector('svg path')?.getAttribute('d')).toContain('M21 8');
     expect(navLinks[3].textContent).toContain('Carrito');
+  });
+
+  it('lets a client review an item from a delivered order and marks it as reviewed after saving', async () => {
+    component.orders.set([
+      {
+        pedidoId: 'delivered-1',
+        fechaCreacion: '2026-10-28T12:00:00',
+        items: [{
+          productoId: 'product-1',
+          nombre: 'Producto de prueba',
+          cantidad: 1,
+          precioUnitario: 10,
+          subtotal: 10,
+          imageUrl: null,
+        }],
+        total: 10,
+        estado: 'ENTREGADO',
+        estadoPago: 'PAGADO',
+        direccionEnvio: null,
+        metodoPago: null,
+      },
+    ]);
+    component.reviewStateLoading.set(false);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    (element.querySelector('.open-review-button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (element.querySelector('[aria-label="Puntuar con 5 de 5 estrellas"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const textarea = element.querySelector('.review-form textarea') as HTMLTextAreaElement;
+    textarea.value = 'Muy buen producto';
+    textarea.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    component.reviewComment.set('Muy buen producto');
+    (element.querySelector('.submit-review-button') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(reviewsServiceMock.createReview).toHaveBeenCalledWith({
+      orderId: 'delivered-1',
+      productId: 'product-1',
+      rating: 5,
+      comment: 'Muy buen producto',
+    });
+    expect(element.textContent).toContain('Tu valoración se ha guardado correctamente.');
+    expect(element.textContent).toContain('Ya has valorado esta compra');
+    expect(element.querySelector('.open-review-button')).toBeNull();
+  });
+
+  it('does not offer review actions for orders that are not delivered', () => {
+    component.orders.set([
+      {
+        pedidoId: 'pending-1',
+        fechaCreacion: '2026-10-28T12:00:00',
+        items: [{
+          productoId: 'product-1',
+          nombre: 'Producto de prueba',
+          cantidad: 1,
+          precioUnitario: 10,
+          subtotal: 10,
+          imageUrl: null,
+        }],
+        total: 10,
+        estado: 'ENVIADO',
+        estadoPago: 'PAGADO',
+        direccionEnvio: null,
+        metodoPago: null,
+      },
+    ]);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('.open-review-button')).toBeNull();
   });
 
   it('should show filters only when requested and apply the selected order status', async () => {

@@ -1,27 +1,40 @@
 package es.uclm.esibuy.reviews.service;
 
+import java.util.List;
 import java.util.Objects;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import es.uclm.esibuy.orders.model.Order;
 import es.uclm.esibuy.orders.model.OrderStatus;
 import es.uclm.esibuy.orders.repository.OrderRepository;
+import es.uclm.esibuy.products.model.Product;
+import es.uclm.esibuy.products.repository.ProductRepository;
+import es.uclm.esibuy.reviews.dto.ReviewResponse;
+import es.uclm.esibuy.reviews.dto.ReviewSummaryResponse;
+import es.uclm.esibuy.reviews.dto.ReviewedPurchaseResponse;
 import es.uclm.esibuy.reviews.model.Review;
 import es.uclm.esibuy.reviews.repository.ReviewRepository;
 
 @Service
 public class ReviewService {
 
+    private static final String DUPLICATE_REVIEW_MESSAGE =
+            "El cliente ya ha valorado este producto en este pedido";
+
     private final OrderRepository orderRepository;
     private final ReviewRepository reviewRepository;
+    private final ProductRepository productRepository;
 
     public ReviewService(
             OrderRepository orderRepository,
-            ReviewRepository reviewRepository) {
+            ReviewRepository reviewRepository,
+            ProductRepository productRepository) {
 
         this.orderRepository = Objects.requireNonNull(orderRepository);
         this.reviewRepository = Objects.requireNonNull(reviewRepository);
+        this.productRepository = Objects.requireNonNull(productRepository);
     }
 
     public void createReview(
@@ -40,7 +53,7 @@ public class ReviewService {
                     "El pedido todavía no ha sido entregado");
         }
 
-        if (rating < 1 || rating > 5) {
+        if (!isValidRating(rating)) {
             throw new IllegalArgumentException(
                     "La puntuación debe estar entre 1 y 5");
         }
@@ -49,6 +62,21 @@ public class ReviewService {
             throw new IllegalArgumentException(
                     "El cliente no ha comprado este producto");
         }
+
+        if (reviewRepository.existsByCustomerIdAndOrderIdAndProductId(
+                customerId,
+                orderId,
+                productId)) {
+            throw new IllegalArgumentException(DUPLICATE_REVIEW_MESSAGE);
+        }
+
+        try {
+            saveReview(new Review(customerId, orderId, productId, rating, comment));
+        } catch (DuplicateKeyException exception) {
+            throw new IllegalArgumentException(DUPLICATE_REVIEW_MESSAGE, exception);
+        }
+
+        productRepository.findById(productId).ifPresent(product -> updateProductRating(product, rating));
     }
 
     public boolean canCustomerRateProduct(
@@ -64,38 +92,22 @@ public class ReviewService {
             return false;
         }
 
-        return orderContainsProduct(order, productId);
+        return orderContainsProduct(order, productId)
+                && !reviewRepository.existsByCustomerIdAndOrderIdAndProductId(
+                        customerId,
+                        orderId,
+                        productId);
     }
 
     public boolean isValidRating(int rating) {
         return rating >= 1 && rating <= 5;
     }
 
-    public boolean isValidComment(String comment) {
-        return comment == null || comment.isEmpty();
-    }
-
     public boolean canCreateReview(
             String customerId,
             String orderId,
             String productId) {
-
-        var order = orderRepository.findByIdAndCustomerId(orderId, customerId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "El pedido no pertenece al cliente"));
-
-        if (order.getStatus() != OrderStatus.ENTREGADO) {
-            return false;
-        }
-
-        if (!orderContainsProduct(order, productId)) {
-            return false;
-        }
-
-        return !reviewRepository.existsByCustomerIdAndOrderIdAndProductId(
-                customerId,
-                orderId,
-                productId);
+        return canCustomerRateProduct(customerId, orderId, productId);
     }
 
     private boolean orderContainsProduct(Order order, String productId) {
@@ -105,5 +117,30 @@ public class ReviewService {
 
     public void saveReview(Review review) {
         reviewRepository.save(review);
+    }
+
+    public ReviewSummaryResponse getProductReviewSummary(String productId) {
+        List<Review> reviews = reviewRepository.findAllByProductIdOrderByCreatedAtDesc(productId);
+        Double averageRating = reviews.isEmpty()
+                ? null
+                : reviews.stream().mapToInt(Review::getRating).average().orElseThrow();
+        List<ReviewResponse> reviewResponses = reviews.stream()
+                .map(ReviewResponse::from)
+                .toList();
+
+        return new ReviewSummaryResponse(averageRating, reviews.size(), reviewResponses);
+    }
+
+    public List<ReviewedPurchaseResponse> getReviewedPurchases(String customerId) {
+        return reviewRepository.findAllByCustomerId(customerId).stream()
+                .map(review -> new ReviewedPurchaseResponse(
+                        review.getOrderId(),
+                        review.getProductId()))
+                .toList();
+    }
+
+    private void updateProductRating(Product product, int rating) {
+        product.addRating(rating);
+        productRepository.save(product);
     }
 }

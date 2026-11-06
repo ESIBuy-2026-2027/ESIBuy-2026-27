@@ -111,6 +111,12 @@
       <p class="orders-feedback is-error" role="alert">{{ error() }}</p>
       <button type="button" class="retry-button" (click)="loadOrders()">Volver a intentarlo</button>
       } @else {
+      @if (reviewStateError()) {
+      <div class="review-state-error" role="alert">
+        <p>{{ reviewStateError() }}</p>
+        <button type="button" (click)="loadReviewedPurchases()">Reintentar</button>
+      </div>
+      }
       <section class="orders-toolbar" aria-label="Buscar y filtrar pedidos">
         <label class="orders-search">
           <span class="visually-hidden">Buscar pedidos por número o producto</span>
@@ -299,6 +305,78 @@
                           <strong class="order-item-subtotal">{{
                             formatPrice(item.subtotal)
                           }}</strong>
+                          @if (order.estado === 'ENTREGADO') {
+                            <div class="review-control">
+                              @if (reviewFeedback(); as feedback) {
+                                @if (feedback.key === reviewKey(order.pedidoId, item.productoId)) {
+                                  <p
+                                    class="review-feedback"
+                                    [class.is-error]="feedback.type === 'error'"
+                                    [attr.role]="feedback.type === 'error' ? 'alert' : 'status'"
+                                  >{{ feedback.message }}</p>
+                                }
+                              }
+                              @if (reviewStateLoading()) {
+                                <span class="review-state-message">Comprobando valoraciones...</span>
+                              } @else if (reviewStateError()) {
+                                <span class="review-state-message">No disponible temporalmente</span>
+                              } @else if (isReviewed(order.pedidoId, item.productoId)) {
+                                <span class="reviewed-badge">Ya has valorado esta compra</span>
+                              } @else if (isReviewFormOpen(order.pedidoId, item.productoId)) {
+                                <form
+                                  class="review-form"
+                                  (ngSubmit)="submitReview(order.pedidoId, item.productoId)"
+                                >
+                                  <fieldset class="review-rating">
+                                    <legend>Tu puntuación</legend>
+                                    <div class="review-stars">
+                                      @for (star of ratingOptions; track star) {
+                                        <button
+                                          type="button"
+                                          class="review-star"
+                                          [class.is-selected]="star <= reviewRating()"
+                                          [attr.aria-label]="'Puntuar con ' + star + ' de 5 estrellas'"
+                                          [attr.aria-pressed]="reviewRating() === star"
+                                          (click)="reviewRating.set(star)"
+                                        >★</button>
+                                      }
+                                    </div>
+                                  </fieldset>
+                                  <label [for]="'review-comment-' + order.pedidoId + '-' + item.productoId">
+                                    Comentario (opcional)
+                                  </label>
+                                  <textarea
+                                    [id]="'review-comment-' + order.pedidoId + '-' + item.productoId"
+                                    [name]="'reviewComment-' + order.pedidoId + '-' + item.productoId"
+                                    [ngModel]="reviewComment()"
+                                    (ngModelChange)="reviewComment.set($event)"
+                                    rows="3"
+                                  ></textarea>
+                                  <div class="review-form-actions">
+                                    <button
+                                      type="submit"
+                                      class="submit-review-button"
+                                      [disabled]="reviewSubmitting() || reviewRating() === 0"
+                                    >
+                                      {{ reviewSubmitting() ? 'Enviando...' : 'Enviar valoración' }}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      class="cancel-review-button"
+                                      [disabled]="reviewSubmitting()"
+                                      (click)="closeReviewForm()"
+                                    >Cancelar</button>
+                                  </div>
+                                </form>
+                              } @else {
+                                <button
+                                  type="button"
+                                  class="open-review-button"
+                                  (click)="openReviewForm(order.pedidoId, item.productoId)"
+                                >Valorar producto</button>
+                              }
+                            </div>
+                          }
                         </li>
                       }
                     </ul>

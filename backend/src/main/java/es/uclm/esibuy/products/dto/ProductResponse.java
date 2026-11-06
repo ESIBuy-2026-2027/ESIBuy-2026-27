@@ -18,7 +18,8 @@ public record ProductResponse(
         boolean available,
         String sellerId,
         Double rating,
-        String sellerName) {
+        String sellerName,
+        int reviewCount) {
 
     public ProductResponse {
         categoryIds = List.copyOf(categoryIds);
@@ -36,7 +37,21 @@ public record ProductResponse(
             String imageUrl,
             boolean available,
             String sellerId) {
-        this(id, name, categoryIds, stock, description, price, discount, premiumDiscount, imageUrl, available, sellerId, 5.0, null);
+        this(
+                id,
+                name,
+                categoryIds,
+                stock,
+                description,
+                price,
+                discount,
+                premiumDiscount,
+                imageUrl,
+                available,
+                sellerId,
+                null,
+                null,
+                0);
     }
 
     public ProductResponse(
@@ -52,7 +67,52 @@ public record ProductResponse(
             boolean available,
             String sellerId,
             Double rating) {
-        this(id, name, categoryIds, stock, description, price, discount, premiumDiscount, imageUrl, available, sellerId, rating, null);
+        this(
+                id,
+                name,
+                categoryIds,
+                stock,
+                description,
+                price,
+                discount,
+                premiumDiscount,
+                imageUrl,
+                available,
+                sellerId,
+                rating,
+                null,
+                0);
+    }
+
+    public ProductResponse(
+            String id,
+            String name,
+            List<String> categoryIds,
+            int stock,
+            String description,
+            BigDecimal price,
+            BigDecimal discount,
+            BigDecimal premiumDiscount,
+            String imageUrl,
+            boolean available,
+            String sellerId,
+            Double rating,
+            String sellerName) {
+        this(
+                id,
+                name,
+                categoryIds,
+                stock,
+                description,
+                price,
+                discount,
+                premiumDiscount,
+                imageUrl,
+                available,
+                sellerId,
+                rating,
+                sellerName,
+                0);
     }
 
     public static ProductResponse from(Product product) {
@@ -73,6 +133,7 @@ public record ProductResponse(
                 product.isAvailable(),
                 product.getSellerId(),
                 product.getRating(),
-                sellerName);
+                sellerName,
+                product.getReviewCount());
     }
 }
