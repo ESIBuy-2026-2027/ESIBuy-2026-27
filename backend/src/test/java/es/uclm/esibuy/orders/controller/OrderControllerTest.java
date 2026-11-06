@@ -157,6 +157,10 @@ class OrderControllerTest {
                                                                 "1234",
                                                                 true)),
                                                 List.of(),
+                                                BigDecimal.ZERO,
+                                                BigDecimal.ZERO,
+                                                BigDecimal.ZERO,
+                                                BigDecimal.ZERO,
                                                 BigDecimal.ZERO));
 
                 mockMvc.perform(get(API + "/checkout-resumen")

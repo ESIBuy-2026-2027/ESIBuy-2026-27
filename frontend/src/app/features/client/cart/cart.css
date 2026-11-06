@@ -256,10 +256,30 @@
   text-align: right;
 }
 
-.checkout-total {
+.checkout-breakdown {
+  margin: 1.25rem 0 0;
+}
+
+.checkout-breakdown > div {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
+  padding: 0.45rem 0;
+}
+
+.checkout-breakdown dt,
+.checkout-breakdown dd {
+  margin: 0;
+}
+
+.checkout-breakdown dd {
+  text-align: right;
+}
+
+.checkout-breakdown .checkout-total {
+  margin-top: 0.5rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid #e6edf1;
   font-size: 1.1rem;
 }
 

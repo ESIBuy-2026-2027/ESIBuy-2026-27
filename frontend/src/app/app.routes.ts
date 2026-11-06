@@ -23,6 +23,8 @@ import { AdminProductList } from './features/admin/admin-product-list/admin-prod
 import { AdminIncidents } from './features/admin/admin-incidents/admin-incidents';
 import { ClientCart } from './features/client/cart/cart';
 import { PasswordRecovery } from './features/identity/password-recovery/password-recovery';
+import { GeneralConfigurationPage } from './features/admin/general-configuration/general-configuration';
+import { LegalPage } from './features/legal/legal-page';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -30,6 +32,7 @@ export const routes: Routes = [
   { path: 'recuperar-password', component: PasswordRecovery },
   { path: 'restablecer-password', component: PasswordRecovery },
   { path: 'register', component: Register },
+  { path: 'legal/:document', component: LegalPage },
 
   { path: 'admin/users/new', component: AdminUserCreate, canActivate: [authGuard, roleGuard('ADMIN')] },
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },
@@ -39,6 +42,7 @@ export const routes: Routes = [
   { path: 'admin/productos', component: AdminProductList, canActivate: [authGuard, roleGuard('ADMIN')] },
   { path: 'admin/products', redirectTo: 'admin/productos', pathMatch: 'full' },
   { path: 'admin/incidencias', component: AdminIncidents, canActivate: [authGuard, roleGuard('ADMIN')] },
+  { path: 'admin/configuracion', component: GeneralConfigurationPage, canActivate: [authGuard, roleGuard('ADMIN')] },
   { path: 'admin/incidents', redirectTo: 'admin/incidencias', pathMatch: 'full' },
 
   { path: 'admin', redirectTo: 'admin/usuarios', pathMatch: 'full' },

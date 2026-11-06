@@ -22,6 +22,10 @@ describe('PedidoService', () => {
       direcciones: [],
       metodosPago: [],
       items: [],
+      subtotal: 0,
+      ivaPorcentaje: 21,
+      ivaImporte: 0,
+      gastosEnvio: 0,
       precioTotal: 0,
     };
     let response: unknown;

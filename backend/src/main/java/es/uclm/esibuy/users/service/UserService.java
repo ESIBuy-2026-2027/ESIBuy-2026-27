@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import es.uclm.esibuy.auth.passwordreset.repository.PasswordResetTokenRepository;
 import es.uclm.esibuy.cart.model.Cart;
 import es.uclm.esibuy.cart.repository.CartRepository;
+import es.uclm.esibuy.configuration.service.GeneralConfigurationService;
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.common.exception.InvalidCredentialsException;
 import es.uclm.esibuy.common.exception.UserDeletionConflictException;
@@ -55,6 +56,7 @@ public class UserService {
     private final ProductRepository productRepository;
     private final PasswordEncoder passwordEncoder;
     private final CompromisedPasswordService compromisedPasswordService;
+    private final GeneralConfigurationService generalConfigurationService;
 
     public UserService(
             UserRepository userRepository,
@@ -66,7 +68,8 @@ public class UserService {
             EmailOtpChallengeRepository emailOtpChallengeRepository,
             PasswordResetTokenRepository passwordResetTokenRepository,
             LoginAttemptRepository loginAttemptRepository,
-            CompromisedPasswordService compromisedPasswordService) {
+            CompromisedPasswordService compromisedPasswordService,
+            GeneralConfigurationService generalConfigurationService) {
 
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -78,6 +81,7 @@ public class UserService {
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.loginAttemptRepository = loginAttemptRepository;
         this.compromisedPasswordService = compromisedPasswordService;
+        this.generalConfigurationService = generalConfigurationService;
     }
 
     public User registerClient(ClientRegistrationRequest request) {
@@ -85,6 +89,7 @@ public class UserService {
     }
 
     public User registerClient(ClientRegistrationRequest request, boolean isAutoActive) {
+        ensureRegistrationEnabled();
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new DuplicateUserException(MSG_DUPLICATE_EMAIL);
@@ -113,6 +118,7 @@ public class UserService {
     }
 
     public User registerSeller(SellerRegistrationRequest request, boolean isAutoActive) {
+        ensureRegistrationEnabled();
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new DuplicateUserException(MSG_DUPLICATE_EMAIL);
@@ -138,6 +144,14 @@ public class UserService {
         user.setSellerProfile(sellerProfile);
 
         return userRepository.save(user);
+    }
+
+    private void ensureRegistrationEnabled() {
+        if (!generalConfigurationService.isRegistrationEnabled()) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "El registro de nuevos usuarios está deshabilitado");
+        }
     }
 
     public User createAdmin(AdminCreateRequest request) {

@@ -19,6 +19,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 
 import es.uclm.esibuy.common.exception.PedidoNotFoundException;
 import es.uclm.esibuy.cart.repository.CartRepository;
+import es.uclm.esibuy.configuration.service.GeneralConfigurationService;
 import es.uclm.esibuy.orders.model.Order;
 import es.uclm.esibuy.orders.model.OrderItem;
 import es.uclm.esibuy.orders.model.OrderPaymentStatus;
@@ -59,6 +60,9 @@ class CancelarPedidoTest {
     private PaymentGateway paymentGateway;
 
     @Mock
+    private GeneralConfigurationService generalConfigurationService;
+
+    @Mock
     private Order order;
 
     private OrderService orderService;
@@ -71,7 +75,8 @@ class CancelarPedidoTest {
                 productRepository,
                 orderRepository,
                 mongoTemplate,
-                paymentGateway);
+                paymentGateway,
+                generalConfigurationService);
 
         when(userRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(createCustomer()));
         when(orderRepository.findByIdAndCustomerId(ORDER_ID, CUSTOMER_ID))
