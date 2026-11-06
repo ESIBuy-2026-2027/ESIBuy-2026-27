@@ -1,0 +1,27 @@
+<main class="legal-page">
+  <a class="back-link" routerLink="/">Volver a ESIBuy</a>
+
+  @if (legalDocument(); as document) {
+    <article class="legal-card">
+      <p class="draft-notice" role="note">
+        Borrador orientativo pendiente de revisión legal y de completar los datos reales del titular y del servicio.
+        No debe publicarse como texto definitivo.
+      </p>
+      <p class="eyebrow">INFORMACIÓN LEGAL</p>
+      <h1>{{ document.title }}</h1>
+      @for (section of document.sections; track section.heading) {
+        <section class="legal-section">
+          <h2>{{ section.heading }}</h2>
+          @for (paragraph of section.paragraphs; track paragraph) {
+            <p>{{ paragraph }}</p>
+          }
+        </section>
+      }
+    </article>
+  } @else {
+    <section class="legal-card not-found" aria-labelledby="legal-not-found">
+      <h1 id="legal-not-found">Documento no disponible</h1>
+      <p>El documento legal solicitado no existe.</p>
+    </section>
+  }
+</main>

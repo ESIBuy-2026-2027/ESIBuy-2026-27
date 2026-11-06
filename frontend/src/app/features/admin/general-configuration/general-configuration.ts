@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
   GeneralConfiguration,
   GeneralConfigurationService,
@@ -17,13 +17,14 @@ const DEFAULT_CONFIGURATION: GeneralConfiguration = {
 @Component({
   selector: 'app-general-configuration',
   standalone: true,
-  imports: [FormsModule, AppSidebarComponent],
+  imports: [FormsModule, RouterLink, RouterLinkActive],
   templateUrl: './general-configuration.html',
   styleUrl: './general-configuration.css',
 })
 export class GeneralConfigurationPage implements OnInit {
   private readonly configurationService = inject(GeneralConfigurationService);
 
+  readonly sidebarCollapsed = signal(false);
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -33,6 +34,10 @@ export class GeneralConfigurationPage implements OnInit {
 
   ngOnInit(): void {
     this.loadConfiguration();
+  }
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update((collapsed) => !collapsed);
   }
 
   loadConfiguration(): void {

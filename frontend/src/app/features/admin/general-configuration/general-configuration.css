@@ -5,16 +5,21 @@
   font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-.admin-page {
-  min-height: 100vh;
-  margin-left: 248px;
+:host,
+:host *,
+:host *::before,
+:host *::after {
+  box-sizing: border-box;
+}
+
+.admin-content {
+  width: min(940px, 100%);
+  margin: 0 auto;
   padding: 42px 40px 60px;
-  background: #edf2f8;
 }
 
 .settings-content {
-  width: min(940px, 100%);
-  margin: 0 auto;
+  width: 100%;
 }
 
 .page-heading {
@@ -76,7 +81,6 @@
 }
 
 .field input {
-  box-sizing: border-box;
   width: 100%;
   min-height: 46px;
   padding: 10px 12px;
@@ -189,9 +193,7 @@
 }
 
 @media (max-width: 760px) {
-  .admin-page {
-    min-height: calc(100vh - 130px);
-    margin-left: 0;
+  .admin-content {
     padding: 26px 18px 40px;
   }
 

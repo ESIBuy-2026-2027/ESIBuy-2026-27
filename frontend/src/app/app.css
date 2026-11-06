@@ -225,6 +225,46 @@
   padding-top: var(--app-header-height);
 }
 
+.site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem clamp(1rem, 4vw, 2.5rem);
+  border-top: 1px solid #dce5eb;
+  background: #f7f9fc;
+  color: #587388;
+  font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 0.85rem;
+}
+
+.site-footer-note {
+  margin: 0;
+  font-weight: 650;
+}
+
+.site-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1.25rem;
+}
+
+.site-footer-links a {
+  color: #31566b;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.site-footer-links a:hover {
+  color: #0c6654;
+}
+
+.site-footer-links a:focus-visible {
+  border-radius: 0.2rem;
+  outline: 2px solid #147c73;
+  outline-offset: 3px;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -245,6 +285,11 @@
   .app-session {
     gap: 0.5rem;
     font-size: 0.8rem;
+  }
+
+  .site-footer {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 

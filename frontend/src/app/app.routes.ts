@@ -24,6 +24,7 @@ import { AdminIncidents } from './features/admin/admin-incidents/admin-incidents
 import { ClientCart } from './features/client/cart/cart';
 import { PasswordRecovery } from './features/identity/password-recovery/password-recovery';
 import { GeneralConfigurationPage } from './features/admin/general-configuration/general-configuration';
+import { LegalPage } from './features/legal/legal-page';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -31,6 +32,7 @@ export const routes: Routes = [
   { path: 'recuperar-password', component: PasswordRecovery },
   { path: 'restablecer-password', component: PasswordRecovery },
   { path: 'register', component: Register },
+  { path: 'legal/:document', component: LegalPage },
 
   { path: 'admin/users/new', component: AdminUserCreate, canActivate: [authGuard, roleGuard('ADMIN')] },
   { path: 'admin/altas', redirectTo: 'admin/users/new', pathMatch: 'full' },

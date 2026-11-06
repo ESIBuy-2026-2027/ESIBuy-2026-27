@@ -50,6 +50,24 @@ describe('GeneralConfigurationPage', () => {
     expect((fixture.nativeElement.querySelector('#gastosEnvio') as HTMLInputElement).value).toBe('4.99');
   });
 
+  it('uses the administration sidebar and supports collapsing it', () => {
+    const fixture = TestBed.createComponent(GeneralConfigurationPage);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    expect(fixture.nativeElement.querySelector('.admin-sidebar--shared')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('a[href="/admin/configuracion"]')?.textContent.trim())
+      .toBe('Configuración general');
+    expect(component.sidebarCollapsed()).toBe(false);
+
+    component.toggleSidebar();
+    fixture.detectChanges();
+
+    expect(component.sidebarCollapsed()).toBe(true);
+    expect(fixture.nativeElement.querySelector('.admin-layout').classList)
+      .toContain('app-sidebar-collapsed');
+  });
+
   it('submits the updated values and shows success', () => {
     const fixture = TestBed.createComponent(GeneralConfigurationPage);
     fixture.detectChanges();
