@@ -1266,3 +1266,208 @@
         transition-duration: 0.01ms !important;
     }
 }
+
+
+/* =========================================================
+   REDISEÑO ESIBUY — MISMO LENGUAJE VISUAL QUE SEGURIDAD
+   ========================================================= */
+
+/* CONTENEDOR PRINCIPAL */
+:host .payment-page {
+    width: 100%;
+    padding: 28px;
+    border: 1px solid rgb(194 210 222 / 85%);
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at 100% 0%, rgb(66 214 178 / 4%), transparent 32%),
+        rgb(255 255 255 / 94%);
+    box-shadow: 0 12px 30px rgb(16 44 64 / 6%);
+}
+
+/* CABECERA PRINCIPAL: HERO NAVY DE SEGURIDAD */
+:host .page-heading {
+    position: relative;
+    min-height: 170px;
+    align-items: center;
+    margin-bottom: 26px;
+    padding: 30px 34px;
+    overflow: hidden;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 88% 15%, rgb(66 214 178 / 18%), transparent 28%),
+        radial-gradient(circle at 100% 100%, rgb(66 214 178 / 10%), transparent 35%),
+        linear-gradient(118deg, #102c40 0%, #173d52 58%, #1c5360 100%);
+    box-shadow: 0 13px 30px rgb(16 44 64 / 15%);
+}
+
+:host .page-heading::after {
+    position: absolute;
+    top: -105px;
+    right: 35px;
+    width: 250px;
+    height: 250px;
+    border: 1px solid rgb(255 255 255 / 10%);
+    border-radius: 50%;
+    content: "";
+    pointer-events: none;
+}
+
+:host .heading-copy {
+    position: relative;
+    z-index: 1;
+}
+
+:host .page-heading .eyebrow {
+    color: #6ce5ca;
+    letter-spacing: 1.3px;
+}
+
+:host .page-heading h1 {
+    color: #fff;
+    font-size: clamp(27px, 3vw, 34px);
+    font-weight: 800;
+    letter-spacing: -.8px;
+}
+
+:host .page-description {
+    color: rgb(255 255 255 / 76%);
+    line-height: 1.7;
+}
+
+/* ACCIÓN PRINCIPAL LEGIBLE SOBRE EL HERO */
+:host .page-heading .primary-action {
+    position: relative;
+    z-index: 1;
+    min-height: 43px;
+    padding: 0 18px;
+    border: 1px solid #6ce5ca;
+    border-radius: 11px;
+    background: #6ce5ca;
+    color: #102c40;
+    box-shadow: 0 5px 14px rgb(0 0 0 / 12%);
+    font-weight: 800;
+}
+
+:host .page-heading .primary-action:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: #8aefda;
+    background: #8aefda;
+}
+
+/* PANELES INTERNOS */
+:host .panel {
+    padding: 27px;
+    border-color: #dce6ed;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 7px 22px rgb(16 44 64 / 5%);
+}
+
+:host .panel-heading h2 {
+    color: #102c40;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -.4px;
+}
+
+:host .panel-heading p {
+    line-height: 1.65;
+}
+
+/* TARJETAS DE DATOS */
+:host .payment-card {
+    border-color: #dce6ed;
+    border-radius: 14px;
+    box-shadow: 0 5px 17px rgb(16 44 64 / 4%);
+}
+
+:host .payment-card:hover {
+    border-color: #c6d9e3;
+    box-shadow: 0 10px 25px rgb(16 44 64 / 7%);
+}
+
+:host .payment-card.is-default {
+    border-color: #bce6d7;
+}
+
+/* CONTROLES Y ACENTOS */
+:host .form-field input:focus,
+:host .form-field select:focus {
+    border-color: #42bfa3;
+    box-shadow: 0 0 0 3px rgb(66 214 178 / 22%);
+}
+
+:host .default-option {
+    border-radius: 11px;
+    background: #f7f9fc;
+}
+
+:host .default-option input:checked + .custom-checkbox {
+    border-color: #168c75;
+    background: #168c75;
+}
+
+:host .method-count {
+    border-color: #dce6ed;
+    background: #f4f7fa;
+    color: #526b7c;
+}
+
+/* RESPONSIVE DEL CONTENEDOR Y DEL HERO */
+@media (max-width: 760px) {
+    :host .payment-page {
+        padding: 24px 20px;
+    }
+
+    :host .page-heading {
+        min-height: 150px;
+        padding: 26px;
+    }
+
+    :host .panel {
+        padding: 22px 19px;
+    }
+}
+
+@media (max-width: 520px) {
+    :host .payment-page {
+        padding: 20px 15px;
+        border-radius: 15px;
+    }
+
+    :host .page-heading {
+        min-height: 145px;
+        align-items: stretch;
+        flex-direction: column;
+        justify-content: center;
+        gap: 13px;
+        padding: 23px 19px;
+        border-radius: 15px;
+    }
+
+    :host .page-heading h1 {
+        font-size: 25px;
+    }
+
+    :host .page-heading .primary-action {
+        width: 100%;
+    }
+
+    :host .panel {
+        padding: 20px 15px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :host .page-heading .primary-action,
+    :host .payment-card,
+    :host .address-card {
+        transition: none;
+    }
+
+    :host .page-heading .primary-action:hover:not(:disabled),
+    :host .payment-card:hover,
+    :host .address-card:hover {
+        transform: none;
+    }
+}
