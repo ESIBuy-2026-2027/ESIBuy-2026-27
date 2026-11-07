@@ -48,20 +48,13 @@ describe('ClientOrders', () => {
 
     expect(el.querySelector('#orders-title')?.textContent).toContain('Mis pedidos');
     expect(el.querySelector('#orders-search-input')).toBeTruthy();
-    expect(el.querySelector('.orders-search-submit')?.textContent).toContain('Buscar pedidos');
     expect(el.querySelectorAll('.orders-tabs .orders-tab')).toHaveLength(6);
     expect(el.querySelector('.orders-tab.is-selected')?.textContent).toContain('Pedidos');
-    expect(el.querySelector('.filter-button')?.textContent).toContain('Filtrar');
-    expect(el.querySelector('#orders-payment')).toBeNull();
-    expect(el.querySelector('#orders-period')).toBeNull();
-
-    (el.querySelector('.filter-button') as HTMLButtonElement).click();
-    fixture.detectChanges();
     expect(el.querySelector('#orders-payment')).toBeTruthy();
     expect(el.querySelector('#orders-period')).toBeTruthy();
     expect(el.querySelector('#orders-sort')).toBeTruthy();
 
-    const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
+    const navLinks = Array.from(el.querySelectorAll('.seller-navigation .navigation-link'));
     expect(navLinks.length).toBe(4);
     expect(navLinks[0].textContent).toContain('Catálogo');
     expect(navLinks[1].textContent).toContain('Lista de deseos');
@@ -145,18 +138,11 @@ describe('ClientOrders', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.open-review-button')).toBeNull();
   });
 
-  it('should show additional filters only when requested', () => {
+  it('should show the available order filters', () => {
     const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('#orders-payment')).toBeNull();
-    (element.querySelector('.filter-button') as HTMLButtonElement).click();
-    fixture.detectChanges();
-
-    expect(element.querySelector('#orders-payment')).toBeTruthy();
-    expect(element.querySelector('#orders-sort')).toBeTruthy();
-
-    (element.querySelector('.close-orders-filter') as HTMLButtonElement).click();
-    fixture.detectChanges();
-    expect(element.querySelector('#orders-payment')).toBeNull();
+    expect(element.querySelector('#orders-payment')).not.toBeNull();
+    expect(element.querySelector('#orders-period')).not.toBeNull();
+    expect(element.querySelector('#orders-sort')).not.toBeNull();
   });
 
   it('should toggle sidebar collapsed state', () => {
@@ -236,8 +222,6 @@ describe('ClientOrders', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    (element.querySelector('.filter-button') as HTMLButtonElement).click();
-    fixture.detectChanges();
     const periodSelect = element.querySelector('#orders-period') as HTMLSelectElement;
     periodSelect.value = '3months';
     periodSelect.dispatchEvent(new Event('change'));

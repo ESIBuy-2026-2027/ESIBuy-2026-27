@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { afterEach } from 'vitest';
 import { ActivatedRouteSnapshot, provideRouter, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { signal } from '@angular/core';
 import { AuthenticatedUser, AuthService } from '../services/auth.service';
@@ -18,12 +19,15 @@ describe('authentication route guards', () => {
     });
   });
 
+  afterEach(() => TestBed.resetTestingModule());
+
   it('redirects unauthenticated navigation home with its return URL', () => {
     const result = TestBed.runInInjectionContext(() =>
       authGuard({} as ActivatedRouteSnapshot, { url: '/admin/usuarios' } as RouterStateSnapshot));
 
     expect(result).toBeInstanceOf(UrlTree);
-    expect(TestBed.inject(Router).serializeUrl(result as UrlTree))
+    const router = TestBed.inject(Router);
+    expect(router.serializeUrl(result as UrlTree))
       .toBe('/?returnUrl=%2Fadmin%2Fusuarios');
   });
 
@@ -56,7 +60,8 @@ describe('authentication route guards', () => {
 
     expect(allowed).toBe(true);
     expect(denied).toBeInstanceOf(UrlTree);
-    expect(TestBed.inject(Router).serializeUrl(denied as UrlTree)).toBe('/');
+    const router = TestBed.inject(Router);
+    expect(router.serializeUrl(denied as UrlTree)).toBe('/');
   });
 
   it('allows any role from an array of allowed roles', () => {
@@ -90,7 +95,8 @@ describe('authentication route guards', () => {
       roleGuard('ADMIN')({} as ActivatedRouteSnapshot, { url: '/admin/usuarios' } as RouterStateSnapshot));
 
     expect(result).toBeInstanceOf(UrlTree);
-    expect(TestBed.inject(Router).serializeUrl(result as UrlTree))
+    const router = TestBed.inject(Router);
+    expect(router.serializeUrl(result as UrlTree))
       .toBe('/?returnUrl=%2Fadmin%2Fusuarios');
   });
 });

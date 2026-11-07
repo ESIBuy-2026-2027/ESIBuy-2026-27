@@ -161,12 +161,12 @@ describe('DeleteAccount', () => {
 
     it('un administrador no puede darse de baja a sí mismo', async () => {
         await render('ADMIN');
-        const button = el.querySelector('.danger-zone .danger-button') as HTMLButtonElement;
+        const button = el.querySelector('.danger-zone .danger-button');
 
-        expect(button.disabled).toBe(true);
+        expect(button).toBeNull();
         expect(el.textContent).toContain('Otro administrador debe eliminar tu cuenta');
 
-        button.click();
+        button?.dispatchEvent(new Event('click'));
         await fixture.whenStable();
         expect(el.querySelector('.modal')).toBeNull();
     });

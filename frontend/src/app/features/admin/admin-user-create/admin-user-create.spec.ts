@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { afterEach, describe, it, expect, beforeEach, vi } from 'vitest';
 import { AuthService } from '../../../core/services/auth.service';
 import { AdminUserCreate } from './admin-user-create';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -34,6 +34,8 @@ describe('AdminUserCreate', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
+
+  afterEach(() => TestBed.resetTestingModule());
 
   it('should create', () => {
     expect(component).toBeTruthy();

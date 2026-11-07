@@ -1,5 +1,6 @@
 <header class="app-header">
   <a class="app-brand" [routerLink]="brandDestination()" aria-label="ESIBuy, inicio">
+    <img class="app-brand-logo" src="/esibuy-isotipo-original.svg" alt="" aria-hidden="true" />
     <span class="brand-text">ESI<span class="brand-accent">Buy</span></span>
   </a>
 
@@ -28,7 +29,6 @@
     <div class="go-profile">
       <button type="button" class="profile-button" (click)="toggleProfileMenu(); $event.stopPropagation()"
         title="Perfil" aria-haspopup="menu" [attr.aria-expanded]="profileMenuOpen()" aria-controls="profile-menu">
-
         @if (user.profileImage) {
         <img class="profile-avatar" [src]="user.profileImage" alt="Foto de perfil" />
         } @else {
@@ -52,7 +52,6 @@
       @if (profileMenuOpen()) {
       <div id="profile-menu" class="profile-menu" role="menu" aria-label="Opciones de cuenta"
         (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
-
         <p class="profile-menu-email">{{ user.email }}</p>
 
         <button type="button" class="profile-menu-item" role="menuitem" (click)="goToProfile()">
@@ -84,6 +83,7 @@
 
 <footer class="site-footer">
   <p class="site-footer-note">Información legal de ESIBuy</p>
+
   <nav class="site-footer-links" aria-label="Información legal">
     <a routerLink="/legal/aviso-legal">Aviso legal</a>
     <a routerLink="/legal/privacidad">Privacidad</a>

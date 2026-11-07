@@ -20,31 +20,28 @@
   font-family: Arial, sans-serif;
 }
 
+/* Identidad de marca */
 .app-brand {
   display: inline-flex;
   min-width: max-content;
   align-items: center;
-  gap: 0.65rem;
+  flex: 0 0 auto;
+  gap: 0.45rem;
   color: var(--color-text-inverse);
   text-decoration: none;
 }
 
-.brand-mark {
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  flex: 0 0 2rem;
-  place-items: center;
-  border-radius: 0.65rem;
-  background: var(--color-brand-accent);
-  color: var(--color-brand-dark);
-  font-size: 1.05rem;
-  font-weight: 800;
+.app-brand-logo {
+  display: block;
+  width: 2.8rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  object-fit: contain;
 }
 
 .brand-text {
   color: var(--color-text-inverse);
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   font-weight: 800;
   letter-spacing: -0.055em;
 }
@@ -53,6 +50,13 @@
   color: var(--color-brand-accent);
 }
 
+.app-brand:focus-visible {
+  border-radius: 0.25rem;
+  outline: 2px solid var(--color-brand-accent);
+  outline-offset: 4px;
+}
+
+/* Navegación de sesión */
 .app-session,
 .app-auth-nav {
   display: flex;
@@ -101,7 +105,6 @@
 }
 
 .header-cart:focus-visible,
-.app-brand:focus-visible,
 .auth-nav-link:focus-visible,
 .auth-nav-button:focus-visible,
 .session-nav-button:focus-visible {
@@ -110,6 +113,7 @@
   border-radius: 0.35rem;
 }
 
+/* Botones de navegación */
 .session-nav-button,
 .auth-nav-button {
   display: inline-flex;
@@ -136,6 +140,7 @@
   transform: translateY(-1px);
 }
 
+/* Perfil */
 .go-profile {
   position: relative;
 }
@@ -206,6 +211,7 @@
   outline-offset: 3px;
 }
 
+/* Menú desplegable */
 .profile-menu {
   position: absolute;
   top: calc(100% + 0.65rem);
@@ -284,6 +290,7 @@
   color: var(--color-danger);
 }
 
+/* Navegación sin sesión */
 .app-auth-nav {
   gap: 0.65rem;
 }
@@ -303,6 +310,7 @@
   color: var(--color-brand-accent);
 }
 
+/* Contenido principal */
 .logout-error {
   margin: 1rem 1.5rem;
   color: var(--color-danger);
@@ -314,6 +322,7 @@
   padding-top: var(--app-header-height);
 }
 
+/* Footer */
 .site-footer {
   display: flex;
   align-items: center;
@@ -354,6 +363,7 @@
   outline-offset: 3px;
 }
 
+/* Accesibilidad */
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -366,6 +376,7 @@
   border: 0;
 }
 
+/* Responsive */
 @media (max-width: 600px) {
   .app-header {
     padding: 0 1rem;
@@ -392,6 +403,15 @@
     align-items: flex-start;
     flex-direction: column;
   }
+
+  .app-brand-logo {
+    width: 2.5rem;
+    height: 2.3rem;
+  }
+
+  .brand-text {
+    font-size: 1.2rem;
+  }
 }
 
 @media (max-width: 380px) {
@@ -400,7 +420,12 @@
   }
 
   .app-brand {
-    gap: 0.45rem;
+    gap: 0.35rem;
+  }
+
+  .app-brand-logo {
+    width: 2.25rem;
+    height: 2.1rem;
   }
 
   .app-header {

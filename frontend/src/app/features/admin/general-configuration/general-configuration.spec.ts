@@ -55,8 +55,8 @@ describe('GeneralConfigurationPage', () => {
     fixture.detectChanges();
     const component = fixture.componentInstance;
 
-    expect(fixture.nativeElement.querySelector('.admin-sidebar--shared')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('a[href="/admin/configuracion"]')?.textContent.trim())
+    expect(fixture.nativeElement.querySelector('app-shared-sidebar[variant="admin"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-shared-sidebar a[href="/admin/configuracion"]')?.textContent.trim())
       .toBe('Configuración general');
     expect(component.sidebarCollapsed()).toBe(false);
 

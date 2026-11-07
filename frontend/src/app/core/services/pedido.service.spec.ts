@@ -15,7 +15,10 @@ describe('PedidoService', () => {
     httpTesting = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => httpTesting.verify());
+  afterEach(() => {
+    httpTesting.verify();
+    TestBed.resetTestingModule();
+  });
 
   it('should request the signed-in customer checkout summary', () => {
     const summary = {
