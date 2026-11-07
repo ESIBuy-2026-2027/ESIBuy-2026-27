@@ -1,37 +1,68 @@
 :host {
   display: block;
   min-height: 100vh;
-  padding: 40px;
-  background: #e9eff8;
+  padding: 30px 36px 44px;
+  background:
+    radial-gradient(ellipse at 92% 4%, rgb(66 214 178 / 9%), transparent 30%),
+    #e9eff8;
   color: #172b3a;
   font-family: Inter, "Segoe UI", sans-serif;
 }
 
 .order-detail-page {
-  max-width: 860px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1360px;
   margin: 0 auto;
+  padding: 24px;
+  border: 1px solid #d2e0e9;
+  border-radius: 24px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 16px 42px rgb(16 44 64 / 8%);
 }
 
 .back-link {
-  color: #176b70;
-  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  margin-bottom: 2px;
+  padding: 0 12px;
+  border: 1px solid #d7e2e9;
+  border-radius: 9px;
+  background: #fff;
+  color: #173d52;
   text-decoration: none;
 }
 
 .detail-header,
 .detail-card {
   margin-top: 24px;
-  padding: 24px;
-  border-radius: 14px;
+  padding: 22px 24px;
+  border-radius: 17px;
   background: #fff;
-  box-shadow: 0 4px 16px rgba(16, 44, 64, 0.08);
+  border: 1px solid #d9e5ec;
+  box-shadow: 0 7px 22px rgb(16 44 64 / 6%);
 }
 
 .detail-header {
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 132px;
+  flex-wrap: wrap;
   gap: 16px;
+  margin-top: 18px;
+  padding: 25px 30px;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 91% 15%, rgb(66 214 178 / 22%), transparent 25%),
+    linear-gradient(118deg, #102c40 0%, #173d52 58%, #1c5360 100%);
+  color: #fff;
+  box-shadow: 0 10px 24px rgb(16 44 64 / 13%);
 }
 
 h1,
@@ -43,10 +74,15 @@ p {
 
 .detail-header h1 {
   margin-bottom: 6px;
-  color: #102c40;
+  color: #fff;
+  font-size: clamp(24px, 2.2vw, 30px);
 }
 
-.detail-header p,
+.detail-header p {
+  margin: 0;
+  color: rgb(237 245 248 / 78%);
+}
+
 .detail-item p {
   margin-bottom: 0;
   color: #64748b;
@@ -114,17 +150,20 @@ p {
   height: 76px;
   flex: 0 0 76px;
   place-items: center;
-  border-radius: 14px;
-  background: linear-gradient(145deg, #dff7ef, #cce5f4);
-  color: #176b70;
+  border-radius: 12px;
+  border: 1px solid #e3ebf0;
+  background: linear-gradient(145deg, #f6f9fb, #edf3f7);
+  color: #147c73;
   font-size: 28px;
   font-weight: 800;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .detail-item h3 {
   margin-bottom: 5px;
   font-size: 16px;
+  color: #102c40;
+  font-weight: 750;
 }
 
 .item-actions {
@@ -476,17 +515,17 @@ p {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .information-card {
   display: flex;
   gap: 14px;
-  padding: 22px 24px;
-  border: 1px solid #dbe4ed;
-  border-radius: 14px;
+  padding: 22px;
+  border: 1px solid #d9e5ec;
+  border-radius: 17px;
   background: #fff;
-  box-shadow: 0 4px 16px rgba(16, 44, 64, 0.06);
+  box-shadow: 0 7px 22px rgb(16 44 64 / 6%);
 }
 
 .information-icon {
@@ -496,8 +535,8 @@ p {
   flex: 0 0 36px;
   place-items: center;
   border-radius: 10px;
-  background: #dff7ef;
-  color: #087f5b;
+  background: #effbf7;
+  color: #16805d;
 }
 
 .information-icon-svg {
@@ -558,68 +597,9 @@ p {
   }
 }
 
-/* Marco y componentes alineados con el resto del panel de cliente */
-:host {
-  padding: 30px 36px 44px;
-  background:
-    radial-gradient(ellipse at 92% 4%, rgb(66 214 178 / 9%), transparent 30%),
-    #e9eff8;
-}
-
-.order-detail-page {
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 1360px;
-  padding: 24px;
-  border: 1px solid #d2e0e9;
-  border-radius: 24px;
-  background: rgb(255 255 255 / 94%);
-  box-shadow: 0 16px 42px rgb(16 44 64 / 8%);
-}
-
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 38px;
-  margin-bottom: 2px;
-  padding: 0 12px;
-  border: 1px solid #d7e2e9;
-  border-radius: 9px;
-  background: #fff;
-  color: #173d52;
-  text-decoration: none;
-}
-
 .back-link:hover {
   border-color: #b8d9d2;
   background: #f5fbf9;
-}
-
-.detail-header {
-  position: relative;
-  isolation: isolate;
-  min-height: 132px;
-  flex-wrap: wrap;
-  margin-top: 18px;
-  padding: 25px 30px;
-  overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 91% 15%, rgb(66 214 178 / 22%), transparent 25%),
-    linear-gradient(118deg, #102c40 0%, #173d52 58%, #1c5360 100%);
-  box-shadow: 0 10px 24px rgb(16 44 64 / 13%);
-  color: #fff;
-}
-
-.detail-header h1 {
-  color: #fff;
-  font-size: clamp(24px, 2.2vw, 30px);
-}
-
-.detail-header p {
-  margin: 0;
-  color: rgb(237 245 248 / 78%);
 }
 
 .detail-header .order-status {
@@ -696,17 +676,6 @@ p {
   margin-top: 10px;
 }
 
-.detail-card,
-.information-card {
-  border: 1px solid #d9e5ec;
-  border-radius: 17px;
-  box-shadow: 0 7px 22px rgb(16 44 64 / 6%);
-}
-
-.detail-card {
-  padding: 22px 24px;
-}
-
 .detail-card h2,
 .information-card h2 {
   color: #102c40;
@@ -716,20 +685,6 @@ p {
 .detail-item,
 .economic-row {
   border-color: #e5edf2;
-}
-
-.detail-item-image,
-.detail-item-placeholder {
-  border: 1px solid #e3ebf0;
-  border-radius: 12px;
-  background: linear-gradient(145deg, #f6f9fb, #edf3f7);
-  color: #147c73;
-  object-fit: contain;
-}
-
-.detail-item h3 {
-  color: #102c40;
-  font-weight: 750;
 }
 
 .buy-again-button,
@@ -755,19 +710,6 @@ p {
 .secondary-button:hover:not(:disabled) {
   border-color: #b8d9d2;
   background: #f5fbf9;
-}
-
-.order-information {
-  margin-top: 18px;
-}
-
-.information-card {
-  padding: 22px;
-}
-
-.information-icon {
-  background: #effbf7;
-  color: #16805d;
 }
 
 .status-delivered,

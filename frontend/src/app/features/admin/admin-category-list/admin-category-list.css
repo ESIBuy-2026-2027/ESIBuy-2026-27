@@ -215,10 +215,11 @@
 
 .search-field input:focus,
 .dialog input:focus {
-  border-color: #42cdb0;
-  outline: none;
+  border-color: #42bfa3;
+  outline: 3px solid rgb(66 214 178 / 16%);
+  outline-offset: 1px;
   background: #fff;
-  box-shadow: 0 0 0 4px rgb(66 214 178 / 15%);
+  box-shadow: 0 0 0 1px rgb(66 214 178 / 8%);
 }
 
 .category-list {
@@ -600,6 +601,3 @@ input:focus-visible {
   position: relative; z-index: 1;
 }
 
-.search-field input:focus, .dialog input:focus {
-  border-color: #42bfa3; outline: 3px solid rgb(66 214 178 / 16%); outline-offset: 1px; background: #fff; box-shadow: 0 0 0 1px rgb(66 214 178 / 8%);
-}

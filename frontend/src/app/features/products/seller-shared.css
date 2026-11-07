@@ -313,10 +313,6 @@
   stroke-linejoin: round;
 }
 
-.seller-shell.app-sidebar-collapsed .app-workspace {
-  margin-left: 72px;
-}
-
 .seller-layout *,
 .seller-layout *::before,
 .seller-layout *::after {
@@ -473,10 +469,6 @@
 
 .seller-layout.sidebar-collapsed .sidebar {
   transform: translateX(-100%);
-}
-
-.seller-layout.sidebar-collapsed .workspace {
-  margin-left: 72px;
 }
 
 .seller-layout .topbar {
