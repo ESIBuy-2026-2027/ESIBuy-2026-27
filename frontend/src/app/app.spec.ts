@@ -50,6 +50,7 @@ describe('App', () => {
     );
     expect(cartService.load).toHaveBeenCalled();
     expect(headerBrand?.getAttribute('href')).toBe('/client/catalog');
+    expect(headerBrand?.getAttribute('aria-label')).toBe('ESIBuy, inicio');
     expect(headerBrand?.textContent).toContain('ESI');
     expect(headerBrand?.textContent).toContain('Buy');
     expect(cartLink?.getAttribute('href')).toBe('/client/cart');
@@ -91,7 +92,7 @@ describe('App', () => {
 
     const profileButton = (fixture.nativeElement as HTMLElement)
       .querySelector<HTMLButtonElement>('.profile-button');
-    expect(profileButton?.querySelector('.visually-hidden')?.textContent?.trim()).toBe('Perfil');
+    expect(profileButton?.querySelector('.visually-hidden')?.textContent?.trim()).toBe('Abrir menú de perfil');
     expect(profileButton?.querySelector('.profile-chevron')?.getAttribute('aria-hidden')).toBe('true');
     profileButton?.click();
     fixture.detectChanges();
@@ -99,7 +100,7 @@ describe('App', () => {
     const menu = (fixture.nativeElement as HTMLElement).querySelector('#profile-menu');
     const menuButtons = Array.from(menu?.querySelectorAll<HTMLButtonElement>('button') ?? []);
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    const profileOption = menuButtons.find((button) => button.textContent?.trim() === 'Perfil');
+    const profileOption = menuButtons.find((button) => button.textContent?.trim() === 'Mi perfil');
     const logoutOption = menuButtons.find((button) => button.textContent?.trim() === 'Cerrar sesión');
 
     expect(profileOption).toBeDefined();
@@ -140,7 +141,7 @@ describe('App', () => {
     const buttonTexts = Array.from(menu?.querySelectorAll<HTMLButtonElement>('button') ?? [])
       .map(b => b.textContent?.trim());
 
-    expect(buttonTexts).toEqual(['Perfil', 'Cerrar sesión']);
+    expect(buttonTexts).toEqual(['Mi perfil', 'Cerrar sesión']);
     expect(buttonTexts).not.toContain('Catálogo');
     expect(buttonTexts).not.toContain('Gestión Usuarios');
   });
@@ -233,7 +234,7 @@ describe('App', () => {
     const roleButton = compiled.querySelector<HTMLAnchorElement>('.session-nav-button');
 
     expect(roleButton).not.toBeNull();
-    expect(roleButton?.textContent?.trim()).toBe('Gestión Usuarios');
+    expect(roleButton?.textContent?.trim()).toBe('Gestión de usuarios');
     expect(roleButton?.getAttribute('href')).toBe('/admin/usuarios');
   });
 });

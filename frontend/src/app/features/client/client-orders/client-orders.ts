@@ -35,7 +35,10 @@ export class ClientOrders implements OnInit {
     { label: 'Entregados', status: 'ENTREGADO' },
     { label: 'Cancelados', status: 'CANCELADO' },
   ];
-  readonly sidebarCollapsed = signal(false);
+  readonly sidebarCollapsed = signal(
+    typeof localStorage !== 'undefined' && localStorage.getItem('client-sidebar-collapsed') === 'true'
+  );
+  animateTransition = false;
   readonly orders = signal<CustomerOrder[]>([]);
   readonly showingTransactions = signal(false);
   readonly shippingAddressOrderId = signal<string | null>(null);
@@ -334,7 +337,10 @@ export class ClientOrders implements OnInit {
   }
 
   toggleSidebar(): void {
-    this.sidebarCollapsed.update((collapsed) => !collapsed);
+    this.animateTransition = true;
+    const collapsed = !this.sidebarCollapsed();
+    this.sidebarCollapsed.set(collapsed);
+    localStorage.setItem('client-sidebar-collapsed', String(collapsed));
   }
 
   searchOrders(): void {

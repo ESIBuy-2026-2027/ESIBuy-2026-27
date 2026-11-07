@@ -1,9 +1,11 @@
+
 import { provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   AuthService,
@@ -35,6 +37,7 @@ describe('AuthService', () => {
   });
 
   afterEach(() => httpTesting.verify());
+  afterEach(() => TestBed.resetTestingModule());
 
   it('stores the authenticated user after login and sends cookies', () => {
     service
@@ -51,6 +54,15 @@ describe('AuthService', () => {
     expect(request.request.withCredentials).toBe(true);
 
     request.flush(user);
+
+    const profileRequest = httpTesting.expectOne(
+      '/api/users/me/profile',
+    );
+
+    expect(profileRequest.request.method).toBe('GET');
+    expect(profileRequest.request.withCredentials).toBe(true);
+
+    profileRequest.flush({ profileImage: null });
   });
 
   it('loads the current user from the server', () => {
@@ -64,6 +76,8 @@ describe('AuthService', () => {
     expect(request.request.withCredentials).toBe(true);
 
     request.flush(user);
+
+    httpTesting.expectNone('/api/users/me/profile');
   });
 
   it('treats an absent session at startup as unauthenticated', () => {
@@ -76,6 +90,8 @@ describe('AuthService', () => {
       { message: 'Autenticación requerida' },
       { status: 401, statusText: 'Unauthorized' },
     );
+
+    httpTesting.expectNone('/api/users/me/profile');
   });
 
   it('clears the user after successful logout', () => {
@@ -85,6 +101,10 @@ describe('AuthService', () => {
     }).subscribe();
 
     httpTesting.expectOne('/api/users/login').flush(user);
+
+    httpTesting
+      .expectOne('/api/users/me/profile')
+      .flush({ profileImage: null });
 
     service.logout().subscribe(() => {
       expect(service.currentUser()).toBeNull();

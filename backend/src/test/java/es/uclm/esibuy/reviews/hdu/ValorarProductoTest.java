@@ -30,6 +30,7 @@ import es.uclm.esibuy.orders.repository.OrderRepository;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.model.ProductDetails;
 import es.uclm.esibuy.products.repository.ProductRepository;
+import es.uclm.esibuy.users.repository.UserRepository;
 import es.uclm.esibuy.reviews.dto.ReviewSummaryResponse;
 import es.uclm.esibuy.reviews.model.Review;
 import es.uclm.esibuy.reviews.repository.ReviewRepository;
@@ -54,6 +55,9 @@ class ValorarProductoTest {
         private ProductRepository productRepository;
 
         @Mock
+        private UserRepository userRepository;
+
+        @Mock
         private Order order;
 
         private ReviewService reviewService;
@@ -63,7 +67,8 @@ class ValorarProductoTest {
                 reviewService = new ReviewService(
                                 orderRepository,
                                 reviewRepository,
-                                productRepository);
+                                productRepository,
+                                userRepository);
         }
 
         @Test

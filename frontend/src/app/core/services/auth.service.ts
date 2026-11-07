@@ -12,6 +12,7 @@ export interface AuthenticatedUser {
   active: boolean;
   totpEnabled?: boolean;
   customerType?: CustomerType;
+  profileImage?: string | null;
 }
 
 export interface LoginResponse {
@@ -161,6 +162,7 @@ export class AuthService {
             response.id
           ) {
             this.currentUserSignal.set(response as AuthenticatedUser);
+            this.refreshProfileImage();
           }
         }),
       );
@@ -202,6 +204,7 @@ export class AuthService {
         tap((response) => {
           if (response.id && response.role) {
             this.currentUserSignal.set(response as AuthenticatedUser);
+            this.refreshProfileImage();
           }
         }),
       );
@@ -256,6 +259,7 @@ export class AuthService {
 
   loadCurrentUser(): Observable<AuthenticatedUser | null> {
     return this.me().pipe(
+      tap(() => this.refreshProfileImage()),
       timeout(2000),
       catchError(() => {
         this.clearCurrentUser();
@@ -363,4 +367,42 @@ export class AuthService {
       { withCredentials: true },
     );
   }
+
+  updateProfileImage(profileImage: string | null | undefined): void {
+    const currentUser = this.currentUserSignal();
+
+    if (!currentUser) {
+      return;
+    }
+
+    this.currentUserSignal.set({
+      ...currentUser,
+      profileImage: profileImage?.trim() || null,
+    });
+  }
+
+  private refreshProfileImage(): void {
+    const userId = this.currentUserSignal()?.id;
+
+    if (!userId) {
+      return;
+    }
+
+    this.http.get<{ profileImage?: string | null }>(
+      `${this.apiUrl}/me/profile`,
+      { withCredentials: true },
+    ).pipe(
+      catchError(() => of(null)),
+    ).subscribe((profile) => {
+      const currentUser = this.currentUserSignal();
+
+      if (profile && currentUser?.id === userId) {
+        this.currentUserSignal.set({
+          ...currentUser,
+          profileImage: profile.profileImage ?? null,
+        });
+      }
+    });
+  }
+
 }

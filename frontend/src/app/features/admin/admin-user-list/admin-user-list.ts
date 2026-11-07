@@ -1,14 +1,15 @@
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms'; // <-- IMPORTANTE: Añadido para los filtros
 import { AuthService, UserAdmin } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-admin-user-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, FormsModule],
+  imports: [AppSidebarComponent, CommonModule, RouterLink, FormsModule],
   templateUrl: './admin-user-list.html',
   styleUrls: ['./admin-user-list.css']
 })

@@ -1,0 +1,127 @@
+
+:root {
+  /* ========================================
+     BRAND
+     ======================================== */
+
+  --color-brand-dark: #102c40;
+  --color-brand-primary: #102c40;
+  --color-brand-secondary: #1d4357;
+
+  --color-brand-accent: #42d6b2;
+  --color-brand-accent-hover: #35c4a1;
+
+  /* ========================================
+     BACKGROUNDS
+     ======================================== */
+
+  --color-page-background: #e9eff8;
+  --color-background: #e9eff8;
+
+  --color-surface: #ffffff;
+  --color-surface-secondary: #f4f7fb;
+  --color-surface-hover: #edf3f8;
+
+  /* ========================================
+     TEXT
+     ======================================== */
+
+  --color-text-primary: #173247;
+  --color-text-secondary: #587388;
+  --color-text-muted: #8396a4;
+  --color-text-inverse: #ffffff;
+
+  /* ========================================
+     BORDERS AND FOCUS
+     ======================================== */
+
+  --color-border: #dce5ed;
+  --color-border-strong: #bdcdd7;
+  --color-focus: #147c73;
+
+  /* ========================================
+     SEMANTIC COLORS
+     ======================================== */
+
+  --color-success: #176b50;
+  --color-success-background: #e8fbf5;
+
+  --color-warning: #946200;
+  --color-warning-background: #fff7e6;
+
+  --color-danger: #b42318;
+  --color-danger-background: #fff1f0;
+
+  --color-info: #1763a5;
+  --color-info-background: #edf5ff;
+
+  /* ========================================
+     TYPOGRAPHY
+     ======================================== */
+
+  --font-family-base: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 2rem;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-normal: 1.5;
+  --line-height-heading: 1.2;
+
+  /* ========================================
+     SPACING
+     ======================================== */
+
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+
+  /* ========================================
+     BORDER RADIUS
+     ======================================== */
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* ========================================
+     SHADOWS
+     ======================================== */
+
+  --shadow-card: 0 4px 18px rgb(16 44 64 / 5%);
+  --shadow-elevated: 0 12px 32px rgb(16 44 64 / 10%);
+
+  /* ========================================
+     LAYOUT
+     ======================================== */
+
+  --app-header-height: 4rem;
+  --app-sidebar-width: 248px;
+  --app-content-max-width: 1200px;
+
+  /* ========================================
+     TRANSITIONS
+     ======================================== */
+
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+}

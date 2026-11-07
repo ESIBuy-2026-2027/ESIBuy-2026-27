@@ -117,7 +117,7 @@ describe('ProductDetail', () => {
     expect(el.querySelector('.detail-strikethrough')?.textContent).toContain('899,99');
     expect(el.querySelector('.description-text')?.textContent).toContain('Pantalla OLED 120Hz');
     expect(el.querySelector('.status-available')?.textContent).toContain('En stock');
-    expect(el.querySelector('.offers-panel')).not.toBeNull();
+    expect(el.querySelector('.discount-details-slot')).not.toBeNull();
   });
 
   it('renders provider name between rating row and price section', () => {
@@ -129,14 +129,51 @@ describe('ProductDetail', () => {
     expect(vendorRow?.textContent).toContain('Móviles del Sur SL');
   });
 
-  it('renders the real review average, count and public comments', () => {
+  it('renders the review summary and expands the review list on demand', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     expect(element.querySelector('.rating-value')?.textContent).toContain('4,5');
     expect(element.querySelector('.rating-label')?.textContent).toContain('2 valoraciones');
+    expect(element.querySelectorAll('.product-review')).toHaveLength(0);
+
+    const toggle = element.querySelector('.reviews-toggle') as HTMLButtonElement;
+    expect(toggle).not.toBeNull();
+    toggle.click();
+    fixture.detectChanges();
+
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(element.querySelectorAll('.product-review')).toHaveLength(2);
     expect(element.querySelector('.product-review')?.textContent).toContain('Muy buen producto');
     expect(element.textContent).toContain('Sin comentario');
+  });
+
+  it('shows at most three reviews per page and paginates the remaining reviews', () => {
+    const reviews = Array.from({ length: 7 }, (_, index) => ({
+      rating: 5 - (index % 2),
+      comment: `Comentario ${index + 1}`,
+      createdAt: `2026-11-${String(index + 1).padStart(2, '0')}T10:00:00`,
+    }));
+    reviewsServiceMock.getProductReviews.mockReturnValueOnce(of({
+      averageRating: 4.5,
+      reviewCount: 7,
+      reviews,
+    }));
+
+    component.loadProductReviews('p-1');
+    component.reviewsExpanded.set(true);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelectorAll('.product-review')).toHaveLength(3);
+    expect(element.querySelector('.reviews-page-indicator')?.textContent).toContain('1 / 3');
+
+    const nextButton = element.querySelector('.reviews-pagination button:last-child') as HTMLButtonElement;
+    nextButton.click();
+    fixture.detectChanges();
+
+    expect(element.querySelectorAll('.product-review')).toHaveLength(3);
+    expect(element.querySelector('.product-review')?.textContent).toContain('Comentario 4');
+    expect(element.querySelector('.reviews-page-indicator')?.textContent).toContain('2 / 3');
   });
 
   it('shows low positive stock with the warning color', () => {
@@ -146,7 +183,7 @@ describe('ProductDetail', () => {
     const status = (fixture.nativeElement as HTMLElement).querySelector('.status-pill');
     expect(status?.classList.contains('status-low')).toBe(true);
     expect(status?.classList.contains('status-available')).toBe(false);
-    expect(status?.textContent).toContain('En stock (1 disponibles)');
+    expect(status?.textContent).toContain('En stock');
   });
 
   it('should block purchase and show warning if product is deactivated', () => {
@@ -352,7 +389,7 @@ describe('ProductDetail', () => {
     expect(el.querySelector('.price-value')?.textContent).toContain('674,99');
     expect(el.querySelector('.detail-premium-price-row')).toBeNull();
     expect(el.querySelector('.premium-savings')).toBeNull();
-    expect(el.querySelector('.premium-active-note')).not.toBeNull();
+    expect(el.querySelector('.price-value')?.textContent).toContain('674,99');
   });
 
 

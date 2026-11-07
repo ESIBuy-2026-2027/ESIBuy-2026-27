@@ -13,10 +13,11 @@
             conforme a las condiciones indicadas.
         </p> }
     </div>
-    <button type="button" class="danger-button" [disabled]="blocked()" [attr.aria-disabled]="blocked()"
-        [attr.title]="blocked() ? 'Otro administrador debe eliminar tu cuenta' : null" (click)="openDialog()">
+    @if (!blocked()) {
+    <button type="button" class="danger-button" (click)="openDialog()">
         Eliminar mi cuenta
     </button>
+    }
 </section>
 
 @if (open()) {

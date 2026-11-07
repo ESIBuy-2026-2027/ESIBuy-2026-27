@@ -15,10 +15,9 @@ const CONSEQUENCES: Record<UserRole, string[]> = {
     ],
     SELLER: [
         'Se eliminarán tus datos personales y todos tus productos del catálogo.',
-        'Se eliminarán tu carrito, tus favoritos y tus datos de autenticación.',
         'Tus pedidos históricos se conservarán en la plataforma.',
         'No podrás eliminar tu cuenta mientras tengas pedidos pendientes o en preparación.',
-        'No podrás volver a iniciar sesión con esta cuenta.',
+        'Se eliminarán tus datos de autenticación y no podrás volver a iniciar sesión con esta cuenta.',
     ],
     ADMIN: [],
 };

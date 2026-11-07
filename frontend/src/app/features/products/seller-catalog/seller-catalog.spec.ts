@@ -74,7 +74,7 @@ describe('SellerCatalog', () => {
     expect(element.querySelector('[aria-label="Productos del catálogo"]')).not.toBeNull();
     expect(
       Array.from(
-        element.querySelectorAll('.seller-navigation .navigation-link'),
+        element.querySelector('app-shared-sidebar .app-navigation')?.querySelectorAll('.navigation-link') ?? [],
         (link) => link.querySelector('span:last-child')?.textContent?.trim(),
       ),
     ).toEqual([

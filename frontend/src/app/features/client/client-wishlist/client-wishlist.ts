@@ -26,13 +26,19 @@ export class ClientWishlist implements OnInit {
   items = signal<ProductItem[]>([]);
   loading = signal(true);
   error = signal(false);
-  readonly sidebarCollapsed = signal(false);
+  readonly sidebarCollapsed = signal(
+    typeof localStorage !== 'undefined' && localStorage.getItem('client-sidebar-collapsed') === 'true'
+  );
+  animateTransition = false;
   readonly quantities = signal<Record<string, number>>({});
   readonly addingProducts = signal<Record<string, boolean>>({});
   readonly removingProducts = signal<Record<string, boolean>>({});
 
   toggleSidebar(): void {
-    this.sidebarCollapsed.update((collapsed) => !collapsed);
+    this.animateTransition = true;
+    const collapsed = !this.sidebarCollapsed();
+    this.sidebarCollapsed.set(collapsed);
+    localStorage.setItem('client-sidebar-collapsed', String(collapsed));
   }
 
   getQuantity(productId: string): number {

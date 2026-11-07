@@ -1,8 +1,9 @@
 import { ChangeDetectorRef, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import {
   AdminProductService,
   AdminProductSummary,
@@ -13,7 +14,7 @@ import { ProductsService, Category } from '../../../core/services/products.servi
 @Component({
   selector: 'app-admin-product-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, FormsModule],
+  imports: [AppSidebarComponent, CommonModule, RouterLink, FormsModule],
   templateUrl: './admin-product-list.html',
   styleUrls: ['./admin-product-list.css'],
 })

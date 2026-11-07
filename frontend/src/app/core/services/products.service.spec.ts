@@ -15,7 +15,10 @@ describe('ProductsService', () => {
     httpTesting = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => httpTesting.verify());
+  afterEach(() => {
+    httpTesting.verify();
+    TestBed.resetTestingModule();
+  });
 
   it('should load available categories from the backend', () => {
     const categories = [{ id: 'category-1', name: 'Electrónica' }];

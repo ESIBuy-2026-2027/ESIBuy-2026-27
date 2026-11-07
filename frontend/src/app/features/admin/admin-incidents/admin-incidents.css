@@ -14,8 +14,7 @@
 }
 
 .admin-layout {
-  min-height: 100vh;
-  background: #edf2f8;
+  min-height: 100vh; background: radial-gradient(ellipse at 92% 7%, rgb(66 214 178 / 8%), transparent 31%), #e9eff8;
 }
 
 .admin-workspace {
@@ -29,19 +28,24 @@
 }
 
 .admin-content {
-  width: min(1480px, 100%);
-  margin: 0 auto;
-  padding: 42px 40px 60px;
+  width: min(1480px, 100%); margin: 0 auto; padding: 32px 32px 54px;
 }
 
 .page-heading {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 24px;
+  position: relative;
+  gap: 22px;
   margin: 0 0 25px;
-  padding: 0 0 25px;
-  border-bottom: 1px solid #e8eef3;
+  padding: 27px 32px 26px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 19px;
+  background:
+    radial-gradient(circle at 92% 12%, rgb(66 214 178 / 18%), transparent 24%),
+    linear-gradient(118deg, #102c40 0%, #173d52 58%, #1c5360 100%);
+  box-shadow: 0 14px 30px rgb(16 44 64 / 12%);
 }
 
 .page-heading-copy {
@@ -50,27 +54,28 @@
 }
 
 .eyebrow {
-  margin: 0 0 10px;
-  color: #168c75;
-  font-size: 11px;
+  margin: 0 0 9px;
+  color: #70e5c9;
+  font-size: 10px;
   font-weight: 800;
-  letter-spacing: 1.35px;
+  letter-spacing: 1.25px;
+  text-transform: uppercase;
 }
 
 .page-heading h1 {
-  margin: 0 0 10px;
-  color: #102c40;
-  font-size: clamp(30px, 2.6vw, 38px);
+  margin: 0 0 9px;
+  color: #fff;
+  font-size: clamp(27px, 2.5vw, 35px);
   font-weight: 780;
-  letter-spacing: -1.25px;
-  line-height: 1.15;
+  letter-spacing: -1px;
+  line-height: 1.18;
 }
 
 .page-description {
   margin: 0;
-  color: #587388;
-  font-size: 15px;
-  line-height: 1.6;
+  color: rgb(237 245 248 / 80%);
+  font-size: 13px;
+  line-height: 1.65;
 }
 
 /* Tarjetas de Resumen Superior */
@@ -82,14 +87,7 @@
 }
 
 .stat-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 22px 24px;
-  border: 1px solid #e1e9f0;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 4px 18px rgb(25 48 70 / 4%);
+  display: flex; min-width: 0; align-items: center; gap: 15px; padding: 20px; border: 1px solid #dce7ed; border-radius: 16px; background: rgb(255 255 255 / 94%); box-shadow: 0 8px 22px rgb(16 44 64 / 5%);
 }
 
 .stat-icon {
@@ -151,23 +149,11 @@
 
 /* Tarjeta principal */
 .card {
-  width: 100%;
-  margin: 0 0 32px;
-  padding: 34px;
-  border: 1px solid #e1e9f0;
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 8px 28px rgb(25 48 70 / 5%), 0 1px 3px rgb(25 48 70 / 3%);
+  width: 100%; min-width: 0; margin: 0; padding: 0 28px 28px; overflow: hidden; border: 1px solid #d2e0e9; border-radius: 20px; background: #fff; box-shadow: 0 14px 34px rgb(16 44 64 / 8%);
 }
 
 .card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e8eef3;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin: 0 -28px 25px; padding: 24px 28px; border-bottom: 1px solid rgb(255 255 255 / 10%); background: radial-gradient(circle at 92% 12%, rgb(66 214 178 / 18%), transparent 24%), linear-gradient(118deg, #102c40 0%, #173d52 58%, #1c5360 100%); color: #fff;
 }
 
 .card-header-main {
@@ -176,14 +162,7 @@
 }
 
 .card-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0;
-  color: #102c40;
-  font-size: clamp(20px, 2vw, 24px);
-  font-weight: 780;
-  letter-spacing: -0.6px;
+  margin: 0; color: #fff; font-size: 22px; font-weight: 750; letter-spacing: -.5px;
 }
 
 .card-title svg {
@@ -195,10 +174,7 @@
 }
 
 .card-subtitle {
-  margin: 8px 0 0;
-  color: #687d8b;
-  font-size: 14px;
-  line-height: 1.6;
+  margin: 8px 0 0; color: rgb(237 245 248 / 78%); font-size: 13px; line-height: 1.6;
 }
 
 /* Campos de formulario */
@@ -237,18 +213,7 @@ form {
 }
 
 .form-control {
-  display: block;
-  width: 100%;
-  min-height: 48px;
-  padding: 12px 15px;
-  border: 1px solid #d8e3e9;
-  border-radius: 10px;
-  outline: none;
-  color: #203b4e;
-  background: #fbfcfd;
-  font-family: inherit;
-  font-size: 14px;
-  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+  display: block; width: 100%; min-height: 44px; padding: 10px 13px; border: 1px solid #dbe5ec; border-radius: 10px; outline: none; color: #173247; background: #f7f9fc; font: inherit; font-size: 13px; transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
 }
 
 .form-control::placeholder {
@@ -365,15 +330,7 @@ form {
 }
 
 .incident-table th {
-  padding: 16px 16px;
-  color: #657b89;
-  background: #f6f9fb;
-  border-bottom: 1px solid #e1e9ee;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-  white-space: nowrap;
+  padding: 14px 15px; border-bottom: 1px solid #dfe8ed; background: #f3f7fa; color: #526b7c; font-size: 11px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase;
 }
 
 .incident-table th:first-child {
@@ -381,12 +338,7 @@ form {
 }
 
 .incident-table td {
-  padding: 16px 16px;
-  border-bottom: 1px solid #edf1f4;
-  color: #3e5868;
-  font-size: 13.5px;
-  line-height: 1.45;
-  vertical-align: middle;
+  padding: 15px; border-bottom: 1px solid #edf1f4; color: #3d596d; font-size: 13px; vertical-align: middle;
 }
 
 .incident-table td:first-child {
@@ -639,4 +591,20 @@ form {
   .form-row {
     grid-template-columns: 1fr;
   }
+}
+
+.incidents-content-shell {
+  width: 100%;
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid #d2e0e9;
+  border-radius: 22px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 14px 34px rgb(16 44 64 / 8%);
+  display: grid;
+  gap: 22px;
+}
+
+.incident-table tbody tr:hover td {
+  background: #f5faf9;
 }

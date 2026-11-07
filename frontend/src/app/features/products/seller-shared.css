@@ -36,18 +36,116 @@
   overflow-y: auto;
   background: var(--sidebar-background);
   color: #edf5f8;
-  transition: transform 0.25s ease;
+  transition: width 220ms ease, padding 220ms ease, transform 220ms ease;
+}
+
+.seller-shell .app-sidebar-toggle {
+  position: absolute;
+  top: 20px;
+  right: 12px;
+  z-index: 1;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #edf5f8;
+  cursor: pointer;
+  box-shadow: none;
+  transition: color 180ms ease, left 220ms ease, right 220ms ease, transform 220ms ease;
+}
+
+.seller-shell .app-sidebar-toggle:hover {
+  background: transparent;
+  border-color: transparent;
+  color: var(--color-brand-accent);
+}
+
+.seller-shell .app-sidebar-toggle:focus-visible {
+  outline: 3px solid #42d6b2;
+  outline-offset: 3px;
+}
+
+.seller-shell .app-sidebar-toggle svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+}
+
+.seller-shell .app-sidebar.app-sidebar--collapsed {
+  width: 72px;
+  align-items: center;
+  padding-right: 9px;
+  padding-left: 9px;
+}
+
+.seller-shell .app-sidebar.app-sidebar--collapsed .app-sidebar-toggle {
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.seller-shell .app-sidebar.app-sidebar--collapsed .sidebar-caption,
+.seller-shell .app-sidebar.app-sidebar--collapsed .navigation-link > span {
+  display: none;
+}
+
+.seller-shell .app-sidebar.app-sidebar--collapsed .app-navigation {
+  width: 100%;
+  padding-top: 24px;
+}
+
+.seller-shell .app-sidebar.app-sidebar--collapsed .navigation-link {
+  justify-content: center;
+  gap: 0;
+  padding-right: 0;
+  padding-left: 0;
 }
 
 .seller-shell .app-workspace {
   margin-left: var(--seller-sidebar-width);
 }
 
+/* The shared sidebar remains part of the layout when compact, so content
+   keeps a consistent gutter instead of jumping to the viewport edge. */
+.seller-layout.sidebar-collapsed .workspace {
+  margin-left: 72px;
+}
+
+.seller-shell.app-sidebar-collapsed .app-workspace {
+  margin-left: 72px;
+}
+
+.admin-layout .admin-workspace {
+  margin-left: 248px;
+  transition: margin-left 220ms ease;
+}
+
+.admin-layout.app-sidebar-collapsed .admin-workspace {
+  margin-left: 72px;
+}
+
+.admin-layout .app-sidebar.app-sidebar--collapsed .app-sidebar-toggle {
+  right: auto;
+  left: 20px;
+  transform: none;
+}
+
+.seller-shell.product-create-page.app-sidebar-collapsed {
+  padding-left: 108px;
+}
+
 .seller-shell.product-create-page {
   padding: 36px 36px 56px calc(var(--seller-sidebar-width) + 36px);
 }
 
-.seller-shell .app-sidebar-toggle,
 .seller-layout .sidebar-toggle {
   position: absolute;
   top: 12px;
@@ -63,11 +161,10 @@
   background: #1d4357;
   color: #edf5f8;
   cursor: pointer;
-  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+  transition: right 220ms ease, left 220ms ease, background-color 0.18s ease,
+    border-color 0.18s ease, transform 220ms ease;
 }
 
-.seller-shell .app-sidebar-toggle svg,
-.seller-shell .app-sidebar-toggle-open svg,
 .seller-layout .sidebar-toggle svg,
 .seller-layout .sidebar-toggle-open svg {
   width: 17px;
@@ -79,8 +176,6 @@
   stroke-width: 2.5;
 }
 
-.seller-shell .app-sidebar-toggle > span,
-.seller-shell .app-sidebar-toggle-open > span,
 .seller-layout .sidebar-toggle > span,
 .seller-layout .sidebar-toggle-open > span {
   display: grid;
@@ -95,21 +190,17 @@
   right: 6px;
 }
 
-.seller-shell .app-sidebar-toggle:hover,
 .seller-layout .sidebar-toggle:hover {
   background: #28546a;
   border-color: rgb(66 214 178 / 50%);
 }
 
-.seller-shell .app-sidebar-toggle:focus-visible,
-.seller-shell .app-sidebar-toggle-open:focus-visible,
 .seller-layout .sidebar-toggle:focus-visible,
 .seller-layout .sidebar-toggle-open:focus-visible {
   outline: 3px solid #42d6b2;
   outline-offset: 3px;
 }
 
-.seller-shell .app-sidebar-toggle-open,
 .seller-layout .sidebar-toggle-open {
   position: fixed;
   top: calc(var(--app-header-height) + 12px);
@@ -129,15 +220,10 @@
   transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
 }
 
-.seller-shell .app-sidebar-toggle-open:hover,
 .seller-layout .sidebar-toggle-open:hover {
   transform: translateX(2px);
   border-color: rgb(66 214 178 / 55%);
   background: #1d4357;
-}
-
-.seller-shell .app-sidebar-toggle-open[hidden] {
-  display: none;
 }
 
 .seller-shell .app-sidebar .admin-brand,
@@ -227,12 +313,8 @@
   stroke-linejoin: round;
 }
 
-.seller-shell.app-sidebar-collapsed .app-sidebar {
-  transform: translateX(-100%);
-}
-
 .seller-shell.app-sidebar-collapsed .app-workspace {
-  margin-left: 0;
+  margin-left: 72px;
 }
 
 .seller-layout *,
@@ -253,6 +335,46 @@
   background: var(--sidebar-background);
   color: #edf5f8;
   transition: transform 0.25s ease;
+}
+
+/* La navegación compacta es común a los paneles de vendedor y administración. */
+.seller-layout.app-sidebar-collapsed .sidebar,
+.seller-shell.app-sidebar-collapsed .app-sidebar {
+  width: 72px;
+  align-items: center;
+  padding-right: 9px;
+  padding-left: 9px;
+  transform: none;
+}
+
+.seller-layout.app-sidebar-collapsed .sidebar-caption,
+.seller-layout.app-sidebar-collapsed .navigation-link > span,
+.seller-shell.app-sidebar-collapsed .sidebar-caption,
+.seller-shell.app-sidebar-collapsed .navigation-link > span {
+  display: none;
+}
+
+.seller-layout.app-sidebar-collapsed .seller-navigation,
+.seller-shell.app-sidebar-collapsed .app-navigation {
+  width: 100%;
+}
+
+.seller-layout.app-sidebar-collapsed .navigation-link,
+.seller-shell.app-sidebar-collapsed .navigation-link {
+  justify-content: center;
+  gap: 0;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.seller-layout.app-sidebar-collapsed .sidebar-toggle {
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.seller-layout.app-sidebar-collapsed .sidebar-toggle-open {
+  display: none;
 }
 
 .seller-layout .brand {
@@ -354,7 +476,7 @@
 }
 
 .seller-layout.sidebar-collapsed .workspace {
-  margin-left: 0;
+  margin-left: 72px;
 }
 
 .seller-layout .topbar {
@@ -370,11 +492,13 @@
 .seller-main-card {
   width: 100%;
   min-width: 0;
-  padding: 32px;
-  border: 1px solid #e1e9f0;
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 8px 28px rgb(25 48 70 / 5%), 0 1px 3px rgb(25 48 70 / 3%);
+  padding: 24px;
+  border: 1px solid rgb(194 210 222 / 72%);
+  border-radius: 20px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 14px 34px rgb(16 44 64 / 8%), 0 2px 6px rgb(16 44 64 / 3%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .seller-layout .page-heading {
@@ -535,43 +659,8 @@
     transition: none;
   }
 
-  .seller-shell .app-sidebar {
-    position: relative;
-    inset: auto;
-    width: 100%;
-    height: auto;
-    padding: 14px 18px 12px;
-    transition: none;
-  }
-
-  .seller-shell .app-sidebar-toggle {
-    top: 14px;
-    right: 18px;
-  }
-
-  .seller-shell .app-sidebar-toggle-open,
   .seller-layout .sidebar-toggle-open {
     top: calc(var(--app-header-height) + 12px);
-  }
-
-  .seller-shell .app-sidebar .admin-navigation,
-  .seller-shell .app-sidebar .client-navigation,
-  .seller-shell .app-sidebar .seller-navigation {
-    display: flex;
-    gap: 7px;
-    overflow-x: auto;
-    padding-bottom: 3px;
-  }
-
-  .seller-shell .app-sidebar .navigation-link {
-    min-height: 42px;
-    flex: 0 0 auto;
-    padding: 0 11px;
-    font-size: 12px;
-  }
-
-  .seller-shell.app-sidebar-collapsed .app-sidebar {
-    display: none;
   }
 
   .seller-shell:not(.app-sidebar-collapsed) .app-workspace {
@@ -594,7 +683,6 @@
     display: none;
   }
 
-  .seller-shell .app-sidebar-toggle,
   .seller-layout .sidebar-toggle {
     top: 14px;
     right: 18px;

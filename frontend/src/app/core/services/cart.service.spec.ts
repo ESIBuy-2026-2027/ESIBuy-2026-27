@@ -28,7 +28,10 @@ describe('CartService', () => {
     httpTesting = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => httpTesting.verify());
+  afterEach(() => {
+    httpTesting.verify();
+    TestBed.resetTestingModule();
+  });
 
   it('should load cart contents from the backend', () => {
     service.load();

@@ -16,6 +16,8 @@ import es.uclm.esibuy.reviews.dto.ReviewSummaryResponse;
 import es.uclm.esibuy.reviews.dto.ReviewedPurchaseResponse;
 import es.uclm.esibuy.reviews.model.Review;
 import es.uclm.esibuy.reviews.repository.ReviewRepository;
+import es.uclm.esibuy.users.model.User;
+import es.uclm.esibuy.users.repository.UserRepository;
 
 @Service
 public class ReviewService {
@@ -26,15 +28,18 @@ public class ReviewService {
     private final OrderRepository orderRepository;
     private final ReviewRepository reviewRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
     public ReviewService(
             OrderRepository orderRepository,
             ReviewRepository reviewRepository,
-            ProductRepository productRepository) {
+            ProductRepository productRepository,
+            UserRepository userRepository) {
 
         this.orderRepository = Objects.requireNonNull(orderRepository);
         this.reviewRepository = Objects.requireNonNull(reviewRepository);
         this.productRepository = Objects.requireNonNull(productRepository);
+        this.userRepository = Objects.requireNonNull(userRepository);
     }
 
     public void createReview(
@@ -125,10 +130,21 @@ public class ReviewService {
                 ? null
                 : reviews.stream().mapToInt(Review::getRating).average().orElseThrow();
         List<ReviewResponse> reviewResponses = reviews.stream()
-                .map(ReviewResponse::from)
+                .map(this::toReviewResponse)
                 .toList();
 
         return new ReviewSummaryResponse(averageRating, reviews.size(), reviewResponses);
+    }
+
+    private ReviewResponse toReviewResponse(Review review) {
+        String customerName = userRepository.findById(review.getCustomerId())
+                .map(this::formatCustomerName)
+                .orElse("Cliente");
+        return ReviewResponse.from(review, customerName);
+    }
+
+    private String formatCustomerName(User user) {
+        return (user.getFirstName() + " " + user.getLastName()).trim();
     }
 
     public List<ReviewedPurchaseResponse> getReviewedPurchases(String customerId) {
