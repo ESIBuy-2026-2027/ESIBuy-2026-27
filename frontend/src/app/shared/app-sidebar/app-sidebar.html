@@ -28,7 +28,6 @@
       </svg>
       <span>Usuarios</span>
     </a>
-
     <a class="navigation-link" routerLink="/admin/altas" routerLinkActive="is-active"
       [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
       <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -37,7 +36,6 @@
       </svg>
       <span>Dar de alta Administrador</span>
     </a>
-
     <a class="navigation-link" routerLink="/admin/categorias" routerLinkActive="is-active"
       [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
       <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -46,7 +44,6 @@
       </svg>
       <span>Categorías</span>
     </a>
-
     <a class="navigation-link" routerLink="/admin/productos" routerLinkActive="is-active"
       [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
       <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -59,7 +56,6 @@
       </svg>
       <span>Productos</span>
     </a>
-
     <a class="navigation-link" routerLink="/admin/incidencias" routerLinkActive="is-active"
       [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
       <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -68,6 +64,16 @@
         <line x1="12" y1="16" x2="12.01" y2="16"></line>
       </svg>
       <span>Incidencias</span>
+    </a>
+    <a class="navigation-link" routerLink="/admin/configuracion" routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path
+          d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.5 1.5-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2h-2.1v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1-1.5-1.5.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H7v-2.1h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1 1.5-1.5.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V6h2.1v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.5 1.5-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.2v2.1h-.2a1.7 1.7 0 0 0-1.5 1Z">
+        </path>
+      </svg>
+      <span>Configuración general</span>
     </a>
   </nav>
   } @else if (variant === 'client') {

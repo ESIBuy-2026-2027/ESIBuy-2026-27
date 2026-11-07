@@ -6,6 +6,7 @@ import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
+import { ProductReviewSummary, ReviewsService } from '../../../core/services/reviews.service';
 import { ADMIN_READONLY_ERROR_MESSAGE } from '../../../core/services/admin-product.service';
 
 const LOW_STOCK_THRESHOLD = 5;
@@ -25,6 +26,7 @@ export class ProductDetail implements OnInit {
   readonly toastService = inject(ToastService);
   readonly authService = inject(AuthService);
   readonly cartService = inject(CartService);
+  private readonly reviewsService = inject(ReviewsService);
 
   readonly quantity = signal(1);
 
@@ -42,6 +44,9 @@ export class ProductDetail implements OnInit {
   errorMessage = signal<string | null>(null);
   readonly favoriteUpdating = signal(false);
   readonly cartAdding = signal(false);
+  readonly reviewSummary = signal<ProductReviewSummary | null>(null);
+  readonly reviewsLoading = signal(true);
+  readonly reviewsError = signal(false);
 
   isClient = computed(() => this.authService.currentUser()?.role === 'CLIENT');
   isAdmin = computed(() => this.authService.currentUser()?.role === 'ADMIN');
@@ -139,6 +144,7 @@ export class ProductDetail implements OnInit {
 
     this.loadCategories();
     this.loadProduct(id);
+    this.loadProductReviews(id);
     this.wishlistService.refreshIfClient();
   }
 
@@ -184,7 +190,38 @@ export class ProductDetail implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadProduct(id);
+      this.loadProductReviews(id);
     }
+  }
+
+  loadProductReviews(productId: string): void {
+    this.reviewsLoading.set(true);
+    this.reviewsError.set(false);
+    this.reviewSummary.set(null);
+    this.reviewsService.getProductReviews(productId).subscribe({
+      next: (summary) => {
+        this.reviewSummary.set(summary);
+        this.reviewsLoading.set(false);
+      },
+      error: () => {
+        this.reviewsError.set(true);
+        this.reviewsLoading.set(false);
+      },
+    });
+  }
+
+  formatReviewDate(date: string): string {
+    const parsedDate = new Date(date);
+    return Number.isNaN(parsedDate.getTime())
+      ? 'Fecha no disponible'
+      : new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium' }).format(parsedDate);
+  }
+
+  formatRating(rating: number): string {
+    return new Intl.NumberFormat('es-ES', {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    }).format(rating);
   }
 
   toggleFavorite(): void {

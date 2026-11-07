@@ -98,11 +98,27 @@
 
   <div class="workspace app-workspace">
     <main class="catalog-content">
-      <section class="page-heading" aria-labelledby="orders-title">
+      <section class="page-heading orders-page-heading" aria-labelledby="orders-title">
         <div>
+          <nav class="orders-breadcrumb" aria-label="Migas de pan">
+            <a routerLink="/client/profile">Mi cuenta</a>
+            <span aria-hidden="true">›</span>
+            <span aria-current="page">Mis pedidos</span>
+          </nav>
           <h1 id="orders-title">Mis pedidos</h1>
-          <p>Consulta tus compras, su estado y el seguimiento de tus envíos.</p>
         </div>
+        <form class="orders-search-form" (ngSubmit)="searchOrders()">
+          <label class="orders-search">
+            <span class="visually-hidden">Buscar pedidos por número o producto</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5"></circle>
+              <path d="m16 16 4.5 4.5"></path>
+            </svg>
+            <input id="orders-search-input" type="search" placeholder="Buscar todos los pedidos"
+              [ngModel]="searchQuery()" (ngModelChange)="setSearchQuery($event)" name="ordersSearch" />
+          </label>
+          <button type="submit" class="orders-search-submit">Buscar pedidos</button>
+        </form>
       </section>
 
       @if (loading()) {
@@ -111,16 +127,24 @@
       <p class="orders-feedback is-error" role="alert">{{ error() }}</p>
       <button type="button" class="retry-button" (click)="loadOrders()">Volver a intentarlo</button>
       } @else {
-      <section class="orders-toolbar" aria-label="Buscar y filtrar pedidos">
-        <label class="orders-search">
-          <span class="visually-hidden">Buscar pedidos por número o producto</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="6.5"></circle>
-            <path d="m16 16 4.5 4.5"></path>
-          </svg>
-          <input id="orders-search-input" type="search" placeholder="Buscar pedido o producto..."
-            [ngModel]="searchQuery()" (ngModelChange)="setSearchQuery($event)" name="ordersSearch" />
-        </label>
+      @if (reviewStateError()) {
+      <div class="review-state-error" role="alert">
+        <p>{{ reviewStateError() }}</p>
+        <button type="button" (click)="loadReviewedPurchases()">Reintentar</button>
+      </div>
+      }
+      @if (!showingTransactions()) {
+      <nav class="orders-tabs" aria-label="Filtrar pedidos por estado">
+        @for (tab of orderStatusTabs; track tab.status) {
+        <button type="button" class="orders-tab" [class.is-selected]="statusFilter() === tab.status"
+          [attr.aria-pressed]="statusFilter() === tab.status" (click)="setStatusFilter(tab.status)">
+          {{ tab.label }}
+        </button>
+        }
+      </nav>
+      }
+      @if (!showingTransactions()) {
+      <section class="orders-toolbar" aria-label="Filtros adicionales de pedidos">
         <div class="orders-filter">
           <button type="button" class="filter-button" [class.is-active]="hasActiveFilters()"
             [attr.aria-expanded]="filtersOpen()" aria-controls="client-orders-filter-panel" (click)="toggleFilters()">
@@ -135,16 +159,6 @@
           @if (filtersOpen()) {
           <div class="orders-filter-panel" id="client-orders-filter-panel">
             <button type="button" class="close-orders-filter" aria-label="Cerrar filtros" (click)="closeFilters()">×</button>
-            <label for="orders-status">Estado del pedido</label>
-            <select id="orders-status" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)"
-              name="ordersStatus">
-              <option value="TODOS">Todos los estados</option>
-              <option value="PENDIENTE">Pendiente</option>
-              <option value="PREPARANDO">En preparación</option>
-              <option value="ENVIADO">Enviado</option>
-              <option value="ENTREGADO">Entregado</option>
-              <option value="CANCELADO">Cancelado</option>
-            </select>
             <label for="orders-payment">Estado del pago</label>
             <select id="orders-payment" [ngModel]="paymentFilter()" (ngModelChange)="setPaymentFilter($event)"
               name="ordersPayment">
@@ -172,6 +186,16 @@
         </div>
       </section>
 
+      <section class="orders-period-row" aria-label="Resumen de pedidos">
+        <p class="orders-result-count" aria-live="polite">
+          <strong>{{ filteredOrders().length }} {{ filteredOrders().length === 1 ? 'pedido' : 'pedidos' }}</strong>
+          {{ filteredOrders().length === 1 ? 'realizado' : 'realizados' }}
+        </p>
+        <button type="button" class="transactions-link" (click)="showTransactions()">
+          Ver transacciones
+        </button>
+      </section>
+
         @if (filteredOrders().length === 0) {
           <div class="empty-state">
             <span class="empty-icon" aria-hidden="true">🛍</span>
@@ -187,10 +211,6 @@
             }
           </div>
         } @else {
-          <div class="orders-results-meta">
-            <p class="orders-result-count" aria-live="polite">{{ pageLabel() }}</p>
-            <span class="order-count">{{ filteredOrders().length }} pedidos</span>
-          </div>
           <section class="orders-list" aria-label="Pedidos">
             @for (order of visibleOrders(); track order.pedidoId) {
               <article class="order-row order-card">
@@ -299,6 +319,78 @@
                           <strong class="order-item-subtotal">{{
                             formatPrice(item.subtotal)
                           }}</strong>
+                          @if (order.estado === 'ENTREGADO') {
+                            <div class="review-control">
+                              @if (reviewFeedback(); as feedback) {
+                                @if (feedback.key === reviewKey(order.pedidoId, item.productoId)) {
+                                  <p
+                                    class="review-feedback"
+                                    [class.is-error]="feedback.type === 'error'"
+                                    [attr.role]="feedback.type === 'error' ? 'alert' : 'status'"
+                                  >{{ feedback.message }}</p>
+                                }
+                              }
+                              @if (reviewStateLoading()) {
+                                <span class="review-state-message">Comprobando valoraciones...</span>
+                              } @else if (reviewStateError()) {
+                                <span class="review-state-message">No disponible temporalmente</span>
+                              } @else if (isReviewed(order.pedidoId, item.productoId)) {
+                                <span class="reviewed-badge">Ya has valorado esta compra</span>
+                              } @else if (isReviewFormOpen(order.pedidoId, item.productoId)) {
+                                <form
+                                  class="review-form"
+                                  (ngSubmit)="submitReview(order.pedidoId, item.productoId)"
+                                >
+                                  <fieldset class="review-rating">
+                                    <legend>Tu puntuación</legend>
+                                    <div class="review-stars">
+                                      @for (star of ratingOptions; track star) {
+                                        <button
+                                          type="button"
+                                          class="review-star"
+                                          [class.is-selected]="star <= reviewRating()"
+                                          [attr.aria-label]="'Puntuar con ' + star + ' de 5 estrellas'"
+                                          [attr.aria-pressed]="reviewRating() === star"
+                                          (click)="reviewRating.set(star)"
+                                        >★</button>
+                                      }
+                                    </div>
+                                  </fieldset>
+                                  <label [for]="'review-comment-' + order.pedidoId + '-' + item.productoId">
+                                    Comentario (opcional)
+                                  </label>
+                                  <textarea
+                                    [id]="'review-comment-' + order.pedidoId + '-' + item.productoId"
+                                    [name]="'reviewComment-' + order.pedidoId + '-' + item.productoId"
+                                    [ngModel]="reviewComment()"
+                                    (ngModelChange)="reviewComment.set($event)"
+                                    rows="3"
+                                  ></textarea>
+                                  <div class="review-form-actions">
+                                    <button
+                                      type="submit"
+                                      class="submit-review-button"
+                                      [disabled]="reviewSubmitting() || reviewRating() === 0"
+                                    >
+                                      {{ reviewSubmitting() ? 'Enviando...' : 'Enviar valoración' }}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      class="cancel-review-button"
+                                      [disabled]="reviewSubmitting()"
+                                      (click)="closeReviewForm()"
+                                    >Cancelar</button>
+                                  </div>
+                                </form>
+                              } @else {
+                                <button
+                                  type="button"
+                                  class="open-review-button"
+                                  (click)="openReviewForm(order.pedidoId, item.productoId)"
+                                >Valorar producto</button>
+                              }
+                            </div>
+                          }
                         </li>
                       }
                     </ul>
@@ -327,6 +419,38 @@
             </nav>
           }
         }
+      } @else {
+      <section class="transactions-heading" aria-labelledby="transactions-title">
+        <div>
+          <h2 id="transactions-title">Transacciones</h2>
+          <p>Pagos realizados de tus pedidos</p>
+        </div>
+        <button type="button" class="transactions-link" (click)="showOrders()">Volver a mis pedidos</button>
+      </section>
+      @if (transactions().length === 0) {
+      <div class="empty-state">
+        <h3>No tienes transacciones</h3>
+        <p>Los pagos completados de tus pedidos aparecerán aquí.</p>
+      </div>
+      } @else {
+      <section class="transactions-list" aria-label="Pagos realizados">
+        @for (transaction of transactions(); track transaction.pedidoId) {
+        <a class="transaction-row" [routerLink]="['/client/orders', transaction.pedidoId]">
+          <span class="transaction-details">
+            <strong>{{ formatTransactionDate(transaction.fechaCreacion) }}</strong>
+            <span>{{ getPaymentMethodLabel(transaction) }}</span>
+            <span>Pedido n.º {{ transaction.pedidoId }}</span>
+          </span>
+          <span class="transaction-payment">
+            <strong>−{{ formatPrice(transaction.total) }}</strong>
+            <span>Cobrado</span>
+          </span>
+          <span class="transaction-chevron" aria-hidden="true">›</span>
+        </a>
+        }
+      </section>
+      }
+      }
       }
     </main>
   </div>
