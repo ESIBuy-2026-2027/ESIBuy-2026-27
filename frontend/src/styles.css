@@ -414,3 +414,38 @@ body {
   color: #1e293b;
   font-weight: 600;
 }
+
+/* El pie legal respeta el espacio de la sidebar en admin y vendedor. */
+.app-route-content:has(.seller-shell) + .site-footer {
+  width: calc(100% - 248px);
+  margin-left: 248px;
+  box-sizing: border-box;
+}
+
+/* Ajuste cuando la sidebar está plegada. */
+.app-route-content:has(.seller-shell.app-sidebar-collapsed) + .site-footer {
+  width: calc(100% - 72px);
+  margin-left: 72px;
+}
+
+/* En móvil la sidebar deja de ser fija. */
+@media (max-width: 760px) {
+  .app-route-content:has(.seller-shell) + .site-footer {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+/* Pie legal en las páginas del vendedor. */
+.app-route-content:has(.seller-layout) + .site-footer {
+  width: calc(100% - 248px);
+  margin-left: 248px;
+  box-sizing: border-box;
+}
+
+/* Pie legal cuando la sidebar del vendedor está plegada. */
+.app-route-content:has(.seller-layout.sidebar-collapsed) + .site-footer {
+  width: calc(100% - 72px);
+  margin-left: 72px;
+  box-sizing: border-box;
+}

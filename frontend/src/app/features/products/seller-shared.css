@@ -447,11 +447,13 @@
 .seller-main-card {
   width: 100%;
   min-width: 0;
-  padding: 32px;
-  border: 1px solid #e1e9f0;
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 8px 28px rgb(25 48 70 / 5%), 0 1px 3px rgb(25 48 70 / 3%);
+  padding: 24px;
+  border: 1px solid rgb(194 210 222 / 72%);
+  border-radius: 20px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 14px 34px rgb(16 44 64 / 8%), 0 2px 6px rgb(16 44 64 / 3%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .seller-layout .page-heading {

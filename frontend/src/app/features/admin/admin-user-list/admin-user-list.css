@@ -280,6 +280,18 @@
   box-shadow: 0 0 0 4px rgb(66 214 178 / 15%);
 }
 
+.result-count {
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border: 1px solid #dce8ed;
+  border-radius: 999px;
+  color: #476273;
+  background: #f6f9fb;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .visually-hidden {
   position: absolute !important;
   width: 1px !important;

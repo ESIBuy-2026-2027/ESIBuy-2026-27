@@ -84,6 +84,7 @@ describe('AdminUserList', () => {
     expect(rendered.textContent).toContain('Ana López');
     expect(rendered.textContent).toContain('ana@example.com');
     expect(rendered.querySelector('#btnDarAltaAdmin')?.getAttribute('href')).toContain('/admin/altas');
+    expect(rendered.querySelector('.result-count')?.textContent?.trim()).toBe('1 usuario');
   });
 
   it('shows a seller commercial name without displaying the headquarters', () => {

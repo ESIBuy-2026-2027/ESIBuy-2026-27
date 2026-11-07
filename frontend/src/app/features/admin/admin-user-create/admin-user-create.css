@@ -492,3 +492,64 @@ a:focus-visible {
     transition-duration: .01ms !important;
   }
 }
+
+
+/* =========================================================
+   Contenedor blanco común del panel de administración
+   ========================================================= */
+.admin-layout .admin-create-container {
+  width: min(1480px, 100%);
+  margin: 0 auto;
+  padding: 32px 32px 54px;
+}
+
+.main-container.users-main-card {
+  width: 100%;
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid #d2e0e9;
+  border-radius: 22px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 14px 34px rgb(16 44 64 / 8%);
+}
+
+.main-container.users-main-card > .card {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.main-container.users-main-card > .card > .card-header {
+  margin: 0 0 27px;
+  padding: 27px 32px 26px;
+  border: 0;
+  border-radius: 19px;
+  box-shadow: 0 14px 30px rgb(16 44 64 / 12%);
+}
+
+.main-container.users-main-card > .alert-box {
+  margin-bottom: 18px;
+}
+
+@media (max-width: 1250px) {
+  .main-container.users-main-card { padding: 28px; }
+}
+
+@media (max-width: 900px) {
+  .main-container.users-main-card { padding: 24px; }
+}
+
+@media (max-width: 760px) {
+  .admin-layout .admin-create-container { padding: 26px 18px 40px; }
+  .main-container.users-main-card { padding: 19px 15px; border-radius: 14px; }
+  .main-container.users-main-card > .card > .card-header { padding: 24px 20px; border-radius: 14px; }
+}
+
+@media (max-width: 400px) {
+  .main-container.users-main-card > .card > .card-header { padding: 22px 17px; }
+}

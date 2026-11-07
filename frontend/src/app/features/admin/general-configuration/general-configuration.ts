@@ -1,11 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
   GeneralConfiguration,
   GeneralConfigurationService,
 } from '../../../core/services/general-configuration.service';
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 
 const DEFAULT_CONFIGURATION: GeneralConfiguration = {
   ivaPorcentaje: 21,
@@ -17,7 +17,7 @@ const DEFAULT_CONFIGURATION: GeneralConfiguration = {
 @Component({
   selector: 'app-general-configuration',
   standalone: true,
-  imports: [FormsModule, RouterLink, RouterLinkActive],
+  imports: [FormsModule, AppSidebarComponent],
   templateUrl: './general-configuration.html',
   styleUrl: './general-configuration.css',
 })

@@ -60,6 +60,10 @@
                             <option value="bloqueado">Bloqueados</option>
                         </select>
                     </div>
+
+                    <span class="result-count" aria-live="polite">
+                        {{ filteredUsers().length }} {{ filteredUsers().length === 1 ? 'usuario' : 'usuarios' }}
+                    </span>
                 </section>
 
                 @if (loading()) {
