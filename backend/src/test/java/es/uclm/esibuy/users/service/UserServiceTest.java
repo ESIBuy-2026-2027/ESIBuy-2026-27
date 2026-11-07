@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.common.exception.InvalidCredentialsException;
+import es.uclm.esibuy.configuration.service.GeneralConfigurationService;
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
 import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
@@ -47,6 +48,8 @@ import es.uclm.esibuy.orders.model.Order;
 import es.uclm.esibuy.orders.model.OrderStatus;
 import es.uclm.esibuy.products.model.Product;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -75,6 +78,9 @@ class UserServiceTest {
         @Mock
         private CompromisedPasswordService compromisedPasswordService;
 
+        @Mock
+        private GeneralConfigurationService generalConfigurationService;
+
         private UserService userService;
 
         @BeforeEach
@@ -83,7 +89,11 @@ class UserServiceTest {
                                 userRepository, passwordEncoder, productRepository,
                                 orderRepository, cartRepository, wishlistRepository,
                                 emailOtpChallengeRepository, passwordResetTokenRepository,
-                                loginAttemptRepository, compromisedPasswordService);
+                                loginAttemptRepository, compromisedPasswordService,
+                                generalConfigurationService);
+                org.mockito.Mockito.lenient()
+                                .when(generalConfigurationService.isRegistrationEnabled())
+                                .thenReturn(true);
         }
 
         @Test
@@ -116,6 +126,22 @@ class UserServiceTest {
                 verify(userRepository).save(captor.capture());
                 User saved = captor.getValue();
                 assertEquals("Ana", saved.getFirstName());
+        }
+
+        @Test
+        void shouldRejectClientAndSellerRegistrationWhenDisabled() {
+                when(generalConfigurationService.isRegistrationEnabled()).thenReturn(false);
+
+                ResponseStatusException clientException = assertThrows(
+                                ResponseStatusException.class,
+                                () -> userService.registerClient(new ClientRegistrationRequest()));
+                ResponseStatusException sellerException = assertThrows(
+                                ResponseStatusException.class,
+                                () -> userService.registerSeller(new SellerRegistrationRequest()));
+
+                assertEquals(HttpStatus.FORBIDDEN, clientException.getStatusCode());
+                assertEquals(HttpStatus.FORBIDDEN, sellerException.getStatusCode());
+                verify(userRepository, never()).save(any(User.class));
         }
 
         @Test

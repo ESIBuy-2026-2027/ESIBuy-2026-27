@@ -114,6 +114,8 @@ public class SecurityConfig {
                                                         .hasRole(ROLE_ADMIN)
                                                         .requestMatchers("/api/admin/**", "/api/v1/admin/**")
                                                         .hasRole(ROLE_ADMIN)
+                                                        .requestMatchers("/api/configuracion", "/api/configuracion/**")
+                                                        .hasRole(ROLE_ADMIN)
                                                         .requestMatchers(HttpMethod.GET, "/api/products/mine",
                                                                         "/api/products/summary",
                                                                         "/api/products/resumen")
@@ -131,6 +133,7 @@ public class SecurityConfig {
                                                                         "/api/products",
                                                                         "/api/products/*",
                                                                         "/api/products/*/image",
+                                                                        "/api/reviews/product/*",
                                                                         API_PRODUCT_PREFIX)
                                                         .permitAll()
                                                         .requestMatchers("/api/catalog/**").hasRole(ROLE_CLIENT)

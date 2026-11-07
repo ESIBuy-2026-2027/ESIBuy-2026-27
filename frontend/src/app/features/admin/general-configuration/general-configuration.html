@@ -1,0 +1,142 @@
+<div class="admin-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
+  <aside class="admin-sidebar admin-sidebar--shared app-sidebar" aria-label="Panel de administración">
+    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m15 18-6-6 6-6" />
+      </svg>
+    </button>
+
+    <p class="sidebar-caption">GESTIÓN DE ADMINISTRACIÓN</p>
+    <nav class="admin-navigation" aria-label="Navegación de administración">
+      <a class="navigation-link" routerLink="/admin/usuarios" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20"></path>
+          <circle cx="10" cy="7" r="3"></circle>
+          <path d="M16 11a3 3 0 1 0 0-6"></path>
+          <path d="M16 14h1a4 4 0 0 1 4 4v2"></path>
+        </svg>
+        <span>Usuarios</span>
+      </a>
+      <a class="navigation-link" routerLink="/admin/altas" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <span class="navigation-icon text-icon" aria-hidden="true">＋</span>
+        <span>Dar de alta Administrador</span>
+      </a>
+      <a class="navigation-link" routerLink="/admin/categorias" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 13 11 22l-9-9V2h11l9 9a1.4 1.4 0 0 1-2 2Z"></path>
+          <circle cx="7" cy="7" r="1.2"></circle>
+        </svg>
+        <span>Categorías</span>
+      </a>
+      <a class="navigation-link" routerLink="/admin/productos" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m7.5 4.27 9 5.15"></path>
+          <path
+            d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z">
+          </path>
+          <path d="m3.3 7 8.7 5 8.7-5"></path>
+          <path d="M12 22V12"></path>
+        </svg>
+        <span>Productos</span>
+      </a>
+      <a class="navigation-link" routerLink="/admin/incidencias" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>Incidencias</span>
+      </a>
+      <a class="navigation-link" routerLink="/admin/configuracion" routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.09a2 2 0 0 1 1 1.73v.5a2 2 0 0 1-1 1.73l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.73v-.5a2 2 0 0 1 1-1.73l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+        <span>Configuración general</span>
+      </a>
+    </nav>
+  </aside>
+
+  <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()"
+    aria-label="Mostrar barra lateral" [hidden]="!sidebarCollapsed()">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  </button>
+
+  <div class="admin-workspace app-workspace">
+    <main class="admin-content">
+      <div class="settings-content">
+        <header class="page-heading">
+          <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
+          <h1>Configuración general</h1>
+          <p class="page-description">
+            Ajusta los importes de compra y controla el registro de nuevos usuarios.
+          </p>
+        </header>
+
+        @if (loading()) {
+          <output class="state-message" aria-live="polite">Cargando la configuración…</output>
+        } @else {
+          @if (errorMessage(); as message) {
+            <p class="alert is-error" role="alert">{{ message }}</p>
+            <button class="secondary-button retry-button" type="button" (click)="loadConfiguration()">
+              Reintentar
+            </button>
+          } @else {
+            @if (successMessage(); as message) {
+              <output class="alert is-success" aria-live="polite">{{ message }}</output>
+            }
+
+            <form #configurationForm="ngForm" (ngSubmit)="save(configurationForm)" class="settings-card">
+              <div class="field-grid">
+                <div class="field">
+                  <label for="ivaPorcentaje">IVA (%)</label>
+                  <input id="ivaPorcentaje" name="ivaPorcentaje" type="number" min="0" max="100" step="0.01"
+                    required [(ngModel)]="form.ivaPorcentaje" [disabled]="saving()" />
+                  <small>Porcentaje aplicado al subtotal de los productos.</small>
+                </div>
+
+                <div class="field">
+                  <label for="gastosEnvio">Gastos de envío (€)</label>
+                  <input id="gastosEnvio" name="gastosEnvio" type="number" min="0" step="0.01"
+                    required [(ngModel)]="form.gastosEnvio" [disabled]="saving()" />
+                  <small>Se cobran cuando el pedido no alcanza el umbral de envío gratuito.</small>
+                </div>
+
+                <div class="field">
+                  <label for="envioGratuitoDesde">Envío gratuito desde (€)</label>
+                  <input id="envioGratuitoDesde" name="envioGratuitoDesde" type="number" min="0" step="0.01"
+                    required [(ngModel)]="form.envioGratuitoDesde" [disabled]="saving()" />
+                  <small>Se compara con el subtotal de los productos.</small>
+                </div>
+              </div>
+
+              <fieldset class="registration-setting">
+                <legend>Registro de usuarios</legend>
+                <label class="toggle-label" for="registroHabilitado">
+                  <input id="registroHabilitado" name="registroHabilitado" type="checkbox"
+                    [(ngModel)]="form.registroHabilitado" [disabled]="saving()" />
+                  <span>Permitir el registro de clientes y vendedores</span>
+                </label>
+              </fieldset>
+
+              <div class="form-actions">
+                <button class="primary-button" type="submit"
+                  [disabled]="saving() || configurationForm.invalid">
+                  {{ saving() ? 'Guardando…' : 'Guardar cambios' }}
+                </button>
+              </div>
+            </form>
+          }
+        }
+      </div>
+    </main>
+  </div>
+</div>

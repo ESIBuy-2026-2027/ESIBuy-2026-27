@@ -63,6 +63,22 @@ describe('App', () => {
     expect(compiled.querySelector('router-outlet')).not.toBeNull();
   });
 
+  it('should show all legal information links in the global footer', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const links = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLAnchorElement>('.site-footer-links a'),
+    );
+
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/legal/aviso-legal',
+      '/legal/privacidad',
+      '/legal/cookies',
+      '/legal/terminos',
+    ]);
+  });
+
   it('should show a non-navigating profile option and a working logout option', async () => {
     currentUser.set({
       id: 'user-1',

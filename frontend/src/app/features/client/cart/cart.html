@@ -142,9 +142,24 @@
           }
         </tbody>
       </table>
-      <p class="checkout-total">
-        Total <strong>{{ formatPrice(summary.precioTotal) }}</strong>
-      </p>
+      <dl class="checkout-breakdown">
+        <div>
+          <dt>Subtotal de productos</dt>
+          <dd>{{ formatPrice(summary.subtotal) }}</dd>
+        </div>
+        <div>
+          <dt>IVA ({{ summary.ivaPorcentaje }} %)</dt>
+          <dd>{{ formatPrice(summary.ivaImporte) }}</dd>
+        </div>
+        <div>
+          <dt>Gastos de envío</dt>
+          <dd>{{ summary.gastosEnvio === 0 ? 'Gratis' : formatPrice(summary.gastosEnvio) }}</dd>
+        </div>
+        <div class="checkout-total">
+          <dt>Total</dt>
+          <dd><strong>{{ formatPrice(summary.precioTotal) }}</strong></dd>
+        </div>
+      </dl>
     </div>
     }
 

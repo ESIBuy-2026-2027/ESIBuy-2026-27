@@ -25,13 +25,13 @@
     </span>
     @if (canCancelOrder(currentOrder)) {
     <button type="button" class="cancel-order-button" [disabled]="cancellingOrder()"
-      (click)="cancelOrder(currentOrder)">
+      (click)="openCancellationDialog(currentOrder)">
       {{ cancellingOrder() ? 'Cancelando...' : 'Cancelar pedido' }}
     </button>
     }
     @if (canConfirmReceipt(currentOrder)) {
     <button type="button" class="confirm-receipt-button" [disabled]="confirmingReceipt()"
-      (click)="confirmReceipt(currentOrder)">
+      (click)="openReceiptDialog(currentOrder)">
       {{ confirmingReceipt() ? 'Confirmando...' : 'He recibido mi pedido' }}
     </button>
     }
@@ -63,6 +63,7 @@
       <strong>{{ formatPrice(item.subtotal) }}</strong>
     </div>
     }
+
     <div class="economic-row">
       <span>Subtotal de productos</span>
       <strong>{{ formatPrice(getItemsSubtotal(currentOrder)) }}</strong>
@@ -136,3 +137,59 @@
   </section>
   }
 </main>
+
+@if (cancellationDialogOpen()) {
+<div class="modal-backdrop" tabindex="-1" (click)="closeCancellationDialog()" (keydown.escape)="closeCancellationDialog()">
+  <section class="cancellation-dialog" role="alertdialog" aria-modal="true" aria-labelledby="cancellation-title"
+    aria-describedby="cancellation-description" (click)="$event.stopPropagation()"
+    (keydown)="$event.stopPropagation()">
+    <span class="cancellation-icon" aria-hidden="true">!</span>
+    <div>
+      <p class="modal-step">Cancelar pedido</p>
+      <h2 id="cancellation-title">¿Quieres cancelar este pedido?</h2>
+      <p id="cancellation-description">
+        Esta acción no se puede deshacer. El importe se devolverá según el método de pago utilizado.
+      </p>
+    </div>
+    @if (actionError(); as message) {
+    <p class="modal-error" role="alert">{{ message }}</p>
+    }
+    <div class="modal-actions">
+      <button type="button" class="secondary-button" [disabled]="cancellingOrder()"
+        (click)="closeCancellationDialog()">No, mantener pedido</button>
+      <button type="button" class="danger-modal-button" [disabled]="cancellingOrder()"
+        (click)="confirmCancellation()">
+        {{ cancellingOrder() ? 'Cancelando...' : 'Sí, cancelar pedido' }}
+      </button>
+    </div>
+  </section>
+</div>
+}
+
+@if (receiptDialogOpen()) {
+<div class="modal-backdrop" tabindex="-1" (click)="closeReceiptDialog()" (keydown.escape)="closeReceiptDialog()">
+  <section class="receipt-dialog" role="alertdialog" aria-modal="true" aria-labelledby="receipt-title"
+    aria-describedby="receipt-description" (click)="$event.stopPropagation()"
+    (keydown)="$event.stopPropagation()">
+    <span class="receipt-icon" aria-hidden="true">✓</span>
+    <div>
+      <p class="modal-step">Recepción del pedido</p>
+      <h2 id="receipt-title">¿Has recibido tu pedido?</h2>
+      <p id="receipt-description">
+        Al confirmar, el pedido pasará a estado entregado. Comprueba que lo has recibido antes de continuar.
+      </p>
+    </div>
+    @if (actionError(); as message) {
+    <p class="modal-error receipt-error" role="alert">{{ message }}</p>
+    }
+    <div class="modal-actions">
+      <button type="button" class="secondary-button" [disabled]="confirmingReceipt()"
+        (click)="closeReceiptDialog()">Todavía no</button>
+      <button type="button" class="receipt-modal-button" [disabled]="confirmingReceipt()"
+        (click)="confirmReceipt()">
+        {{ confirmingReceipt() ? 'Confirmando...' : 'Sí, he recibido mi pedido' }}
+      </button>
+    </div>
+  </section>
+</div>
+}

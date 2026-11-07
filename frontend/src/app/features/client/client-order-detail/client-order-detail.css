@@ -207,6 +207,197 @@ p {
   opacity: 0.65;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(16 44 64 / 55%);
+}
+
+.cancellation-dialog {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  width: min(500px, 100%);
+  gap: 0 14px;
+  padding: 28px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgb(16 44 64 / 30%);
+  color: #172b3a;
+}
+
+.receipt-dialog {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  width: min(500px, 100%);
+  gap: 0 14px;
+  padding: 28px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgb(16 44 64 / 30%);
+  color: #172b3a;
+}
+
+.receipt-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: #dff7ef;
+  color: #087f5b;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.receipt-dialog h2 {
+  margin: 0 0 12px;
+  color: #102c40;
+  font-size: 20px;
+}
+
+.receipt-dialog #receipt-description {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.receipt-error {
+  color: #b42318;
+}
+
+.receipt-modal-button {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #42d6b2;
+  color: #102c40;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.receipt-modal-button:hover:not(:disabled),
+.receipt-modal-button:focus-visible {
+  background: #2fc19f;
+}
+
+.receipt-modal-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.receipt-modal-button:focus-visible {
+  outline: 3px solid rgb(66 214 178 / 40%);
+  outline-offset: 2px;
+}
+
+.cancellation-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fee4e2;
+  color: #b42318;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.modal-step {
+  margin: 0 0 6px;
+  color: #8396a4;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.cancellation-dialog h2 {
+  margin: 0 0 12px;
+  color: #102c40;
+  font-size: 20px;
+}
+
+.cancellation-dialog #cancellation-description {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.modal-error {
+  grid-column: 1 / -1;
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fdf5f4;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.modal-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.secondary-button,
+.danger-modal-button {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secondary-button {
+  border: 1px solid #dce6ea;
+  background: #fff;
+  color: #203b4e;
+}
+
+.secondary-button:hover:not(:disabled),
+.secondary-button:focus-visible {
+  background: #f4f8f9;
+}
+
+.danger-modal-button {
+  border: 0;
+  background: #b42318;
+  color: #fff;
+}
+
+.danger-modal-button:hover:not(:disabled),
+.danger-modal-button:focus-visible {
+  background: #8f1d17;
+}
+
+.secondary-button:disabled,
+.danger-modal-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.secondary-button:focus-visible,
+.danger-modal-button:focus-visible {
+  outline: 3px solid rgb(66 214 178 / 40%);
+  outline-offset: 2px;
+}
+
 .confirm-receipt-button {
   min-height: 36px;
   padding: 8px 13px;
@@ -345,5 +536,23 @@ p {
 
   .detail-item > strong {
     margin-left: auto;
+  }
+
+  .cancellation-dialog {
+    padding: 22px;
+  }
+
+  .receipt-dialog {
+    padding: 22px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .secondary-button,
+  .danger-modal-button,
+  .receipt-modal-button {
+    width: 100%;
   }
 }
