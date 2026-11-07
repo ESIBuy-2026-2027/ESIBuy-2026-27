@@ -8,13 +8,14 @@ import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
 import { ProductReviewSummary, ReviewsService } from '../../../core/services/reviews.service';
 import { ADMIN_READONLY_ERROR_MESSAGE } from '../../../core/services/admin-product.service';
+import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 
 const LOW_STOCK_THRESHOLD = 5;
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, AppSidebarComponent],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.css',
 })
@@ -29,6 +30,7 @@ export class ProductDetail implements OnInit {
   private readonly reviewsService = inject(ReviewsService);
 
   readonly quantity = signal(1);
+  readonly sidebarCollapsed = signal(false);
 
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
@@ -47,6 +49,17 @@ export class ProductDetail implements OnInit {
   readonly reviewSummary = signal<ProductReviewSummary | null>(null);
   readonly reviewsLoading = signal(true);
   readonly reviewsError = signal(false);
+  readonly reviewsExpanded = signal(false);
+  readonly reviewPage = signal(0);
+  readonly reviewsPerPage = 3;
+  readonly paginatedReviews = computed(() => {
+    const reviews = this.reviewSummary()?.reviews ?? [];
+    const start = this.reviewPage() * this.reviewsPerPage;
+    return reviews.slice(start, start + this.reviewsPerPage);
+  });
+  readonly reviewPageCount = computed(() =>
+    Math.ceil((this.reviewSummary()?.reviews.length ?? 0) / this.reviewsPerPage)
+  );
 
   isClient = computed(() => this.authService.currentUser()?.role === 'CLIENT');
   isAdmin = computed(() => this.authService.currentUser()?.role === 'ADMIN');
@@ -198,6 +211,7 @@ export class ProductDetail implements OnInit {
     this.reviewsLoading.set(true);
     this.reviewsError.set(false);
     this.reviewSummary.set(null);
+    this.reviewPage.set(0);
     this.reviewsService.getProductReviews(productId).subscribe({
       next: (summary) => {
         this.reviewSummary.set(summary);
@@ -208,6 +222,15 @@ export class ProductDetail implements OnInit {
         this.reviewsLoading.set(false);
       },
     });
+  }
+
+  toggleReviews(): void {
+    this.reviewsExpanded.update((expanded) => !expanded);
+  }
+
+  changeReviewPage(page: number): void {
+    const lastPage = Math.max(0, this.reviewPageCount() - 1);
+    this.reviewPage.set(Math.min(Math.max(0, page), lastPage));
   }
 
   formatReviewDate(date: string): string {

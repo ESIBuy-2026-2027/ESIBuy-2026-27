@@ -13,6 +13,7 @@ export interface ProductReview {
   rating: number;
   comment: string | null;
   createdAt: string;
+  customerName: string;
 }
 
 export interface ProductReviewSummary {

@@ -30,7 +30,38 @@ export class Home implements OnInit {
     currency: 'EUR',
   });
 
-  products = signal<ProductItem[]>([]);
+  private readonly catalogProducts = signal<ProductItem[]>([]);
+  readonly products = computed(() => {
+    let result = [...this.catalogProducts()];
+
+    if (this.onlyOffers()) {
+      result = result.filter((product) => this.hasAnyDiscount(product));
+    }
+
+    switch (this.sortOrder()) {
+      case 'rating-desc':
+        result.sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));
+        break;
+      case 'rating-asc':
+        result.sort((a, b) => (a.rating ?? Number.MAX_VALUE) - (b.rating ?? Number.MAX_VALUE));
+        break;
+      case 'price-asc':
+        result.sort((a, b) => this.getDisplayPrice(a) - this.getDisplayPrice(b));
+        break;
+      case 'price-desc':
+        result.sort((a, b) => this.getDisplayPrice(b) - this.getDisplayPrice(a));
+        break;
+    }
+
+    return result;
+  });
+  readonly pageIndex = signal(0);
+  readonly pageSize = 12;
+  readonly pageCount = computed(() => Math.max(1, Math.ceil(this.products().length / this.pageSize)));
+  readonly visibleProducts = computed(() => {
+    const start = this.pageIndex() * this.pageSize;
+    return this.products().slice(start, start + this.pageSize);
+  });
   categories = signal<Category[]>([]);
   categoriesLoading = signal(true);
   categoryError = signal(false);
@@ -135,7 +166,8 @@ export class Home implements OnInit {
       inStock: this.onlyInStock() || undefined,
     }).subscribe({
       next: (items) => {
-        this.products.set(items);
+        this.catalogProducts.set(items);
+        this.pageIndex.set(0);
         this.loading.set(false);
       },
       error: () => {
@@ -146,6 +178,7 @@ export class Home implements OnInit {
   }
 
   onFilterChange(): void {
+    this.pageIndex.set(0);
     this.loadProducts();
   }
 
@@ -159,6 +192,7 @@ export class Home implements OnInit {
     this.onlyInStock.set(false);
     this.sortOrder.set('recommended'); // <-- NUEVO
     this.onlyOffers.set(false);        // <-- NUEVO
+    this.pageIndex.set(0);
     this.loadProducts();
   }
 
@@ -208,12 +242,12 @@ export class Home implements OnInit {
     return p.price;
   }
 
+  getTotalDiscount(p: ProductItem): number {
+    return Math.min(100, Math.max(0, p.discount ?? 0) + Math.max(0, p.premiumDiscount ?? 0));
+  }
+
   getPremiumPrice(p: ProductItem): number {
-    if (p.premiumDiscount && p.premiumDiscount > 0) {
-      const factor = (100 - p.premiumDiscount) / 100;
-      return Math.round(p.price * factor * 100) / 100;
-    }
-    return p.price;
+    return Math.round(p.price * (1 - this.getTotalDiscount(p) / 100) * 100) / 100;
   }
 
   hasStandardDiscount(p: ProductItem): boolean {
@@ -222,6 +256,14 @@ export class Home implements OnInit {
 
   hasPremiumDiscount(p: ProductItem): boolean {
     return Boolean(p.premiumDiscount && p.premiumDiscount > 0);
+  }
+
+  hasAnyDiscount(p: ProductItem): boolean {
+    return this.hasStandardDiscount(p) || this.hasPremiumDiscount(p);
+  }
+
+  getDisplayPrice(p: ProductItem): number {
+    return this.isPremiumUser() ? this.getPremiumPrice(p) : this.getDiscountedPrice(p);
   }
 
   stockStatus(itemOrStock: ProductItem | number): string {
@@ -265,6 +307,14 @@ export class Home implements OnInit {
 
   formatPrice(price: number): string {
     return this.currencyFormatter.format(price);
+  }
+
+  previousPage(): void {
+    this.pageIndex.update((page) => Math.max(0, page - 1));
+  }
+
+  nextPage(): void {
+    this.pageIndex.update((page) => Math.min(this.pageCount() - 1, page + 1));
   }
 
   readonly imageErrors = signal<Record<string, boolean>>({});

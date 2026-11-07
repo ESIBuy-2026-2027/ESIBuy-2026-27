@@ -129,10 +129,10 @@
           <select id="filter-rating" [ngModel]="minRating()" (ngModelChange)="minRating.set($event); onFilterChange()">
 
             <option [ngValue]="null">Cualquier valoración</option>
-            <option [ngValue]="4">4 estrellas o más (★★★★☆)</option>
-            <option [ngValue]="3">3 estrellas o más (★★★☆☆)</option>
-            <option [ngValue]="2">2 estrellas o más (★★☆☆☆)</option>
-            <option [ngValue]="1">1 estrella o más (★☆☆☆☆)</option>
+            <option [ngValue]="4">4 estrellas o más</option>
+            <option [ngValue]="3">3 estrellas o más</option>
+            <option [ngValue]="2">2 estrellas o más</option>
+            <option [ngValue]="1">1 estrella o más</option>
           </select>
         </div>
 
@@ -197,9 +197,9 @@
       </div>
       } @else {
       <div class="product-cards-grid">
-        @for (product of products(); track product.id) {
-        <article class="showcase-card" [routerLink]="['/products', product.id]">
-          <div class="card-media-wrapper">
+        @for (product of visibleProducts(); track product.id) {
+        <article class="showcase-card product-card" [routerLink]="['/products', product.id]">
+          <div class="card-media-wrapper product-image-container">
             @if (product.imageUrl && !imageErrors()[product.id]) {
             <img [src]="product.imageUrl" [alt]="product.name" class="card-photo" loading="lazy"
               (error)="onImageError(product.id)" />
@@ -230,7 +230,10 @@
               @if (product.premiumDiscount && product.premiumDiscount > 0) {
               <span class="discount-badge-pill premium-discount-badge" [class.is-current-plan]="isPremiumUser()"
                 title="Descuento para clientes Premium">
-                ★ -{{ product.premiumDiscount }}% Premium
+                <svg class="discount-star-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />
+                </svg>
+                -{{ product.premiumDiscount }}% Premium
               </span>
               }
             </div>
@@ -238,7 +241,10 @@
 
             @if (product.rating != null) {
             <span class="rating-badge">
-              ★ {{ product.rating.toFixed(1) }}
+              <svg class="rating-star-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />
+              </svg>
+              {{ product.rating.toFixed(1) }}
               @if (product.reviewCount) {
               <span>({{ product.reviewCount }})</span>
               }
@@ -248,26 +254,26 @@
             }
           </div>
 
-          <div class="card-content">
+          <div class="card-content product-card-body">
             <div class="card-category-list">
               @for (catId of product.categoryIds; track catId) {
               <span class="cat-pill">{{ categoryName(catId) }}</span>
               }
             </div>
 
-            <h3 class="card-title">{{ product.name }}</h3>
-            <p class="card-desc">{{ product.description || 'Sin descripción' }}</p>
+            <h3 class="card-title product-card-title">{{ product.name }}</h3>
+            <p class="card-desc product-card-desc">{{ product.description || 'Sin descripción' }}</p>
 
             <div class="product-vendor-info">
               <span class="vendor-label">Proveedor:</span>
               <span class="vendor-name">{{ product.sellerName || 'Proveedor oficial' }}</span>
             </div>
 
-            <div class="card-price-row">
+            <div class="card-price-row product-card-footer">
               <div class="price-stock-wrap">
                 <div class="prices-container">
                   <div class="main-price-line">
-                    <span class="card-price">{{ formatPrice(getDiscountedPrice(product)) }}</span>
+                    <span class="card-price product-card-price">{{ formatPrice(getDisplayPrice(product)) }}</span>
 
                     @if (hasStandardDiscount(product)) {
                     <span class="strikethrough-original-price">
@@ -276,9 +282,11 @@
                     }
                   </div>
 
-                  @if (hasPremiumDiscount(product)) {
+                  @if (!isPremiumUser() && hasPremiumDiscount(product)) {
                   <div class="premium-price-line" [class.is-current-plan]="isPremiumUser()">
-                    <span class="premium-star">★</span>
+                    <svg class="premium-star" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />
+                    </svg>
                     <span class="premium-price-val">{{ formatPrice(getPremiumPrice(product)) }}</span>
                     <span class="premium-label">Premium</span>
                   </div>
@@ -303,6 +311,13 @@
         </article>
         }
       </div>
+      @if (products().length > pageSize) {
+      <nav class="orders-pagination" aria-label="Paginación del catálogo">
+        <button type="button" (click)="previousPage()" [disabled]="pageIndex() === 0">Anterior</button>
+        <span>Página {{ pageIndex() + 1 }} de {{ pageCount() }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="pageIndex() >= pageCount() - 1">Siguiente</button>
+      </nav>
+      }
       }
     </div>
   </section>

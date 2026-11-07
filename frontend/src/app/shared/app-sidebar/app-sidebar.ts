@@ -13,7 +13,6 @@ export type SidebarVariant = 'admin' | 'seller' | 'seller-compact' | 'client';
 })
 export class AppSidebarComponent implements OnInit {
   @Input({ required: true }) variant: SidebarVariant = 'seller';
-  @Input() cartCount = 0;
   @Input() collapsed = false;
   @Output() readonly collapsedChange = new EventEmitter<boolean>();
 

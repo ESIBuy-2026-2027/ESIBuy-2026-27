@@ -7,9 +7,14 @@ import es.uclm.esibuy.reviews.model.Review;
 public record ReviewResponse(
         int rating,
         String comment,
-        LocalDateTime createdAt) {
+        LocalDateTime createdAt,
+        String customerName) {
 
-    public static ReviewResponse from(Review review) {
-        return new ReviewResponse(review.getRating(), review.getComment(), review.getCreatedAt());
+    public static ReviewResponse from(Review review, String customerName) {
+        return new ReviewResponse(
+                review.getRating(),
+                review.getComment(),
+                review.getCreatedAt(),
+                customerName);
     }
 }
