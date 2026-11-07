@@ -1,21 +1,50 @@
 /* You can add global styles to this file, and also import other style files */
 
+@import './styles/tokens.css';
 @import './app/features/products/seller-shared.css';
 
-:root {
-  --app-header-height: 4rem;
-  --color-brand-dark: #102c40;
-  --color-brand-accent: #42d6b2;
-  --color-brand-accent-hover: #35c4a1;
-  --color-page-background: #e9eff8;
-  --color-surface: #ffffff;
-  --color-text-primary: #173247;
-  --color-text-secondary: #587388;
-  --color-focus: #147c73;
+/* ========================================
+   GLOBAL DESIGN FOUNDATIONS
+   ======================================== */
+
+html {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background: var(--color-page-background);
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
+  min-width: 320px;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background: var(--color-page-background);
+}
+
+::selection {
+  color: var(--color-text-inverse);
+  background: var(--color-brand-dark);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Sidebar común del panel de administración */
@@ -384,4 +413,39 @@ body {
 .product-vendor-info .vendor-name {
   color: #1e293b;
   font-weight: 600;
+}
+
+/* El pie legal respeta el espacio de la sidebar en admin y vendedor. */
+.app-route-content:has(.seller-shell) + .site-footer {
+  width: calc(100% - 248px);
+  margin-left: 248px;
+  box-sizing: border-box;
+}
+
+/* Ajuste cuando la sidebar está plegada. */
+.app-route-content:has(.seller-shell.app-sidebar-collapsed) + .site-footer {
+  width: calc(100% - 72px);
+  margin-left: 72px;
+}
+
+/* En móvil la sidebar deja de ser fija. */
+@media (max-width: 760px) {
+  .app-route-content:has(.seller-shell) + .site-footer {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+/* Pie legal en las páginas del vendedor. */
+.app-route-content:has(.seller-layout) + .site-footer {
+  width: calc(100% - 248px);
+  margin-left: 248px;
+  box-sizing: border-box;
+}
+
+/* Pie legal cuando la sidebar del vendedor está plegada. */
+.app-route-content:has(.seller-layout.sidebar-collapsed) + .site-footer {
+  width: calc(100% - 72px);
+  margin-left: 72px;
+  box-sizing: border-box;
 }

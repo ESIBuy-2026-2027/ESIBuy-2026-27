@@ -1,0 +1,164 @@
+
+:host {
+  display: block;
+  min-height: calc(100vh - var(--app-header-height));
+  padding: 40px 24px 64px;
+  background: #e9eff8;
+  color: #102c40;
+  font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.legal-page {
+  width: min(920px, 100%);
+  margin: 0 auto;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 22px;
+  color: #31566b;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: color .18s ease;
+}
+
+.back-link::before {
+  content: "←";
+  color: #20b99a;
+  font-size: 19px;
+  line-height: 1;
+}
+
+.back-link:hover {
+  color: #168c75;
+}
+
+.back-link:focus-visible {
+  outline: 2px solid #42d6b2;
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+
+.legal-card {
+  padding: clamp(26px, 5vw, 48px);
+  border: 1px solid rgb(209 222 234 / 75%);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow:
+    0 12px 36px rgb(16 44 64 / 6%),
+    0 2px 6px rgb(16 44 64 / 3%);
+}
+
+.draft-notice {
+  margin: 0 0 34px;
+  padding: 16px 19px;
+  border: 1px solid #f0dfb7;
+  border-left: 4px solid #d69b36;
+  border-radius: 10px;
+  background: #fffaf0;
+  color: #76551c;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.7;
+}
+
+.eyebrow {
+  display: inline-block;
+  margin: 0 0 12px;
+  color: #159b82;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+}
+
+h1 {
+  margin: 0 0 34px;
+  color: #102c40;
+  font-size: clamp(29px, 4vw, 40px);
+  font-weight: 750;
+  letter-spacing: -1.1px;
+  line-height: 1.2;
+}
+
+.legal-section + .legal-section {
+  margin-top: 28px;
+  padding-top: 26px;
+  border-top: 1px solid #e8eef3;
+}
+
+.legal-section h2 {
+  margin: 0 0 11px;
+  color: #183b50;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.2px;
+  line-height: 1.4;
+}
+
+.legal-section p,
+.not-found p {
+  margin: 0;
+  color: #526b7b;
+  font-size: 14px;
+  line-height: 1.85;
+}
+
+.not-found h1 {
+  margin-bottom: 14px;
+}
+
+@media (max-width: 760px) {
+  :host {
+    padding: 30px 18px 48px;
+  }
+
+  .legal-card {
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  :host {
+    padding: 22px 14px 38px;
+  }
+
+  .legal-card {
+    padding: 23px 19px;
+    border-radius: 16px;
+  }
+
+  .draft-notice {
+    margin-bottom: 27px;
+    padding: 13px 14px;
+    font-size: 12px;
+  }
+
+  h1 {
+    margin-bottom: 27px;
+    font-size: 29px;
+  }
+
+  .legal-section + .legal-section {
+    margin-top: 23px;
+    padding-top: 21px;
+  }
+
+  .legal-section h2 {
+    font-size: 16px;
+  }
+
+  .legal-section p,
+  .not-found p {
+    font-size: 13px;
+    line-height: 1.75;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .back-link {
+    transition: none;
+  }
+}

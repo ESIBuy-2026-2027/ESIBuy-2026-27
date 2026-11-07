@@ -52,12 +52,10 @@ describe('Register', () => {
 
         expect(requirements).toEqual([
             'Mínimo de 12 caracteres',
-            'Máximo de 128 caracteres',
             'Al menos una letra mayúscula',
             'Al menos una letra minúscula',
             'Al menos un número',
             'Al menos un carácter especial',
-            'No puede contener espacios',
         ]);
     });
 
@@ -131,7 +129,7 @@ describe('Register', () => {
         await fixture.whenStable();
 
         expect(component.showCancelConfirmation).toBe(false);
-        expect(navigate).toHaveBeenCalledWith(['/']);
+        expect(navigate).toHaveBeenCalledWith(['/login'], { state: { registrationCancelled: true } });
     });
 
     it('stays on the registration page when cancellation is declined', async () => {

@@ -1,136 +1,187 @@
+/* =========================================================
+   ESIBuy · Perfil compartido
+   Tarjeta lateral · Estilo claro inspirado en Revolut
+   ========================================================= */
+
 :host {
     display: block;
     min-width: 0;
+    height: 100%;
 }
 
 * {
     box-sizing: border-box;
 }
 
+/* =========================================================
+   TARJETA PRINCIPAL
+   ========================================================= */
+
 .profile-card {
+    position: sticky;
+    top: calc(var(--app-header-height, 56px) + 28px);
     display: flex;
     width: 100%;
     min-width: 0;
-    min-height: 460px;
+    min-height: 540px;
     flex-direction: column;
-    align-items: center;
-    padding: 28px 14px 18px;
-    border: 1px solid #d9e3eb;
-    border-radius: 16px;
-    background: #fff;
-    box-shadow: 0 8px 24px rgb(16 44 64 / 5%);
+    align-items: stretch;
+    padding: 28px 18px 18px;
+    border: 1px solid #d5e1eb;
+    border-radius: 20px;
+    background: linear-gradient(160deg, #ffffff 0%, #fbfdff 100%);
+    box-shadow: 0 12px 30px rgb(16 44 64 / 7%);
 }
+
+/* =========================================================
+   INFORMACIÓN DEL USUARIO
+   ========================================================= */
 
 .sidebar-profile {
     display: flex;
     width: 100%;
     flex-direction: column;
     align-items: center;
+    padding: 8px 8px 22px;
+    border-bottom: 1px solid #e3ebf1;
 }
 
 .avatar {
     display: grid;
-    width: 76px;
-    height: 76px;
+    width: 84px;
+    height: 84px;
     flex-shrink: 0;
     place-items: center;
     overflow: hidden;
+    border: 3px solid #fff;
     border-radius: 50%;
-    background: var(--color-brand-dark);
-    color: var(--color-brand-accent);
-    font-size: 26px;
+    background: linear-gradient(145deg, #102c40, #1d5360);
+    color: #42d6b2;
+    font-size: 27px;
     font-weight: 750;
+    box-shadow:
+        0 0 0 1px #dce7ed,
+        0 7px 18px rgb(16 44 64 / 10%);
 }
 
 .avatar-image {
     display: block;
-    width: 76px;
-    height: 76px;
+    width: 84px;
+    height: 84px;
     border-radius: 50%;
     object-fit: cover;
 }
 
 .sidebar-name {
-    margin: 14px 0 8px;
-    color: var(--color-text-primary);
+    max-width: 100%;
+    margin: 15px 0 8px;
+    color: #102c40;
     font-size: 15px;
     font-weight: 750;
+    line-height: 1.4;
     text-align: center;
     overflow-wrap: anywhere;
 }
 
 .role-badge {
-    display: inline-block;
+    display: inline-flex;
     max-width: 100%;
-    padding: 4px 12px;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 12px;
+    border: 1px solid #d8e9e6;
     border-radius: 999px;
-    background: #e8f1f5;
-    color: #1f4561;
-    font-size: 11px;
-    font-weight: 700;
+    background: #edf8f5;
+    color: #247b69;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: .35px;
     text-align: center;
 }
 
 .premium-badge {
-    background: var(--color-brand-accent);
-    color: var(--color-brand-dark);
+    border-color: #bcefe2;
+    background: #dff8f0;
+    color: #126e5a;
 }
+
+/* =========================================================
+   NAVEGACIÓN
+   ========================================================= */
 
 .sidebar-nav {
     display: grid;
     width: 100%;
-    gap: 4px;
-    margin-top: 24px;
+    gap: 5px;
+    margin-top: 20px;
 }
 
 .sidebar-nav .nav-item {
+    position: relative;
     display: block;
     width: 100%;
-    padding: 11px 12px;
-    border: 0;
-    border-radius: 8px;
+    min-width: 0;
+    padding: 12px 13px;
+    border: 1px solid transparent;
+    border-radius: 11px;
     background: transparent;
-    color: #3a5871;
+    color: #526b7c;
     font-family: inherit;
     font-size: 13px;
-    font-weight: 550;
+    font-weight: 600;
+    line-height: 1.45;
     text-align: left;
     text-decoration: none;
+    overflow-wrap: anywhere;
     cursor: pointer;
+    transition:
+        background-color .18s ease,
+        border-color .18s ease,
+        color .18s ease,
+        box-shadow .18s ease;
 }
 
 .sidebar-nav .nav-item.active {
-    background: #dde8f0;
-    color: var(--color-brand-dark);
-    font-weight: 700;
+    border-color: #cce9e2;
+    background: #eaf6f3;
+    color: #102c40;
+    font-weight: 750;
+    box-shadow: inset 3px 0 #42d6b2;
 }
 
 .sidebar-nav .nav-item:not(.disabled):hover {
-    background: #f0f5f8;
+    border-color: #e1eaf0;
+    background: #f4f8fa;
+    color: #102c40;
 }
 
 .sidebar-nav .nav-item.active:hover {
-    background: #dde8f0;
+    border-color: #cce9e2;
+    background: #eaf6f3;
+}
+
+.sidebar-nav .nav-item.disabled {
+    color: #9aabb6;
+    cursor: not-allowed;
 }
 
 .sidebar-nav .nav-item:focus-visible,
 .sidebar-footer .logout-button:focus-visible,
 .sidebar-footer .back-button:focus-visible {
-    outline: 3px solid var(--color-brand-accent);
+    outline: 3px solid rgb(66 214 178 / 45%);
     outline-offset: 2px;
 }
 
-.sidebar-nav .nav-item.disabled {
-    color: #91a2af;
-    cursor: not-allowed;
-}
+/* =========================================================
+   ACCIONES INFERIORES
+   ========================================================= */
 
 .sidebar-footer {
     display: grid;
     width: 100%;
     gap: 8px;
     margin-top: auto;
-    padding-top: 28px;
+    padding-top: 20px;
 }
 
 .sidebar-footer .form-error {
@@ -138,120 +189,52 @@
     font-size: 12px;
 }
 
-.logout-button,
+.sidebar-footer .logout-button,
 .sidebar-footer .back-button {
     display: flex;
     width: 100%;
-    min-height: 40px;
+    min-height: 42px;
     align-items: center;
     justify-content: center;
-    padding: 9px 12px;
-    border-radius: 8px;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid transparent;
+    border-radius: 11px;
     font: inherit;
-    font-size: 13px;
-    font-weight: 650;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
     cursor: pointer;
-}
-
-.logout-button {
-    border: 1px solid #f0d5d5;
-    background: #fff5f5;
-    color: #a33131;
-}
-
-.logout-button:hover {
-    background: #ffe9e9;
+    transition:
+        background-color .18s ease,
+        border-color .18s ease,
+        color .18s ease,
+        transform .18s ease;
 }
 
 .sidebar-footer .back-button {
-    gap: 8px;
-    border: 1px solid #d9e3eb;
+    border-color: #dce6ec;
     background: #fff;
     color: #31536b;
 }
 
 .sidebar-footer .back-button:hover {
+    border-color: #c6d8e2;
     background: #f4f8fa;
-}
-
-@media (max-width: 900px) {
-    .profile-card {
-        min-height: 0;
-    }
-}
-
-@media (max-width: 760px) {
-    .profile-card {
-        padding: 20px 14px;
-    }
-
-    .sidebar-nav {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .sidebar-footer {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        padding-top: 18px;
-    }
-
-    .sidebar-footer .form-error {
-        grid-column: 1 / -1;
-    }
-}
-
-@media (max-width: 520px) {
-    .sidebar-name {
-        font-size: 14px;
-    }
-
-    .sidebar-nav {
-        grid-template-columns: 1fr;
-    }
-
-    .sidebar-footer {
-        grid-template-columns: 1fr;
-    }
-}
-
-
-/* Acciones de la barra lateral: estilo común en todos los perfiles */
-.sidebar-footer .logout-button,
-.sidebar-footer .back-button {
-    display: flex;
-    width: 100%;
-    min-height: 40px;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 9px 12px;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 650;
-    line-height: 1.25;
-    text-align: center;
-    cursor: pointer;
-    transition: background-color 0.2s ease, border-color 0.2s ease,
-        color 0.2s ease, box-shadow 0.2s ease;
+    color: #102c40;
 }
 
 .sidebar-footer .logout-button {
-    border-color: #f0d5d5;
-    background: #fff5f5;
+    border-color: #f0dada;
+    background: #fff6f6;
     color: #a33131;
 }
 
 .sidebar-footer .logout-button:hover {
     border-color: #e9bebe;
-    background: #ffe9e9;
+    background: #ffeded;
     color: #8f2525;
-}
-
-.sidebar-footer .logout-button:focus-visible,
-.sidebar-footer .back-button:focus-visible {
-    outline: 3px solid rgb(66 214 178 / 55%);
-    outline-offset: 2px;
 }
 
 .sidebar-footer .logout-button:active,
@@ -259,7 +242,82 @@
     transform: translateY(1px);
 }
 
+/* =========================================================
+   RESPONSIVE · TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+    .profile-card {
+        position: static;
+        min-height: 0;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE · MÓVIL
+   ========================================================= */
+
+@media (max-width: 760px) {
+    .profile-card {
+        min-height: 0;
+        padding: 20px 16px 16px;
+    }
+
+    .sidebar-profile {
+        padding-bottom: 18px;
+    }
+
+    .sidebar-nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 16px;
+    }
+
+    .sidebar-nav .nav-item {
+        padding: 11px 10px;
+        text-align: center;
+    }
+
+    .sidebar-footer {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding-top: 16px;
+    }
+
+    .sidebar-footer .form-error {
+        grid-column: 1 / -1;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE · MÓVIL PEQUEÑO
+   ========================================================= */
+
+@media (max-width: 520px) {
+    .avatar,
+    .avatar-image {
+        width: 76px;
+        height: 76px;
+    }
+
+    .sidebar-name {
+        font-size: 14px;
+    }
+
+    .sidebar-nav,
+    .sidebar-footer {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar-nav .nav-item {
+        text-align: left;
+    }
+}
+
+/* =========================================================
+   ACCESIBILIDAD
+   ========================================================= */
+
 @media (prefers-reduced-motion: reduce) {
+    .sidebar-nav .nav-item,
     .sidebar-footer .logout-button,
     .sidebar-footer .back-button {
         transition: none;

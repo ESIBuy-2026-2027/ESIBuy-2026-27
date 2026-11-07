@@ -1,37 +1,25 @@
 <div class="home-container">
-  <!-- SECCIÓN HERO CON BÚSQUEDA DESTACADA -->
+  <!-- HERO -->
   <section class="hero-section" aria-labelledby="hero-title">
     <div class="hero-content">
-      <p class="hero-eyebrow">Tu tienda, más sencilla</p>
-      <h1 id="hero-title">Compra con confianza. Vive la experiencia.</h1>
+      <h1 id="hero-title">
+        Compra con confianza.
+        <span>Vive la experiencia.</span>
+      </h1>
+
       <p class="hero-subtitle">
         Descubre miles de productos disponibles con acceso libre para toda la comunidad.
       </p>
-
-      <!-- CAMPO DE BÚSQUEDA VISIBLE -->
-      <div class="hero-search-box">
-        <label for="public-search" class="visually-hidden">Buscar productos por nombre o palabra clave</label>
-        <svg class="search-svg" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"></circle>
-          <path d="m16 16 4.5 4.5" fill="none" stroke="currentColor" stroke-width="2.2"></path>
-        </svg>
-        <input id="public-search" type="search" placeholder="Buscar por nombre o palabra clave..."
-          [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event); onFilterChange()" />
-        @if (searchQuery()) {
-        <button type="button" class="clear-search-btn" (click)="searchQuery.set(''); onFilterChange()"
-          aria-label="Borrar búsqueda">×</button>
-        }
-      </div>
     </div>
   </section>
 
-  <!-- BARRA DE FILTROS COMBINABLES CON RECUADRO NOTABLE -->
+  <!-- CATÁLOGO PÚBLICO -->
   <section class="catalog-main" aria-label="Catálogo público">
     @if (toastService.toast(); as t) {
-    <output class="catalog-alert" [class.is-success]="t.type === 'success'"
-      [class.is-error]="t.type === 'error'" [class.is-info]="t.type === 'info'"
-      [attr.role]="t.type === 'error' ? 'alert' : 'status'"
+    <output class="catalog-alert" [class.is-success]="t.type === 'success'" [class.is-error]="t.type === 'error'"
+      [class.is-info]="t.type === 'info'" [attr.role]="t.type === 'error' ? 'alert' : 'status'"
       [attr.aria-live]="t.type === 'error' ? 'assertive' : 'polite'">
+
       @if (t.type === 'success') {
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="m5 12 4 4L19 6"></path>
@@ -43,28 +31,63 @@
         <circle cx="12" cy="16.5" r="1" fill="currentColor"></circle>
       </svg>
       }
+
       <span class="alert-text">{{ t.text }}</span>
-      <button type="button" class="alert-close" (click)="toastService.clear()" aria-label="Cerrar aviso">×</button>
+
+      <button type="button" class="alert-close" (click)="toastService.clear()" aria-label="Cerrar aviso">
+        ×
+      </button>
     </output>
     }
 
-    <!-- FILTROS (ESTILO UNIFICADO CON CATÁLOGO CLIENTE) -->
+    <!-- BUSCADOR Y FILTROS -->
     <div class="filters-panel">
+
+      <!-- BUSCADOR -->
+      <div class="catalog-search">
+        <label for="public-search" class="visually-hidden">
+          Buscar productos por nombre o palabra clave
+        </label>
+
+        <svg class="search-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5"></circle>
+          <path d="m16 16 4.5 4.5"></path>
+        </svg>
+
+        <input id="public-search" type="search" placeholder="¿Qué estás buscando?" [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event); onFilterChange()" />
+
+        @if (searchQuery()) {
+        <button type="button" class="clear-search-btn" (click)="searchQuery.set(''); onFilterChange()"
+          aria-label="Borrar búsqueda">
+          ×
+        </button>
+        }
+      </div>
+
+      <div class="filters-divider"></div>
+
+      <!-- CONTROLES DE FILTRADO -->
       <div class="filter-controls-row">
 
         <div class="filter-control">
           <label for="filter-category" class="filter-label">Categoría</label>
+
           <select id="filter-category" [ngModel]="selectedCategory()"
             (ngModelChange)="selectedCategory.set($event); onFilterChange()">
+
             <option value="">Todas las categorías</option>
+
             @for (cat of categories(); track cat.id) {
             <option [value]="cat.id">{{ cat.name }}</option>
             }
           </select>
+
           @if (categoriesLoading()) {
           <small aria-live="polite">Cargando categorías…</small>
           } @else if (categoryError()) {
-          <small role="alert">No se han podido cargar las categorías.
+          <small role="alert">
+            No se han podido cargar las categorías.
             <button type="button" (click)="loadCategories()">Reintentar</button>
           </small>
           }
@@ -72,11 +95,14 @@
 
         <div class="filter-control price-control">
           <span class="filter-label">Precio (€)</span>
+
           <div class="price-inputs">
             <input type="number" min="0" [max]="maxPrice() ?? priceLimit()" step="1" placeholder="Mín"
               [ngModel]="minPrice() ?? 0" (ngModelChange)="setMinPrice($event)" (change)="onFilterChange()"
               aria-label="Precio mínimo" />
+
             <span class="price-sep">-</span>
+
             <input type="number" [min]="minPrice() ?? 0" [max]="priceLimit()" step="1" placeholder="Máx"
               [ngModel]="maxPrice() ?? priceLimit()" (ngModelChange)="setMaxPrice($event)" (change)="onFilterChange()"
               aria-label="Precio máximo" />
@@ -84,11 +110,14 @@
 
           <div class="price-range-slider">
             <div class="price-range-track"></div>
+
             <div class="price-range-selection" [style.left.%]="minPricePercent()"
               [style.width.%]="maxPricePercent() - minPricePercent()">
             </div>
+
             <input type="range" min="0" [max]="priceLimit()" step="1" [ngModel]="minPrice() ?? 0"
               (ngModelChange)="setMinPrice($event)" (change)="onFilterChange()" aria-label="Ajustar precio mínimo" />
+
             <input type="range" min="0" [max]="priceLimit()" step="1" [ngModel]="maxPrice() ?? priceLimit()"
               (ngModelChange)="setMaxPrice($event)" (change)="onFilterChange()" aria-label="Ajustar precio máximo" />
           </div>
@@ -96,19 +125,22 @@
 
         <div class="filter-control">
           <label for="filter-rating" class="filter-label">Valoración mínima</label>
+
           <select id="filter-rating" [ngModel]="minRating()" (ngModelChange)="minRating.set($event); onFilterChange()">
+
             <option [ngValue]="null">Cualquier valoración</option>
-            <option [ngValue]="4">4 estrellas o más (★★★★☆)</option>
-            <option [ngValue]="3">3 estrellas o más (★★★☆☆)</option>
-            <option [ngValue]="2">2 estrellas o más (★★☆☆☆)</option>
-            <option [ngValue]="1">1 estrella o más (★☆☆☆☆)</option>
+            <option [ngValue]="4">4 estrellas o más</option>
+            <option [ngValue]="3">3 estrellas o más</option>
+            <option [ngValue]="2">2 estrellas o más</option>
+            <option [ngValue]="1">1 estrella o más</option>
           </select>
         </div>
 
-        <!-- NUEVO: Ordenar por -->
         <div class="filter-control">
           <label for="filter-sort" class="filter-label">Ordenar por</label>
+
           <select id="filter-sort" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event); onFilterChange()">
+
             <option value="recommended">Recomendados</option>
             <option value="rating-desc">Mejor valorados</option>
             <option value="rating-asc">Peor valorados</option>
@@ -125,7 +157,6 @@
             <span>Solo en stock</span>
           </label>
 
-          <!-- NUEVO: Solo ofertas -->
           <label class="checkbox-label">
             <input type="checkbox" [ngModel]="onlyOffers()"
               (ngModelChange)="onlyOffers.set($event); onFilterChange()" />
@@ -136,11 +167,10 @@
             Limpiar filtros
           </button>
         </div>
-
       </div>
     </div>
 
-    <!-- CUADRÍCULA DE PRODUCTOS -->
+    <!-- RESULTADOS DEL CATÁLOGO -->
     <div class="catalog-results">
       <div class="results-meta">
         @if (!loading() && !error()) {
@@ -167,9 +197,9 @@
       </div>
       } @else {
       <div class="product-cards-grid">
-        @for (product of products(); track product.id) {
-        <article class="showcase-card" [routerLink]="['/products', product.id]">
-          <div class="card-media-wrapper">
+        @for (product of visibleProducts(); track product.id) {
+        <article class="showcase-card product-card" [routerLink]="['/products', product.id]">
+          <div class="card-media-wrapper product-image-container">
             @if (product.imageUrl && !imageErrors()[product.id]) {
             <img [src]="product.imageUrl" [alt]="product.name" class="card-photo" loading="lazy"
               (error)="onImageError(product.id)" />
@@ -177,75 +207,97 @@
             <div class="photo-placeholder" aria-hidden="true">▦</div>
             }
 
-            <!-- CORAZÓN CENTRADO AL PONERSE ENCIMA DE LA IMAGEN CON EL RATÓN -->
             <button type="button" class="center-heart-action" [disabled]="favoriteUpdating()[product.id]"
               [class.is-favorite]="wishlistService.isFavorite(product.id)" (click)="toggleFavorite(product.id, $event)"
               [title]="wishlistService.isFavorite(product.id) ? 'En tu lista de deseos' : 'Guardar en favoritos'"
               [attr.aria-label]="wishlistService.isFavorite(product.id) ? 'Quitar de lista de deseos' : 'Añadir a lista de deseos'">
+
               <svg viewBox="0 0 24 24" class="heart-svg-icon" aria-hidden="true">
                 <path
                   d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
               </svg>
             </button>
 
-                <!-- BADGES DE DESCUENTO EN ESQUINA SUPERIOR DERECHA (EN COLOR ROJO) -->
-                @if ((product.discount && product.discount > 0) || (product.premiumDiscount && product.premiumDiscount > 0)) {
-                <div class="discount-badges-wrapper">
-                  @if (product.discount && product.discount > 0) {
-                  <span class="discount-badge-pill standard-discount-badge" title="Descuento estándar">
-                    -{{ product.discount }}%
-                  </span>
-                  }
-                  @if (product.premiumDiscount && product.premiumDiscount > 0) {
-                  <span class="discount-badge-pill premium-discount-badge"
-                    [class.is-current-plan]="isPremiumUser()"
-                    title="Descuento para clientes Premium">
-                    ★ -{{ product.premiumDiscount }}% Premium
-                  </span>
-                  }
-                </div>
-                }
+            @if ((product.discount && product.discount > 0) || (product.premiumDiscount && product.premiumDiscount > 0))
+            {
+            <div class="discount-badges-wrapper">
+              @if (product.discount && product.discount > 0) {
+              <span class="discount-badge-pill standard-discount-badge" title="Descuento estándar">
+                -{{ product.discount }}%
+              </span>
+              }
 
-            <span class="rating-badge">★ {{ (product.rating ?? 5.0).toFixed(1) }}</span>
+              @if (product.premiumDiscount && product.premiumDiscount > 0) {
+              <span class="discount-badge-pill premium-discount-badge" [class.is-current-plan]="isPremiumUser()"
+                title="Descuento para clientes Premium">
+                <svg class="discount-star-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />
+                </svg>
+                -{{ product.premiumDiscount }}% Premium
+              </span>
+              }
+            </div>
+            }
+
+            @if (product.rating != null) {
+            <span class="rating-badge">
+              <svg class="rating-star-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />
+              </svg>
+              {{ product.rating.toFixed(1) }}
+              @if (product.reviewCount) {
+              <span>({{ product.reviewCount }})</span>
+              }
+            </span>
+            } @else {
+            <span class="rating-badge">Sin valoraciones</span>
+            }
           </div>
 
-          <div class="card-content">
+          <div class="card-content product-card-body">
             <div class="card-category-list">
               @for (catId of product.categoryIds; track catId) {
               <span class="cat-pill">{{ categoryName(catId) }}</span>
               }
             </div>
 
-                <h3 class="card-title">{{ product.name }}</h3>
-                <p class="card-desc">{{ product.description || 'Sin descripción' }}</p>
+            <h3 class="card-title product-card-title">{{ product.name }}</h3>
+            <p class="card-desc product-card-desc">{{ product.description || 'Sin descripción' }}</p>
 
-                <!-- PROVEEDOR / VENDEDOR -->
-                <div class="product-vendor-info">
-                  <span class="vendor-label">Proveedor:</span>
-                  <span class="vendor-name">{{ product.sellerName || 'Proveedor oficial' }}</span>
-                </div>
-                
-                <div class="card-price-row">
-                  <div class="price-stock-wrap">
-                    <div class="prices-container">
-                      <div class="main-price-line">
-                        <span class="card-price">{{ formatPrice(getDiscountedPrice(product)) }}</span>
-                        @if (hasStandardDiscount(product)) {
-                        <span class="strikethrough-original-price"><s>{{ formatPrice(product.price) }}</s></span>
-                        }
-                      </div>
-                      @if (hasPremiumDiscount(product)) {
-                      <div class="premium-price-line" [class.is-current-plan]="isPremiumUser()">
-                        <span class="premium-star">★</span>
-                        <span class="premium-price-val">{{ formatPrice(getPremiumPrice(product)) }}</span>
-                        <span class="premium-label">Premium</span>
-                      </div>
-                      }
-                    </div>
-                    <span class="stock-pill" [class.stock-empty]="getRemainingStock(product) === 0" [class.stock-low]="stockStatus(product) === 'Stock bajo'">
-                      {{ stockStatus(product) }}
+            <div class="product-vendor-info">
+              <span class="vendor-label">Proveedor:</span>
+              <span class="vendor-name">{{ product.sellerName || 'Proveedor oficial' }}</span>
+            </div>
+
+            <div class="card-price-row product-card-footer">
+              <div class="price-stock-wrap">
+                <div class="prices-container">
+                  <div class="main-price-line">
+                    <span class="card-price product-card-price">{{ formatPrice(getDisplayPrice(product)) }}</span>
+
+                    @if (hasStandardDiscount(product)) {
+                    <span class="strikethrough-original-price">
+                      <s>{{ formatPrice(product.price) }}</s>
                     </span>
+                    }
                   </div>
+
+                  @if (!isPremiumUser() && hasPremiumDiscount(product)) {
+                  <div class="premium-price-line" [class.is-current-plan]="isPremiumUser()">
+                    <svg class="premium-star" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />
+                    </svg>
+                    <span class="premium-price-val">{{ formatPrice(getPremiumPrice(product)) }}</span>
+                    <span class="premium-label">Premium</span>
+                  </div>
+                  }
+                </div>
+
+                <span class="stock-pill" [class.stock-empty]="getRemainingStock(product) === 0"
+                  [class.stock-low]="stockStatus(product) === 'Stock bajo'">
+                  {{ stockStatus(product) }}
+                </span>
+              </div>
 
               <div class="card-btn-group">
                 <button type="button" class="add-to-cart-action-btn"
@@ -259,6 +311,13 @@
         </article>
         }
       </div>
+      @if (products().length > pageSize) {
+      <nav class="orders-pagination" aria-label="Paginación del catálogo">
+        <button type="button" (click)="previousPage()" [disabled]="pageIndex() === 0">Anterior</button>
+        <span>Página {{ pageIndex() + 1 }} de {{ pageCount() }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="pageIndex() >= pageCount() - 1">Siguiente</button>
+      </nav>
+      }
       }
     </div>
   </section>

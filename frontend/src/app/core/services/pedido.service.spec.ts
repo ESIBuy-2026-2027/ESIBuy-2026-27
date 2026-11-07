@@ -15,13 +15,20 @@ describe('PedidoService', () => {
     httpTesting = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => httpTesting.verify());
+  afterEach(() => {
+    httpTesting.verify();
+    TestBed.resetTestingModule();
+  });
 
   it('should request the signed-in customer checkout summary', () => {
     const summary = {
       direcciones: [],
       metodosPago: [],
       items: [],
+      subtotal: 0,
+      ivaPorcentaje: 21,
+      ivaImporte: 0,
+      gastosEnvio: 0,
       precioTotal: 0,
     };
     let response: unknown;

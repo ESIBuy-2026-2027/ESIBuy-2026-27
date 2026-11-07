@@ -10,6 +10,7 @@ import { TwoFactorSettingsComponent } from '../../../shared/two-factor-settings/
 import { ShippingAddresses } from '../shipping-addresses/shipping-addresses';
 import { PaymentMethods } from '../payment-methods/payment-methods';
 import { CLIENT_AVATARS } from '../../../core/constants/avatars';
+import type { ProfileNavigationItem } from '../../../shared/profile-shell/profile-shell';
 
 
 export interface ProfileSection {
@@ -54,7 +55,10 @@ export class ClientProfile implements OnInit {
     private readonly apiUrl = '/api/users/me/profile';
 
     readonly profile = signal<ClientProfileResponse | null>(null);
-    readonly sidebarCollapsed = signal(false);
+    readonly sidebarCollapsed = signal(
+        typeof localStorage !== 'undefined' && localStorage.getItem('client-sidebar-collapsed') === 'true'
+    );
+    animateTransition = false;
     readonly loading = signal(true);
     readonly profileError = signal<string | null>(null);
     readonly logoutError = signal<string | null>(null);
@@ -63,6 +67,13 @@ export class ClientProfile implements OnInit {
     readonly saving = signal(false);
     readonly editError = signal<string | null>(null);
     readonly editSuccess = signal<string | null>(null);
+
+    readonly shellSections: ProfileNavigationItem[] = [
+        { key: 'personal', label: 'Datos personales' },
+        { key: 'addresses', label: 'Direcciones de envío' },
+        { key: 'security', label: 'Seguridad' },
+        { key: 'payments', label: 'Métodos de pago' },
+    ];
 
     // El estado 2FA se sincroniza con el componente compartido.
     readonly twoFactorEnabled = signal(false);
@@ -114,17 +125,13 @@ export class ClientProfile implements OnInit {
 
     readonly maxBirthDate = this.getMaxBirthDate();
 
-    readonly sections: ProfileSection[] = [
-        { label: 'Datos personales', active: true },
-        { label: 'Direcciones de envío', active: false },
-        { label: 'Seguridad', active: false },
-        { label: 'Métodos de pago', active: false },
-    ];
-
     readonly activeSection = signal('personal');
 
     toggleSidebar(): void {
-        this.sidebarCollapsed.update((collapsed) => !collapsed);
+        this.animateTransition = true;
+        const collapsed = !this.sidebarCollapsed();
+        this.sidebarCollapsed.set(collapsed);
+        localStorage.setItem('client-sidebar-collapsed', String(collapsed));
     }
 
     readonly initials = computed(() => {
@@ -333,6 +340,7 @@ export class ClientProfile implements OnInit {
                     ...profile,
                     profileImage: avatar,
                 });
+                this.authService.updateProfileImage(avatar);
 
                 this.selectedAvatar.set(avatar);
                 this.saving.set(false);

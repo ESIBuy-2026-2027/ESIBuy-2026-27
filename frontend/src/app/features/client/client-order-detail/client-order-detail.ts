@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, HostListener, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
@@ -19,7 +20,8 @@ import { finalize } from 'rxjs';
   templateUrl: './client-order-detail.html',
   styleUrl: './client-order-detail.css',
 })
-export class ClientOrderDetail implements OnInit {
+export class ClientOrderDetail implements OnInit, OnDestroy {
+  private readonly document = inject(DOCUMENT);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly pedidoService = inject(PedidoService);
@@ -30,7 +32,13 @@ export class ClientOrderDetail implements OnInit {
   readonly actionError = signal<string | null>(null);
   readonly addingProductId = signal<string | null>(null);
   readonly cancellingOrder = signal(false);
+  readonly cancellationDialogOpen = signal(false);
+  readonly orderToCancel = signal<CustomerOrder | null>(null);
   readonly confirmingReceipt = signal(false);
+  readonly receiptDialogOpen = signal(false);
+  readonly orderToConfirmReceipt = signal<CustomerOrder | null>(null);
+  private previousBodyOverflow: string | null = null;
+  private previousDocumentOverflow: string | null = null;
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -44,6 +52,10 @@ export class ClientOrderDetail implements OnInit {
       return;
     }
     this.loadOrder(pedidoId);
+  }
+
+  ngOnDestroy(): void {
+    this.unlockPageScroll();
   }
 
   loadOrder(pedidoId: string): void {
@@ -111,12 +123,35 @@ export class ClientOrderDetail implements OnInit {
     return this.getFulfillmentStatus(order) === 'ENVIADO';
   }
 
-  confirmReceipt(order: CustomerOrder): void {
+  openReceiptDialog(order: CustomerOrder): void {
     if (this.confirmingReceipt() || !this.canConfirmReceipt(order)) {
       return;
     }
 
-    if (!window.confirm('¿Confirmas que has recibido tu pedido?')) {
+    this.actionError.set(null);
+    this.orderToConfirmReceipt.set(order);
+    this.receiptDialogOpen.set(true);
+    this.lockPageScroll();
+  }
+
+  @HostListener('document:keydown.escape')
+  closeOpenDialog(): void {
+    this.closeCancellationDialog();
+    this.closeReceiptDialog();
+  }
+
+  closeReceiptDialog(): void {
+    if (this.confirmingReceipt()) {
+      return;
+    }
+    this.receiptDialogOpen.set(false);
+    this.orderToConfirmReceipt.set(null);
+    this.unlockPageScroll();
+  }
+
+  confirmReceipt(): void {
+    const order = this.orderToConfirmReceipt();
+    if (this.confirmingReceipt() || !order || !this.canConfirmReceipt(order)) {
       return;
     }
 
@@ -125,19 +160,41 @@ export class ClientOrderDetail implements OnInit {
     this.pedidoService.confirmarRecepcionPedido(order.pedidoId)
       .pipe(finalize(() => this.confirmingReceipt.set(false)))
       .subscribe({
-        next: () => this.order.set({ ...order, estado: 'ENTREGADO' }),
+        next: () => {
+          this.order.set({ ...order, estado: 'ENTREGADO' });
+          this.receiptDialogOpen.set(false);
+          this.orderToConfirmReceipt.set(null);
+          this.unlockPageScroll();
+        },
         error: (error: HttpErrorResponse) => this.actionError.set(
           this.getReceiptConfirmationErrorMessage(error),
         ),
       });
   }
 
-  cancelOrder(order: CustomerOrder): void {
+  openCancellationDialog(order: CustomerOrder): void {
     if (this.cancellingOrder() || !this.canCancelOrder(order)) {
       return;
     }
 
-    if (!window.confirm('¿Quieres cancelar este pedido?')) {
+    this.actionError.set(null);
+    this.orderToCancel.set(order);
+    this.cancellationDialogOpen.set(true);
+    this.lockPageScroll();
+  }
+
+  closeCancellationDialog(): void {
+    if (this.cancellingOrder()) {
+      return;
+    }
+    this.cancellationDialogOpen.set(false);
+    this.orderToCancel.set(null);
+    this.unlockPageScroll();
+  }
+
+  confirmCancellation(): void {
+    const order = this.orderToCancel();
+    if (this.cancellingOrder() || !order || !this.canCancelOrder(order)) {
       return;
     }
 
@@ -146,7 +203,12 @@ export class ClientOrderDetail implements OnInit {
     this.pedidoService.cancelarPedido(order.pedidoId)
       .pipe(finalize(() => this.cancellingOrder.set(false)))
       .subscribe({
-        next: () => this.order.set({ ...order, estado: 'CANCELADO' }),
+        next: () => {
+          this.order.set({ ...order, estado: 'CANCELADO' });
+          this.cancellationDialogOpen.set(false);
+          this.orderToCancel.set(null);
+          this.unlockPageScroll();
+        },
         error: (error: HttpErrorResponse) => this.actionError.set(
           this.getCancellationErrorMessage(error),
         ),
@@ -159,6 +221,28 @@ export class ClientOrderDetail implements OnInit {
       return message;
     }
     return 'No se pudo cancelar el pedido. Puede que ya no sea cancelable.';
+  }
+
+  private lockPageScroll(): void {
+    if (this.previousBodyOverflow !== null) {
+      return;
+    }
+
+    this.previousBodyOverflow = this.document.body.style.overflow;
+    this.previousDocumentOverflow = this.document.documentElement.style.overflow;
+    this.document.body.style.overflow = 'hidden';
+    this.document.documentElement.style.overflow = 'hidden';
+  }
+
+  private unlockPageScroll(): void {
+    if (this.previousBodyOverflow === null) {
+      return;
+    }
+
+    this.document.body.style.overflow = this.previousBodyOverflow;
+    this.document.documentElement.style.overflow = this.previousDocumentOverflow ?? '';
+    this.previousBodyOverflow = null;
+    this.previousDocumentOverflow = null;
   }
 
   private getReceiptConfirmationErrorMessage(error: HttpErrorResponse): string {

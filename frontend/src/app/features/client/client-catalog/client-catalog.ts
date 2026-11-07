@@ -25,10 +25,16 @@ export class ClientCatalog implements OnInit {
   readonly cartService = inject(CartService);
   readonly isPremiumUser = computed(() => this.authService.currentUser()?.customerType === 'PREMIUM');
 
-  readonly sidebarCollapsed = signal(false);
+  readonly sidebarCollapsed = signal(
+    typeof localStorage !== 'undefined' && localStorage.getItem('client-sidebar-collapsed') === 'true'
+  );
+  animateTransition = false;
 
   toggleSidebar(): void {
-    this.sidebarCollapsed.update((collapsed) => !collapsed);
+    this.animateTransition = true;
+    const collapsed = !this.sidebarCollapsed();
+    this.sidebarCollapsed.set(collapsed);
+    localStorage.setItem('client-sidebar-collapsed', String(collapsed));
   }
 
   addToCart(product: ProductItem, event: Event): void {
@@ -83,10 +89,18 @@ export class ClientCatalog implements OnInit {
 
     switch (this.sortOrder()) {
       case 'rating-desc':
-        result.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+        result.sort((a, b) => {
+          if (a.rating == null) return b.rating == null ? 0 : 1;
+          if (b.rating == null) return -1;
+          return b.rating - a.rating;
+        });
         break;
       case 'rating-asc':
-        result.sort((a, b) => (a.rating ?? 0) - (b.rating ?? 0));
+        result.sort((a, b) => {
+          if (a.rating == null) return b.rating == null ? 0 : 1;
+          if (b.rating == null) return -1;
+          return a.rating - b.rating;
+        });
         break;
       case 'price-asc':
         result.sort((a, b) => a.price - b.price);

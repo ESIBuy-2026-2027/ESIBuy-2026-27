@@ -28,6 +28,10 @@ export interface CheckoutSummary {
   direcciones: ShippingAddressSummary[];
   metodosPago: PaymentMethodSummary[];
   items: CartItem[];
+  subtotal: number;
+  ivaPorcentaje: number;
+  ivaImporte: number;
+  gastosEnvio: number;
   precioTotal: number;
 }
 

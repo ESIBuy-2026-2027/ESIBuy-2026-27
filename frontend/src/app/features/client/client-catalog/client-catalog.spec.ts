@@ -2,7 +2,7 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { NEVER, of, throwError } from 'rxjs';
-import { describe, beforeEach, it, expect, vi } from 'vitest';
+import { afterEach, describe, beforeEach, it, expect, vi } from 'vitest';
 import { ClientCatalog } from './client-catalog';
 import { ProductsService, ProductItem, Category } from '../../../core/services/products.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
@@ -101,6 +101,8 @@ describe('ClientCatalog', () => {
     await fixture.whenStable();
   });
 
+  afterEach(() => TestBed.resetTestingModule());
+
   it('should create and render heading and navigation links in exact order', () => {
     expect(component).toBeTruthy();
     const el: HTMLElement = fixture.nativeElement;
@@ -119,6 +121,31 @@ describe('ClientCatalog', () => {
     expect(component.sidebarCollapsed()).toBe(false);
     component.toggleSidebar();
     expect(component.sidebarCollapsed()).toBe(true);
+  });
+
+  it('keeps unrated products after rated products when sorting by rating', async () => {
+    productsServiceMock.getPublicCatalog.mockReturnValue(of([
+      ...mockProducts,
+      {
+        id: 'p-3',
+        name: 'Producto nuevo',
+        categoryIds: ['cat-1'],
+        stock: 3,
+        price: 12,
+        available: true,
+        sellerId: 's-3',
+        rating: null,
+        reviewCount: 0,
+      },
+    ]));
+    component.loadProducts();
+    await fixture.whenStable();
+
+    component.sortOrder.set('rating-desc');
+    expect(component.products().map((product) => product.id)).toEqual(['p-1', 'p-2', 'p-3']);
+
+    component.sortOrder.set('rating-asc');
+    expect(component.products().map((product) => product.id)).toEqual(['p-2', 'p-1', 'p-3']);
   });
 
   it('should add product to cart and show toast', () => {

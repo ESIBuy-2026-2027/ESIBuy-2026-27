@@ -1,11 +1,16 @@
 <div class="seller-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
-    <aside class="sidebar app-sidebar app-sidebar--client" aria-label="Panel del cliente">
-        <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral">
+    <aside class="sidebar app-sidebar app-sidebar--client" [class.app-sidebar--collapsed]="sidebarCollapsed()"
+        [class.is-transitioning]="animateTransition" aria-label="Panel del cliente">
+        <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()"
+            [attr.aria-label]="sidebarCollapsed() ? 'Mostrar barra lateral' : 'Ocultar barra lateral'"
+            [attr.aria-expanded]="!sidebarCollapsed()">
             <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m15 18-6-6 6-6" />
+                <path [attr.d]="sidebarCollapsed() ? 'm9 18 6-6-6-6' : 'm15 18-6-6 6-6'" />
             </svg>
         </button>
+
         <div class="sidebar-caption">ÁREA DE CLIENTE</div>
+
         <nav class="seller-navigation app-navigation" aria-label="Navegación del cliente">
             <a class="navigation-link" routerLink="/client/catalog">
                 <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -16,6 +21,7 @@
                 </svg>
                 <span>Catálogo</span>
             </a>
+
             <a class="navigation-link" routerLink="/client/wishlist">
                 <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -24,6 +30,7 @@
                 </svg>
                 <span>Lista de deseos</span>
             </a>
+
             <a class="navigation-link" routerLink="/client/orders">
                 <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -34,6 +41,7 @@
                 </svg>
                 <span>Mis pedidos</span>
             </a>
+
             <a class="navigation-link" routerLink="/client/cart">
                 <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -46,19 +54,11 @@
         </nav>
     </aside>
 
-    <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()" aria-label="Mostrar barra lateral"
-        [hidden]="!sidebarCollapsed()">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m9 18 6-6-6-6" />
-        </svg>
-    </button>
-
     <div class="workspace app-workspace">
         <div class="profile-page">
 
-            <!-- BARRA LATERAL -->
+            <!-- BARRA LATERAL DEL PERFIL -->
             <aside class="profile-card" aria-label="Menú de perfil">
-
                 <div class="sidebar-profile">
                     <img class="avatar avatar-image" [src]="selectedAvatar()" alt="Perfil" />
 
@@ -76,7 +76,6 @@
                     </span>
                     }
                 </div>
-
 
                 <nav class="sidebar-nav" aria-label="Secciones del perfil">
                     <button type="button" class="nav-item" [class.active]="activeSection() === 'personal'"
@@ -104,12 +103,11 @@
                     </button>
                 </nav>
 
-
-
                 <div class="sidebar-footer">
                     @if (logoutError(); as error) {
                     <p class="form-error" role="alert">{{ error }}</p>
                     }
+
                     <button type="button" class="back-button" (click)="goBack()">
                         <span aria-hidden="true">←</span>
                         Volver
@@ -119,12 +117,10 @@
                         Cerrar sesión
                     </button>
                 </div>
-
             </aside>
 
             <!-- CONTENIDO PRINCIPAL -->
             <main class="profile-main">
-
                 @if (loading()) {
                 <section class="panel">
                     <output class="panel-description">
@@ -145,15 +141,23 @@
 
                 <!-- BANNER PREMIUM -->
                 @if (activeSection() === 'personal' && isPremium()) {
-                <section class="premium-banner">
-                    <div>
-                        <span class="premium-eyebrow">CUENTA PREMIUM</span>
+                <section class="premium-banner" aria-label="Ventajas de la cuenta Premium">
+                    <div class="premium-banner-decoration" aria-hidden="true">
+                        <span class="premium-decoration-star">✦</span>
+                        <span class="premium-decoration-circle"></span>
+                    </div>
 
-                        <h2>Disfruta de ventajas exclusivas</h2>
+                    <div class="premium-banner-content">
+                        <div class="premium-label">
+                            <span class="premium-label-icon" aria-hidden="true">✦</span>
+                            MEMBRESÍA PREMIUM
+                        </div>
+
+                        <h2>Una experiencia más exclusiva</h2>
 
                         <p>
-                            Tu cuenta Premium te permite disfrutar
-                            de las ventajas disponibles para suscriptores.
+                            Disfruta de ofertas especiales y ventajas reservadas
+                            para clientes Premium.
                         </p>
                     </div>
                 </section>
@@ -162,7 +166,6 @@
                 <!-- DATOS PERSONALES -->
                 @if (activeSection() === 'personal') {
                 <section class="panel">
-
                     <div class="panel-heading">
                         <div class="panel-heading-text">
                             <span class="eyebrow">CUENTA DE CLIENTE</span>
@@ -194,12 +197,9 @@
                     }
 
                     <form #clientForm="ngForm" (ngSubmit)="saveProfile()">
-
                         <h2 class="section-title">Datos personales</h2>
 
                         <div class="field-grid">
-
-                            <!-- NOMBRE -->
                             <div class="field">
                                 <label for="firstName">
                                     Nombre <span>*</span>
@@ -214,7 +214,6 @@
                                 }
                             </div>
 
-                            <!-- APELLIDOS -->
                             <div class="field">
                                 <label for="lastName">
                                     Apellidos <span>*</span>
@@ -229,18 +228,14 @@
                                 }
                             </div>
 
-                            <!-- EMAIL -->
                             <div class="field">
                                 <label for="email">Correo electrónico</label>
 
                                 <input id="email" type="email" [value]="client.email || ''" readonly />
 
-                                <small>
-                                    El correo electrónico no se puede modificar.
-                                </small>
+                                <small>El correo electrónico no se puede modificar.</small>
                             </div>
 
-                            <!-- TELÉFONO -->
                             <div class="field">
                                 <label for="phone">Teléfono</label>
 
@@ -250,15 +245,13 @@
                                     placeholder="Teléfono de 9 cifras" [disabled]="saving()" />
 
                                 <small>
-                                    Campo opcional. Introduce 9 cifras si
-                                    deseas indicar tu teléfono.
+                                    Campo opcional. Introduce 9 cifras si deseas indicar tu teléfono.
                                 </small>
                                 } @else {
                                 <input id="phone" type="text" [value]="client.phone || 'No indicado'" readonly />
                                 }
                             </div>
 
-                            <!-- FECHA DE NACIMIENTO -->
                             <div class="field">
                                 <label for="birthDate">
                                     Fecha de nacimiento <span>*</span>
@@ -277,7 +270,6 @@
                                 }
                             </div>
 
-                            <!-- DNI -->
                             <div class="field">
                                 <label for="nationalId">DNI</label>
 
@@ -286,9 +278,7 @@
                                     maxlength="20" placeholder="Introduce un DNI nuevo" autocomplete="off"
                                     [disabled]="saving()" />
 
-                                <small>
-                                    Déjalo vacío para mantener el DNI actual.
-                                </small>
+                                <small>Déjalo vacío para mantener el DNI actual.</small>
                                 } @else {
                                 <input id="nationalId" type="text" [value]="client.maskedNationalId || 'No disponible'"
                                     readonly />
@@ -296,7 +286,6 @@
                             </div>
                         </div>
 
-                        <!-- AVATARES: SOLO EN MODO EDICIÓN -->
                         @if (editing()) {
                         <div class="avatar-section">
                             <h2 class="section-title">Imagen de perfil</h2>
@@ -313,7 +302,6 @@
                                     [attr.aria-pressed]="selectedAvatar() === avatar"
                                     [attr.aria-label]="'Seleccionar avatar ' + (i + 1)" [disabled]="saving()"
                                     (click)="selectAvatar(avatar)">
-
                                     <img [src]="avatar" [alt]="'Avatar ' + (i + 1)" />
 
                                     @if (selectedAvatar() === avatar) {
@@ -325,7 +313,6 @@
                         </div>
                         }
 
-                        <!-- ACCIONES DEL FORMULARIO -->
                         @if (editing()) {
                         <div class="form-actions">
                             <button type="button" class="secondary-button" [disabled]="saving()"
@@ -338,122 +325,185 @@
                             </button>
                         </div>
                         }
-
                     </form>
                 </section>
 
                 <!-- CAMBIO DE MODALIDAD -->
                 <section class="panel customer-type-panel" aria-labelledby="customer-type-title">
-                    <div class="panel-heading">
-                        <div class="panel-heading-text">
-                            <span class="eyebrow">MODALIDAD DE CUENTA</span>
+                    <div class="customer-type-heading" [class.customer-type-heading-premium]="isPremium()">
+                        <div class="customer-type-heading-content">
+                            <span class="eyebrow">TU SUSCRIPCIÓN</span>
 
                             <h2 id="customer-type-title" class="panel-title">
-                                Tu tipo de cuenta
+                                Elige cómo disfrutar de ESIBuy
                             </h2>
 
                             <p class="panel-description">
-                                Puedes cambiar entre una cuenta Estándar y Premium cuando quieras.
+                                Tu cuenta, tus ventajas. Gestiona tu modalidad cuando quieras.
                             </p>
                         </div>
 
-                        <span class="role-badge" [class.premium-badge]="isPremium()">
+                        <span class="customer-type-current" [class.customer-type-current-premium]="isPremium()">
+                            <span aria-hidden="true">{{ isPremium() ? '✦' : '●' }}</span>
                             {{ customerTypeLabel() }}
                         </span>
                     </div>
 
-                    @if (customerTypeSuccess(); as message) {
-                    <output class="success-message">
-                        {{ message }}
-                    </output>
-                    }
+                    <div class="customer-type-content">
+                        @if (customerTypeSuccess(); as message) {
+                        <output class="success-message">
+                            <span class="status-icon" aria-hidden="true">✓</span>
+                            {{ message }}
+                        </output>
+                        }
 
-                    @if (customerTypeError(); as error) {
-                    <p class="form-error" role="alert">
-                        {{ error }}
-                    </p>
-                    }
+                        @if (customerTypeError(); as error) {
+                        <p class="form-error" role="alert">
+                            {{ error }}
+                        </p>
+                        }
 
-                    @if (isPremium()) {
-                    <div class="customer-type-benefit">
-                        <span class="benefit-icon" aria-hidden="true">★</span>
-                        <div>
-                            <strong>Ofertas Premium</strong>
-                            <p>
-                                Actualmente tienes acceso a las ofertas exclusivas para clientes Premium.
-                            </p>
+                        <div class="customer-type-options">
+                            <!-- CUENTA ESTÁNDAR -->
+                            <article class="customer-plan standard-plan" [class.current-plan]="!isPremium()">
+                                <div class="plan-top">
+                                    <div class="plan-icon standard-plan-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M5 8h14l1 13H4L5 8Z" />
+                                            <path d="M9 9V6a3 3 0 0 1 6 0v3" />
+                                        </svg>
+                                    </div>
+
+                                    @if (!isPremium()) {
+                                    <span class="plan-current-label">TU PLAN ACTUAL</span>
+                                    }
+                                </div>
+
+                                <h3>Estándar</h3>
+
+                                <p class="plan-description">
+                                    Lo esencial para comprar y gestionar tus pedidos en ESIBuy.
+                                </p>
+
+                                <ul class="plan-features">
+                                    <li><span aria-hidden="true">✓</span> Acceso al catálogo</li>
+                                    <li><span aria-hidden="true">✓</span> Gestión de pedidos</li>
+                                    <li><span aria-hidden="true">✓</span> Lista de deseos</li>
+                                </ul>
+
+                                @if (isPremium()) {
+                                <button type="button" class="plan-button plan-button-secondary"
+                                    [disabled]="changingCustomerType() || editing()" (click)="openCustomerTypeDialog()">
+                                    Cambiar a Estándar
+                                </button>
+                                } @else {
+                                <button type="button" class="plan-button plan-button-current" disabled>
+                                    Plan actual
+                                </button>
+                                }
+                            </article>
+
+                            <!-- CUENTA PREMIUM -->
+                            <article class="customer-plan premium-plan" [class.current-plan]="isPremium()">
+                                <div class="premium-plan-glow" aria-hidden="true"></div>
+
+                                <div class="plan-top">
+                                    <div class="plan-icon premium-plan-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <path
+                                                d="m12 2 2.7 6.1 6.8.7-5.1 4.5 1.4 6.7-5.8-3.4-5.8 3.4 1.4-6.7-5.1-4.5 6.8-.7L12 2Z"
+                                                stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                                        </svg>
+                                    </div>
+
+                                    @if (isPremium()) {
+                                    <span class="plan-current-label premium-current-label">TU PLAN ACTUAL</span>
+                                    } @else {
+                                    <span class="plan-recommended-label">EXPERIENCIA EXCLUSIVA</span>
+                                    }
+                                </div>
+
+                                <h3>Premium <span class="premium-sparkle" aria-hidden="true">✦</span></h3>
+
+                                <p class="plan-description">
+                                    Da un paso más y disfruta de las ventajas exclusivas para clientes Premium.
+                                </p>
+
+                                <ul class="plan-features">
+                                    <li><span aria-hidden="true">✓</span> Todas las ventajas de Estándar</li>
+                                    <li><span aria-hidden="true">✦</span> Acceso a ofertas Premium</li>
+                                    <li><span aria-hidden="true">✦</span> Ventajas exclusivas para suscriptores</li>
+                                </ul>
+
+                                @if (isPremium()) {
+                                <button type="button" class="plan-button plan-button-premium-current" disabled>
+                                    Plan actual
+                                </button>
+                                } @else {
+                                <button type="button" class="plan-button plan-button-gold"
+                                    [disabled]="changingCustomerType() || editing()" (click)="openCustomerTypeDialog()">
+                                    {{ changingCustomerType() ? 'Actualizando...' : 'Descubrir Premium' }}
+                                </button>
+                                }
+                            </article>
                         </div>
+
+                        <p class="customer-type-footnote">
+                            Puedes cambiar tu modalidad desde este apartado. El cambio se aplicará a tu cuenta
+                            tras confirmarlo.
+                        </p>
                     </div>
-
-                    <p class="customer-type-warning">
-                        Si cambias a Estándar, perderás el acceso a las ofertas Premium.
-                    </p>
-
-                    <button type="button" class="secondary-button" [disabled]="changingCustomerType() || editing()"
-                        (click)="openCustomerTypeDialog()">
-                        Cambiar a Estándar
-                    </button>
-                    } @else {
-                    <div class="customer-type-benefit">
-                        <span class="benefit-icon" aria-hidden="true">★</span>
-                        <div>
-                            <strong>Accede a las ofertas Premium</strong>
-                            <p>
-                                Cambia tu cuenta a Premium para disfrutar de las ofertas exclusivas
-                                disponibles para esta modalidad.
-                            </p>
-                        </div>
-                    </div>
-
-                    <button type="button" class="primary-button" [disabled]="changingCustomerType() || editing()"
-                        (click)="openCustomerTypeDialog()">
-                        Cambiar a Premium
-                    </button>
-                    }
                 </section>
 
                 <!-- CONFIRMACIÓN DEL CAMBIO -->
                 @if (customerTypeDialogOpen()) {
-                <dialog class="customer-type-modal" open aria-labelledby="customer-type-modal-title"
-                    (click)="onCustomerTypeDialogClick($event)" (keydown)="$event.stopPropagation()">
+                <div class="customer-type-overlay" (click)="onCustomerTypeDialogClick($event)"
+                    (keydown)="$event.stopPropagation()">
 
-                    <span class="eyebrow">CONFIRMAR CAMBIO</span>
+                    <dialog class="customer-type-modal" aria-modal="true" aria-labelledby="customer-type-modal-title"
+                        aria-describedby="customer-type-modal-description">
 
-                    <h2 id="customer-type-modal-title">
-                        ¿Cambiar a {{ pendingCustomerType() === 'PREMIUM' ? 'Premium' : 'Estándar' }}?
-                    </h2>
+                        <span class="eyebrow">
+                            CONFIRMAR CAMBIO
+                        </span>
 
-                    @if (pendingCustomerType() === 'PREMIUM') {
-                    <p>
-                        Tu cuenta pasará a ser Premium y tendrás acceso a las ofertas exclusivas
-                        disponibles para esta modalidad.
-                    </p>
-                    } @else {
-                    <p>
-                        Tu cuenta pasará a ser Estándar y dejarás de tener acceso a las ofertas
-                        exclusivas para clientes Premium.
-                    </p>
-                    }
+                        <h2 id="customer-type-modal-title">
+                            ¿Cambiar a {{ pendingCustomerType() === 'PREMIUM' ? 'Premium' : 'Estándar' }}?
+                        </h2>
 
-                    @if (customerTypeError(); as error) {
-                    <p class="form-error" role="alert">{{ error }}</p>
-                    }
+                        @if (pendingCustomerType() === 'PREMIUM') {
+                        <p id="customer-type-modal-description">
+                            Tu cuenta pasará a ser Premium y tendrás acceso a las ofertas exclusivas
+                            disponibles para esta modalidad.
+                        </p>
+                        } @else {
+                        <p id="customer-type-modal-description">
+                            Tu cuenta pasará a ser Estándar y dejarás de tener acceso a las ofertas
+                            exclusivas para clientes Premium.
+                        </p>
+                        }
 
-                    <div class="customer-type-modal-actions">
-                        <button type="button" class="secondary-button" [disabled]="changingCustomerType()"
-                            (click)="closeCustomerTypeDialog()">
-                            Cancelar
-                        </button>
+                        @if (customerTypeError(); as error) {
+                        <p class="form-error" role="alert">{{ error }}</p>
+                        }
 
-                        <button type="button" class="primary-button" [disabled]="changingCustomerType()"
-                            (click)="confirmCustomerTypeChange()">
-                            {{ changingCustomerType() ? 'Actualizando...' : 'Confirmar cambio' }}
-                        </button>
-                    </div>
-                </dialog>
+                        <div class="customer-type-modal-actions">
+                            <button type="button" class="secondary-button" [disabled]="changingCustomerType()"
+                                (click)="closeCustomerTypeDialog()">
+                                Cancelar
+                            </button>
+
+                            <button type="button" class="primary-button" [disabled]="changingCustomerType()"
+                                (click)="confirmCustomerTypeChange()">
+                                {{ changingCustomerType() ? 'Actualizando...' : 'Confirmar cambio' }}
+                            </button>
+                        </div>
+                    </dialog>
+                </div>
                 }
 
-                <!-- ZONA DE PELIGRO: SOLO EN DATOS PERSONALES -->
+                <!-- ZONA DE PELIGRO -->
                 <section class="panel danger-zone" aria-labelledby="danger-zone-title">
                     <div class="panel-heading">
                         <div class="panel-heading-text">
@@ -474,14 +524,18 @@
                 </section>
                 }
 
-                <!-- SEGURIDAD / AUTENTICACIÓN EN DOS FACTORES -->
+                <!-- SEGURIDAD -->
                 @if (activeSection() === 'security') {
                 <app-two-factor-settings [enabled]="twoFactorEnabled()"
                     (enabledChange)="onTwoFactorEnabledChange($any($event))" />
                 }
+
+                <!-- DIRECCIONES -->
                 @if (activeSection() === 'addresses') {
                 <app-shipping-addresses />
                 }
+
+                <!-- MÉTODOS DE PAGO -->
                 @if (activeSection() === 'payments') {
                 <app-payment-methods />
                 }

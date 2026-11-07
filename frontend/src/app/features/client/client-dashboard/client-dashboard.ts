@@ -27,10 +27,16 @@ export class ClientDashboard implements OnInit {
   readonly quantities = signal<Record<string, number>>({});
   readonly addingProductId = signal<string | null>(null);
   readonly notification = signal<{ type: 'success' | 'error'; text: string } | null>(null);
-  readonly sidebarCollapsed = signal(false);
+  readonly sidebarCollapsed = signal(
+    typeof localStorage !== 'undefined' && localStorage.getItem('client-sidebar-collapsed') === 'true'
+  );
+  animateTransition = false;
 
   toggleSidebar(): void {
-    this.sidebarCollapsed.update((collapsed) => !collapsed);
+    this.animateTransition = true;
+    const collapsed = !this.sidebarCollapsed();
+    this.sidebarCollapsed.set(collapsed);
+    localStorage.setItem('client-sidebar-collapsed', String(collapsed));
   }
 
   ngOnInit(): void {
@@ -94,4 +100,3 @@ export class ClientDashboard implements OnInit {
     return 'No se pudo añadir el producto. Inténtalo de nuevo.';
   }
 }
-

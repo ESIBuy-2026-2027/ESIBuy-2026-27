@@ -179,12 +179,16 @@ describe('ClientCart', () => {
         cantidad: 2,
         subtotal: 39.98,
       }],
-      precioTotal: 39.98,
+      subtotal: 39.98,
+      ivaPorcentaje: 21,
+      ivaImporte: 8.4,
+      gastosEnvio: 4.99,
+      precioTotal: 53.37,
     };
     const obtenerCheckoutResumen = vi.fn(() => of(summary));
     const crearPedido = vi.fn(() => of({
       pedidoId: 'pedido-123',
-      precioTotal: 39.98,
+      precioTotal: 53.37,
       estado: 'PENDIENTE' as const,
       estadoPago: 'PAGADO' as const,
       fechaCreacion: '2026-10-17T12:00:00',
@@ -259,7 +263,11 @@ describe('ClientCart', () => {
         cantidad: 2,
         subtotal: 39.98,
       }],
-      precioTotal: 39.98,
+      subtotal: 39.98,
+      ivaPorcentaje: 21,
+      ivaImporte: 8.4,
+      gastosEnvio: 4.99,
+      precioTotal: 53.37,
     };
     const crearPedido = vi.fn(() => throwError(() => new HttpErrorResponse({
       status: 402,
@@ -528,13 +536,24 @@ describe('ClientCart', () => {
         { productoId: 'p-2', nombre: 'Batería Yamaha', precioUnitario: 300, cantidad: 1, subtotal: 300, vendedorId: 'v-1', vendedorNombre: 'cc' },
         { productoId: 'p-3', nombre: 'Casita de juguete', precioUnitario: 60, cantidad: 1, subtotal: 60, vendedorId: 'v-2', vendedorNombre: 'Messi' },
       ],
-      precioTotal: 410,
+      subtotal: 410,
+      ivaPorcentaje: 21,
+      ivaImporte: 86.1,
+      gastosEnvio: 0,
+      precioTotal: 496.1,
     };
 
-    const obtenerCheckoutResumen = vi.fn(() => of(summary));
+    const obtenerCheckoutResumen = vi.fn(() => of({
+      ...summary,
+      items: [summary.items[0]],
+      subtotal: 50,
+      ivaImporte: 10.5,
+      gastosEnvio: 0,
+      precioTotal: 60.5,
+    }));
     const crearPedido = vi.fn(() => of({
       pedidoId: 'pedido-auriculares',
-      precioTotal: 50,
+      precioTotal: 60.5,
       estado: 'PENDIENTE' as const,
       estadoPago: 'PAGADO' as const,
       fechaCreacion: '2026-10-27T18:00:00',
@@ -588,7 +607,7 @@ describe('ClientCart', () => {
     expect(rows[0].querySelectorAll('td')[0].textContent).toContain('2');
     expect(rows[0].querySelectorAll('td')[1].textContent).toContain('50,00');
 
-    expect(element.querySelector('.checkout-total strong')?.textContent).toContain('50,00');
+    expect(element.querySelector('.checkout-total strong')?.textContent).toContain('60,50');
 
     // Confirm order
     (element.querySelector('.checkout-actions .primary-action') as HTMLButtonElement).click();

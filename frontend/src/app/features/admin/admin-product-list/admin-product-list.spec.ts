@@ -80,6 +80,7 @@ describe('AdminProductList', () => {
     expect(productsServiceMock.getCategories).toHaveBeenCalled();
     expect(component.products().length).toBe(2);
     expect(component.categories().length).toBe(2);
+    expect(fixture.nativeElement.querySelector('.result-count')?.textContent?.trim()).toBe('2 productos');
   });
 
   it('should display the read-only supervision banner with exact text "Modo supervisión: solo lectura"', () => {

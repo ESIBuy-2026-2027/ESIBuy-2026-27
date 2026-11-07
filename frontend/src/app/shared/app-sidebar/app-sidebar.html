@@ -1,63 +1,162 @@
-<aside class="app-sidebar" [class.app-sidebar--admin]="variant === 'admin'" [class.app-sidebar--seller]="variant === 'seller'" [class.app-sidebar--seller-compact]="variant === 'seller-compact'" [class.app-sidebar--client]="variant === 'client'"
+<aside class="app-sidebar" [class.app-sidebar--admin]="variant === 'admin'"
+  [class.app-sidebar--seller]="variant === 'seller'" [class.app-sidebar--seller-compact]="variant === 'seller-compact'"
+  [class.app-sidebar--client]="variant === 'client'" [class.app-sidebar--collapsed]="collapsed"
+  [class.is-transitioning]="animateTransition"
   [attr.aria-label]="variant === 'admin' ? 'Panel de administración' : variant === 'client' ? 'Panel del cliente' : 'Panel del vendedor'">
-  <p class="sidebar-caption">{{ variant === 'admin' ? 'GESTIÓN DE ADMINISTRACIÓN' : variant === 'client' ? 'ÁREA DE CLIENTE' : 'GESTIÓN DE VENTA' }}</p>
+
+  <button type="button" class="app-sidebar-toggle" (click)="toggle()"
+    [attr.aria-label]="collapsed ? 'Mostrar barra lateral' : 'Ocultar barra lateral'" [attr.aria-expanded]="!collapsed">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path [attr.d]="collapsed ? 'm9 18 6-6-6-6' : 'm15 18-6-6 6-6'" />
+    </svg>
+  </button>
+
+  <p class="sidebar-caption">
+    {{ variant === 'admin' ? 'GESTIÓN DE ADMINISTRACIÓN' : variant === 'client' ? 'ÁREA DE CLIENTE' : 'GESTIÓN DE VENTA'
+    }}
+  </p>
 
   @if (variant === 'admin') {
-    <nav class="app-navigation" aria-label="Navegación de administración">
-      <a class="navigation-link" routerLink="/admin/usuarios" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20"></path><circle cx="10" cy="7" r="3"></circle><path d="M16 11a3 3 0 1 0 0-6"></path><path d="M16 14h1a4 4 0 0 1 4 4v2"></path></svg>
-        <span>Usuarios</span>
-      </a>
-      <a class="navigation-link" routerLink="/admin/altas" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>
-        <span>Dar de alta Administrador</span>
-      </a>
-      <a class="navigation-link" routerLink="/admin/categorias" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13 11 22l-9-9V2h11l9 9a1.4 1.4 0 0 1-2 2Z"></path><circle cx="7" cy="7" r="1.2"></circle></svg>
-        <span>Categorías</span>
-      </a>
-      <a class="navigation-link" routerLink="/admin/productos" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>
-        <span>Productos</span>
-      </a>
-      <a class="navigation-link" routerLink="/admin/incidencias" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-        <span>Incidencias</span>
-      </a>
-    </nav>
+  <nav class="app-navigation" aria-label="Navegación de administración">
+    <a class="navigation-link" routerLink="/admin/usuarios" routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20"></path>
+        <circle cx="10" cy="7" r="3"></circle>
+        <path d="M16 11a3 3 0 1 0 0-6"></path>
+        <path d="M16 14h1a4 4 0 0 1 4 4v2"></path>
+      </svg>
+      <span>Usuarios</span>
+    </a>
+    <a class="navigation-link" routerLink="/admin/altas" routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 8v8M8 12h8"></path>
+      </svg>
+      <span>Dar de alta Administrador</span>
+    </a>
+    <a class="navigation-link" routerLink="/admin/categorias" routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M20 13 11 22l-9-9V2h11l9 9a1.4 1.4 0 0 1-2 2Z"></path>
+        <circle cx="7" cy="7" r="1.2"></circle>
+      </svg>
+      <span>Categorías</span>
+    </a>
+    <a class="navigation-link" routerLink="/admin/productos" routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m7.5 4.27 9 5.15"></path>
+        <path
+          d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z">
+        </path>
+        <path d="m3.3 7 8.7 5 8.7-5"></path>
+        <path d="M12 22V12"></path>
+      </svg>
+      <span>Productos</span>
+    </a>
+    <a class="navigation-link" routerLink="/admin/incidencias" routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>Incidencias</span>
+    </a>
+    <a class="navigation-link" routerLink="/admin/configuracion" routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: false }" ariaCurrentWhenActive="page">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915">
+        </path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+      <span>Configuración general</span>
+    </a>
+  </nav>
   } @else if (variant === 'client') {
-    <nav class="app-navigation" aria-label="Navegación del cliente">
-      <a class="navigation-link" routerLink="/client/catalog" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-        <span>Catálogo</span>
-      </a>
-      <a class="navigation-link" routerLink="/client/wishlist" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-        <span>Lista de deseos</span>
-      </a>
-      <a class="navigation-link" routerLink="/client/orders" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>
-        <span>Mis pedidos</span>
-      </a>
-      <a class="navigation-link" routerLink="/client/cart" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-        <span>Carrito ({{ cartCount }})</span>
-      </a>
-    </nav>
+  <nav class="app-navigation" aria-label="Navegación del cliente">
+    <a class="navigation-link" routerLink="/client/catalog" routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+        <path d="M3 6h18"></path>
+        <path d="M16 10a4 4 0 0 1-8 0"></path>
+      </svg>
+      <span>Catálogo</span>
+    </a>
+
+    <a class="navigation-link" routerLink="/client/wishlist" routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z">
+        </path>
+      </svg>
+      <span>Lista de deseos</span>
+    </a>
+
+    <a class="navigation-link" routerLink="/client/orders" routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z">
+        </path>
+        <path d="m3.3 7 8.7 5 8.7-5"></path>
+        <path d="M12 22V12"></path>
+      </svg>
+      <span>Mis pedidos</span>
+    </a>
+
+    <a class="navigation-link" routerLink="/client/cart" routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+      <span>Carrito</span>
+    </a>
+  </nav>
   } @else {
-    <nav class="app-navigation" aria-label="Navegación del vendedor">
-      <a class="navigation-link" routerLink="/seller/catalog" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect></svg><span>Catálogo</span>
-      </a>
-      <a class="navigation-link" routerLink="/seller/orders" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"></path></svg><span>Pedidos</span>
-      </a>
-      <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg><span>Estadísticas</span>
-      </a>
-      <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
-        <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg><span>Valoraciones</span>
-      </a>
-    </nav>
+  <nav class="app-navigation" aria-label="Navegación del vendedor">
+    <a class="navigation-link" routerLink="/seller/catalog" routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <rect width="7" height="7" x="3" y="3" rx="1"></rect>
+        <rect width="7" height="7" x="14" y="3" rx="1"></rect>
+        <rect width="7" height="7" x="3" y="14" rx="1"></rect>
+        <rect width="7" height="7" x="14" y="14" rx="1"></rect>
+      </svg>
+      <span>Catálogo</span>
+    </a>
+
+    <a class="navigation-link" routerLink="/seller/orders" routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect>
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+        <path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"></path>
+      </svg>
+      <span>Pedidos</span>
+    </a>
+
+    <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 3v18h18"></path>
+        <path d="M18 17V9M13 17V5M8 17v-3"></path>
+      </svg>
+      <span>Estadísticas</span>
+    </a>
+
+    <a class="navigation-link is-disabled" role="link" aria-disabled="true" title="Próximamente" tabindex="-1">
+      <svg class="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"></path>
+      </svg>
+      <span>Valoraciones</span>
+    </a>
+  </nav>
   }
 </aside>

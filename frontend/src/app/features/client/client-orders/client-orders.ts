@@ -1,6 +1,8 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { ReviewsService } from '../../../core/services/reviews.service';
 import {
   CustomerOrder,
   CustomerOrderFulfillmentStatus,
@@ -24,16 +26,21 @@ type PaymentStatusFilter = CustomerOrderPaymentStatus | 'TODOS';
 })
 export class ClientOrders implements OnInit {
   private readonly pedidoService = inject(PedidoService);
+  private readonly reviewsService = inject(ReviewsService);
   readonly orderStatusTabs: ReadonlyArray<{ label: string; status: OrderStatusFilter }> = [
-    { label: 'Todos', status: 'TODOS' },
+    { label: 'Pedidos', status: 'TODOS' },
     { label: 'Pendientes', status: 'PENDIENTE' },
     { label: 'En preparación', status: 'PREPARANDO' },
     { label: 'Enviados', status: 'ENVIADO' },
     { label: 'Entregados', status: 'ENTREGADO' },
     { label: 'Cancelados', status: 'CANCELADO' },
   ];
-  readonly sidebarCollapsed = signal(false);
+  readonly sidebarCollapsed = signal(
+    typeof localStorage !== 'undefined' && localStorage.getItem('client-sidebar-collapsed') === 'true'
+  );
+  animateTransition = false;
   readonly orders = signal<CustomerOrder[]>([]);
+  readonly showingTransactions = signal(false);
   readonly shippingAddressOrderId = signal<string | null>(null);
   readonly searchQuery = signal('');
   readonly filtersOpen = signal(false);
@@ -45,6 +52,19 @@ export class ClientOrders implements OnInit {
   readonly pageSize = 10;
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
+  readonly ratingOptions = [1, 2, 3, 4, 5];
+  readonly reviewedPurchaseKeys = signal<ReadonlySet<string>>(new Set());
+  readonly reviewStateLoading = signal(true);
+  readonly reviewStateError = signal<string | null>(null);
+  readonly activeReviewKey = signal<string | null>(null);
+  readonly reviewRating = signal(0);
+  readonly reviewComment = signal('');
+  readonly reviewSubmitting = signal(false);
+  readonly reviewFeedback = signal<{
+    key: string;
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
   readonly hasActiveFilters = computed(() =>
     this.statusFilter() !== 'TODOS'
     || this.paymentFilter() !== 'TODOS'
@@ -86,6 +106,11 @@ export class ClientOrders implements OnInit {
     const start = this.pageIndex() * this.pageSize;
     return this.filteredOrders().slice(start, start + this.pageSize);
   });
+  readonly transactions = computed(() =>
+    this.orders()
+      .filter((order) => getCustomerOrderPaymentStatus(order) === 'PAGADO')
+      .sort((first, second) => Date.parse(second.fechaCreacion) - Date.parse(first.fechaCreacion)),
+  );
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -103,12 +128,111 @@ export class ClientOrders implements OnInit {
       next: (orders) => {
         this.orders.set(orders);
         this.loading.set(false);
+        this.loadReviewedPurchases();
       },
       error: () => {
         this.error.set('No se pudo cargar tu historial de compras. Inténtalo de nuevo.');
         this.loading.set(false);
       },
     });
+  }
+
+  loadReviewedPurchases(): void {
+    this.reviewStateLoading.set(true);
+    this.reviewStateError.set(null);
+    this.reviewsService.getMyReviewedPurchases().subscribe({
+      next: (purchases) => {
+        this.reviewedPurchaseKeys.set(new Set(
+          purchases.map((purchase) => this.reviewKey(purchase.orderId, purchase.productId)),
+        ));
+        this.reviewStateLoading.set(false);
+      },
+      error: () => {
+        this.reviewStateError.set('No se pudo comprobar qué productos ya has valorado.');
+        this.reviewStateLoading.set(false);
+      },
+    });
+  }
+
+  reviewKey(orderId: string, productId: string): string {
+    return `${orderId}::${productId}`;
+  }
+
+  isReviewed(orderId: string, productId: string): boolean {
+    return this.reviewedPurchaseKeys().has(this.reviewKey(orderId, productId));
+  }
+
+  isReviewFormOpen(orderId: string, productId: string): boolean {
+    return this.activeReviewKey() === this.reviewKey(orderId, productId);
+  }
+
+  openReviewForm(orderId: string, productId: string): void {
+    const key = this.reviewKey(orderId, productId);
+    if (this.reviewStateLoading() || this.isReviewed(orderId, productId)) {
+      return;
+    }
+
+    this.activeReviewKey.set(key);
+    this.reviewRating.set(0);
+    this.reviewComment.set('');
+    this.reviewFeedback.set(null);
+  }
+
+  closeReviewForm(): void {
+    this.activeReviewKey.set(null);
+    this.reviewFeedback.set(null);
+  }
+
+  submitReview(orderId: string, productId: string): void {
+    const rating = this.reviewRating();
+    if (this.reviewSubmitting() || rating < 1 || rating > 5) {
+      return;
+    }
+
+    const key = this.reviewKey(orderId, productId);
+    this.reviewSubmitting.set(true);
+    this.reviewFeedback.set(null);
+    this.reviewsService.createReview({
+      orderId,
+      productId,
+      rating,
+      comment: this.reviewComment().trim() || null,
+    }).subscribe({
+      next: () => {
+        this.reviewedPurchaseKeys.update((keys) => new Set(keys).add(key));
+        this.reviewFeedback.set({
+          key,
+          type: 'success',
+          message: 'Tu valoración se ha guardado correctamente.',
+        });
+        this.activeReviewKey.set(null);
+        this.reviewSubmitting.set(false);
+      },
+      error: (error: unknown) => {
+        this.reviewFeedback.set({
+          key,
+          type: 'error',
+          message: this.getReviewErrorMessage(error),
+        });
+        this.reviewSubmitting.set(false);
+      },
+    });
+  }
+
+  private getReviewErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const response: unknown = error.error;
+      if (
+        response !== null
+        && typeof response === 'object'
+        && 'message' in response
+        && typeof response.message === 'string'
+      ) {
+        return response.message;
+      }
+    }
+
+    return 'No se pudo guardar la valoración. Inténtalo de nuevo.';
   }
 
   formatPrice(price: number): string {
@@ -120,6 +244,17 @@ export class ClientOrders implements OnInit {
     return Number.isNaN(parsedDate.getTime())
       ? 'No disponible'
       : new Intl.DateTimeFormat('es-ES', { dateStyle: 'long' }).format(parsedDate);
+  }
+
+  formatTransactionDate(date: string): string {
+    const parsedDate = new Date(date);
+    return Number.isNaN(parsedDate.getTime())
+      ? 'No disponible'
+      : new Intl.DateTimeFormat('es-ES', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      }).format(parsedDate);
   }
 
   getItemCount(order: CustomerOrder): number {
@@ -158,6 +293,24 @@ export class ClientOrders implements OnInit {
     return getCustomerOrderPaymentStatus(order) === 'PAGADO' ? 'payment-paid' : 'payment-pending';
   }
 
+  getPaymentMethodLabel(order: CustomerOrder): string {
+    const payment = order.metodoPago;
+    if (!payment) {
+      return 'Método de pago no disponible';
+    }
+
+    switch (payment.tipo) {
+      case 'CARD':
+        return `Tarjeta terminada en ${payment.lastFourDigits || '----'}`;
+      case 'PAYPAL':
+        return 'PayPal';
+      case 'BIZUM':
+        return payment.lastFourDigits
+          ? `Bizum •••• ${payment.lastFourDigits}`
+          : 'Bizum';
+    }
+  }
+
   showShippingAddress(orderId: string): void {
     this.shippingAddressOrderId.set(orderId);
   }
@@ -184,7 +337,10 @@ export class ClientOrders implements OnInit {
   }
 
   toggleSidebar(): void {
-    this.sidebarCollapsed.update((collapsed) => !collapsed);
+    this.animateTransition = true;
+    const collapsed = !this.sidebarCollapsed();
+    this.sidebarCollapsed.set(collapsed);
+    localStorage.setItem('client-sidebar-collapsed', String(collapsed));
   }
 
   searchOrders(): void {
@@ -205,6 +361,16 @@ export class ClientOrders implements OnInit {
   setPaymentFilter(status: PaymentStatusFilter): void {
     this.paymentFilter.set(status);
     this.pageIndex.set(0);
+  }
+
+  showTransactions(): void {
+    this.clearFilters();
+    this.showingTransactions.set(true);
+  }
+
+  showOrders(): void {
+    this.clearFilters();
+    this.showingTransactions.set(false);
   }
 
   setPeriod(period: PeriodFilter): void {

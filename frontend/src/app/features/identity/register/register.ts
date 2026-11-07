@@ -79,12 +79,10 @@ export class Register {
 
     return [
       { label: 'Mínimo de 12 caracteres', met: pwd.length >= 12, showErrors: showErrorStates },
-      { label: 'Máximo de 128 caracteres', met: pwd.length > 0 && pwd.length <= 128, showErrors: showErrorStates },
       { label: 'Al menos una letra mayúscula', met: /[A-Z]/.test(pwd), showErrors: showErrorStates },
       { label: 'Al menos una letra minúscula', met: /[a-z]/.test(pwd), showErrors: showErrorStates },
       { label: 'Al menos un número', met: /\d/.test(pwd), showErrors: showErrorStates },
       { label: 'Al menos un carácter especial', met: /[^A-Za-z0-9]/.test(pwd), showErrors: showErrorStates },
-      { label: 'No puede contener espacios', met: pwd.length > 0 && !/\s/.test(pwd), showErrors: showErrorStates }
     ];
   }
   submitAttempted = false;
@@ -98,11 +96,11 @@ export class Register {
   categoriesError = false;
 
   constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private authService: AuthService,
-    private productsService: ProductsService,
-    private changeDetector: ChangeDetectorRef
+    private readonly fb: FormBuilder,
+    private readonly router: Router,
+    private readonly authService: AuthService,
+    private readonly productsService: ProductsService,
+    private readonly changeDetector: ChangeDetectorRef
   ) {
     this.form = this.createForm();
     this.loadCategories();
@@ -422,8 +420,12 @@ export class Register {
 
   confirmCancelRegistration(): void {
     this.showCancelConfirmation = false;
-    this.changeDetector.markForCheck();
-    void this.router.navigate(['/']);
+
+    void this.router.navigate(['/login'], {
+      state: {
+        registrationCancelled: true
+      }
+    });
   }
 
   finishRegistration(): void {

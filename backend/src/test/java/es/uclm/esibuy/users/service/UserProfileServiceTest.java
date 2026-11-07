@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import es.uclm.esibuy.auth.passwordreset.repository.PasswordResetTokenRepository;
 import es.uclm.esibuy.cart.repository.CartRepository;
+import es.uclm.esibuy.configuration.service.GeneralConfigurationService;
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.common.exception.UserDeletionConflictException;
 import es.uclm.esibuy.common.exception.UserNotFoundException;
@@ -58,6 +59,8 @@ class UserProfileServiceTest {
         private LoginAttemptRepository loginAttemptRepository;
         @Mock
         private CompromisedPasswordService compromisedPasswordService;
+        @Mock
+        private GeneralConfigurationService generalConfigurationService;
 
         private UserService userService;
 
@@ -66,7 +69,7 @@ class UserProfileServiceTest {
                 userService = new UserService(userRepository, passwordEncoder, productRepository,
                                 orderRepository, cartRepository, wishlistRepository,
                                 emailOtpChallengeRepository, passwordResetTokenRepository, loginAttemptRepository,
-                                compromisedPasswordService);
+                                compromisedPasswordService, generalConfigurationService);
         }
 
         @Test

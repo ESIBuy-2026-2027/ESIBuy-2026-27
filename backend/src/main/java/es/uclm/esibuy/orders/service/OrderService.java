@@ -1,6 +1,7 @@
 package es.uclm.esibuy.orders.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +17,8 @@ import es.uclm.esibuy.cart.dto.CartItemDTO;
 import es.uclm.esibuy.cart.model.Cart;
 import es.uclm.esibuy.cart.model.CartItem;
 import es.uclm.esibuy.cart.repository.CartRepository;
+import es.uclm.esibuy.configuration.model.GeneralConfiguration;
+import es.uclm.esibuy.configuration.service.GeneralConfigurationService;
 import es.uclm.esibuy.common.exception.PagoFallidoException;
 import es.uclm.esibuy.common.exception.PedidoNotFoundException;
 import es.uclm.esibuy.common.exception.ProductNotFoundException;
@@ -71,6 +74,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final MongoTemplate mongoTemplate;
     private final PaymentGateway paymentGateway;
+    private final GeneralConfigurationService generalConfigurationService;
 
     public OrderService(
             UserRepository userRepository,
@@ -78,7 +82,8 @@ public class OrderService {
             ProductRepository productRepository,
             OrderRepository orderRepository,
             MongoTemplate mongoTemplate,
-            PaymentGateway paymentGateway) {
+            PaymentGateway paymentGateway,
+            GeneralConfigurationService generalConfigurationService) {
 
         this.userRepository = userRepository;
         this.cartRepository = cartRepository;
@@ -86,6 +91,7 @@ public class OrderService {
         this.orderRepository = orderRepository;
         this.mongoTemplate = mongoTemplate;
         this.paymentGateway = paymentGateway;
+        this.generalConfigurationService = generalConfigurationService;
     }
 
     public CheckoutSummaryDTO getCheckoutSummary(
@@ -117,11 +123,21 @@ public class OrderService {
                         || productIds.contains(item.productId()))
                 .toList();
 
-        BigDecimal totalPrice = items.stream()
+        BigDecimal subtotal = items.stream()
                 .map(CartItemDTO::subtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        GeneralConfiguration configuration = generalConfigurationService.getCurrent();
+        OrderPricing pricing = calculatePricing(subtotal, configuration);
 
-        return new CheckoutSummaryDTO(addresses, paymentMethods, items, totalPrice);
+        return new CheckoutSummaryDTO(
+                addresses,
+                paymentMethods,
+                items,
+                pricing.subtotal(),
+                pricing.taxPercentage(),
+                pricing.taxAmount(),
+                pricing.shippingCost(),
+                pricing.total());
     }
 
     public CheckoutSummaryDTO getCheckoutSummary(String customerId, String sellerId) {
@@ -159,9 +175,11 @@ public class OrderService {
                 request.sellerId(),
                 request.productIds());
 
-        BigDecimal totalPrice = items.stream()
+        BigDecimal subtotal = items.stream()
                 .map(OrderItem::subtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        GeneralConfiguration configuration = generalConfigurationService.getCurrent();
+        BigDecimal totalPrice = calculatePricing(subtotal, configuration).total();
 
         reserveStock(items);
 
@@ -204,6 +222,33 @@ public class OrderService {
                 savedOrder.getStatus(),
                 savedOrder.getCreatedAt(),
                 savedOrder.getPaymentStatus());
+    }
+
+    private OrderPricing calculatePricing(
+            BigDecimal subtotal,
+            GeneralConfiguration configuration) {
+        BigDecimal taxAmount = subtotal.multiply(configuration.getIvaPorcentaje())
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal shippingCost = subtotal.compareTo(configuration.getEnvioGratuitoDesde()) >= 0
+                ? BigDecimal.ZERO.setScale(2)
+                : configuration.getGastosEnvio().setScale(2, RoundingMode.HALF_UP);
+        BigDecimal total = subtotal.add(taxAmount).add(shippingCost)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        return new OrderPricing(
+                subtotal,
+                configuration.getIvaPorcentaje(),
+                taxAmount,
+                shippingCost,
+                total);
+    }
+
+    private record OrderPricing(
+            BigDecimal subtotal,
+            BigDecimal taxPercentage,
+            BigDecimal taxAmount,
+            BigDecimal shippingCost,
+            BigDecimal total) {
     }
 
     public List<SellerOrderDTO> getSellerOrders(String sellerId) {

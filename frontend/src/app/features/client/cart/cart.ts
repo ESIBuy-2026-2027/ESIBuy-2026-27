@@ -25,7 +25,10 @@ export interface SellerCartGroup {
 export class ClientCart {
   readonly cartService = inject(CartService);
   private readonly pedidoService = inject(PedidoService);
-  readonly sidebarCollapsed = signal(false);
+  readonly sidebarCollapsed = signal(
+    typeof localStorage !== 'undefined' && localStorage.getItem('client-sidebar-collapsed') === 'true'
+  );
+  animateTransition = false;
   readonly busyItemIds = signal<ReadonlySet<string>>(new Set());
   readonly actionError = signal<string | null>(null);
   readonly checkoutOpen = signal(false);
@@ -38,7 +41,10 @@ export class ClientCart {
   readonly userSelectedProductIds = signal<ReadonlySet<string> | null>(null);
 
   toggleSidebar(): void {
-    this.sidebarCollapsed.update((collapsed) => !collapsed);
+    this.animateTransition = true;
+    const collapsed = !this.sidebarCollapsed();
+    this.sidebarCollapsed.set(collapsed);
+    localStorage.setItem('client-sidebar-collapsed', String(collapsed));
   }
 
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
@@ -284,19 +290,7 @@ export class ClientCart {
 
     summary$.subscribe({
       next: (summary) => {
-        // Garantizamos que solo se muestren en el resumen los productos seleccionados por el cliente
-        const selectedSet = this.selectedProductIds();
-        const filteredItems = summary.items.filter((item) =>
-          selectedSet.size === 0 || selectedSet.has(item.productoId),
-        );
-        const filteredTotal = Number(
-          filteredItems.reduce((total, item) => total + item.subtotal, 0).toFixed(2),
-        );
-        this.checkoutSummary.set({
-          ...summary,
-          items: filteredItems,
-          precioTotal: filteredTotal,
-        });
+        this.checkoutSummary.set(summary);
         this.selectedAddressId.set(
           summary.direcciones.find((address) => address.isDefault)?.id
           ?? summary.direcciones[0]?.id

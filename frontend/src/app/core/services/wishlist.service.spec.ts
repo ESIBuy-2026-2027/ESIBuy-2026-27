@@ -40,7 +40,10 @@ describe('WishlistService', () => {
     }
   });
 
-  afterEach(() => httpTesting.verify());
+  afterEach(() => {
+    httpTesting.verify();
+    TestBed.resetTestingModule();
+  });
 
   it('should fetch user wishlist products', () => {
     const mockProducts = [

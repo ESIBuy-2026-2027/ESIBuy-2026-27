@@ -1,8 +1,11 @@
 <div class="seller-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
-  <aside class="sidebar app-sidebar app-sidebar--client" aria-label="Panel del cliente">
-    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral">
+  <aside class="sidebar app-sidebar app-sidebar--client" [class.app-sidebar--collapsed]="sidebarCollapsed()"
+    [class.is-transitioning]="animateTransition" aria-label="Panel del cliente">
+    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()"
+      [attr.aria-label]="sidebarCollapsed() ? 'Mostrar barra lateral' : 'Ocultar barra lateral'"
+      [attr.aria-expanded]="!sidebarCollapsed()">
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="m15 18-6-6 6-6" />
+        <path [attr.d]="sidebarCollapsed() ? 'm9 18 6-6-6-6' : 'm15 18-6-6 6-6'" />
       </svg>
     </button>
     <div class="sidebar-caption">ÁREA DE CLIENTE</div>
@@ -19,14 +22,16 @@
       <a class="navigation-link" routerLink="/client/wishlist">
         <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+          <path
+            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
         </svg>
         <span>Lista de deseos</span>
       </a>
       <a class="navigation-link" routerLink="/client/orders">
         <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+          <path
+            d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
           <path d="m3.3 7 8.7 5 8.7-5" />
           <path d="M12 22V12" />
         </svg>
@@ -44,273 +49,294 @@
     </nav>
   </aside>
 
-  <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()"
-    aria-label="Mostrar barra lateral" [hidden]="!sidebarCollapsed()">
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  </button>
-
   <div class="workspace app-workspace">
     <main class="cart-page">
-  <header class="cart-heading">
-    <div>
-      <p class="eyebrow">ÁREA DE CLIENTE</p>
-      <h1>Mi carrito</h1>
-      <p>Revisa los artículos y el importe de tu compra.</p>
-    </div>
-    <a routerLink="/client/catalog" class="secondary-action">Seguir comprando</a>
-  </header>
+      <section class="page-heading cart-heading" aria-labelledby="cart-title">
+        <div>
+          <h1 id="cart-title">Mi carrito</h1>
+          <p class="page-description">Revisa los artículos y el importe de tu compra.</p>
+        </div>
+        <a routerLink="/client/catalog" class="secondary-action">Seguir comprando</a>
+      </section>
 
-  @if (cartService.loading()) {
-  <output class="cart-state">Cargando carrito…</output>
-  } @else if (cartService.loadError(); as error) {
-  <p class="cart-state is-error" role="alert">{{ error }}</p>
-  <button class="secondary-action" type="button" (click)="cartService.load()">
-    Reintentar
-  </button>
-  } @else if (orderConfirmation(); as order) {
-  <section class="order-confirmation" aria-labelledby="order-confirmation-title">
-    <p class="eyebrow">COMPRA COMPLETADA</p>
-    <h2 id="order-confirmation-title">¡Gracias por tu pedido!</h2>
-    <p>Tu pedido se ha confirmado correctamente.</p>
-    <p class="order-number">
-      Identificador de pedido: <strong>{{ order.pedidoId }}</strong>
-    </p>
-    <p class="order-total">
-      Total pagado: <strong>{{ formatPrice(order.precioTotal) }}</strong>
-    </p>
-    <a routerLink="/client/catalog" class="primary-action">Volver al catálogo</a>
-  </section>
-  } @else if (cartService.cart(); as cart) {
-  @if (actionError(); as error) {
-  <p class="cart-state is-error" role="alert">{{ error }}</p>
-  }
-
-  @if (checkoutLoading()) {
-  <output class="cart-state">Cargando opciones de pago…</output>
-  } @else if (checkoutOpen()) {
-  @if (checkoutSummary(); as summary) {
-  <section class="checkout-panel" aria-labelledby="checkout-title">
-    <h2 id="checkout-title">Confirmación del pedido</h2>
-
-    @if (summary.direcciones.length === 0 || summary.metodosPago.length === 0) {
-    <output class="checkout-notice">
-      Guarda una dirección de envío y un método de pago en tu perfil para continuar.
-    </output>
-    <a routerLink="/client/profile" class="secondary-action">Ir a mi perfil</a>
-    } @else {
-    <div class="checkout-fields">
-      <label for="shipping-address">Dirección de envío</label>
-      <select id="shipping-address" name="shippingAddress" [ngModel]="selectedAddressId()"
-        (ngModelChange)="selectedAddressId.set($event)">
-        @for (address of summary.direcciones; track address.id) {
-        <option [value]="address.id">
-          {{ address.recipientName }} — {{ address.street }}, {{ address.postalCode }} {{ address.city }}
-        </option>
-        }
-      </select>
-
-      <label for="payment-method">Método de pago</label>
-      <select id="payment-method" name="paymentMethod" [ngModel]="selectedPaymentMethodId()"
-        (ngModelChange)="selectedPaymentMethodId.set($event)">
-        @for (method of summary.metodosPago; track method.id) {
-        <option [value]="method.id">
-          {{ method.cardBrand || method.type }}{{ method.lastFourDigits ? ' ···· ' + method.lastFourDigits : '' }}
-        </option>
-        }
-      </select>
-    </div>
-
-    <div class="checkout-items">
-      <h3>Resumen de compra</h3>
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">Producto</th>
-            <th scope="col">Cantidad</th>
-            <th scope="col">Subtotal</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of summary.items; track item.productoId) {
-          <tr>
-            <th scope="row">{{ item.nombre }}</th>
-            <td>{{ item.cantidad }}</td>
-            <td>{{ formatPrice(item.subtotal) }}</td>
-          </tr>
-          }
-        </tbody>
-      </table>
-      <p class="checkout-total">
-        Total <strong>{{ formatPrice(summary.precioTotal) }}</strong>
-      </p>
-    </div>
-    }
-
-    <div class="checkout-actions">
-      <button class="secondary-action" type="button" [disabled]="processingOrder()" (click)="cancelarCheckout()">
-        Volver al carrito
+      @if (cartService.loading()) {
+      <output class="cart-state">Cargando carrito…</output>
+      } @else if (cartService.loadError(); as error) {
+      <p class="cart-state is-error" role="alert">{{ error }}</p>
+      <button class="secondary-action" type="button" (click)="cartService.load()">
+        Reintentar
       </button>
-
-      @if (summary.direcciones.length > 0 && summary.metodosPago.length > 0) {
-      <button class="primary-action" type="button"
-        [disabled]="processingOrder() || !selectedAddressId() || !selectedPaymentMethodId()"
-        (click)="confirmarPedido()">
-        {{ processingOrder() ? 'Procesando pedido y pago…' : 'Confirmar y pagar' }}
-      </button>
+      } @else if (orderConfirmation(); as order) {
+      <section class="order-confirmation" aria-labelledby="order-confirmation-title">
+        <p class="eyebrow">COMPRA COMPLETADA</p>
+        <h2 id="order-confirmation-title">¡Gracias por tu pedido!</h2>
+        <p>Tu pedido se ha confirmado correctamente.</p>
+        <p class="order-number">
+          Identificador de pedido: <strong>{{ order.pedidoId }}</strong>
+        </p>
+        <p class="order-total">
+          Total pagado: <strong>{{ formatPrice(order.precioTotal) }}</strong>
+        </p>
+        <a routerLink="/client/catalog" class="primary-action">Volver al catálogo</a>
+      </section>
+      } @else if (cartService.cart(); as cart) {
+      @if (actionError(); as error) {
+      <p class="cart-state is-error" role="alert">{{ error }}</p>
       }
-    </div>
-  </section>
-  }
-  } @else if (cart.items.length === 0) {
-  <section class="empty-cart">
-    <h2>Tu carrito está vacío</h2>
-    <p>Explora el catálogo para encontrar algo que te guste.</p>
-    <a routerLink="/client/catalog" class="primary-action">Ver productos</a>
-  </section>
-  } @else {
-  <section class="cart-content" aria-label="Contenido del carrito">
-    <div class="cart-items">
-      @for (group of sellerGroups(); track group.vendedorId) {
-      <details class="seller-accordion" [class.is-disabled-seller]="isSellerDisabled(group.vendedorId)" open>
-        <summary class="seller-accordion-summary">
-          <div class="seller-summary-info">
-            <label class="seller-checkbox-wrapper" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
-              <input type="checkbox" class="seller-checkbox"
-                [checked]="isSellerFullySelected(group)"
-                [indeterminate]="isSellerPartiallySelected(group)"
-                (change)="toggleSellerSelection(group)"
-                [disabled]="isSellerDisabled(group.vendedorId)"
-                [attr.aria-label]="'Seleccionar todos los productos de ' + group.vendedorNombre">
-            </label>
-            <span class="seller-summary-icon" aria-hidden="true"><svg class="store-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l2-5h14l2 5"/><path d="M21 9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9"/><path d="M3 9h18"/><path d="M10 13a2 2 0 0 0 4 0"/></svg></span>
-            <span class="seller-summary-name">Vendedor: <strong>{{ group.vendedorNombre }}</strong></span>
-            <span class="seller-summary-count">({{ group.totalCount }} {{ group.totalCount === 1 ? 'artículo' : 'artículos' }})</span>
-            @if (isSellerDisabled(group.vendedorId)) {
-            <span class="seller-disabled-hint">Deselecciona "{{ selectedVendor()?.vendedorNombre }}" para cambiar</span>
+
+      @if (checkoutLoading()) {
+      <output class="cart-state">Cargando opciones de pago…</output>
+      } @else if (checkoutOpen()) {
+      @if (checkoutSummary(); as summary) {
+      <section class="checkout-panel" aria-labelledby="checkout-title">
+        <h2 id="checkout-title">Confirmación del pedido</h2>
+
+        @if (summary.direcciones.length === 0 || summary.metodosPago.length === 0) {
+        <output class="checkout-notice">
+          Guarda una dirección de envío y un método de pago en tu perfil para continuar.
+        </output>
+        <a routerLink="/client/profile" class="secondary-action">Ir a mi perfil</a>
+        } @else {
+        <div class="checkout-fields">
+          <label for="shipping-address">Dirección de envío</label>
+          <select id="shipping-address" name="shippingAddress" [ngModel]="selectedAddressId()"
+            (ngModelChange)="selectedAddressId.set($event)">
+            @for (address of summary.direcciones; track address.id) {
+            <option [value]="address.id">
+              {{ address.recipientName }} — {{ address.street }}, {{ address.postalCode }} {{ address.city }}
+            </option>
             }
-          </div>
-          <span class="seller-summary-subtotal">Subtotal vendedor: <strong>{{ formatPrice(group.subtotal) }}</strong></span>
-        </summary>
+          </select>
 
-        <div class="seller-items-container">
-          @for (item of group.items; track item.productoId) {
-          <article class="cart-item"
-            [class.is-deselected]="!isProductSelected(item.productoId)"
-            [class.is-disabled-item]="isSellerDisabled(group.vendedorId)">
-            <label class="item-checkbox-wrapper" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
-              <input type="checkbox" class="item-checkbox"
-                [checked]="isProductSelected(item.productoId)"
-                (change)="toggleProductSelection(item, group)"
-                [disabled]="isSellerDisabled(group.vendedorId)"
-                [attr.aria-label]="'Seleccionar ' + item.nombre">
-            </label>
+          <label for="payment-method">Método de pago</label>
+          <select id="payment-method" name="paymentMethod" [ngModel]="selectedPaymentMethodId()"
+            (ngModelChange)="selectedPaymentMethodId.set($event)">
+            @for (method of summary.metodosPago; track method.id) {
+            <option [value]="method.id">
+              {{ method.cardBrand || method.type }}{{ method.lastFourDigits ? ' ···· ' + method.lastFourDigits : '' }}
+            </option>
+            }
+          </select>
+        </div>
 
-            <div class="card-media">
-              @if (item.imageUrl) {
-              <img [src]="item.imageUrl" [alt]="item.nombre" class="product-thumb">
-              } @else {
-              <div class="thumb-fallback" aria-hidden="true">▦</div>
+        <div class="checkout-items">
+          <h3>Resumen de compra</h3>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Producto</th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of summary.items; track item.productoId) {
+              <tr>
+                <th scope="row">{{ item.nombre }}</th>
+                <td>{{ item.cantidad }}</td>
+                <td>{{ formatPrice(item.subtotal) }}</td>
+              </tr>
               }
+            </tbody>
+          </table>
+          <dl class="checkout-breakdown">
+            <div>
+              <dt>Subtotal de productos</dt>
+              <dd>{{ formatPrice(summary.subtotal) }}</dd>
             </div>
-
-            <div class="item-information">
-              <h2>{{ item.nombre }}</h2>
-
-              <div class="item-pricing-row">
-                <span class="item-unit-price">{{ formatPrice(item.precioUnitario) }} por unidad</span>
-                @if (item.precioOriginal && item.precioOriginal > item.precioUnitario) {
-                <span class="item-original-price"><s>{{ formatPrice(item.precioOriginal) }}</s></span>
-                <span class="item-discount-tag" [class.is-premium]="item.esDescuentoPremium">
-                  {{ item.esDescuentoPremium ? '★ -' + item.descuento + '% Premium' : '-' + item.descuento + '%' }}
-                </span>
-                }
-              </div>
-
-              <div class="quantity-controls" [attr.aria-busy]="busyItemIds().has(item.productoId)">
-                <button class="quantity-action" type="button" [disabled]="busyItemIds().has(item.productoId)"
-                  [attr.aria-label]="'Reducir cantidad de ' + item.nombre"
-                  (click)="changeQuantity(item.productoId, item.cantidad - 1)">
-                  −
-                </button>
-
-                <span class="quantity-value" [attr.aria-label]="'Cantidad: ' + item.cantidad">
-                  {{ item.cantidad }}
-                </span>
-
-                <button class="quantity-action" type="button" [disabled]="busyItemIds().has(item.productoId)"
-                  [attr.aria-label]="'Aumentar cantidad de ' + item.nombre"
-                  (click)="changeQuantity(item.productoId, item.cantidad + 1)">
-                  +
-                </button>
-
-                <button class="remove-action" type="button" [disabled]="busyItemIds().has(item.productoId)"
-                  [attr.aria-label]="'Eliminar ' + item.nombre + ' del carrito'" (click)="removeItem(item.productoId)">
-                  Eliminar
-                </button>
-
-                @if (busyItemIds().has(item.productoId)) {
-                <output class="cart-state">Actualizando…</output>
-                }
-              </div>
+            <div>
+              <dt>IVA ({{ summary.ivaPorcentaje }} %)</dt>
+              <dd>{{ formatPrice(summary.ivaImporte) }}</dd>
             </div>
+            <div>
+              <dt>Gastos de envío</dt>
+              <dd>{{ summary.gastosEnvio === 0 ? 'Gratis' : formatPrice(summary.gastosEnvio) }}</dd>
+            </div>
+            <div class="checkout-total">
+              <dt>Total</dt>
+              <dd><strong>{{ formatPrice(summary.precioTotal) }}</strong></dd>
+            </div>
+          </dl>
+        </div>
+        }
 
-            <p class="item-subtotal">{{ formatPrice(item.subtotal) }}</p>
-          </article>
+        <div class="checkout-actions">
+          <button class="secondary-action" type="button" [disabled]="processingOrder()" (click)="cancelarCheckout()">
+            Volver al carrito
+          </button>
+
+          @if (summary.direcciones.length > 0 && summary.metodosPago.length > 0) {
+          <button class="primary-action" type="button"
+            [disabled]="processingOrder() || !selectedAddressId() || !selectedPaymentMethodId()"
+            (click)="confirmarPedido()">
+            {{ processingOrder() ? 'Procesando pedido y pago…' : 'Confirmar y pagar' }}
+          </button>
           }
         </div>
-      </details>
+      </section>
       }
-    </div>
-
-    <aside class="cart-total" aria-label="Resumen del carrito">
-      <p>
-        Artículos seleccionados
-        <span>{{ selectedItemCount() !== null ? selectedItemCount() : '—' }}</span>
-      </p>
-      @if (cart.descuentoTotal && cart.descuentoTotal > 0) {
-      <p class="summary-line">
-        Subtotal sin descuento <span>{{ formatPrice(cart.totalSinDescuento ?? cart.precioTotal) }}</span>
-      </p>
-      <p class="summary-line discount-saving-line">
-        Descuento aplicado <span class="discount-saved-val">-{{ formatPrice(cart.descuentoTotal) }}</span>
-      </p>
-      }
-      <p class="total-line">
-        Total
-        @if (selectedTotal() !== null) {
-        <strong>{{ formatPrice(selectedTotal()!) }}</strong>
-        } @else {
-        <strong class="no-price-indicator">—</strong>
-        }
-      </p>
-
-      @if (hasMixedSelection() || selectedSellerIds().size > 1) {
-      <p class="checkout-disabled-notice" role="alert">
-        ⚠️ No se puede tramitar un pedido con productos de diferentes vendedores. Deselecciona los productos de otros vendedores para continuar.
-      </p>
-      } @else if (selectedVendor(); as vendor) {
-      <p class="selected-vendor-badge">
-        <svg class="store-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l2-5h14l2 5"/><path d="M21 9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9"/><path d="M3 9h18"/><path d="M10 13a2 2 0 0 0 4 0"/></svg> <span>Pedido para: <strong>{{ vendor.vendedorNombre }}</strong></span>
-      </p>
+      } @else if (cart.items.length === 0) {
+      <section class="empty-cart">
+        <h2>Tu carrito está vacío</h2>
+        <p>Explora el catálogo para encontrar algo que te guste.</p>
+        <a routerLink="/client/catalog" class="primary-action">Ver productos</a>
+      </section>
       } @else {
-      <p class="selected-vendor-badge hint">
-        Selecciona los productos de un vendedor para tramitar su pedido.
-      </p>
-      }
+      <section class="cart-content" aria-label="Contenido del carrito">
+        <div class="cart-items">
+          @for (group of sellerGroups(); track group.vendedorId) {
+          <details class="seller-accordion" [class.is-disabled-seller]="isSellerDisabled(group.vendedorId)" open>
+            <summary class="seller-accordion-summary">
+              <div class="seller-summary-info">
+                <label class="seller-checkbox-wrapper" (click)="$event.stopPropagation()"
+                  (keydown)="$event.stopPropagation()">
+                  <input type="checkbox" class="seller-checkbox" [checked]="isSellerFullySelected(group)"
+                    [indeterminate]="isSellerPartiallySelected(group)" (change)="toggleSellerSelection(group)"
+                    [disabled]="isSellerDisabled(group.vendedorId)"
+                    [attr.aria-label]="'Seleccionar todos los productos de ' + group.vendedorNombre">
+                </label>
+                <span class="seller-summary-icon" aria-hidden="true"><svg class="store-svg-icon" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <path d="M3 9l2-5h14l2 5" />
+                    <path d="M21 9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9" />
+                    <path d="M3 9h18" />
+                    <path d="M10 13a2 2 0 0 0 4 0" />
+                  </svg></span>
+                <span class="seller-summary-name">Vendedor: <strong>{{ group.vendedorNombre }}</strong></span>
+                <span class="seller-summary-count">({{ group.totalCount }} {{ group.totalCount === 1 ? 'artículo' :
+                  'artículos' }})</span>
+                @if (isSellerDisabled(group.vendedorId)) {
+                <span class="seller-disabled-hint">Deselecciona "{{ selectedVendor()?.vendedorNombre }}" para
+                  cambiar</span>
+                }
+              </div>
+              <span class="seller-summary-subtotal">Subtotal vendedor: <strong>{{ formatPrice(group.subtotal)
+                  }}</strong></span>
+            </summary>
 
-      <button class="primary-action checkout-action" type="button"
-        [disabled]="!canCheckout()"
-        (click)="iniciarCheckout()">
-        {{ checkoutLoading() ? 'Cargando checkout…' : 'Continuar con la compra' }}
-      </button>
-    </aside>
-  </section>
-  }
-  } @else {
-  <output class="cart-state">Cargando carrito…</output>
-  }
+            <div class="seller-items-container">
+              @for (item of group.items; track item.productoId) {
+              <article class="cart-item" [class.is-deselected]="!isProductSelected(item.productoId)"
+                [class.is-disabled-item]="isSellerDisabled(group.vendedorId)">
+                <label class="item-checkbox-wrapper" (click)="$event.stopPropagation()"
+                  (keydown)="$event.stopPropagation()">
+                  <input type="checkbox" class="item-checkbox" [checked]="isProductSelected(item.productoId)"
+                    (change)="toggleProductSelection(item, group)" [disabled]="isSellerDisabled(group.vendedorId)"
+                    [attr.aria-label]="'Seleccionar ' + item.nombre">
+                </label>
+
+                <div class="card-media">
+                  @if (item.imageUrl) {
+                  <img [src]="item.imageUrl" [alt]="item.nombre" class="product-thumb">
+                  } @else {
+                  <div class="thumb-fallback" aria-hidden="true">▦</div>
+                  }
+                </div>
+
+                <div class="item-information">
+                  <h2>{{ item.nombre }}</h2>
+
+                  <div class="item-pricing-row">
+                    <span class="item-unit-price">{{ formatPrice(item.precioUnitario) }} por unidad</span>
+                    @if (item.precioOriginal && item.precioOriginal > item.precioUnitario) {
+                    <span class="item-original-price"><s>{{ formatPrice(item.precioOriginal) }}</s></span>
+                    <span class="item-discount-tag" [class.is-premium]="item.esDescuentoPremium">
+                      {{ item.esDescuentoPremium ? '★ -' + item.descuento + '% Premium' : '-' + item.descuento + '%' }}
+                    </span>
+                    }
+                  </div>
+
+                  <div class="quantity-controls" [attr.aria-busy]="busyItemIds().has(item.productoId)">
+                    <button class="quantity-action" type="button" [disabled]="busyItemIds().has(item.productoId)"
+                      [attr.aria-label]="'Reducir cantidad de ' + item.nombre"
+                      (click)="changeQuantity(item.productoId, item.cantidad - 1)">
+                      −
+                    </button>
+
+                    <span class="quantity-value" [attr.aria-label]="'Cantidad: ' + item.cantidad">
+                      {{ item.cantidad }}
+                    </span>
+
+                    <button class="quantity-action" type="button" [disabled]="busyItemIds().has(item.productoId)"
+                      [attr.aria-label]="'Aumentar cantidad de ' + item.nombre"
+                      (click)="changeQuantity(item.productoId, item.cantidad + 1)">
+                      +
+                    </button>
+
+                    <button class="remove-action" type="button" [disabled]="busyItemIds().has(item.productoId)"
+                      [attr.aria-label]="'Eliminar ' + item.nombre + ' del carrito'"
+                      (click)="removeItem(item.productoId)">
+                      Eliminar
+                    </button>
+
+                    @if (busyItemIds().has(item.productoId)) {
+                    <output class="cart-state">Actualizando…</output>
+                    }
+                  </div>
+                </div>
+
+                <p class="item-subtotal">{{ formatPrice(item.subtotal) }}</p>
+              </article>
+              }
+            </div>
+          </details>
+          }
+        </div>
+
+        <aside class="cart-total" aria-label="Resumen del carrito">
+          <p>
+            Artículos seleccionados
+            <span>{{ selectedItemCount() !== null ? selectedItemCount() : '—' }}</span>
+          </p>
+          @if (cart.descuentoTotal && cart.descuentoTotal > 0) {
+          <p class="summary-line">
+            Subtotal sin descuento <span>{{ formatPrice(cart.totalSinDescuento ?? cart.precioTotal) }}</span>
+          </p>
+          <p class="summary-line discount-saving-line">
+            Descuento aplicado <span class="discount-saved-val">-{{ formatPrice(cart.descuentoTotal) }}</span>
+          </p>
+          }
+          <p class="total-line">
+            Total
+            @if (selectedTotal() !== null) {
+            <strong>{{ formatPrice(selectedTotal()!) }}</strong>
+            } @else {
+            <strong class="no-price-indicator">—</strong>
+            }
+          </p>
+
+          @if (hasMixedSelection() || selectedSellerIds().size > 1) {
+          <p class="checkout-disabled-notice" role="alert">
+            ⚠️ No se puede tramitar un pedido con productos de diferentes vendedores. Deselecciona los productos de
+            otros vendedores para continuar.
+          </p>
+          } @else if (selectedVendor(); as vendor) {
+          <p class="selected-vendor-badge">
+            <svg class="store-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 9l2-5h14l2 5" />
+              <path d="M21 9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9" />
+              <path d="M3 9h18" />
+              <path d="M10 13a2 2 0 0 0 4 0" />
+            </svg> <span>Pedido para: <strong>{{ vendor.vendedorNombre }}</strong></span>
+          </p>
+          } @else {
+          <p class="selected-vendor-badge hint">
+            Selecciona los productos de un vendedor para tramitar su pedido.
+          </p>
+          }
+
+          <button class="primary-action checkout-action" type="button" [disabled]="!canCheckout()"
+            (click)="iniciarCheckout()">
+            {{ checkoutLoading() ? 'Cargando checkout…' : 'Continuar con la compra' }}
+          </button>
+        </aside>
+      </section>
+      }
+      } @else {
+      <output class="cart-state">Cargando carrito…</output>
+      }
     </main>
   </div>
 </div>

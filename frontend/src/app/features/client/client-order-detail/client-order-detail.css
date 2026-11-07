@@ -207,6 +207,198 @@ p {
   opacity: 0.65;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  overflow-y: auto;
+  background: rgb(16 44 64 / 55%);
+}
+
+.cancellation-dialog {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  width: min(500px, 100%);
+  gap: 0 14px;
+  padding: 28px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgb(16 44 64 / 30%);
+  color: #172b3a;
+}
+
+.receipt-dialog {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  width: min(500px, 100%);
+  gap: 0 14px;
+  padding: 28px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgb(16 44 64 / 30%);
+  color: #172b3a;
+}
+
+.receipt-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: #dff7ef;
+  color: #087f5b;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.receipt-dialog h2 {
+  margin: 0 0 12px;
+  color: #102c40;
+  font-size: 20px;
+}
+
+.receipt-dialog #receipt-description {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.receipt-error {
+  color: #b42318;
+}
+
+.receipt-modal-button {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #42d6b2;
+  color: #102c40;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.receipt-modal-button:hover:not(:disabled),
+.receipt-modal-button:focus-visible {
+  background: #2fc19f;
+}
+
+.receipt-modal-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.receipt-modal-button:focus-visible {
+  outline: 3px solid rgb(66 214 178 / 40%);
+  outline-offset: 2px;
+}
+
+.cancellation-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fee4e2;
+  color: #b42318;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.modal-step {
+  margin: 0 0 6px;
+  color: #8396a4;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.cancellation-dialog h2 {
+  margin: 0 0 12px;
+  color: #102c40;
+  font-size: 20px;
+}
+
+.cancellation-dialog #cancellation-description {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.modal-error {
+  grid-column: 1 / -1;
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fdf5f4;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.modal-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.secondary-button,
+.danger-modal-button {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secondary-button {
+  border: 1px solid #dce6ea;
+  background: #fff;
+  color: #203b4e;
+}
+
+.secondary-button:hover:not(:disabled),
+.secondary-button:focus-visible {
+  background: #f4f8f9;
+}
+
+.danger-modal-button {
+  border: 0;
+  background: #b42318;
+  color: #fff;
+}
+
+.danger-modal-button:hover:not(:disabled),
+.danger-modal-button:focus-visible {
+  background: #8f1d17;
+}
+
+.secondary-button:disabled,
+.danger-modal-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.secondary-button:focus-visible,
+.danger-modal-button:focus-visible {
+  outline: 3px solid rgb(66 214 178 / 40%);
+  outline-offset: 2px;
+}
+
 .confirm-receipt-button {
   min-height: 36px;
   padding: 8px 13px;
@@ -345,5 +537,313 @@ p {
 
   .detail-item > strong {
     margin-left: auto;
+  }
+
+  .cancellation-dialog {
+    padding: 22px;
+  }
+
+  .receipt-dialog {
+    padding: 22px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .secondary-button,
+  .danger-modal-button,
+  .receipt-modal-button {
+    width: 100%;
+  }
+}
+
+/* Marco y componentes alineados con el resto del panel de cliente */
+:host {
+  padding: 30px 36px 44px;
+  background:
+    radial-gradient(ellipse at 92% 4%, rgb(66 214 178 / 9%), transparent 30%),
+    #e9eff8;
+}
+
+.order-detail-page {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1360px;
+  padding: 24px;
+  border: 1px solid #d2e0e9;
+  border-radius: 24px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 16px 42px rgb(16 44 64 / 8%);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  margin-bottom: 2px;
+  padding: 0 12px;
+  border: 1px solid #d7e2e9;
+  border-radius: 9px;
+  background: #fff;
+  color: #173d52;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  border-color: #b8d9d2;
+  background: #f5fbf9;
+}
+
+.detail-header {
+  position: relative;
+  isolation: isolate;
+  min-height: 132px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding: 25px 30px;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 91% 15%, rgb(66 214 178 / 22%), transparent 25%),
+    linear-gradient(118deg, #102c40 0%, #173d52 58%, #1c5360 100%);
+  box-shadow: 0 10px 24px rgb(16 44 64 / 13%);
+  color: #fff;
+}
+
+.detail-header h1 {
+  color: #fff;
+  font-size: clamp(24px, 2.2vw, 30px);
+}
+
+.detail-header p {
+  margin: 0;
+  color: rgb(237 245 248 / 78%);
+}
+
+.detail-header .order-status {
+  margin-left: auto;
+  padding: 10px 16px;
+  border: 1px solid rgb(255 255 255 / 26%);
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+
+.detail-header .status-delivered {
+  border-color: #bce9dc;
+  background: #effbf7;
+  color: #146b5e;
+}
+
+.detail-header .status-pending {
+  border-color: #f4d58c;
+  background: #fff8e8;
+  color: #895b14;
+}
+
+.detail-header .status-preparing {
+  border-color: #b8d7f0;
+  background: #eef7ff;
+  color: #24558a;
+}
+
+.detail-header .status-shipped {
+  border-color: #d4c8f5;
+  background: #f4f0ff;
+  color: #6941c6;
+}
+
+.detail-header .status-cancelled {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #b42332;
+}
+
+.tracking-section {
+  margin-top: 18px;
+}
+
+.order-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.order-actions .cancel-order-button {
+  min-height: 40px;
+  padding: 0 15px;
+  border-color: #fecdd3;
+  border-radius: 9px;
+  background: #fff1f2;
+  color: #b42332;
+  box-shadow: 0 3px 9px rgb(180 35 24 / 6%);
+}
+
+.order-actions .cancel-order-button:hover:not(:disabled) {
+  border-color: #fda4af;
+  background: #ffe4e6;
+}
+
+.tracking-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.detail-card,
+.information-card {
+  border: 1px solid #d9e5ec;
+  border-radius: 17px;
+  box-shadow: 0 7px 22px rgb(16 44 64 / 6%);
+}
+
+.detail-card {
+  padding: 22px 24px;
+}
+
+.detail-card h2,
+.information-card h2 {
+  color: #102c40;
+  font-weight: 750;
+}
+
+.detail-item,
+.economic-row {
+  border-color: #e5edf2;
+}
+
+.detail-item-image,
+.detail-item-placeholder {
+  border: 1px solid #e3ebf0;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #f6f9fb, #edf3f7);
+  color: #147c73;
+  object-fit: contain;
+}
+
+.detail-item h3 {
+  color: #102c40;
+  font-weight: 750;
+}
+
+.buy-again-button,
+.confirm-receipt-button {
+  border-radius: 9px;
+  background: linear-gradient(115deg, #168c75, #20a58b);
+  color: #fff;
+}
+
+.buy-again-button:hover:not(:disabled),
+.confirm-receipt-button:hover:not(:disabled) {
+  background: linear-gradient(115deg, #117761, #168c75);
+}
+
+.view-product-button,
+.secondary-button {
+  border-color: #d7e2e9;
+  border-radius: 9px;
+  color: #173d52;
+}
+
+.view-product-button:hover,
+.secondary-button:hover:not(:disabled) {
+  border-color: #b8d9d2;
+  background: #f5fbf9;
+}
+
+.order-information {
+  margin-top: 18px;
+}
+
+.information-card {
+  padding: 22px;
+}
+
+.information-icon {
+  background: #effbf7;
+  color: #16805d;
+}
+
+.status-delivered,
+.payment-paid {
+  background: #effbf7;
+  color: #16805d;
+}
+
+.status-pending,
+.payment-pending {
+  background: #fff8e8;
+  color: #9a6411;
+}
+
+@media (max-width: 900px) {
+  :host {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  :host {
+    padding: 18px;
+  }
+
+  .order-detail-page {
+    padding: 14px;
+    border-radius: 19px;
+  }
+
+  .detail-header {
+    min-height: 0;
+    padding: 22px;
+  }
+
+  .detail-header .order-status {
+    margin-left: 0;
+  }
+
+  .detail-card {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 420px) {
+  :host {
+    padding: 12px;
+  }
+
+  .order-detail-page {
+    padding: 10px;
+    border-radius: 16px;
+  }
+
+  .detail-header {
+    padding: 19px 17px;
+  }
+
+  .detail-item {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .detail-item > strong {
+    margin-left: 88px;
+  }
+
+  .tracking-actions {
+    flex-direction: column-reverse;
+  }
+
+  .tracking-actions button {
+    width: 100%;
+  }
+
+  .order-actions .cancel-order-button {
+    width: 100%;
   }
 }

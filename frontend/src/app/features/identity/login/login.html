@@ -1,9 +1,6 @@
 <div class="login-page" [class.login-page--embedded]="embedded">
   @if (!embedded) {
   <section class="welcome-panel" aria-labelledby="welcome-title">
-    <a routerLink="/" class="brand" aria-label="ESIBuy, inicio">
-    </a>
-
     <div class="welcome-copy">
       <p class="eyebrow">Tu tienda, más sencilla</p>
       <h2 id="welcome-title">Compra con confianza.</h2>
@@ -103,10 +100,10 @@
 
         <p class="login-subtitle">
           {{ requires3FA
-            ? 'Introduce el código de seis dígitos enviado al correo asociado a tu cuenta.'
-            : requires2FA
-              ? 'Introduce el código de tu aplicación Authenticator o un código de respaldo.'
-              : 'Accede a tu cuenta para continuar.' }}
+          ? 'Introduce el código de seis dígitos enviado al correo asociado a tu cuenta.'
+          : requires2FA
+          ? 'Introduce el código de tu aplicación Authenticator o un código de respaldo.'
+          : 'Accede a tu cuenta para continuar.' }}
         </p>
       </header>
 
@@ -190,9 +187,8 @@
               {{ requires3FA ? 'Código de verificación por correo' : 'Código de verificación (6 dígitos o Respaldo)' }}
             </label>
             <input id="totpCode" type="text" formControlName="totpCode"
-              [placeholder]="requires3FA ? '123456' : 'ej. 123456'" autofocus
-              autocomplete="one-time-code" [attr.inputmode]="requires3FA ? 'numeric' : 'text'"
-              [attr.maxlength]="requires3FA ? 6 : 8" />
+              [placeholder]="requires3FA ? '123456' : 'ej. 123456'" autofocus autocomplete="one-time-code"
+              [attr.inputmode]="requires3FA ? 'numeric' : 'text'" [attr.maxlength]="requires3FA ? 6 : 8" />
             <span class="error" *ngIf="
                   loginForm.get('totpCode')?.touched &&
                   loginForm.get('totpCode')?.hasError('required')
@@ -212,7 +208,8 @@
         </fieldset>
 
         <button type="submit" class="btn-submit" [disabled]="loading || retryAfterSeconds > 0">
-          {{ loading ? 'Verificando...' : (requires2FA || requires3FA) ? 'Confirmar código' : retryAfterSeconds > 0 ? 'Espera para
+          {{ loading ? 'Verificando...' : (requires2FA || requires3FA) ? 'Confirmar código' : retryAfterSeconds > 0 ?
+          'Espera para
           reintentar' : 'Entrar' }}
         </button>
 
