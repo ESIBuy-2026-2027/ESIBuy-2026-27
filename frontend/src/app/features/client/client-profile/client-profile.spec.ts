@@ -71,8 +71,8 @@ describe('ClientProfile', () => {
         fixture.detectChanges();
         expect(sidebar.classList.contains('app-sidebar-collapsed')).toBe(true);
 
-        const openToggle = fixture.nativeElement.querySelector('.app-sidebar-toggle-open') as HTMLButtonElement;
-        openToggle.click();
+        const collapsedToggle = fixture.nativeElement.querySelector('.app-sidebar-toggle') as HTMLButtonElement;
+        collapsedToggle.click();
         fixture.detectChanges();
         expect(sidebar.classList.contains('app-sidebar-collapsed')).toBe(false);
     });

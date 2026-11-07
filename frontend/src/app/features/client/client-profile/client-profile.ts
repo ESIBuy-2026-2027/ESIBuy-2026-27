@@ -55,7 +55,10 @@ export class ClientProfile implements OnInit {
     private readonly apiUrl = '/api/users/me/profile';
 
     readonly profile = signal<ClientProfileResponse | null>(null);
-    readonly sidebarCollapsed = signal(false);
+    readonly sidebarCollapsed = signal(
+        typeof localStorage !== 'undefined' && localStorage.getItem('client-sidebar-collapsed') === 'true'
+    );
+    animateTransition = false;
     readonly loading = signal(true);
     readonly profileError = signal<string | null>(null);
     readonly logoutError = signal<string | null>(null);
@@ -125,7 +128,10 @@ export class ClientProfile implements OnInit {
     readonly activeSection = signal('personal');
 
     toggleSidebar(): void {
-        this.sidebarCollapsed.update((collapsed) => !collapsed);
+        this.animateTransition = true;
+        const collapsed = !this.sidebarCollapsed();
+        this.sidebarCollapsed.set(collapsed);
+        localStorage.setItem('client-sidebar-collapsed', String(collapsed));
     }
 
     readonly initials = computed(() => {

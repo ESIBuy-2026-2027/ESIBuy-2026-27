@@ -25,10 +25,16 @@ export class ClientCatalog implements OnInit {
   readonly cartService = inject(CartService);
   readonly isPremiumUser = computed(() => this.authService.currentUser()?.customerType === 'PREMIUM');
 
-  readonly sidebarCollapsed = signal(false);
+  readonly sidebarCollapsed = signal(
+    typeof localStorage !== 'undefined' && localStorage.getItem('client-sidebar-collapsed') === 'true'
+  );
+  animateTransition = false;
 
   toggleSidebar(): void {
-    this.sidebarCollapsed.update((collapsed) => !collapsed);
+    this.animateTransition = true;
+    const collapsed = !this.sidebarCollapsed();
+    this.sidebarCollapsed.set(collapsed);
+    localStorage.setItem('client-sidebar-collapsed', String(collapsed));
   }
 
   addToCart(product: ProductItem, event: Event): void {

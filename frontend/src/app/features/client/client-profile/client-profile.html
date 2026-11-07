@@ -1,8 +1,11 @@
 <div class="seller-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
-    <aside class="sidebar app-sidebar app-sidebar--client" aria-label="Panel del cliente">
-        <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()" aria-label="Ocultar barra lateral">
+    <aside class="sidebar app-sidebar app-sidebar--client" [class.app-sidebar--collapsed]="sidebarCollapsed()"
+        [class.is-transitioning]="animateTransition" aria-label="Panel del cliente">
+        <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()"
+            [attr.aria-label]="sidebarCollapsed() ? 'Mostrar barra lateral' : 'Ocultar barra lateral'"
+            [attr.aria-expanded]="!sidebarCollapsed()">
             <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m15 18-6-6 6-6" />
+                <path [attr.d]="sidebarCollapsed() ? 'm9 18 6-6-6-6' : 'm15 18-6-6 6-6'" />
             </svg>
         </button>
 
@@ -50,13 +53,6 @@
             </a>
         </nav>
     </aside>
-
-    <button type="button" class="app-sidebar-toggle-open" (click)="toggleSidebar()" aria-label="Mostrar barra lateral"
-        [hidden]="!sidebarCollapsed()">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m9 18 6-6-6-6" />
-        </svg>
-    </button>
 
     <div class="workspace app-workspace">
         <div class="profile-page">
