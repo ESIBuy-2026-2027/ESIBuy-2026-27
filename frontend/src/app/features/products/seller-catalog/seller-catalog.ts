@@ -4,7 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { Category, ProductCreateRequest, ProductsService } from '../../../core/services/products.service';
 import { SellerCatalogService, SellerProduct } from '../../../core/services/seller-catalog.service';
 
@@ -16,7 +16,7 @@ type VisibilityFilter = 'all' | 'published' | 'hidden';
 @Component({
   selector: 'app-seller-catalog',
   standalone: true,
-  imports: [AppSidebarComponent, FormsModule, RouterLink, RouterLinkActive],
+  imports: [AppSidebarComponent, FormsModule, RouterLink],
   templateUrl: './seller-catalog.html',
   styleUrl: './seller-catalog.css',
 })

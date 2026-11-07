@@ -9,7 +9,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { AuthService, CreateAdminRequest } from '../../../core/services/auth.service';
 import { ADMIN_AVATARS } from '../../../core/constants/avatars';
@@ -32,7 +32,7 @@ export function passwordsMatchValidator(
 @Component({
   selector: 'app-admin-user-create',
   standalone: true,
-  imports: [AppSidebarComponent, CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive],
+  imports: [AppSidebarComponent, CommonModule, ReactiveFormsModule],
   templateUrl: './admin-user-create.html',
   styleUrls: ['./admin-user-create.css'],
 })

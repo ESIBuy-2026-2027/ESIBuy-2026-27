@@ -2,7 +2,7 @@ import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
 import { httpErrorMessage } from '../../../core/utils/http-error-message';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService, UpdateUserRequest, UserResponse } from '../../../core/services/auth.service';
 import { isAdultValidator } from '../../identity/register/register';
@@ -12,7 +12,7 @@ import { ADMIN_AVATARS, CLIENT_AVATARS, SELLER_AVATARS } from '../../../core/con
 @Component({
   selector: 'app-admin-user-detail',
   standalone: true,
-  imports: [AppSidebarComponent, CommonModule, ReactiveFormsModule, RouterLink, RouterLinkActive],
+  imports: [AppSidebarComponent, CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './admin-user-detail.html',
   styleUrl: './admin-user-detail.css'
 })

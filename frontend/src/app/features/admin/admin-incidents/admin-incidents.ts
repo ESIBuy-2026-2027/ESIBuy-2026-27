@@ -2,13 +2,12 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AdminIncidentService, Incident } from '../../../core/services/admin-incident.service';
 
 @Component({
   selector: 'app-admin-incidents',
   standalone: true,
-  imports: [AppSidebarComponent, CommonModule, FormsModule, RouterLink, RouterLinkActive, DatePipe],
+  imports: [AppSidebarComponent, CommonModule, FormsModule, DatePipe],
   templateUrl: './admin-incidents.html',
   styleUrl: './admin-incidents.css',
 })

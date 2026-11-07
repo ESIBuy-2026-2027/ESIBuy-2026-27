@@ -2,7 +2,6 @@ import { isPlatformBrowser } from '@angular/common';
 import { Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
   PedidoService,
   SellerOrder as ApiSellerOrder,
@@ -37,7 +36,7 @@ interface SellerOrder {
 @Component({
   selector: 'app-seller-orders',
   standalone: true,
-  imports: [AppSidebarComponent, FormsModule, RouterLink, RouterLinkActive],
+  imports: [AppSidebarComponent, FormsModule],
   templateUrl: './seller-orders.html',
   styleUrl: './seller-orders.css',
 })
@@ -130,22 +129,22 @@ export class SellerOrders implements OnInit {
   private toViewOrder(order: ApiSellerOrder): SellerOrder {
     const date = new Date(order.fechaCreacion);
     return {
-        id: order.pedidoId,
-        date: new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium' }).format(date),
-        dateValue: order.fechaCreacion.slice(0, 10),
-        customer: order.clienteNombre,
-        products: order.items.map((item) => `${item.nombre} · ${item.cantidad} ud.`).join(', '),
-        total: order.total,
-        status: this.toViewStatus(order.estado),
-        items: order.items.map((item) => ({
-          productId: item.productoId,
-          name: item.nombre,
-          quantity: item.cantidad,
-          price: item.precioUnitario,
-          imageUrl: item.imageUrl ?? '',
-        })),
-        shippingAddress: order.direccionEnvio,
-        customerEmail: order.clienteEmail ?? '',
+      id: order.pedidoId,
+      date: new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium' }).format(date),
+      dateValue: order.fechaCreacion.slice(0, 10),
+      customer: order.clienteNombre,
+      products: order.items.map((item) => `${item.nombre} · ${item.cantidad} ud.`).join(', '),
+      total: order.total,
+      status: this.toViewStatus(order.estado),
+      items: order.items.map((item) => ({
+        productId: item.productoId,
+        name: item.nombre,
+        quantity: item.cantidad,
+        price: item.precioUnitario,
+        imageUrl: item.imageUrl ?? '',
+      })),
+      shippingAddress: order.direccionEnvio,
+      customerEmail: order.clienteEmail ?? '',
     };
   }
 

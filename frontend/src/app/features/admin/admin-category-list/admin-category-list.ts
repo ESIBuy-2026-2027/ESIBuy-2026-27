@@ -4,7 +4,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSidebarComponent } from '../../../shared/app-sidebar/app-sidebar';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AdminCategoryService } from '../../../core/services/admin-category.service';
 import { Category } from '../../../core/services/products.service';
 
@@ -13,7 +12,7 @@ type CategoryDialogMode = 'create' | 'edit' | 'delete' | null;
 @Component({
   selector: 'app-admin-category-list',
   standalone: true,
-  imports: [AppSidebarComponent, FormsModule, RouterLink, RouterLinkActive],
+  imports: [AppSidebarComponent, FormsModule],
   templateUrl: './admin-category-list.html',
   styleUrl: './admin-category-list.css',
 })
