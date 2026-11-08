@@ -2,7 +2,7 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { NEVER, of } from 'rxjs';
-import { describe, beforeEach, it, expect, vi } from 'vitest';
+import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 import { ClientWishlist } from './client-wishlist';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -45,6 +45,7 @@ describe('ClientWishlist', () => {
   ];
 
   beforeEach(async () => {
+    localStorage.clear();
     wishlistServiceMock = {
       wishlists: vi.fn(() => mockWishlists),
       getWishlists: vi.fn(() => of(mockWishlists)),
@@ -85,6 +86,10 @@ describe('ClientWishlist', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
     await fixture.whenStable();
+  });
+
+  afterEach(() => {
+    localStorage.clear();
   });
 
   it('should create and render navigation order in sidebar and wishlist heading', () => {
@@ -184,6 +189,8 @@ describe('ClientWishlist', () => {
     expect(component.sidebarCollapsed()).toBe(false);
     component.toggleSidebar();
     expect(component.sidebarCollapsed()).toBe(true);
+    component.toggleSidebar();
+    expect(component.sidebarCollapsed()).toBe(false);
   });
 
   it('should add item to cart with selected quantity', () => {
