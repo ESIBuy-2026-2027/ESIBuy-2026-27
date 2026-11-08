@@ -221,56 +221,40 @@ public class CartService {
     }
 
     private CartItemDTO toCartItemDTO(CartItem item, boolean isPremium) {
-        String imageUrl = item.getImageUrl();
-
-        BigDecimal originalPrice = item.getUnitPrice();
-        BigDecimal discount = BigDecimal.ZERO;
-
-        boolean isPremiumDiscount = false;
-
-        String sellerId = null;
-        String sellerName = null;
-
-        if (item.getProductId() != null) {
-            Product product = productRepository.findById(item.getProductId()).orElse(null);
-
-            if (product != null) {
-                if (imageUrl == null || imageUrl.isBlank()) {
-                    imageUrl = product.getImageUrl();
-                }
-
-                sellerId = product.getSellerId();
-                sellerName = resolveSellerName(sellerId);
-
-                originalPrice = product.getPrice();
-
-                BigDecimal standardDiscount = (product.getDiscount() != null
-                        && product.getDiscount().compareTo(BigDecimal.ZERO) > 0)
-                        ? product.getDiscount()
-                        : BigDecimal.ZERO;
-                BigDecimal premiumDiscount = (product.getPremiumDiscount() != null
-                        && product.getPremiumDiscount().compareTo(BigDecimal.ZERO) > 0)
-                        ? product.getPremiumDiscount()
-                        : BigDecimal.ZERO;
-
-                if (isPremium) {
-                    BigDecimal totalDiscount = standardDiscount.add(premiumDiscount);
-                    if (totalDiscount.compareTo(BigDecimal.valueOf(100)) > 0) {
-                        totalDiscount = BigDecimal.valueOf(100);
-                    }
-                    if (totalDiscount.compareTo(BigDecimal.ZERO) > 0) {
-                        discount = totalDiscount;
-                    }
-                    isPremiumDiscount = premiumDiscount.compareTo(BigDecimal.ZERO) > 0;
-                } else {
-                    if (standardDiscount.compareTo(BigDecimal.ZERO) > 0) {
-                        discount = standardDiscount;
-                    }
-                    isPremiumDiscount = false;
-                }
-            }
+        if (item.getProductId() == null) {
+            return createCartItemDTO(item, item.getImageUrl(), null, null, item.getUnitPrice(), BigDecimal.ZERO, false);
         }
 
+        Product product = productRepository.findById(item.getProductId()).orElse(null);
+        if (product == null) {
+            return createCartItemDTO(item, item.getImageUrl(), null, null, item.getUnitPrice(), BigDecimal.ZERO, false);
+        }
+
+        String imageUrl = (item.getImageUrl() != null && !item.getImageUrl().isBlank())
+                ? item.getImageUrl()
+                : product.getImageUrl();
+        String sellerId = product.getSellerId();
+        String sellerName = resolveSellerName(sellerId);
+        DiscountInfo discountInfo = resolveDiscount(product, isPremium);
+
+        return createCartItemDTO(
+                item,
+                imageUrl,
+                sellerId,
+                sellerName,
+                product.getPrice(),
+                discountInfo.discount(),
+                discountInfo.isPremiumDiscount());
+    }
+
+    private CartItemDTO createCartItemDTO(
+            CartItem item,
+            String imageUrl,
+            String sellerId,
+            String sellerName,
+            BigDecimal originalPrice,
+            BigDecimal discount,
+            boolean isPremiumDiscount) {
         return new CartItemDTO(
                 item.getProductId(),
                 item.getName(),
@@ -283,6 +267,32 @@ public class CartService {
                 originalPrice,
                 discount,
                 isPremiumDiscount);
+    }
+
+    private record DiscountInfo(BigDecimal discount, boolean isPremiumDiscount) {
+    }
+
+    private DiscountInfo resolveDiscount(Product product, boolean isPremium) {
+        if (product == null) {
+            return new DiscountInfo(BigDecimal.ZERO, false);
+        }
+
+        BigDecimal standardDiscount = (product.getDiscount() != null
+                && product.getDiscount().compareTo(BigDecimal.ZERO) > 0)
+                ? product.getDiscount()
+                : BigDecimal.ZERO;
+        BigDecimal premiumDiscount = (product.getPremiumDiscount() != null
+                && product.getPremiumDiscount().compareTo(BigDecimal.ZERO) > 0)
+                ? product.getPremiumDiscount()
+                : BigDecimal.ZERO;
+
+        if (isPremium) {
+            BigDecimal totalDiscount = standardDiscount.add(premiumDiscount).min(BigDecimal.valueOf(100));
+            boolean hasPremiumDiscount = premiumDiscount.compareTo(BigDecimal.ZERO) > 0;
+            return new DiscountInfo(totalDiscount, hasPremiumDiscount);
+        }
+
+        return new DiscountInfo(standardDiscount, false);
     }
 
     private String resolveSellerName(String sellerId) {
@@ -325,25 +335,7 @@ public class CartService {
 
     private BigDecimal calculateEffectivePrice(Product product, boolean isPremium) {
         BigDecimal price = product.getPrice();
-        BigDecimal standardDiscount = (product.getDiscount() != null
-                && product.getDiscount().compareTo(BigDecimal.ZERO) > 0)
-                ? product.getDiscount()
-                : BigDecimal.ZERO;
-        BigDecimal premiumDiscount = (product.getPremiumDiscount() != null
-                && product.getPremiumDiscount().compareTo(BigDecimal.ZERO) > 0)
-                ? product.getPremiumDiscount()
-                : BigDecimal.ZERO;
-
-        BigDecimal discount = BigDecimal.ZERO;
-        if (isPremium) {
-            BigDecimal totalDiscount = standardDiscount.add(premiumDiscount);
-            if (totalDiscount.compareTo(BigDecimal.valueOf(100)) > 0) {
-                totalDiscount = BigDecimal.valueOf(100);
-            }
-            discount = totalDiscount;
-        } else {
-            discount = standardDiscount;
-        }
+        BigDecimal discount = resolveDiscount(product, isPremium).discount();
 
         if (discount.compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal factor = BigDecimal.valueOf(100)

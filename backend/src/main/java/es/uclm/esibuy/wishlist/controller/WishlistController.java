@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class WishlistController {
 
     private static final String IN_WISHLIST_KEY = "inWishlist";
+    private static final String MESSAGE_KEY = "message";
 
     private final WishlistService wishlistService;
 
@@ -64,7 +65,7 @@ public class WishlistController {
             Authentication authentication) {
         String email = authentication != null ? authentication.getName() : null;
         wishlistService.deleteWishlist(listId, email);
-        return ResponseEntity.ok(Map.of("message", "Lista de deseos eliminada"));
+        return ResponseEntity.ok(Map.of(MESSAGE_KEY, "Lista de deseos eliminada"));
     }
 
     @GetMapping("/lists/{listId}/products")
@@ -83,7 +84,7 @@ public class WishlistController {
         String email = authentication != null ? authentication.getName() : null;
         wishlistService.addProductToWishlist(listId, productId, email);
         return ResponseEntity.ok(Map.of(
-                "message", "Producto añadido a la lista de deseos",
+                MESSAGE_KEY, "Producto añadido a la lista de deseos",
                 IN_WISHLIST_KEY, true));
     }
 
@@ -95,7 +96,7 @@ public class WishlistController {
         String email = authentication != null ? authentication.getName() : null;
         wishlistService.removeProductFromWishlist(listId, productId, email);
         return ResponseEntity.ok(Map.of(
-                "message", "Producto eliminado de la lista de deseos",
+                MESSAGE_KEY, "Producto eliminado de la lista de deseos",
                 IN_WISHLIST_KEY, false));
     }
 
@@ -123,7 +124,7 @@ public class WishlistController {
         String email = authentication != null ? authentication.getName() : null;
         wishlistService.addToWishlist(productId, email);
         return ResponseEntity.ok(Map.of(
-                "message", "Producto añadido a la lista de deseos",
+                MESSAGE_KEY, "Producto añadido a la lista de deseos",
                 IN_WISHLIST_KEY, true));
     }
 
@@ -134,7 +135,7 @@ public class WishlistController {
         String email = authentication != null ? authentication.getName() : null;
         wishlistService.removeFromWishlist(productId, email);
         return ResponseEntity.ok(Map.of(
-                "message", "Producto eliminado de la lista de deseos",
+                MESSAGE_KEY, "Producto eliminado de la lista de deseos",
                 IN_WISHLIST_KEY, false));
     }
 

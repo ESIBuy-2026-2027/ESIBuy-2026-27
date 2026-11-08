@@ -132,7 +132,6 @@ export class WishlistService {
           });
           this.wishlists.set(updatedLists);
         } else if (this.wishlists().length > 0) {
-          const first = this.wishlists()[0];
           const updatedLists = this.wishlists().map((w, idx) => {
             if (idx === 0) {
               const pids = w.productIds.includes(productId)

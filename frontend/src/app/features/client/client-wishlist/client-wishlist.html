@@ -439,6 +439,7 @@
       class="dialog"
       open
       (click)="$event.stopPropagation()"
+      (keydown.escape)="closeCreateDialog()"
       aria-labelledby="create-dialog-title"
       aria-modal="true"
     >
@@ -488,6 +489,7 @@
       class="dialog"
       open
       (click)="$event.stopPropagation()"
+      (keydown.escape)="closeEditDialog()"
       aria-labelledby="edit-dialog-title"
       aria-modal="true"
     >
@@ -534,6 +536,7 @@
       class="dialog dialog--delete"
       open
       (click)="$event.stopPropagation()"
+      (keydown.escape)="closeDeleteDialog()"
       aria-labelledby="delete-dialog-title"
       aria-modal="true"
     >
