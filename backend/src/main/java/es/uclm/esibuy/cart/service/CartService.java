@@ -244,17 +244,29 @@ public class CartService {
 
                 originalPrice = product.getPrice();
 
-                if (isPremium
-                        && product.getPremiumDiscount() != null
-                        && product.getPremiumDiscount().compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal standardDiscount = (product.getDiscount() != null
+                        && product.getDiscount().compareTo(BigDecimal.ZERO) > 0)
+                        ? product.getDiscount()
+                        : BigDecimal.ZERO;
+                BigDecimal premiumDiscount = (product.getPremiumDiscount() != null
+                        && product.getPremiumDiscount().compareTo(BigDecimal.ZERO) > 0)
+                        ? product.getPremiumDiscount()
+                        : BigDecimal.ZERO;
 
-                    discount = product.getPremiumDiscount();
-                    isPremiumDiscount = true;
-
-                } else if (product.getDiscount() != null
-                        && product.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
-
-                    discount = product.getDiscount();
+                if (isPremium) {
+                    BigDecimal totalDiscount = standardDiscount.add(premiumDiscount);
+                    if (totalDiscount.compareTo(BigDecimal.valueOf(100)) > 0) {
+                        totalDiscount = BigDecimal.valueOf(100);
+                    }
+                    if (totalDiscount.compareTo(BigDecimal.ZERO) > 0) {
+                        discount = totalDiscount;
+                    }
+                    isPremiumDiscount = premiumDiscount.compareTo(BigDecimal.ZERO) > 0;
+                } else {
+                    if (standardDiscount.compareTo(BigDecimal.ZERO) > 0) {
+                        discount = standardDiscount;
+                    }
+                    isPremiumDiscount = false;
                 }
             }
         }
@@ -313,18 +325,24 @@ public class CartService {
 
     private BigDecimal calculateEffectivePrice(Product product, boolean isPremium) {
         BigDecimal price = product.getPrice();
+        BigDecimal standardDiscount = (product.getDiscount() != null
+                && product.getDiscount().compareTo(BigDecimal.ZERO) > 0)
+                ? product.getDiscount()
+                : BigDecimal.ZERO;
+        BigDecimal premiumDiscount = (product.getPremiumDiscount() != null
+                && product.getPremiumDiscount().compareTo(BigDecimal.ZERO) > 0)
+                ? product.getPremiumDiscount()
+                : BigDecimal.ZERO;
+
         BigDecimal discount = BigDecimal.ZERO;
-
-        if (isPremium
-                && product.getPremiumDiscount() != null
-                && product.getPremiumDiscount().compareTo(BigDecimal.ZERO) > 0) {
-
-            discount = product.getPremiumDiscount();
-
-        } else if (product.getDiscount() != null
-                && product.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
-
-            discount = product.getDiscount();
+        if (isPremium) {
+            BigDecimal totalDiscount = standardDiscount.add(premiumDiscount);
+            if (totalDiscount.compareTo(BigDecimal.valueOf(100)) > 0) {
+                totalDiscount = BigDecimal.valueOf(100);
+            }
+            discount = totalDiscount;
+        } else {
+            discount = standardDiscount;
         }
 
         if (discount.compareTo(BigDecimal.ZERO) > 0) {

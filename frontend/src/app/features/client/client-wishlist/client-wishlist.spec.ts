@@ -7,6 +7,7 @@ import { ClientWishlist } from './client-wishlist';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { CartService } from '../../../core/services/cart.service';
+import { AuthService, AuthenticatedUser } from '../../../core/services/auth.service';
 import { ProductItem } from '../../../core/services/products.service';
 
 describe('ClientWishlist', () => {
@@ -15,6 +16,7 @@ describe('ClientWishlist', () => {
   let wishlistServiceMock: any;
   let toastServiceMock: any;
   let cartServiceMock: any;
+  let currentUserSignal: any;
 
   const mockWishlists = [
     { id: 'list-1', name: 'Mi lista de deseos', itemCount: 2, productIds: ['p-1', 'p-2'] },
@@ -72,6 +74,8 @@ describe('ClientWishlist', () => {
       itemCount: vi.fn(() => 0),
     };
 
+    currentUserSignal = signal<AuthenticatedUser | null>(null);
+
     await TestBed.configureTestingModule({
       imports: [ClientWishlist],
       providers: [
@@ -79,6 +83,7 @@ describe('ClientWishlist', () => {
         { provide: WishlistService, useValue: wishlistServiceMock },
         { provide: ToastService, useValue: toastServiceMock },
         { provide: CartService, useValue: cartServiceMock },
+        { provide: AuthService, useValue: { currentUser: currentUserSignal } },
       ],
     }).compileComponents();
 
@@ -242,5 +247,36 @@ describe('ClientWishlist', () => {
 
     expect(wishlistServiceMock.removeFromWishlist).toHaveBeenCalledWith('p-1', 'list-1');
     expect(toastServiceMock.show).toHaveBeenCalledWith('Producto eliminado', 'success');
+  });
+
+  it('calculates accumulated discounts and displays prices properly for standard and premium users', () => {
+    const discountedProduct: ProductItem = {
+      id: 'p-disc',
+      name: 'Portátil',
+      categoryIds: ['cat-1'],
+      stock: 5,
+      price: 100,
+      discount: 10,
+      premiumDiscount: 5,
+      available: true,
+      sellerId: 's-1',
+    };
+
+    // Standard user
+    expect(component.getTotalDiscount(discountedProduct)).toBe(15);
+    expect(component.getDiscountedPrice(discountedProduct)).toBe(90);
+    expect(component.getPremiumPrice(discountedProduct)).toBe(85);
+    expect(component.getDisplayPrice(discountedProduct)).toBe(90);
+
+    // Premium user
+    currentUserSignal.set({
+      id: 'prem-1',
+      email: 'prem@example.com',
+      role: 'CLIENT',
+      active: true,
+      customerType: 'PREMIUM',
+    });
+    expect(component.isPremiumUser()).toBe(true);
+    expect(component.getDisplayPrice(discountedProduct)).toBe(85);
   });
 });

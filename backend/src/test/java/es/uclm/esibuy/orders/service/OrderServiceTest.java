@@ -216,6 +216,31 @@ class OrderServiceTest {
         }
 
         @Test
+        void shouldPreserveDiscountedUnitPriceFromCartWhenCreatingOrder() {
+                Cart cartWithDiscount = new Cart(CUSTOMER_ID);
+                cartWithDiscount.addOrIncrementItem(PRODUCT_ID, "Auriculares", new BigDecimal("85.00"), 1);
+
+                Product catalogProduct = productWithStock(5);
+                catalogProduct.setPrice(new BigDecimal("100.00"));
+
+                when(cartRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(Optional.of(cartWithDiscount));
+                when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(catalogProduct));
+                enableStockReservation();
+                when(paymentGateway.charge(any(), any())).thenReturn(true);
+                when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+
+                orderService.createOrder(CUSTOMER_ID, new CreateOrderDTO("direccion-1", "pago-1"));
+
+                ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+                verify(orderRepository).save(orderCaptor.capture());
+
+                Order capturedOrder = orderCaptor.getValue();
+                assertEquals(1, capturedOrder.getItems().size());
+                assertEquals(new BigDecimal("85.00"), capturedOrder.getItems().get(0).unitPrice());
+                assertEquals(new BigDecimal("85.00"), capturedOrder.getItems().get(0).subtotal());
+        }
+
+        @Test
         void shouldAllowReturningFromShippedToPreparingWithSelectedReason() {
                 Product product = productWithStock(4);
 

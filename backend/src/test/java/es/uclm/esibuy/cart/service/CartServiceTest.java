@@ -13,6 +13,10 @@ import es.uclm.esibuy.common.exception.ProductoNoDisponibleException;
 import es.uclm.esibuy.common.exception.StockInsuficienteException;
 import es.uclm.esibuy.products.model.Product;
 import es.uclm.esibuy.products.repository.ProductRepository;
+import es.uclm.esibuy.users.model.ClientProfile;
+import es.uclm.esibuy.users.model.CustomerType;
+import es.uclm.esibuy.users.model.User;
+import es.uclm.esibuy.users.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +24,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -40,11 +46,14 @@ class CartServiceTest {
         @Mock
         private CartRepository cartRepository;
 
+        @Mock
+        private UserRepository userRepository;
+
         private CartService cartService;
 
         @BeforeEach
         void setUp() {
-                cartService = new CartService(productRepository, cartRepository);
+                cartService = new CartService(productRepository, cartRepository, userRepository);
         }
 
         @Test
@@ -289,5 +298,111 @@ class CartServiceTest {
                 when(product.isAvailable()).thenReturn(true);
 
                 return product;
+        }
+
+        private void mockCustomerType(String customerId, CustomerType type) {
+                User user = mock(User.class);
+                ClientProfile profile = mock(ClientProfile.class);
+                when(profile.getCustomerType()).thenReturn(type);
+                when(user.getClientProfile()).thenReturn(profile);
+                when(userRepository.findById(customerId)).thenReturn(Optional.of(user));
+        }
+
+        private Product productWithDiscounts(BigDecimal basePrice, BigDecimal standardDiscount, BigDecimal premiumDiscount) {
+                Product product = mock(Product.class);
+                when(product.getId()).thenReturn(PRODUCT_ID);
+                when(product.getName()).thenReturn(PRODUCT_NAME);
+                when(product.getPrice()).thenReturn(basePrice);
+                when(product.getStock()).thenReturn(10);
+                when(product.isAvailable()).thenReturn(true);
+                when(product.getDiscount()).thenReturn(standardDiscount);
+                when(product.getPremiumDiscount()).thenReturn(premiumDiscount);
+                return product;
+        }
+
+        @Test
+        void shouldApplyOnlyStandardDiscountForStandardCustomer() {
+                Product product = productWithDiscounts(new BigDecimal("100.00"), new BigDecimal("10"), new BigDecimal("5"));
+                mockCustomerType(CUSTOMER_ID, CustomerType.STANDARD);
+
+                when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
+                when(cartRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(Optional.empty());
+                when(cartRepository.save(any(Cart.class))).thenAnswer(inv -> inv.getArgument(0));
+
+                CartDTO result = cartService.addItem(CUSTOMER_ID, new AddCartItemDTO(PRODUCT_ID, 1));
+
+                assertEquals(new BigDecimal("90.00"), result.items().get(0).unitPrice());
+                assertEquals(new BigDecimal("90.00"), result.items().get(0).subtotal());
+                assertEquals(new BigDecimal("10"), result.items().get(0).discount());
+                assertFalse(result.items().get(0).isPremiumDiscount());
+                assertEquals(new BigDecimal("90.00"), result.totalPrice());
+                assertEquals(new BigDecimal("10.00"), result.totalDiscount());
+        }
+
+        @Test
+        void shouldAccumulateStandardAndPremiumDiscountForPremiumCustomer() {
+                Product product = productWithDiscounts(new BigDecimal("100.00"), new BigDecimal("10"), new BigDecimal("5"));
+                mockCustomerType(CUSTOMER_ID, CustomerType.PREMIUM);
+
+                when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
+                when(cartRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(Optional.empty());
+                when(cartRepository.save(any(Cart.class))).thenAnswer(inv -> inv.getArgument(0));
+
+                CartDTO result = cartService.addItem(CUSTOMER_ID, new AddCartItemDTO(PRODUCT_ID, 1));
+
+                assertEquals(new BigDecimal("85.00"), result.items().get(0).unitPrice());
+                assertEquals(new BigDecimal("85.00"), result.items().get(0).subtotal());
+                assertEquals(new BigDecimal("15"), result.items().get(0).discount());
+                assertTrue(result.items().get(0).isPremiumDiscount());
+                assertEquals(new BigDecimal("85.00"), result.totalPrice());
+                assertEquals(new BigDecimal("15.00"), result.totalDiscount());
+        }
+
+        @Test
+        void shouldApplyStandardDiscountForPremiumCustomerWhenNoPremiumDiscount() {
+                Product product = productWithDiscounts(new BigDecimal("100.00"), new BigDecimal("10"), null);
+                mockCustomerType(CUSTOMER_ID, CustomerType.PREMIUM);
+
+                when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
+                when(cartRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(Optional.empty());
+                when(cartRepository.save(any(Cart.class))).thenAnswer(inv -> inv.getArgument(0));
+
+                CartDTO result = cartService.addItem(CUSTOMER_ID, new AddCartItemDTO(PRODUCT_ID, 1));
+
+                assertEquals(new BigDecimal("90.00"), result.items().get(0).unitPrice());
+                assertEquals(new BigDecimal("10"), result.items().get(0).discount());
+                assertFalse(result.items().get(0).isPremiumDiscount());
+        }
+
+        @Test
+        void shouldApplyPremiumDiscountForPremiumCustomerWhenNoStandardDiscount() {
+                Product product = productWithDiscounts(new BigDecimal("100.00"), null, new BigDecimal("5"));
+                mockCustomerType(CUSTOMER_ID, CustomerType.PREMIUM);
+
+                when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
+                when(cartRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(Optional.empty());
+                when(cartRepository.save(any(Cart.class))).thenAnswer(inv -> inv.getArgument(0));
+
+                CartDTO result = cartService.addItem(CUSTOMER_ID, new AddCartItemDTO(PRODUCT_ID, 1));
+
+                assertEquals(new BigDecimal("95.00"), result.items().get(0).unitPrice());
+                assertEquals(new BigDecimal("5"), result.items().get(0).discount());
+                assertTrue(result.items().get(0).isPremiumDiscount());
+        }
+
+        @Test
+        void shouldCapAccumulatedDiscountAt100Percent() {
+                Product product = productWithDiscounts(new BigDecimal("100.00"), new BigDecimal("60"), new BigDecimal("50"));
+                mockCustomerType(CUSTOMER_ID, CustomerType.PREMIUM);
+
+                when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
+                when(cartRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(Optional.empty());
+                when(cartRepository.save(any(Cart.class))).thenAnswer(inv -> inv.getArgument(0));
+
+                CartDTO result = cartService.addItem(CUSTOMER_ID, new AddCartItemDTO(PRODUCT_ID, 1));
+
+                assertEquals(new BigDecimal("0.00"), result.items().get(0).unitPrice());
+                assertEquals(new BigDecimal("100"), result.items().get(0).discount());
+                assertTrue(result.items().get(0).isPremiumDiscount());
         }
 }

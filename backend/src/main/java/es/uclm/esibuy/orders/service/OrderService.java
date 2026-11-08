@@ -668,7 +668,7 @@ public class OrderService {
 
         sellers.add(itemSellerId);
 
-        BigDecimal unitPrice = product.getPrice();
+        BigDecimal unitPrice = item.getUnitPrice() != null ? item.getUnitPrice() : product.getPrice();
         BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
 
         return Optional.of(new OrderItem(

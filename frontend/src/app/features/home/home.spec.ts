@@ -243,4 +243,33 @@ describe('Home', () => {
 
     expect(navigateSpy).toHaveBeenCalledWith(['/client/catalog'], { replaceUrl: true });
   });
+
+  it('correctly calculates accumulated discount and premium price for products', () => {
+    const discountedItem: ProductItem = {
+      id: 'p-disc',
+      name: 'Mochila',
+      categoryIds: ['cat-2'],
+      stock: 4,
+      price: 50.0,
+      discount: 10,
+      premiumDiscount: 5,
+      available: true,
+      sellerId: 's-1',
+    };
+
+    expect(component.getTotalDiscount(discountedItem)).toBe(15);
+    expect(component.getDiscountedPrice(discountedItem)).toBe(45);
+    expect(component.getPremiumPrice(discountedItem)).toBe(42.5);
+    expect(component.getDisplayPrice(discountedItem)).toBe(45);
+
+    currentUserSignal.set({
+      id: 'prem-client',
+      email: 'prem@example.com',
+      role: 'CLIENT',
+      active: true,
+      customerType: 'PREMIUM',
+    });
+    expect(component.isPremiumUser()).toBe(true);
+    expect(component.getDisplayPrice(discountedItem)).toBe(42.5);
+  });
 });
