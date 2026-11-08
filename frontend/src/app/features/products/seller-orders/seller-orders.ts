@@ -22,6 +22,7 @@ interface SellerOrder {
   id: string;
   date: string;
   dateValue: string;
+  rawDate: string;
   customer: string;
   products: string;
   total: number;
@@ -56,6 +57,7 @@ export class SellerOrders implements OnInit {
     || !!this.dateTo()
     || !!this.orderSearch().trim()
   );
+  readonly cancelConfirmationOrderId = signal<string | null>(null);
   readonly expandedOrderId = signal<string | null>(null);
   readonly statusSavingOrderId = signal<string | null>(null);
   readonly statusUpdateError = signal<string | null>(null);
@@ -88,16 +90,25 @@ export class SellerOrders implements OnInit {
     const from = this.dateFrom();
     const to = this.dateTo();
 
-    return this.orders().filter((order) => {
-      const matchesSearch = !query
-        || order.id.toLocaleLowerCase().includes(query)
-        || order.customer.toLocaleLowerCase().includes(query)
-        || order.products.toLocaleLowerCase().includes(query);
-      const matchesStatus = status === 'Todos' || order.status === status;
-      const matchesFromDate = !from || order.dateValue >= from;
-      const matchesToDate = !to || order.dateValue <= to;
-      return matchesSearch && matchesStatus && matchesFromDate && matchesToDate;
-    });
+    return this.orders()
+      .filter((order) => {
+        const matchesSearch = !query
+          || order.id.toLocaleLowerCase().includes(query)
+          || order.customer.toLocaleLowerCase().includes(query)
+          || order.products.toLocaleLowerCase().includes(query);
+        const matchesStatus = status === 'Todos' || order.status === status;
+        const matchesFromDate = !from || order.dateValue >= from;
+        const matchesToDate = !to || order.dateValue <= to;
+        return matchesSearch && matchesStatus && matchesFromDate && matchesToDate;
+      })
+      .sort((first, second) => {
+        const timeFirst = Date.parse(first.rawDate);
+        const timeSecond = Date.parse(second.rawDate);
+        if (Number.isNaN(timeFirst) || Number.isNaN(timeSecond)) {
+          return second.id.localeCompare(first.id);
+        }
+        return timeSecond - timeFirst;
+      });
   });
 
   readonly pageCount = computed(() => Math.max(1, Math.ceil(this.filteredOrders().length / this.pageSize)));
@@ -132,6 +143,7 @@ export class SellerOrders implements OnInit {
       id: order.pedidoId,
       date: new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium' }).format(date),
       dateValue: order.fechaCreacion.slice(0, 10),
+      rawDate: order.fechaCreacion,
       customer: order.clienteNombre,
       products: order.items.map((item) => `${item.nombre} · ${item.cantidad} ud.`).join(', '),
       total: order.total,
@@ -237,8 +249,62 @@ export class SellerOrders implements OnInit {
     this.statusUpdateError.set(null);
     this.statusUpdateSuccess.set(null);
     this.pendingStatusChange.set(null);
+    this.cancelConfirmationOrderId.set(null);
     this.selectedRollbackReason.set('');
     this.expandedOrderId.set(this.expandedOrderId() === orderId ? null : orderId);
+  }
+
+  nextStatus(currentStatus: OrderStatus): OrderStatus | null {
+    if (currentStatus === 'Pendiente') {
+      return 'En preparación';
+    }
+    if (currentStatus === 'En preparación') {
+      return 'Enviado';
+    }
+    return null;
+  }
+
+  nextStatusActionLabel(currentStatus: OrderStatus): string {
+    if (currentStatus === 'Pendiente') {
+      return 'Iniciar preparación';
+    }
+    if (currentStatus === 'En preparación') {
+      return 'Marcar como enviado';
+    }
+    return '';
+  }
+
+  canCancel(status: OrderStatus): boolean {
+    return status === 'Pendiente' || status === 'En preparación';
+  }
+
+  canAdvance(status: OrderStatus): boolean {
+    return status === 'Pendiente' || status === 'En preparación';
+  }
+
+  canRollback(status: OrderStatus): boolean {
+    return status === 'En preparación' || status === 'Enviado';
+  }
+
+  promptCancelOrder(orderId: string): void {
+    this.statusUpdateError.set(null);
+    this.statusUpdateSuccess.set(null);
+    this.pendingStatusChange.set(null);
+    this.cancelConfirmationOrderId.set(orderId);
+  }
+
+  dismissCancelOrder(): void {
+    this.cancelConfirmationOrderId.set(null);
+  }
+
+  confirmCancelOrder(order: SellerOrder): void {
+    this.cancelConfirmationOrderId.set(null);
+    this.updateOrderStatus(order, 'Cancelado');
+  }
+
+  promptRollback(order: SellerOrder): void {
+    const previousStatus: OrderStatus = order.status === 'Enviado' ? 'En preparación' : 'Pendiente';
+    this.updateOrderStatus(order, previousStatus);
   }
 
   updateOrderStatus(order: SellerOrder, status: OrderStatus): void {

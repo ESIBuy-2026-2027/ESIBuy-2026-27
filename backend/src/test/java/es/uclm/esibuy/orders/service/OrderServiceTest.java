@@ -208,11 +208,36 @@ class OrderServiceTest {
 
                 ArgumentCaptor<BigDecimal> chargedAmount = ArgumentCaptor.forClass(BigDecimal.class);
                 verify(paymentGateway).charge(any(), chargedAmount.capture());
-                assertEquals(new BigDecimal("53.37"), chargedAmount.getValue());
+                assertEquals(new BigDecimal("44.97"), chargedAmount.getValue());
 
                 ArgumentCaptor<Order> savedOrder = ArgumentCaptor.forClass(Order.class);
                 verify(orderRepository).save(savedOrder.capture());
-                assertEquals(new BigDecimal("53.37"), savedOrder.getValue().getTotalPrice());
+                assertEquals(new BigDecimal("44.97"), savedOrder.getValue().getTotalPrice());
+        }
+
+        @Test
+        void shouldPreserveDiscountedUnitPriceFromCartWhenCreatingOrder() {
+                Cart cartWithDiscount = new Cart(CUSTOMER_ID);
+                cartWithDiscount.addOrIncrementItem(PRODUCT_ID, "Auriculares", new BigDecimal("85.00"), 1);
+
+                Product catalogProduct = productWithStock(5);
+                catalogProduct.setPrice(new BigDecimal("100.00"));
+
+                when(cartRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(Optional.of(cartWithDiscount));
+                when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(catalogProduct));
+                enableStockReservation();
+                when(paymentGateway.charge(any(), any())).thenReturn(true);
+                when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+
+                orderService.createOrder(CUSTOMER_ID, new CreateOrderDTO("direccion-1", "pago-1"));
+
+                ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+                verify(orderRepository).save(orderCaptor.capture());
+
+                Order capturedOrder = orderCaptor.getValue();
+                assertEquals(1, capturedOrder.getItems().size());
+                assertEquals(new BigDecimal("85.00"), capturedOrder.getItems().get(0).unitPrice());
+                assertEquals(new BigDecimal("85.00"), capturedOrder.getItems().get(0).subtotal());
         }
 
         @Test
@@ -641,6 +666,45 @@ class OrderServiceTest {
 
                 verify(productRepository).findAllBySellerId(sellerId);
                 verify(orderRepository).findAll();
+        }
+
+        @Test
+        void shouldReturnSellerOrdersSortedByCreatedAtDescending() {
+                String sellerId = "seller-1";
+                OrderItem item1 = new OrderItem(
+                                PRODUCT_ID, "Auriculares", 1, PRICE, PRICE, "img.jpg", sellerId);
+                Order olderOrder = new Order(
+                                CUSTOMER_ID,
+                                List.of(item1),
+                                PRICE,
+                                new OrderShippingAddress("dir-1", "Ana", "Calle 1", null, "13001", "CR", "CR", "600000000"),
+                                new OrderPaymentMethod("p-1", null, "1234"),
+                                OrderStatus.ENVIADO);
+                org.springframework.test.util.ReflectionTestUtils.setField(
+                                olderOrder, "id", "pedido-antiguo");
+                org.springframework.test.util.ReflectionTestUtils.setField(
+                                olderOrder, "createdAt", java.time.LocalDateTime.now().minusDays(3));
+
+                Order newerOrder = new Order(
+                                CUSTOMER_ID,
+                                List.of(item1),
+                                PRICE,
+                                new OrderShippingAddress("dir-1", "Ana", "Calle 1", null, "13001", "CR", "CR", "600000000"),
+                                new OrderPaymentMethod("p-1", null, "1234"),
+                                OrderStatus.PENDIENTE);
+                org.springframework.test.util.ReflectionTestUtils.setField(
+                                newerOrder, "id", "pedido-reciente");
+                org.springframework.test.util.ReflectionTestUtils.setField(
+                                newerOrder, "createdAt", java.time.LocalDateTime.now());
+
+                when(productRepository.findAllBySellerId(sellerId)).thenReturn(List.of());
+                when(orderRepository.findAll()).thenReturn(List.of(olderOrder, newerOrder));
+
+                List<SellerOrderDTO> result = orderService.getSellerOrders(sellerId);
+
+                assertEquals(2, result.size());
+                assertEquals("pedido-reciente", result.get(0).orderId());
+                assertEquals("pedido-antiguo", result.get(1).orderId());
         }
 
         @Test

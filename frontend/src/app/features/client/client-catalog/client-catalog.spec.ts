@@ -53,6 +53,7 @@ describe('ClientCatalog', () => {
   ];
 
   beforeEach(async () => {
+    localStorage.clear();
     productsServiceMock = {
       getCategories: vi.fn(() => of(mockCategories)),
       getPublicCatalog: vi.fn(() => of(mockProducts)),
@@ -101,7 +102,10 @@ describe('ClientCatalog', () => {
     await fixture.whenStable();
   });
 
-  afterEach(() => TestBed.resetTestingModule());
+  afterEach(() => {
+    localStorage.clear();
+    TestBed.resetTestingModule();
+  });
 
   it('should create and render heading and navigation links in exact order', () => {
     expect(component).toBeTruthy();
@@ -121,6 +125,8 @@ describe('ClientCatalog', () => {
     expect(component.sidebarCollapsed()).toBe(false);
     component.toggleSidebar();
     expect(component.sidebarCollapsed()).toBe(true);
+    component.toggleSidebar();
+    expect(component.sidebarCollapsed()).toBe(false);
   });
 
   it('keeps unrated products after rated products when sorting by rating', async () => {

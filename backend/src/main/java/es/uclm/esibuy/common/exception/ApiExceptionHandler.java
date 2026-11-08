@@ -78,20 +78,25 @@ public class ApiExceptionHandler {
                                 CORRELATION_ID, correlationId(request)));
         }
 
-        @ExceptionHandler(CategoryInUseException.class)
-        public ResponseEntity<Map<String, String>> handleCategoryInUse(CategoryInUseException exception,
+        @ExceptionHandler(DuplicateWishlistException.class)
+        public ResponseEntity<Map<String, String>> handleDuplicateWishlist(DuplicateWishlistException exception,
                         HttpServletRequest request) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MESSAGE, exception.getMessage(),
                                 CORRELATION_ID, correlationId(request)));
         }
 
-        @ExceptionHandler(IncidentNotFoundException.class)
-        public ResponseEntity<Map<String, String>> handleIncidentNotFound(IncidentNotFoundException exception,
+        @ExceptionHandler(WishlistNotFoundException.class)
+        public ResponseEntity<Map<String, String>> handleWishlistNotFound(WishlistNotFoundException exception,
                         HttpServletRequest request) {
-                String id = correlationId(request);
-                LOGGER.warn("Incidencia solicitada no encontrada. correlationId={}", id);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(MESSAGE, exception.getMessage(),
-                                CORRELATION_ID, id));
+                                CORRELATION_ID, correlationId(request)));
+        }
+
+        @ExceptionHandler(CategoryInUseException.class)
+        public ResponseEntity<Map<String, String>> handleCategoryInUse(CategoryInUseException exception,
+                        HttpServletRequest request) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MESSAGE, exception.getMessage(),
+                                CORRELATION_ID, correlationId(request)));
         }
 
         @ExceptionHandler(CategoryIdNotFoundException.class)

@@ -95,4 +95,16 @@ describe('ClientOrderDetail', () => {
     expect(fixture.componentInstance.error()).toBeNull();
     expect(fixture.componentInstance.order()).toEqual(order);
   });
+
+  it('should show the receipt action banner only for shipped orders', () => {
+    const element: HTMLElement = fixture.nativeElement;
+
+    expect(element.querySelector('.receipt-action-banner')).toBeNull();
+
+    fixture.componentInstance.order.set({ ...order, estado: 'ENVIADO' });
+    fixture.detectChanges();
+
+    expect(element.querySelector('.receipt-action-banner')).toBeTruthy();
+    expect(element.querySelector('.confirm-receipt-button')?.textContent).toContain('He recibido mi pedido');
+  });
 });

@@ -3,6 +3,7 @@ package es.uclm.esibuy.orders.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -227,12 +228,15 @@ public class OrderService {
     private OrderPricing calculatePricing(
             BigDecimal subtotal,
             GeneralConfiguration configuration) {
-        BigDecimal taxAmount = subtotal.multiply(configuration.getIvaPorcentaje())
-                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal ivaPorcentaje = configuration.getIvaPorcentaje();
+        BigDecimal divisor = BigDecimal.valueOf(100).add(ivaPorcentaje);
+        BigDecimal taxAmount = divisor.compareTo(BigDecimal.ZERO) > 0
+                ? subtotal.multiply(ivaPorcentaje).divide(divisor, 2, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO.setScale(2);
         BigDecimal shippingCost = subtotal.compareTo(configuration.getEnvioGratuitoDesde()) >= 0
                 ? BigDecimal.ZERO.setScale(2)
                 : configuration.getGastosEnvio().setScale(2, RoundingMode.HALF_UP);
-        BigDecimal total = subtotal.add(taxAmount).add(shippingCost)
+        BigDecimal total = subtotal.add(shippingCost)
                 .setScale(2, RoundingMode.HALF_UP);
 
         return new OrderPricing(
@@ -261,6 +265,7 @@ public class OrderService {
                 .collect(Collectors.toSet());
 
         return orderRepository.findAll().stream()
+                .sorted(Comparator.comparing(Order::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
                 .map(order -> toSellerOrder(order, sellerId, sellerProductIds))
                 .filter(Objects::nonNull)
                 .toList();
@@ -367,6 +372,8 @@ public class OrderService {
                     "La recepción del pedido debe confirmarla el cliente");
         }
 
+        validateStatusTransition(order.getStatus(), status);
+
         if (isStatusRegression(order.getStatus(), status)
                 && (justification == null || justification.isBlank())) {
             throw new IllegalArgumentException(
@@ -406,6 +413,48 @@ public class OrderService {
         return currentPosition >= 0
                 && newPosition >= 0
                 && newPosition < currentPosition;
+    }
+
+    private void validateStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
+        if (currentStatus == null || currentStatus == newStatus) {
+            return;
+        }
+
+        if (currentStatus == OrderStatus.CANCELADO || currentStatus == OrderStatus.ENTREGADO) {
+            throw new IllegalArgumentException(
+                    "No se puede modificar un pedido que ya está " + currentStatus.name().toLowerCase());
+        }
+
+        if (newStatus == OrderStatus.CANCELADO) {
+            if (currentStatus != OrderStatus.PENDIENTE
+                    && currentStatus != OrderStatus.PAGADO
+                    && currentStatus != OrderStatus.PREPARANDO) {
+                throw new IllegalArgumentException(
+                        "Un pedido enviado o entregado ya no puede ser cancelado");
+            }
+            return;
+        }
+
+        // Si es un retroceso en el flujo normal, se permite siempre que se justifique (validado aparte)
+        if (isStatusRegression(currentStatus, newStatus)) {
+            return;
+        }
+
+        // Validación de avance secuencial: no permitir saltar fases
+        if (currentStatus == OrderStatus.PENDIENTE || currentStatus == OrderStatus.PAGADO) {
+            if (newStatus != OrderStatus.PREPARANDO) {
+                throw new IllegalArgumentException(
+                        "Un pedido pendiente debe pasar a preparación antes de enviarse");
+            }
+        } else if (currentStatus == OrderStatus.PREPARANDO) {
+            if (newStatus != OrderStatus.ENVIADO) {
+                throw new IllegalArgumentException(
+                        "Un pedido en preparación solo puede pasar a enviado");
+            }
+        } else if (currentStatus == OrderStatus.ENVIADO) {
+            throw new IllegalArgumentException(
+                    "Un pedido enviado no puede modificarse directamente a este estado");
+        }
     }
 
     private SellerOrderDTO toSellerOrder(Order order, String sellerId, Set<String> sellerProductIds) {
@@ -624,7 +673,7 @@ public class OrderService {
 
         sellers.add(itemSellerId);
 
-        BigDecimal unitPrice = product.getPrice();
+        BigDecimal unitPrice = item.getUnitPrice() != null ? item.getUnitPrice() : product.getPrice();
         BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
 
         return Optional.of(new OrderItem(

@@ -3,22 +3,35 @@ package es.uclm.esibuy.wishlist.repository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import es.uclm.esibuy.wishlist.model.WishlistItem;
+import es.uclm.esibuy.wishlist.model.Wishlist;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface WishlistRepository extends MongoRepository<WishlistItem, String> {
+public interface WishlistRepository extends MongoRepository<Wishlist, String> {
 
-    List<WishlistItem> findAllByUserIdOrderByAddedAtDesc(String userId);
+    List<Wishlist> findAllByUserIdOrderByCreatedAtAsc(String userId);
 
-    Optional<WishlistItem> findByUserIdAndProductId(String userId, String productId);
+    Optional<Wishlist> findByIdAndUserId(String id, String userId);
 
-    boolean existsByUserIdAndProductId(String userId, String productId);
+    boolean existsByUserIdAndNameIgnoreCase(String userId, String name);
 
-    void deleteByUserIdAndProductId(String userId, String productId);
+    boolean existsByUserIdAndNameIgnoreCaseAndIdNot(String userId, String name, String id);
 
     void deleteAllByUserId(String userId);
 
-    void deleteAllByProductIdIn(Collection<String> productIds);
+    List<Wishlist> findAllByProductIdsContaining(String productId);
+
+    List<Wishlist> findAllByProductIdsIn(Collection<String> productIds);
+
+    default void deleteAllByProductIdIn(Collection<String> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return;
+        }
+        List<Wishlist> affected = findAllByProductIdsIn(productIds);
+        for (Wishlist wishlist : affected) {
+            wishlist.getProductIds().removeAll(productIds);
+        }
+        saveAll(affected);
+    }
 }

@@ -353,6 +353,36 @@ p {
   transform: translateY(-50%);
 }
 
+.price-vat-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 6px 12px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: #166534;
+}
+
+.vat-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: #102c40;
+  color: #ffffff;
+  border-radius: 4px;
+}
+
+.vat-preview-text strong {
+  font-weight: 700;
+  color: #102c40;
+}
+
 /* Ayudas y validaciones */
 
 .field-hint,

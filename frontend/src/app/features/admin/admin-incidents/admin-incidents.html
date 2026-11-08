@@ -4,315 +4,308 @@
 
   <div class="admin-workspace app-workspace">
     <main class="admin-content">
-      <div class="incidents-content-shell">
+      <div class="incidents-page-container">
 
-        <!-- Encabezado de la página -->
-        <section class="page-heading" aria-labelledby="incidents-page-title">
-          <div class="page-heading-copy">
-            <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
-            <h1 id="incidents-page-title">Gestión de incidencias</h1>
-            <p class="page-description">
-              Panel de soporte técnico interno para registrar, consultar y marcar incidencias como resueltas.
-            </p>
-          </div>
-        </section>
-
-        <!-- Alertas de éxito y error -->
-        @if (mensajeExito()) {
-        <output class="catalog-alert is-success" aria-live="polite">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
-          <div class="alert-text">{{ mensajeExito() }}</div>
-          <button type="button" class="alert-close" (click)="mensajeExito.set('')"
-            aria-label="Cerrar mensaje">×</button>
-        </output>
-        }
-
-        @if (mensajeError()) {
-        <div class="catalog-alert is-error" role="alert">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-          <div class="alert-text">{{ mensajeError() }}</div>
-          <button type="button" class="alert-close" (click)="mensajeError.set('')" aria-label="Cerrar aviso">×</button>
-        </div>
-        }
-
-        <!-- Resumen superior con contadores en tiempo real -->
-        <section class="stats-overview" aria-label="Resumen de incidencias">
-          <article class="stat-card">
-            <div class="stat-icon stat-icon--total" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-              </svg>
-            </div>
-            <div class="stat-content">
-              <span class="stat-label">Total de incidencias</span>
-              <span class="stat-value" data-testid="total-count">{{ totalCount() }}</span>
-            </div>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-icon stat-icon--pending" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-            </div>
-            <div class="stat-content">
-              <span class="stat-label">Pendientes</span>
-              <span class="stat-value text-amber" data-testid="pending-count">{{ pendingCount() }}</span>
-            </div>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-icon stat-icon--resolved" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-              </svg>
-            </div>
-            <div class="stat-content">
-              <span class="stat-label">Resueltas</span>
-              <span class="stat-value text-teal" data-testid="resolved-count">{{ resolvedCount() }}</span>
-            </div>
-          </article>
-        </section>
-
-        <!-- Bloque de Registro de Incidencia (HU 191) -->
-        <div class="card incident-form-card">
-          <div class="card-header">
-            <h2 class="card-title">
-              <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor">
+        <!-- Overlay flotante con mensaje de "En desarrollo" -->
+        <section class="under-development-overlay" role="status" aria-label="Módulo en desarrollo">
+          <div class="under-development-card">
+            <div class="development-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" class="development-icon" fill="none" stroke="currentColor">
                 <path
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                  d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
                 </path>
               </svg>
-              Registrar nueva incidencia
-            </h2>
-            <p class="card-subtitle">
-              Crea un ticket de soporte interno para seguimiento y resolución por el equipo de administración.
+            </div>
+
+            <div class="development-badge">
+              <span class="badge-dot" aria-hidden="true"></span>
+              <span>PRÓXIMAMENTE • SPRINT FUTURO</span>
+            </div>
+
+            <h1 class="development-title">Gestión de incidencias en construcción</h1>
+
+            <p class="development-description">
+              Este módulo no forma parte del sprint actual y se encuentra temporalmente en proceso de desarrollo.
+              A continuación puedes observar la maqueta de la interfaz y la bandeja de soporte técnico prevista para próximas versiones de ESIBuy.
             </p>
-          </div>
 
-          <form (ngSubmit)="onSubmit()" novalidate>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="incident-subject" class="form-label">
-                  Asunto <span class="required" aria-hidden="true">*</span>
-                </label>
-                <input id="incident-subject" name="subject" type="text" class="form-control" [ngModel]="subject()"
-                  (ngModelChange)="subject.set($event)" placeholder="Ej: Cobro duplicado en pasarela de pago"
-                  maxlength="150" required />
-              </div>
-
-              <div class="form-group">
-                <label for="incident-category" class="form-label">
-                  Categoría <span class="required" aria-hidden="true">*</span>
-                </label>
-                <select id="incident-category" name="category" class="form-control" [ngModel]="category()"
-                  (ngModelChange)="category.set($event)" required>
-                  <option value="">Selecciona una categoría...</option>
-                  <option value="PEDIDO">Pedido / Envío</option>
-                  <option value="PRODUCTO">Catálogo / Producto</option>
-                  <option value="PAGO">Pasarela de Pago</option>
-                  <option value="USUARIO">Cuenta de Usuario</option>
-                  <option value="SISTEMA">Error de Sistema / Servidor</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="incident-reference" class="form-label">
-                Referencia afectada <span class="optional-label">(opcional)</span>
-              </label>
-              <input id="incident-reference" name="reference" type="text" class="form-control" [ngModel]="reference()"
-                (ngModelChange)="reference.set($event)" placeholder="Ej: PED-2026-9042 o cliente@ejemplo.com"
-                maxlength="100" />
-            </div>
-
-            <div class="form-group">
-              <label for="incident-description" class="form-label">
-                Descripción detallada <span class="required" aria-hidden="true">*</span>
-              </label>
-              <textarea id="incident-description" name="description" class="form-control textarea-control" rows="4"
-                [ngModel]="description()" (ngModelChange)="description.set($event)"
-                placeholder="Describe detalladamente el problema observado, los pasos para reproducirlo o la información adicional..."
-                maxlength="3000" required></textarea>
-            </div>
-
-            <div class="btn-wrapper">
-              <button type="submit" class="btn btn-primary" [disabled]="submitting()">
-                @if (submitting()) {
-                <span>Registrando...</span>
-                } @else {
-                <span>Registrar incidencia</span>
-                }
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Bloque de Bandeja / Listado de Incidencias (HU 239 y HU 192) -->
-        <div class="card incident-table-card">
-          <div class="card-header">
-            <div class="card-header-main">
-              <h2 class="card-title">
+            <div class="development-tags">
+              <span class="tag-chip">
                 <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor">
-                  <line x1="8" y1="6" x2="21" y2="6"></line>
-                  <line x1="8" y1="12" x2="21" y2="12"></line>
-                  <line x1="8" y1="18" x2="21" y2="18"></line>
-                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
-                Bandeja de incidencias registradas
-              </h2>
-              <p class="card-subtitle">
-                Listado completo de incidencias reportadas en la tienda, ordenadas por fecha reciente.
-              </p>
+                Sprint futuro
+              </span>
+              <span class="tag-chip">
+                <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                Vista previa (Solo lectura)
+              </span>
+              <span class="tag-chip">
+                <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                Área de administración
+              </span>
             </div>
-            <button type="button" class="btn btn-secondary btn-sm" (click)="loadIncidents()" [disabled]="loading()">
-              <svg viewBox="0 0 24 24" class="btn-icon-svg" aria-hidden="true" fill="none" stroke="currentColor">
-                <path d="M23 4v6h-6"></path>
-                <path d="M1 20v-6h6"></path>
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-              </svg>
-              <span>Actualizar</span>
-            </button>
-          </div>
 
-          @if (loadError()) {
-          <div class="catalog-alert is-error" role="alert" data-testid="load-error-alert">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <div class="alert-text">No se pudieron cargar las incidencias desde el servidor.</div>
-            <button type="button" class="btn btn-secondary btn-xs" (click)="loadIncidents()">Reintentar</button>
+            <div class="development-actions">
+              <a routerLink="/admin/usuarios" class="btn-return-admin">
+                <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor">
+                  <path d="m15 18-6-6 6-6"></path>
+                </svg>
+                <span>Volver a gestión de usuarios</span>
+              </a>
+            </div>
           </div>
-          }
+        </section>
 
-          @if (loading()) {
-          <div class="loading-state" aria-live="polite">
-            <span class="loading-spinner" aria-hidden="true"></span>
-            <p>Cargando incidencias del sistema...</p>
-          </div>
-          } @else {
-          <div class="table-responsive">
-            <table class="incident-table" aria-label="Listado de incidencias registradas">
-              <thead>
-                <tr>
-                  <th scope="col" class="col-id">ID</th>
-                  <th scope="col" class="col-date">Fecha</th>
-                  <th scope="col" class="col-category">Categoría</th>
-                  <th scope="col" class="col-subject">Asunto / Referencia</th>
-                  <th scope="col" class="col-desc">Descripción</th>
-                  <th scope="col" class="col-status">Estado</th>
-                  <th scope="col" class="col-action">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (incident of incidents(); track incident.id) {
-                <tr class="incident-row" [class.is-resolved]="incident.status === 'RESUELTA'">
-                  <td class="col-id">
-                    <span class="incident-id-badge" [title]="incident.id">
-                      #{{ incident.id.length > 8 ? incident.id.slice(-6) : incident.id }}
-                    </span>
-                  </td>
-                  <td class="col-date text-muted">
-                    {{ incident.createdAt | date:'dd/MM/yyyy HH:mm' }}
-                  </td>
-                  <td class="col-category">
-                    <span class="category-badge category-{{ incident.category.toLowerCase() }}">
-                      {{ incident.category }}
-                    </span>
-                  </td>
-                  <td class="col-subject">
-                    <div class="subject-wrapper">
-                      <strong class="subject-title">{{ incident.subject }}</strong>
-                      @if (incident.reference) {
-                      <span class="reference-tag" title="Referencia afectada">
-                        Ref: {{ incident.reference }}
-                      </span>
-                      }
-                    </div>
-                  </td>
-                  <td class="col-desc">
-                    <p class="description-text" [title]="incident.description">
-                      {{ incident.description }}
-                    </p>
-                  </td>
-                  <td class="col-status">
-                    @if (incident.status === 'PENDIENTE') {
-                    <span class="status-badge badge-pending">
-                      <span class="status-dot dot-pending" aria-hidden="true"></span>
-                      PENDIENTE
-                    </span>
-                    } @else {
-                    <span class="status-badge badge-resolved">
-                      <span class="status-dot dot-resolved" aria-hidden="true"></span>
-                      RESUELTA
-                    </span>
+        <!-- Contenido previo difuminado (Blur) y no interactivo -->
+        <div class="incidents-blurred-preview" aria-hidden="true" inert>
+          <div class="incidents-content-shell">
+
+            <!-- Encabezado de la página -->
+            <section class="page-heading" aria-labelledby="incidents-page-title">
+              <div class="page-heading-copy">
+                <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
+                <h2 id="incidents-page-title">Gestión de incidencias</h2>
+                <p class="page-description">
+                  Panel de soporte técnico interno para registrar, consultar y marcar incidencias como resueltas.
+                </p>
+              </div>
+            </section>
+
+            <!-- Resumen superior con contadores de ejemplo -->
+            <section class="stats-overview" aria-label="Resumen de incidencias">
+              <article class="stat-card">
+                <div class="stat-icon stat-icon--total" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                  </svg>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Total de incidencias</span>
+                  <span class="stat-value" data-testid="total-count">{{ totalCount() }}</span>
+                </div>
+              </article>
+
+              <article class="stat-card">
+                <div class="stat-icon stat-icon--pending" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Pendientes</span>
+                  <span class="stat-value text-amber" data-testid="pending-count">{{ pendingCount() }}</span>
+                </div>
+              </article>
+
+              <article class="stat-card">
+                <div class="stat-icon stat-icon--resolved" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Resueltas</span>
+                  <span class="stat-value text-teal" data-testid="resolved-count">{{ resolvedCount() }}</span>
+                </div>
+              </article>
+            </section>
+
+            <!-- Bloque de Registro de Incidencia (Preview) -->
+            <div class="card incident-form-card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor">
+                    <path
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                    </path>
+                  </svg>
+                  Registrar nueva incidencia
+                </h3>
+                <p class="card-subtitle">
+                  Crea un ticket de soporte interno para seguimiento y resolución por el equipo de administración.
+                </p>
+              </div>
+
+              <form novalidate>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="incident-subject" class="form-label">
+                      Asunto <span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <input id="incident-subject" name="subject" type="text" class="form-control"
+                      placeholder="Ej: Cobro duplicado en pasarela de pago" disabled />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="incident-category" class="form-label">
+                      Categoría <span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <select id="incident-category" name="category" class="form-control" disabled>
+                      <option value="">Selecciona una categoría...</option>
+                      <option value="PEDIDO">Pedido / Envío</option>
+                      <option value="PRODUCTO">Catálogo / Producto</option>
+                      <option value="PAGO">Pasarela de Pago</option>
+                      <option value="USUARIO">Cuenta de Usuario</option>
+                      <option value="SISTEMA">Error de Sistema / Servidor</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="incident-reference" class="form-label">
+                    Referencia afectada <span class="optional-label">(opcional)</span>
+                  </label>
+                  <input id="incident-reference" name="reference" type="text" class="form-control"
+                    placeholder="Ej: PED-2026-9042 o cliente@ejemplo.com" disabled />
+                </div>
+
+                <div class="form-group">
+                  <label for="incident-description" class="form-label">
+                    Descripción detallada <span class="required" aria-hidden="true">*</span>
+                  </label>
+                  <textarea id="incident-description" name="description" class="form-control textarea-control" rows="3"
+                    placeholder="Describe detalladamente el problema observado..." disabled></textarea>
+                </div>
+
+                <div class="btn-wrapper">
+                  <button type="button" class="btn btn-primary" disabled>
+                    <span>Registrar incidencia</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Bloque de Bandeja / Listado de Incidencias (Preview) -->
+            <div class="card incident-table-card">
+              <div class="card-header">
+                <div class="card-header-main">
+                  <h3 class="card-title">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor">
+                      <line x1="8" y1="6" x2="21" y2="6"></line>
+                      <line x1="8" y1="12" x2="21" y2="12"></line>
+                      <line x1="8" y1="18" x2="21" y2="18"></line>
+                      <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                      <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                      <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    Bandeja de incidencias registradas
+                  </h3>
+                  <p class="card-subtitle">
+                    Listado completo de incidencias reportadas en la tienda, ordenadas por fecha reciente.
+                  </p>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" disabled>
+                  <svg viewBox="0 0 24 24" class="btn-icon-svg" aria-hidden="true" fill="none" stroke="currentColor">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                  <span>Actualizar</span>
+                </button>
+              </div>
+
+              <div class="table-responsive">
+                <table class="incident-table" aria-label="Listado de incidencias registradas">
+                  <thead>
+                    <tr>
+                      <th scope="col" class="col-id">ID</th>
+                      <th scope="col" class="col-date">Fecha</th>
+                      <th scope="col" class="col-category">Categoría</th>
+                      <th scope="col" class="col-subject">Asunto / Referencia</th>
+                      <th scope="col" class="col-desc">Descripción</th>
+                      <th scope="col" class="col-status">Estado</th>
+                      <th scope="col" class="col-action">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (incident of incidents(); track incident.id) {
+                    <tr class="incident-row" [class.is-resolved]="incident.status === 'RESUELTA'">
+                      <td class="col-id">
+                        <span class="incident-id-badge" [title]="incident.id">
+                          #{{ incident.id.length > 8 ? incident.id.slice(-6) : incident.id }}
+                        </span>
+                      </td>
+                      <td class="col-date text-muted">
+                        {{ incident.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                      </td>
+                      <td class="col-category">
+                        <span class="category-badge category-{{ incident.category.toLowerCase() }}">
+                          {{ incident.category }}
+                        </span>
+                      </td>
+                      <td class="col-subject">
+                        <div class="subject-wrapper">
+                          <strong class="subject-title">{{ incident.subject }}</strong>
+                          @if (incident.reference) {
+                          <span class="reference-tag" title="Referencia afectada">
+                            Ref: {{ incident.reference }}
+                          </span>
+                          }
+                        </div>
+                      </td>
+                      <td class="col-desc">
+                        <p class="description-text" [title]="incident.description">
+                          {{ incident.description }}
+                        </p>
+                      </td>
+                      <td class="col-status">
+                        @if (incident.status === 'PENDIENTE') {
+                        <span class="status-badge badge-pending">
+                          <span class="status-dot dot-pending" aria-hidden="true"></span>
+                          PENDIENTE
+                        </span>
+                        } @else {
+                        <span class="status-badge badge-resolved">
+                          <span class="status-dot dot-resolved" aria-hidden="true"></span>
+                          RESUELTA
+                        </span>
+                        }
+                      </td>
+                      <td class="col-action">
+                        @if (incident.status === 'PENDIENTE') {
+                        <button type="button" class="btn btn-resolve" disabled>
+                          <svg viewBox="0 0 24 24" class="btn-icon-svg" aria-hidden="true" fill="none"
+                            stroke="currentColor">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                          <span>Marcar como resuelta</span>
+                        </button>
+                        } @else {
+                        <div class="resolved-cell">
+                          <span class="resolved-note text-teal">
+                            <svg viewBox="0 0 24 24" class="resolved-check-icon" aria-hidden="true" fill="none"
+                              stroke="currentColor">
+                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            Resuelta
+                          </span>
+                          @if (incident.resolvedAt) {
+                          <span class="resolved-date">{{ incident.resolvedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                          }
+                        </div>
+                        }
+                      </td>
+                    </tr>
                     }
-                  </td>
-                  <td class="col-action">
-                    @if (incident.status === 'PENDIENTE') {
-                    <button type="button" class="btn btn-resolve" [disabled]="resolvingId() === incident.id"
-                      (click)="resolveIncident(incident)"
-                      [attr.aria-label]="'Marcar como resuelta la incidencia ' + incident.subject">
-                      @if (resolvingId() === incident.id) {
-                      <span>Resolviendo...</span>
-                      } @else {
-                      <svg viewBox="0 0 24 24" class="btn-icon-svg" aria-hidden="true" fill="none"
-                        stroke="currentColor">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>Marcar como resuelta</span>
-                      }
-                    </button>
-                    } @else {
-                    <div class="resolved-cell">
-                      <span class="resolved-note text-teal">
-                        <svg viewBox="0 0 24 24" class="resolved-check-icon" aria-hidden="true" fill="none"
-                          stroke="currentColor">
-                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                        </svg>
-                        Resuelta
-                      </span>
-                      @if (incident.resolvedAt) {
-                      <span class="resolved-date">{{ incident.resolvedAt | date:'dd/MM/yyyy HH:mm' }}</span>
-                      }
-                    </div>
-                    }
-                  </td>
-                </tr>
-                } @empty {
-                <tr>
-                  <td colspan="7">
-                    <div class="empty-state" data-testid="empty-incidents-state">
-                      <span class="empty-state-icon" aria-hidden="true">✓</span>
-                      <p class="empty-state-title">No hay incidencias registradas</p>
-                      <span class="empty-state-subtitle">
-                        Actualmente no existen tickets de soporte pendientes ni reportados en el sistema.
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-                }
-              </tbody>
-            </table>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
-          }
         </div>
 
       </div>
