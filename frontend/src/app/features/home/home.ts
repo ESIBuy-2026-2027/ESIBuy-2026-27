@@ -216,7 +216,9 @@ export class Home implements OnInit {
     this.favoriteUpdating.update((states) => ({ ...states, [productId]: true }));
     this.wishlistService.toggleWishlist(productId).subscribe({
       next: (res) => {
-        this.toastService.show(res.message, 'success');
+        if (res?.message) {
+          this.toastService.show(res.message, 'success');
+        }
       },
       error: () => {
         this.toastService.show('Error al actualizar tu lista de deseos', 'error');

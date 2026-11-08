@@ -78,6 +78,20 @@ public class ApiExceptionHandler {
                                 CORRELATION_ID, correlationId(request)));
         }
 
+        @ExceptionHandler(DuplicateWishlistException.class)
+        public ResponseEntity<Map<String, String>> handleDuplicateWishlist(DuplicateWishlistException exception,
+                        HttpServletRequest request) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MESSAGE, exception.getMessage(),
+                                CORRELATION_ID, correlationId(request)));
+        }
+
+        @ExceptionHandler(WishlistNotFoundException.class)
+        public ResponseEntity<Map<String, String>> handleWishlistNotFound(WishlistNotFoundException exception,
+                        HttpServletRequest request) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(MESSAGE, exception.getMessage(),
+                                CORRELATION_ID, correlationId(request)));
+        }
+
         @ExceptionHandler(CategoryInUseException.class)
         public ResponseEntity<Map<String, String>> handleCategoryInUse(CategoryInUseException exception,
                         HttpServletRequest request) {

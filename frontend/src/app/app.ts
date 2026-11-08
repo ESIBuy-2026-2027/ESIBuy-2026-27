@@ -3,9 +3,10 @@ import { Component, effect, HostListener, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { CartService } from './core/services/cart.service';
+import { WishlistSelectModalComponent } from './shared/wishlist-select-modal/wishlist-select-modal';
 
 @Component({
-  imports: [RouterLink, RouterOutlet],
+  imports: [RouterLink, RouterOutlet, WishlistSelectModalComponent],
   standalone: true,
   selector: 'app-root',
   styleUrl: './app.css',
@@ -39,7 +40,6 @@ export class App {
     return '/';
   }
 
-
   toggleProfileMenu(): void {
     this.profileMenuOpen.update((isOpen) => !isOpen);
   }
@@ -51,10 +51,16 @@ export class App {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const target = event.target;
-    if (target instanceof Node && (event.composedPath().some((node) => (
-      node instanceof HTMLElement
-      && (node.id === 'profile-menu' || node.classList.contains('profile-button'))
-    )))) {
+    if (
+      target instanceof Node &&
+      event
+        .composedPath()
+        .some(
+          (node) =>
+            node instanceof HTMLElement &&
+            (node.id === 'profile-menu' || node.classList.contains('profile-button')),
+        )
+    ) {
       return;
     }
     this.closeProfileMenu();

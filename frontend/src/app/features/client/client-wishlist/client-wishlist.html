@@ -1,9 +1,17 @@
 <div class="seller-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
-  <aside class="sidebar app-sidebar app-sidebar--client" [class.app-sidebar--collapsed]="sidebarCollapsed()"
-    [class.is-transitioning]="animateTransition" aria-label="Panel del cliente">
-    <button type="button" class="app-sidebar-toggle" (click)="toggleSidebar()"
+  <aside
+    class="sidebar app-sidebar app-sidebar--client"
+    [class.app-sidebar--collapsed]="sidebarCollapsed()"
+    [class.is-transitioning]="animateTransition"
+    aria-label="Panel del cliente"
+  >
+    <button
+      type="button"
+      class="app-sidebar-toggle"
+      (click)="toggleSidebar()"
       [attr.aria-label]="sidebarCollapsed() ? 'Mostrar barra lateral' : 'Ocultar barra lateral'"
-      [attr.aria-expanded]="!sidebarCollapsed()">
+      [attr.aria-expanded]="!sidebarCollapsed()"
+    >
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path [attr.d]="sidebarCollapsed() ? 'm9 18 6-6-6-6' : 'm15 18-6-6 6-6'" />
       </svg>
@@ -11,8 +19,16 @@
     <div class="sidebar-caption">ÁREA DE CLIENTE</div>
     <nav class="seller-navigation app-navigation" aria-label="Navegación del cliente">
       <a class="navigation-link" routerLink="/client/catalog">
-        <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg
+          class="navigation-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
           <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
           <path d="M3 6h18" />
           <path d="M16 10a4 4 0 0 1-8 0" />
@@ -21,18 +37,37 @@
       </a>
 
       <a class="navigation-link is-active" routerLink="/client/wishlist" aria-current="page">
-        <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg
+          class="navigation-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
           <path
-            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+          />
         </svg>
         <span>Lista de deseos</span>
       </a>
 
       <a class="navigation-link" routerLink="/client/orders">
-        <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+        <svg
+          class="navigation-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path
+            d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"
+          />
           <path d="m3.3 7 8.7 5 8.7-5" />
           <path d="M12 22V12" />
         </svg>
@@ -40,8 +75,16 @@
       </a>
 
       <a class="navigation-link" routerLink="/client/cart">
-        <svg class="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg
+          class="navigation-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
           <circle cx="9" cy="21" r="1" />
           <circle cx="20" cy="21" r="1" />
           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
@@ -54,135 +97,438 @@
   <div class="workspace app-workspace">
     <main class="catalog-content">
       <section class="page-heading" aria-labelledby="wishlist-title">
-        <div>
-          <h1 id="wishlist-title">Lista de deseos</h1>
-          <p class="page-description">Consulta y gestiona los productos que has guardado como favoritos.</p>
+        <div class="heading-row">
+          <div>
+            <h1 id="wishlist-title">Listas de deseos</h1>
+            <p class="page-description">
+              Consulta y gestiona tus listas de deseos personalizadas y productos favoritos.
+            </p>
+          </div>
         </div>
       </section>
 
       <!-- MENSAJE DE AVISO (ÉXITO / ERROR) ESTILO BANNER -->
       @if (toastService.toast(); as t) {
-      <output class="catalog-alert" [class.is-success]="t.type === 'success'"
-        [class.is-error]="t.type === 'error' || t.type === 'info'"
-        [attr.role]="t.type === 'error' ? 'alert' : 'status'"
-        [attr.aria-live]="t.type === 'error' ? 'assertive' : 'polite'">
-        @if (t.type === 'success') {
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="m5 12 4 4L19 6"></path>
-        </svg>
-        } @else {
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"></circle>
-          <line x1="12" y1="8" x2="12" y2="12.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line>
-          <circle cx="12" cy="16.5" r="1" fill="currentColor"></circle>
-        </svg>
-        }
-        <span class="alert-text">{{ t.text }}</span>
-        <button type="button" class="alert-close" (click)="toastService.clear()" aria-label="Cerrar aviso">×</button>
-      </output>
+        <output
+          class="catalog-alert"
+          [class.is-success]="t.type === 'success'"
+          [class.is-error]="t.type === 'error' || t.type === 'info'"
+          [attr.role]="t.type === 'error' ? 'alert' : 'status'"
+          [attr.aria-live]="t.type === 'error' ? 'assertive' : 'polite'"
+        >
+          @if (t.type === 'success') {
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m5 12 4 4L19 6"></path>
+            </svg>
+          } @else {
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle
+                cx="12"
+                cy="12"
+                r="9"
+                stroke="currentColor"
+                stroke-width="2"
+                fill="none"
+              ></circle>
+              <line
+                x1="12"
+                y1="8"
+                x2="12"
+                y2="12.5"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              ></line>
+              <circle cx="12" cy="16.5" r="1" fill="currentColor"></circle>
+            </svg>
+          }
+          <span class="alert-text">{{ t.text }}</span>
+          <button
+            type="button"
+            class="alert-close"
+            (click)="toastService.clear()"
+            aria-label="Cerrar aviso"
+          >
+            ×
+          </button>
+        </output>
       }
 
-      <section class="wishlist-region" aria-label="Listado de favoritos">
-        @if (loading()) {
-        <div class="catalog-message">
-          <div class="spinner"></div>
-          <span>Cargando tus productos favoritos…</span>
-        </div>
-        } @else if (error()) {
-        <div class="catalog-error" role="alert">
-          <span>No se pudo cargar tu lista de deseos.</span>
-          <button type="button" (click)="loadWishlist()">Reintentar</button>
-        </div>
-        } @else if (items().length === 0) {
-        <div class="empty-state">
-          <span class="empty-icon" aria-hidden="true">♡</span>
-          <h3>Tu lista de deseos está vacía</h3>
-          <p>Guarda productos pulsando el corazón para no perderlos de vista.</p>
-          <a routerLink="/client/catalog" class="secondary-action">Explorar catálogo</a>
-        </div>
-        } @else {
-        <div class="wishlist-grid">
-          @for (product of items(); track product.id) {
-          <article class="wishlist-card" [class.is-unavailable]="!product.available">
-            <div class="card-media">
-              @if (product.imageUrl) {
-              <img [src]="product.imageUrl" [alt]="product.name" class="product-thumb" />
-              } @else {
-              <div class="thumb-fallback" aria-hidden="true">▦</div>
-              }
+      <!-- BARRA DE LISTAS DE DESEOS EN LA MISMA LÍNEA (LISTAS CON EDITAR/BORRAR Y BOTÓN CREAR) -->
+      <section class="wishlists-bar-row" aria-label="Gestión de listas de deseos">
+        <div class="tabs-scroll-container" role="tablist">
+          @for (list of wishlistService.wishlists(); track list.id) {
+            <div
+              role="tab"
+              class="wishlist-tab"
+              [class.is-active]="selectedWishlist()?.id === list.id"
+              [attr.aria-selected]="selectedWishlist()?.id === list.id"
+              (click)="selectWishlist(list)"
+              tabindex="0"
+              (keydown.enter)="selectWishlist(list)"
+            >
+              <span class="tab-name">{{ list.name }}</span>
+              <span class="tab-badge">{{ list.itemCount }}</span>
 
-              @if (!product.available) {
-              <span class="unavailable-overlay-badge">No disponible</span>
-              }
-            </div>
-
-            <div class="card-details">
-              <div class="card-header-row">
-                <h3 class="product-title">
-                  <a [routerLink]="['/products', product.id]">{{ product.name }}</a>
-                </h3>
-
-                <button type="button" class="remove-btn" [disabled]="removingProducts()[product.id]"
-                  (click)="removeFromWishlist(product.id, $event)"
-                  title="Eliminar de favoritos" aria-label="Eliminar de favoritos">
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              @if (selectedWishlist()?.id === list.id) {
+                <span class="tab-actions-divider" aria-hidden="true">|</span>
+                <button
+                  type="button"
+                  class="tab-action-btn"
+                  (click)="openEditDialog(); $event.stopPropagation()"
+                  title="Editar nombre de la lista"
+                  aria-label="Editar nombre"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  </svg>
+                  <span>Editar</span>
+                </button>
+                <button
+                  type="button"
+                  class="tab-action-btn is-danger"
+                  (click)="openDeleteDialog(); $event.stopPropagation()"
+                  title="Borrar lista de deseos"
+                  aria-label="Borrar lista"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M3 6h18" />
                     <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
                     <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
                   </svg>
+                  <span>Borrar</span>
                 </button>
-              </div>
+              }
+            </div>
+          }
 
-              <p class="product-desc">{{ product.description || 'Sin descripción' }}</p>
+          <button
+            type="button"
+            class="create-wishlist-btn"
+            (click)="openCreateDialog()"
+            title="Crear nueva lista de deseo"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Crear nueva lista de deseo</span>
+          </button>
+        </div>
+      </section>
 
-              <div class="card-status-row">
-                @if (!product.available) {
-                <output class="blocked-badge">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-                  </svg>
-                  <span>No disponible para compra</span>
-                </output>
-                } @else if (product.stock === 0) {
-                <span class="stock-out-badge">Agotado temporalmente</span>
-                } @else {
-                <span class="stock-in-badge">Disponible · {{ product.stock }} unidades</span>
-                }
+      <section class="wishlist-region" aria-label="Listado de favoritos">
+        @if (loading()) {
+          <div class="catalog-message">
+            <div class="spinner"></div>
+            <span>Cargando productos de tu lista…</span>
+          </div>
+        } @else if (error()) {
+          <div class="catalog-error" role="alert">
+            <span>No se pudo cargar tu lista de deseos.</span>
+            <button type="button" (click)="loadWishlistsAndProducts()">Reintentar</button>
+          </div>
+        } @else if (!selectedWishlist() && wishlistService.wishlists().length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">♡</span>
+            <h3>No tienes ninguna lista de deseos creada</h3>
+            <p>Crea una lista para comenzar a guardar tus productos favoritos.</p>
+            <button type="button" class="primary-btn" (click)="openCreateDialog()">
+              Crear nueva lista de deseo
+            </button>
+          </div>
+        } @else if (items().length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">♡</span>
+            <h3>Esta lista de deseos está vacía</h3>
+            <p>Guarda productos pulsando el corazón para agregarlos a esta lista.</p>
+            <a routerLink="/client/catalog" class="secondary-action">Explorar catálogo</a>
+          </div>
+        } @else {
+          <div class="wishlist-grid">
+            @for (product of items(); track product.id) {
+              <article class="wishlist-card" [class.is-unavailable]="!product.available">
+                <div class="card-media">
+                  @if (product.imageUrl) {
+                    <img [src]="product.imageUrl" [alt]="product.name" class="product-thumb" />
+                  } @else {
+                    <div class="thumb-fallback" aria-hidden="true">▦</div>
+                  }
 
-                <span class="product-price">{{ formatPrice(product.price) }}</span>
-              </div>
-
-              <div class="card-actions">
-                <a [routerLink]="['/products', product.id]" class="view-link">Ver detalle</a>
-
-                @if (product.available && product.stock > 0) {
-                <div class="wishlist-qty-selector">
-                  <label [for]="'qty-' + product.id" class="qty-label">Cantidad:</label>
-                  <input [id]="'qty-' + product.id" type="number" min="1" [max]="product.stock"
-                    [ngModel]="getQuantity(product.id)" (ngModelChange)="setQuantity(product.id, $event, product.stock)"
-                    (click)="$event.stopPropagation()" class="qty-input" />
+                  @if (!product.available) {
+                    <span class="unavailable-overlay-badge">No disponible</span>
+                  }
                 </div>
 
-                <button type="button" class="buy-action-btn" [disabled]="addingProducts()[product.id]"
-                  (click)="addToCart(product, $event)"
-                  title="Añadir al carrito">
-                  {{ addingProducts()[product.id] ? 'Añadiendo...' : 'Añadir al carrito' }}
-                </button>
-                } @else {
-                <button type="button" class="buy-action-btn is-blocked" disabled aria-disabled="true"
-                  title="Producto no disponible para compra">
-                  No disponible
-                </button>
-                }
-              </div>
-            </div>
-          </article>
-          }
-        </div>
+                <div class="card-details">
+                  <div class="card-header-row">
+                    <h3 class="product-title">
+                      <a [routerLink]="['/products', product.id]">{{ product.name }}</a>
+                    </h3>
+
+                    <button
+                      type="button"
+                      class="remove-btn"
+                      [disabled]="removingProducts()[product.id]"
+                      (click)="removeFromWishlist(product.id, $event)"
+                      title="Eliminar de esta lista"
+                      aria-label="Eliminar de esta lista"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="18"
+                        height="18"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M3 6h18" />
+                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <p class="product-desc">{{ product.description || 'Sin descripción' }}</p>
+
+                  <div class="card-status-row">
+                    @if (!product.available) {
+                      <output class="blocked-badge">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                        </svg>
+                        <span>No disponible para compra</span>
+                      </output>
+                    } @else if (product.stock === 0) {
+                      <span class="stock-out-badge">Agotado temporalmente</span>
+                    } @else {
+                      <span class="stock-in-badge">Disponible · {{ product.stock }} unidades</span>
+                    }
+
+                    <span class="product-price">{{ formatPrice(product.price) }}</span>
+                  </div>
+
+                  <div class="card-actions">
+                    <a [routerLink]="['/products', product.id]" class="view-link">Ver detalle</a>
+
+                    @if (product.available && product.stock > 0) {
+                      <div class="wishlist-qty-selector">
+                        <label [for]="'qty-' + product.id" class="qty-label">Cantidad:</label>
+                        <input
+                          [id]="'qty-' + product.id"
+                          type="number"
+                          min="1"
+                          [max]="product.stock"
+                          [ngModel]="getQuantity(product.id)"
+                          (ngModelChange)="setQuantity(product.id, $event, product.stock)"
+                          (click)="$event.stopPropagation()"
+                          class="qty-input"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        class="buy-action-btn"
+                        [disabled]="addingProducts()[product.id]"
+                        (click)="addToCart(product, $event)"
+                        title="Añadir al carrito"
+                      >
+                        {{ addingProducts()[product.id] ? 'Añadiendo...' : 'Añadir al carrito' }}
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        class="buy-action-btn is-blocked"
+                        disabled
+                        aria-disabled="true"
+                        title="Producto no disponible para compra"
+                      >
+                        No disponible
+                      </button>
+                    }
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
         }
       </section>
     </main>
   </div>
 </div>
+
+<!-- MODAL: CREAR NUEVA LISTA DE DESEOS -->
+@if (createDialogOpen()) {
+  <div class="dialog-backdrop" (click)="closeCreateDialog()" (keydown.escape)="closeCreateDialog()">
+    <dialog
+      class="dialog"
+      open
+      (click)="$event.stopPropagation()"
+      aria-labelledby="create-dialog-title"
+      aria-modal="true"
+    >
+      <div class="dialog-icon" aria-hidden="true">+</div>
+      <h2 id="create-dialog-title">Crear nueva lista de deseo</h2>
+      <p class="dialog-desc">Introduce un nombre para identificar tu nueva lista de deseos.</p>
+
+      <div class="dialog-form-group">
+        <label for="create-list-name" class="field-label">Nombre de la lista</label>
+        <input
+          id="create-list-name"
+          type="text"
+          maxlength="50"
+          [ngModel]="newListName()"
+          (ngModelChange)="newListName.set($event); createError.set('')"
+          placeholder="Ej.: Cumpleaños, Tecnología, Libros..."
+          (keyup.enter)="saveNewList()"
+          autofocus
+        />
+      </div>
+
+      @if (createError()) {
+        <p class="field-error" role="alert">{{ createError() }}</p>
+      }
+
+      <div class="dialog-actions">
+        <button type="button" class="secondary-action" (click)="closeCreateDialog()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="primary-action"
+          [disabled]="creatingList() || !newListName().trim()"
+          (click)="saveNewList()"
+        >
+          {{ creatingList() ? 'Creando...' : 'Crear lista' }}
+        </button>
+      </div>
+    </dialog>
+  </div>
+}
+
+<!-- MODAL: EDITAR NOMBRE DE LISTA DE DESEOS -->
+@if (editDialogOpen()) {
+  <div class="dialog-backdrop" (click)="closeEditDialog()" (keydown.escape)="closeEditDialog()">
+    <dialog
+      class="dialog"
+      open
+      (click)="$event.stopPropagation()"
+      aria-labelledby="edit-dialog-title"
+      aria-modal="true"
+    >
+      <div class="dialog-icon" aria-hidden="true">✎</div>
+      <h2 id="edit-dialog-title">Editar nombre de la lista</h2>
+      <p class="dialog-desc">Modifica el nombre para esta lista de deseos.</p>
+
+      <div class="dialog-form-group">
+        <label for="edit-list-name" class="field-label">Nombre de la lista</label>
+        <input
+          id="edit-list-name"
+          type="text"
+          maxlength="50"
+          [ngModel]="editListName()"
+          (ngModelChange)="editListName.set($event); editError.set('')"
+          (keyup.enter)="saveEditedName()"
+          autofocus
+        />
+      </div>
+
+      @if (editError()) {
+        <p class="field-error" role="alert">{{ editError() }}</p>
+      }
+
+      <div class="dialog-actions">
+        <button type="button" class="secondary-action" (click)="closeEditDialog()">Cancelar</button>
+        <button
+          type="button"
+          class="primary-action"
+          [disabled]="editingList() || !editListName().trim()"
+          (click)="saveEditedName()"
+        >
+          {{ editingList() ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </dialog>
+  </div>
+}
+
+<!-- MODAL: BORRAR LISTA DE DESEOS -->
+@if (deleteDialogOpen(); as del) {
+  <div class="dialog-backdrop" (click)="closeDeleteDialog()" (keydown.escape)="closeDeleteDialog()">
+    <dialog
+      class="dialog dialog--delete"
+      open
+      (click)="$event.stopPropagation()"
+      aria-labelledby="delete-dialog-title"
+      aria-modal="true"
+    >
+      <div class="dialog-icon is-danger" aria-hidden="true">⚠</div>
+      <h2 id="delete-dialog-title">¿Borrar la lista de deseos?</h2>
+      <p class="dialog-desc">
+        ¿Estás seguro de que deseas borrar la lista
+        <strong>"{{ selectedWishlist()?.name }}"</strong>?
+      </p>
+      <div class="dialog-notice-box">
+        <p>
+          Esta acción quitará de favoritos todos los deseos de esta lista,
+          <strong>salvo si un producto está en otra lista diferente agregado</strong>.
+        </p>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="secondary-action" (click)="closeDeleteDialog()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="danger-action"
+          [disabled]="deletingList()"
+          (click)="confirmDeleteList()"
+        >
+          {{ deletingList() ? 'Borrando...' : 'Borrar lista' }}
+        </button>
+      </div>
+    </dialog>
+  </div>
+}

@@ -1,0 +1,95 @@
+@if (wishlistService.selectModalOpen()) {
+  <div class="dialog-backdrop" (click)="close()" (keydown.escape)="close()">
+    <dialog
+      class="dialog"
+      open
+      (click)="$event.stopPropagation()"
+      aria-labelledby="wishlist-modal-title"
+      aria-modal="true"
+    >
+      <div class="dialog-icon" aria-hidden="true">♥</div>
+
+      <h2 id="wishlist-modal-title">Guardar en lista de deseos</h2>
+      <p class="dialog-subtitle">
+        @if (wishlistService.targetProductName(); as name) {
+          ¿En qué lista de deseos deseas guardar <strong>{{ name }}</strong
+          >?
+        } @else {
+          ¿En qué lista de deseos deseas guardar este producto?
+        }
+      </p>
+
+      <div
+        class="wishlists-selection-list"
+        role="radiogroup"
+        aria-label="Listas de deseos disponibles"
+      >
+        @for (list of wishlistService.wishlists(); track list.id) {
+          <label
+            class="wishlist-option-card"
+            [class.is-selected]="selectedWishlistId() === list.id && !creatingNew()"
+            (click)="selectWishlist(list.id)"
+          >
+            <input
+              type="radio"
+              name="selectedWishlist"
+              [value]="list.id"
+              [checked]="selectedWishlistId() === list.id && !creatingNew()"
+              (change)="selectWishlist(list.id)"
+              class="visually-hidden"
+            />
+            <span class="option-radio-mark" aria-hidden="true">
+              @if (selectedWishlistId() === list.id && !creatingNew()) {
+                ✓
+              }
+            </span>
+            <div class="option-info">
+              <span class="option-name">{{ list.name }}</span>
+              <span class="option-count"
+                >{{ list.itemCount }} {{ list.itemCount === 1 ? 'producto' : 'productos' }}</span
+              >
+            </div>
+          </label>
+        }
+
+        <div class="new-list-toggle-row">
+          <button type="button" class="new-list-toggle-btn" (click)="toggleCreatingNew()">
+            {{ creatingNew() ? '← Elegir lista existente' : '+ Crear nueva lista' }}
+          </button>
+        </div>
+
+        @if (creatingNew()) {
+          <div class="new-list-input-group">
+            <label for="new-list-name-modal" class="field-label">Nombre de la nueva lista</label>
+            <input
+              id="new-list-name-modal"
+              type="text"
+              maxlength="50"
+              [ngModel]="newListName()"
+              (ngModelChange)="newListName.set($event); errorMessage.set('')"
+              placeholder="Ej.: Tecnología, Regalos..."
+              (keyup.enter)="save()"
+              autofocus
+            />
+          </div>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <p class="field-error" role="alert">{{ errorMessage() }}</p>
+      }
+
+      <div class="dialog-actions">
+        <button type="button" class="secondary-action" (click)="close()">Cancelar</button>
+        <button
+          type="button"
+          class="primary-action"
+          [disabled]="saving() || (!creatingNew() && !selectedWishlistId())"
+          (click)="save()"
+        >
+          {{ saving() ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </div>
+    </dialog>
+  </div>
+}
