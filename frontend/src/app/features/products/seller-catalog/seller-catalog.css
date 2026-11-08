@@ -604,10 +604,25 @@
 }
 
 .price-value {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   color: #173247;
   font-size: 0.82rem;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.price-main {
+  font-weight: 800;
+  color: #173247;
+}
+
+.price-base-hint {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: #688292;
 }
 
 .stock-badge,
@@ -674,6 +689,23 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.inline-editor-price {
+  align-items: flex-start;
+}
+
+.inline-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.inline-vat-preview {
+  font-size: 0.68rem;
+  color: #08735d;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .inline-input {

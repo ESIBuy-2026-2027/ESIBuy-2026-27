@@ -156,20 +156,21 @@ describe('SellerCatalog', () => {
     fixture.detectChanges();
     const input = element.querySelector<HTMLInputElement>('.price-input');
     expect(input).not.toBeNull();
-    input!.value = '24.5';
+    input!.value = '10';
     input!.dispatchEvent(new Event('input'));
+    component.inlineValue.set(10);
     fixture.detectChanges();
     element.querySelector<HTMLButtonElement>('.inline-save')?.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     expect(updateProduct).toHaveBeenCalledWith('product-1', expect.objectContaining({
-      price: 24.5,
+      price: 12.1,
       stock: 3,
       categoryIds: ['category-1'],
     }));
-    expect(component.products()[0].price).toBe(24.5);
-    expect(element.querySelector('.price-value')?.textContent).toContain('24,50');
+    expect(component.products()[0].price).toBe(12.1);
+    expect(element.querySelector('.price-value')?.textContent).toContain('12,10');
   });
 
   it('should reject negative inline stock without calling the API', () => {
@@ -242,5 +243,13 @@ describe('SellerCatalog', () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(element.textContent).toContain('No se pudieron cargar los nombres de las categorías');
     expect(element.textContent).toContain('No disponible');
+  });
+
+  it('should initialize inline price edit with base price sin IVA and calculate VAT correctly', () => {
+    const component = fixture.componentInstance;
+    component.startInlineEdit(products[0], 'price');
+    expect(component.inlineValue()).toBe(16.52);
+    expect(component.getFinalPriceWithVat(10)).toBe(12.1);
+    expect(component.getBasePrice(12.1)).toBe(10);
   });
 });

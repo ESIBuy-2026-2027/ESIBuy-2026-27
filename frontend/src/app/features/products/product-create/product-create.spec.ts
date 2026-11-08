@@ -143,7 +143,7 @@ describe('ProductCreate', () => {
       categoriaIds: ['category-tech', 'category-home'],
       stock: 7,
       descripcion: 'Auriculares inalámbricos',
-      precio: 19.99,
+      precio: 10,
       descuento: null,
       descuentoPremium: 15,
       disponible: true,
@@ -157,7 +157,7 @@ describe('ProductCreate', () => {
       categoryIds: ['category-tech', 'category-home'],
       stock: 7,
       description: 'Auriculares inalámbricos',
-      price: 19.99,
+      price: 12.1,
       premiumDiscount: 15,
       available: true,
     } satisfies ProductCreateRequest);
@@ -181,7 +181,7 @@ describe('ProductCreate', () => {
       categoriaIds: ['category-tech'],
       stock: 3,
       descripcion: 'Inalámbricos',
-      precio: 19.99,
+      precio: 16.52,
       descuento: 5,
       descuentoPremium: 10,
       disponible: true,
@@ -276,9 +276,20 @@ describe('ProductCreate', () => {
     expect(createProduct).toHaveBeenCalledWith({
       name: 'Producto nuevo',
       categoryIds: ['category-tech'],
-      price: 5,
+      price: 6.05,
       available: true,
     } satisfies ProductCreateRequest);
+  });
+
+  it('should display real-time final price with VAT when base price is entered', () => {
+    fixture.componentInstance.form.controls.precio.setValue(10);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.finalPriceWithVat()).toBe(12.1);
+    const vatPreview = fixture.nativeElement.querySelector('.price-vat-preview');
+    expect(vatPreview).toBeTruthy();
+    expect(vatPreview.textContent).toContain('Precio final con IVA');
+    expect(vatPreview.textContent).toContain('12,10');
   });
 
   it('should surface category loading failures instead of showing fake categories', () => {

@@ -110,6 +110,25 @@ export class ProductCreate implements OnInit {
 
   serverFieldErrors: Partial<Record<ProductFormField, string>> = {};
 
+  readonly finalPriceWithVat = signal<number | null>(null);
+
+  private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'EUR',
+  });
+
+  formatPrice(price: number): string {
+    return this.currencyFormatter.format(price);
+  }
+
+  updateVatPreview(basePrice: number | null): void {
+    if (basePrice === null || basePrice <= 0 || isNaN(basePrice)) {
+      this.finalPriceWithVat.set(null);
+    } else {
+      this.finalPriceWithVat.set(Math.round(basePrice * 1.21 * 100) / 100);
+    }
+  }
+
   get previewUrl(): string {
     return this.selectedImagePreview() ?? this.existingImageUrl() ?? '';
   }
@@ -165,6 +184,12 @@ export class ProductCreate implements OnInit {
         this.submitError.set(null);
       });
 
+    this.form.controls.precio.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((precio) => {
+        this.updateVatPreview(precio);
+      });
+
     this.productsService.getCategories()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -216,16 +241,18 @@ export class ProductCreate implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (product) => {
+          const basePrice = Math.round((product.price / 1.21) * 100) / 100;
           this.form.patchValue({
             nombre: product.name,
             categoriaIds: product.categoryIds,
             stock: product.stock,
             descripcion: product.description ?? '',
-            precio: product.price,
+            precio: basePrice,
             descuento: product.discount,
             descuentoPremium: product.premiumDiscount,
             disponible: product.available,
           });
+          this.updateVatPreview(basePrice);
 
           this.existingImageUrl.set(product.imageUrl ?? null);
           this.productLoading.set(false);
@@ -402,11 +429,13 @@ export class ProductCreate implements OnInit {
 
   private toRequest(): ProductCreateRequest {
     const value = this.form.getRawValue();
+    const basePrice = value.precio ?? 0;
+    const priceWithVat = basePrice > 0 ? Math.round(basePrice * 1.21 * 100) / 100 : 0;
 
     const request: ProductCreateRequest = {
       name: value.nombre.trim(),
       categoryIds: value.categoriaIds,
-      price: value.precio ?? 0,
+      price: priceWithVat,
       available: value.disponible ?? false,
     };
 

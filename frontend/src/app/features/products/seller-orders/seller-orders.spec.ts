@@ -221,7 +221,7 @@ describe('SellerOrders', () => {
     detailsBtn.click();
     fixture.detectChanges();
 
-    expect(component.expandedOrderId()).toBe('PED-101');
+    expect(component.expandedOrderId()).toBe('PED-102');
     expect(chevron?.classList.contains('is-expanded')).toBe(true);
     expect(detailsBtn.getAttribute('aria-expanded')).toBe('true');
 
@@ -231,5 +231,11 @@ describe('SellerOrders', () => {
     expect(component.expandedOrderId()).toBeNull();
     expect(chevron?.classList.contains('is-expanded')).toBe(false);
     expect(detailsBtn.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('should sort orders from most recent to oldest by default', () => {
+    expect(component.visibleOrders().length).toBe(2);
+    expect(component.visibleOrders()[0].id).toBe('PED-102');
+    expect(component.visibleOrders()[1].id).toBe('PED-101');
   });
 });

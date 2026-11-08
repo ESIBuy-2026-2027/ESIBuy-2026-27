@@ -245,6 +245,14 @@ export class SellerCatalog implements OnInit {
     return this.currencyFormatter.format(price);
   }
 
+  getBasePrice(price: number): number {
+    return Math.round((price / 1.21) * 100) / 100;
+  }
+
+  getFinalPriceWithVat(basePrice: number): number {
+    return Math.round(basePrice * 1.21 * 100) / 100;
+  }
+
   toggleVisibility(product: SellerProduct): void {
     if (this.inlineSaving() || this.visibilitySaving()) {
       return;
@@ -273,7 +281,7 @@ export class SellerCatalog implements OnInit {
       return;
     }
     this.inlineEdit.set({ productId: product.id, field });
-    this.inlineValue.set(field === 'price' ? product.price : product.stock);
+    this.inlineValue.set(field === 'price' ? this.getBasePrice(product.price) : product.stock);
     this.inlineError.set(null);
   }
 
@@ -335,7 +343,7 @@ export class SellerCatalog implements OnInit {
     const request: ProductCreateRequest = {
       name: product.name,
       categoryIds: product.categoryIds,
-      price: field === 'price' && value !== null ? value : product.price,
+      price: field === 'price' && value !== null ? this.getFinalPriceWithVat(value) : product.price,
       available,
     };
 
