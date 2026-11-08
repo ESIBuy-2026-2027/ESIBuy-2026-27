@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 public class WishlistService {
 
     public static final String DEFAULT_WISHLIST_NAME = "Mi lista de deseos";
+    private static final String WISHLIST_NOT_FOUND_MESSAGE = "Lista de deseos no encontrada";
 
     private final WishlistRepository wishlistRepository;
     private final ProductRepository productRepository;
@@ -67,7 +68,7 @@ public class WishlistService {
         String trimmed = validateName(newName);
 
         Wishlist wishlist = wishlistRepository.findByIdAndUserId(listId, user.getId())
-                .orElseThrow(() -> new WishlistNotFoundException("Lista de deseos no encontrada"));
+                .orElseThrow(() -> new WishlistNotFoundException(WISHLIST_NOT_FOUND_MESSAGE));
 
         if (wishlistRepository.existsByUserIdAndNameIgnoreCaseAndIdNot(user.getId(), trimmed, listId)) {
             throw new DuplicateWishlistException("Ya tienes una lista de deseos con ese nombre");
@@ -81,7 +82,7 @@ public class WishlistService {
     public void deleteWishlist(String listId, String authenticatedEmail) {
         User user = findClient(authenticatedEmail);
         Wishlist wishlist = wishlistRepository.findByIdAndUserId(listId, user.getId())
-                .orElseThrow(() -> new WishlistNotFoundException("Lista de deseos no encontrada"));
+                .orElseThrow(() -> new WishlistNotFoundException(WISHLIST_NOT_FOUND_MESSAGE));
 
         wishlistRepository.delete(wishlist);
     }
@@ -89,7 +90,7 @@ public class WishlistService {
     public List<ProductResponse> getWishlistProducts(String listId, String authenticatedEmail) {
         User user = findClient(authenticatedEmail);
         Wishlist wishlist = wishlistRepository.findByIdAndUserId(listId, user.getId())
-                .orElseThrow(() -> new WishlistNotFoundException("Lista de deseos no encontrada"));
+                .orElseThrow(() -> new WishlistNotFoundException(WISHLIST_NOT_FOUND_MESSAGE));
 
         return mapProducts(wishlist.getProductIds());
     }
@@ -136,7 +137,7 @@ public class WishlistService {
         validateProductExists(productId);
 
         Wishlist wishlist = wishlistRepository.findByIdAndUserId(listId, user.getId())
-                .orElseThrow(() -> new WishlistNotFoundException("Lista de deseos no encontrada"));
+                .orElseThrow(() -> new WishlistNotFoundException(WISHLIST_NOT_FOUND_MESSAGE));
 
         if (!wishlist.getProductIds().contains(productId)) {
             wishlist.getProductIds().add(productId);
@@ -161,7 +162,7 @@ public class WishlistService {
     public void removeProductFromWishlist(String listId, String productId, String authenticatedEmail) {
         User user = findClient(authenticatedEmail);
         Wishlist wishlist = wishlistRepository.findByIdAndUserId(listId, user.getId())
-                .orElseThrow(() -> new WishlistNotFoundException("Lista de deseos no encontrada"));
+                .orElseThrow(() -> new WishlistNotFoundException(WISHLIST_NOT_FOUND_MESSAGE));
 
         if (wishlist.getProductIds().remove(productId)) {
             wishlistRepository.save(wishlist);

@@ -4,6 +4,7 @@
       class="dialog"
       open
       (click)="$event.stopPropagation()"
+      (keydown.escape)="close()"
       aria-labelledby="wishlist-modal-title"
       aria-modal="true"
     >
@@ -29,6 +30,8 @@
             class="wishlist-option-card"
             [class.is-selected]="selectedWishlistId() === list.id && !creatingNew()"
             (click)="selectWishlist(list.id)"
+            (keydown.enter)="selectWishlist(list.id)"
+            (keydown.space)="selectWishlist(list.id)"
           >
             <input
               type="radio"

@@ -426,12 +426,7 @@ public class OrderService {
         }
 
         if (newStatus == OrderStatus.CANCELADO) {
-            if (currentStatus != OrderStatus.PENDIENTE
-                    && currentStatus != OrderStatus.PAGADO
-                    && currentStatus != OrderStatus.PREPARANDO) {
-                throw new IllegalArgumentException(
-                        "Un pedido enviado o entregado ya no puede ser cancelado");
-            }
+            validateCancellationTransition(currentStatus);
             return;
         }
 
@@ -441,6 +436,19 @@ public class OrderService {
         }
 
         // Validación de avance secuencial: no permitir saltar fases
+        validateForwardTransition(currentStatus, newStatus);
+    }
+
+    private void validateCancellationTransition(OrderStatus currentStatus) {
+        if (currentStatus != OrderStatus.PENDIENTE
+                && currentStatus != OrderStatus.PAGADO
+                && currentStatus != OrderStatus.PREPARANDO) {
+            throw new IllegalArgumentException(
+                    "Un pedido enviado o entregado ya no puede ser cancelado");
+        }
+    }
+
+    private void validateForwardTransition(OrderStatus currentStatus, OrderStatus newStatus) {
         if (currentStatus == OrderStatus.PENDIENTE || currentStatus == OrderStatus.PAGADO) {
             if (newStatus != OrderStatus.PREPARANDO) {
                 throw new IllegalArgumentException(
