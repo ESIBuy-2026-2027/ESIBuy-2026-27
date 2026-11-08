@@ -221,6 +221,19 @@
             @if ((product.discount && product.discount > 0) || (product.premiumDiscount && product.premiumDiscount > 0))
             {
             <div class="discount-badges-wrapper">
+              @if (isPremiumUser()) {
+              <span class="discount-badge-pill" [class.premium-discount-badge]="hasPremiumDiscount(product)"
+                [class.is-current-plan]="hasPremiumDiscount(product)" title="Descuento aplicado a tu cuenta">
+                @if (hasPremiumDiscount(product)) {
+                <svg class="discount-star-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />
+                </svg>
+                -{{ getTotalDiscount(product) }}% Premium
+                } @else {
+                -{{ product.discount }}%
+                }
+              </span>
+              } @else {
               @if (product.discount && product.discount > 0) {
               <span class="discount-badge-pill standard-discount-badge" title="Descuento estándar">
                 -{{ product.discount }}%
@@ -228,13 +241,14 @@
               }
 
               @if (product.premiumDiscount && product.premiumDiscount > 0) {
-              <span class="discount-badge-pill premium-discount-badge" [class.is-current-plan]="isPremiumUser()"
+              <span class="discount-badge-pill premium-discount-badge"
                 title="Descuento para clientes Premium">
                 <svg class="discount-star-icon" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />
                 </svg>
                 -{{ product.premiumDiscount }}% Premium
               </span>
+              }
               }
             </div>
             }
@@ -275,7 +289,7 @@
                   <div class="main-price-line">
                     <span class="card-price product-card-price">{{ formatPrice(getDisplayPrice(product)) }}</span>
 
-                    @if (hasStandardDiscount(product)) {
+                    @if (isPremiumUser() ? hasAnyDiscount(product) : hasStandardDiscount(product)) {
                     <span class="strikethrough-original-price">
                       <s>{{ formatPrice(product.price) }}</s>
                     </span>

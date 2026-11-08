@@ -266,6 +266,38 @@
   color: #b7791f;
 }
 
+.wishlist-price-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wishlist-main-price-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.strikethrough-original-price {
+  font-size: 13px;
+  color: #64748b;
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.wishlist-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.discount-badge-pill.standard-discount-badge {
+  background: #dc2626;
+  color: #fff;
+}
+
 .product-price {
   flex: 0 0 auto;
   color: #102c40;

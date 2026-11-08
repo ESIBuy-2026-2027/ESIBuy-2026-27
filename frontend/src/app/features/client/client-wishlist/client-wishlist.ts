@@ -1,9 +1,10 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { WishlistInfo, WishlistService } from '../../../core/services/wishlist.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { CartService } from '../../../core/services/cart.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { ProductItem } from '../../../core/services/products.service';
 
 @Component({
@@ -17,6 +18,11 @@ export class ClientWishlist implements OnInit {
   readonly wishlistService = inject(WishlistService);
   readonly toastService = inject(ToastService);
   readonly cartService = inject(CartService);
+  readonly authService = inject(AuthService);
+
+  readonly isPremiumUser = computed(
+    () => this.authService.currentUser()?.customerType === 'PREMIUM'
+  );
 
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
@@ -305,5 +311,39 @@ export class ClientWishlist implements OnInit {
 
   formatPrice(price: number): string {
     return this.currencyFormatter.format(price);
+  }
+
+  getTotalDiscount(p: ProductItem): number {
+    const standardDiscount = Math.max(0, p.discount ?? 0);
+    const premiumDiscount = Math.max(0, p.premiumDiscount ?? 0);
+    return Math.min(100, standardDiscount + premiumDiscount);
+  }
+
+  getDiscountedPrice(p: ProductItem): number {
+    const discount = Math.max(0, p.discount ?? 0);
+    return Math.round(p.price * (1 - discount / 100) * 100) / 100;
+  }
+
+  getPremiumPrice(p: ProductItem): number {
+    const totalDiscount = this.getTotalDiscount(p);
+    return Math.round(p.price * (1 - totalDiscount / 100) * 100) / 100;
+  }
+
+  hasStandardDiscount(p: ProductItem): boolean {
+    return (p.discount ?? 0) > 0;
+  }
+
+  hasPremiumDiscount(p: ProductItem): boolean {
+    return (p.premiumDiscount ?? 0) > 0;
+  }
+
+  hasAnyDiscount(p: ProductItem): boolean {
+    return this.hasStandardDiscount(p) || this.hasPremiumDiscount(p);
+  }
+
+  getDisplayPrice(p: ProductItem): number {
+    return this.isPremiumUser()
+      ? this.getPremiumPrice(p)
+      : this.getDiscountedPrice(p);
   }
 }

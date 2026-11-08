@@ -389,7 +389,7 @@ describe('ProductDetail', () => {
     expect(el.querySelector('.price-value')?.textContent).toContain('674,99');
     expect(el.querySelector('.detail-premium-price-row')).toBeNull();
     expect(el.querySelector('.premium-savings')).toBeNull();
-    expect(el.querySelector('.price-value')?.textContent).toContain('674,99');
+    expect(el.querySelector('.premium-offer-badge')?.textContent).toContain('-25% Premium');
   });
 
 

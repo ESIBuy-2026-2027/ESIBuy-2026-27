@@ -346,7 +346,41 @@
                       <span class="stock-in-badge">Disponible · {{ product.stock }} unidades</span>
                     }
 
-                    <span class="product-price">{{ formatPrice(product.price) }}</span>
+                    <div class="wishlist-price-container">
+                      <div class="wishlist-main-price-line">
+                        <span class="product-price">{{ formatPrice(getDisplayPrice(product)) }}</span>
+                        @if (isPremiumUser() ? hasAnyDiscount(product) : hasStandardDiscount(product)) {
+                        <span class="strikethrough-original-price">
+                          <s>{{ formatPrice(product.price) }}</s>
+                        </span>
+                        }
+                      </div>
+
+                      @if (isPremiumUser()) {
+                        @if (hasPremiumDiscount(product)) {
+                        <span class="discount-badge-pill premium-discount-badge is-current-plan" title="Descuento aplicado a tu cuenta">
+                          ★ -{{ getTotalDiscount(product) }}% Premium
+                        </span>
+                        } @else if (hasStandardDiscount(product)) {
+                        <span class="discount-badge-pill standard-discount-badge" title="Descuento estándar">
+                          -{{ product.discount }}%
+                        </span>
+                        }
+                      } @else {
+                        <div class="wishlist-badges-row">
+                          @if (hasStandardDiscount(product)) {
+                          <span class="discount-badge-pill standard-discount-badge" title="Descuento estándar">
+                            -{{ product.discount }}%
+                          </span>
+                          }
+                          @if (hasPremiumDiscount(product)) {
+                          <span class="discount-badge-pill premium-discount-badge" title="Descuento adicional para clientes Premium">
+                            ★ -{{ product.premiumDiscount }}% Premium
+                          </span>
+                          }
+                        </div>
+                      }
+                    </div>
                   </div>
 
                   <div class="card-actions">
