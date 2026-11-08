@@ -272,7 +272,9 @@ export class ProductDetail implements OnInit {
     this.favoriteUpdating.set(true);
     this.wishlistService.toggleWishlist(p.id).subscribe({
       next: (res) => {
-        this.toastService.show(res.message, 'success');
+        if (res?.message) {
+          this.toastService.show(res.message, 'success');
+        }
       },
       error: () => {
         this.toastService.show('Error al actualizar la lista de deseos', 'error');

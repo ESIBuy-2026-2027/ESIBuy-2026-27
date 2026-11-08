@@ -16,6 +16,11 @@ describe('ClientWishlist', () => {
   let toastServiceMock: any;
   let cartServiceMock: any;
 
+  const mockWishlists = [
+    { id: 'list-1', name: 'Mi lista de deseos', itemCount: 2, productIds: ['p-1', 'p-2'] },
+    { id: 'list-2', name: 'Regalos', itemCount: 0, productIds: [] },
+  ];
+
   const mockWishlistProducts: ProductItem[] = [
     {
       id: 'p-1',
@@ -41,7 +46,16 @@ describe('ClientWishlist', () => {
 
   beforeEach(async () => {
     wishlistServiceMock = {
+      wishlists: vi.fn(() => mockWishlists),
+      getWishlists: vi.fn(() => of(mockWishlists)),
       getWishlist: vi.fn(() => of(mockWishlistProducts)),
+      createWishlist: vi.fn((name: string) =>
+        of({ id: 'list-new', name, itemCount: 0, productIds: [] }),
+      ),
+      updateWishlistName: vi.fn((id: string, name: string) =>
+        of({ id, name, itemCount: 2, productIds: ['p-1', 'p-2'] }),
+      ),
+      deleteWishlist: vi.fn(() => of({ message: 'Lista eliminada' })),
       removeFromWishlist: vi.fn(() => of({ message: 'Producto eliminado', inWishlist: false })),
     };
 
@@ -73,11 +87,11 @@ describe('ClientWishlist', () => {
     await fixture.whenStable();
   });
 
-  it('should create and render navigation order in sidebar', () => {
+  it('should create and render navigation order in sidebar and wishlist heading', () => {
     expect(component).toBeTruthy();
     const el: HTMLElement = fixture.nativeElement;
 
-    expect(el.querySelector('#wishlist-title')?.textContent).toContain('Lista de deseos');
+    expect(el.querySelector('#wishlist-title')?.textContent).toContain('Listas de deseos');
 
     const navLinks = Array.from(el.querySelectorAll('.navigation-link'));
     expect(navLinks.length).toBe(4);
@@ -86,6 +100,84 @@ describe('ClientWishlist', () => {
     expect(navLinks[1].classList.contains('is-active')).toBe(true);
     expect(navLinks[2].textContent).toContain('Mis pedidos');
     expect(navLinks[3].textContent).toContain('Carrito');
+  });
+
+  it('should render wishlists tabs and select the first one', () => {
+    expect(component.selectedWishlist()?.id).toBe('list-1');
+    const el: HTMLElement = fixture.nativeElement;
+    const tabs = el.querySelectorAll('.wishlist-tab');
+    expect(tabs.length).toBe(2);
+    expect(tabs[0].textContent).toContain('Mi lista de deseos');
+    expect(tabs[1].textContent).toContain('Regalos');
+  });
+
+  it('should switch selected wishlist when clicking a tab', () => {
+    component.selectWishlist(mockWishlists[1]);
+    fixture.detectChanges();
+
+    expect(component.selectedWishlist()?.id).toBe('list-2');
+    expect(wishlistServiceMock.getWishlist).toHaveBeenCalledWith('list-2');
+  });
+
+  it('should open create dialog and create a new wishlist', () => {
+    component.openCreateDialog();
+    expect(component.createDialogOpen()).toBe(true);
+
+    component.newListName.set('Coleccionables');
+    component.saveNewList();
+
+    expect(wishlistServiceMock.createWishlist).toHaveBeenCalledWith('Coleccionables');
+    expect(toastServiceMock.show).toHaveBeenCalledWith(
+      'Lista "Coleccionables" creada con éxito',
+      'success',
+    );
+    expect(component.createDialogOpen()).toBe(false);
+  });
+
+  it('should reject duplicate name when creating wishlist', () => {
+    component.openCreateDialog();
+    component.newListName.set('Regalos');
+    component.saveNewList();
+
+    expect(component.createError()).toBe('Ya tienes una lista de deseos con ese nombre.');
+    expect(wishlistServiceMock.createWishlist).not.toHaveBeenCalled();
+  });
+
+  it('should open edit dialog and update list name', () => {
+    component.openEditDialog();
+    expect(component.editDialogOpen()).toBe(true);
+    expect(component.editListName()).toBe('Mi lista de deseos');
+
+    component.editListName.set('Favoritos Actualizados');
+    component.saveEditedName();
+
+    expect(wishlistServiceMock.updateWishlistName).toHaveBeenCalledWith(
+      'list-1',
+      'Favoritos Actualizados',
+    );
+    expect(toastServiceMock.show).toHaveBeenCalledWith('Nombre de la lista actualizado', 'success');
+    expect(component.editDialogOpen()).toBe(false);
+  });
+
+  it('should open delete dialog and confirm deletion', () => {
+    component.openDeleteDialog();
+    expect(component.deleteDialogOpen()).toBe(true);
+    fixture.detectChanges();
+
+    const noticeBox = fixture.nativeElement.querySelector('.dialog-notice-box');
+    expect(noticeBox).toBeTruthy();
+    expect(noticeBox.textContent).toContain(
+      'Esta acción quitará de favoritos todos los deseos de esta lista, salvo si un producto está en otra lista diferente agregado',
+    );
+
+    component.confirmDeleteList();
+
+    expect(wishlistServiceMock.deleteWishlist).toHaveBeenCalledWith('list-1');
+    expect(toastServiceMock.show).toHaveBeenCalledWith(
+      'Lista "Mi lista de deseos" eliminada',
+      'success',
+    );
+    expect(component.deleteDialogOpen()).toBe(false);
   });
 
   it('should toggle sidebar collapsed state', () => {
@@ -127,11 +219,13 @@ describe('ClientWishlist', () => {
     // Second product is unavailable
     const secondCard = cards[1];
     expect(secondCard.classList.contains('is-unavailable')).toBe(true);
-    expect(secondCard.querySelector('.blocked-badge')?.textContent).toContain('No disponible para compra');
+    expect(secondCard.querySelector('.blocked-badge')?.textContent).toContain(
+      'No disponible para compra',
+    );
     expect((secondCard.querySelector('.buy-action-btn') as HTMLButtonElement)?.disabled).toBe(true);
   });
 
-  it('should remove item when delete button is clicked', () => {
+  it('should remove item from specific list when delete button is clicked', () => {
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
 
@@ -139,7 +233,7 @@ describe('ClientWishlist', () => {
     expect(removeBtn).not.toBeNull();
     removeBtn?.click();
 
-    expect(wishlistServiceMock.removeFromWishlist).toHaveBeenCalledWith('p-1');
+    expect(wishlistServiceMock.removeFromWishlist).toHaveBeenCalledWith('p-1', 'list-1');
     expect(toastServiceMock.show).toHaveBeenCalledWith('Producto eliminado', 'success');
   });
 });
