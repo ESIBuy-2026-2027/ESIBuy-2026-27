@@ -166,21 +166,71 @@
                       </section>
                       <section class="expanded-management" aria-label="Gestionar estado del pedido">
                         <h3>Gestionar pedido</h3>
-                        <label [for]="'order-status-' + order.id">Estado</label>
-                        @if (order.status === 'Entregado') {
-                        <select [id]="'order-status-' + order.id" [value]="order.status" disabled>
-                          <option value="Entregado">Entregado</option>
-                        </select>
-                        } @else {
-                        <select [id]="'order-status-' + order.id" [ngModel]="order.status"
-                          [disabled]="statusSavingOrderId() === order.id"
-                          (ngModelChange)="updateOrderStatus(order, $event)">
-                          <option value="Pendiente">Pendiente</option>
-                          <option value="En preparación">En preparación</option>
-                          <option value="Enviado">Enviado</option>
-                          <option value="Cancelado">Cancelado</option>
-                        </select>
+
+                        <div class="current-status-display">
+                          <span class="status-badge" [class]="statusClass(order.status)">
+                            <span class="status-dot" aria-hidden="true"></span>{{ order.status }}
+                          </span>
+                          @if (order.status === 'Enviado') {
+                          <span class="status-note">El comprador confirmará la entrega</span>
+                          } @else if (order.status === 'Entregado') {
+                          <span class="status-note">Pedido finalizado con éxito</span>
+                          } @else if (order.status === 'Cancelado') {
+                          <span class="status-note is-cancelled">Este pedido ha sido cancelado</span>
+                          }
+                        </div>
+
+                        <!-- Acciones directas de avance y cancelación -->
+                        @if (order.status !== 'Entregado' && order.status !== 'Cancelado') {
+                        <div class="order-lifecycle-actions">
+                          @if (canAdvance(order.status); as next) {
+                          <button type="button" class="btn-advance"
+                            [disabled]="statusSavingOrderId() === order.id"
+                            (click)="updateOrderStatus(order, nextStatus(order.status)!)">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                              <path d="M5 12h14"></path>
+                              <path d="m12 5 7 7-7 7"></path>
+                            </svg>
+                            <span>{{ nextStatusActionLabel(order.status) }}</span>
+                          </button>
+                          }
+
+                          <div class="secondary-lifecycle-actions">
+                            @if (canCancel(order.status)) {
+                            <button type="button" class="btn-cancel-link"
+                              [disabled]="statusSavingOrderId() === order.id"
+                              (click)="promptCancelOrder(order.id)">
+                              ✕ Cancelar pedido
+                            </button>
+                            }
+
+                            @if (canRollback(order.status)) {
+                            <button type="button" class="btn-rollback-link"
+                              [disabled]="statusSavingOrderId() === order.id"
+                              (click)="promptRollback(order)">
+                              ↩ Corregir estado
+                            </button>
+                            }
+                          </div>
+                        </div>
                         }
+
+                        <!-- Cuadro de confirmación de cancelación -->
+                        @if (cancelConfirmationOrderId() === order.id) {
+                        <div class="cancel-confirmation-box" role="alert">
+                          <div class="cancel-warning-text">
+                            <strong>¿Confirmar cancelación?</strong>
+                            <span>Esta acción cancelará el pedido y no se podrá continuar su preparación.</span>
+                          </div>
+                          <div class="cancel-confirm-actions">
+                            <button type="button" class="secondary-button" (click)="dismissCancelOrder()">Volver</button>
+                            <button type="button" class="btn-danger-confirm" (click)="confirmCancelOrder(order)">
+                              Sí, cancelar pedido
+                            </button>
+                          </div>
+                        </div>
+                        }
+
                         @if (pendingStatusChange(); as pending) {
                         @if (pending.order.id === order.id) {
                         <div class="rollback-confirmation">
