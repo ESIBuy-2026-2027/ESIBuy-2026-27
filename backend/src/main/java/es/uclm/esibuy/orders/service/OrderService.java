@@ -367,6 +367,8 @@ public class OrderService {
                     "La recepción del pedido debe confirmarla el cliente");
         }
 
+        validateStatusTransition(order.getStatus(), status);
+
         if (isStatusRegression(order.getStatus(), status)
                 && (justification == null || justification.isBlank())) {
             throw new IllegalArgumentException(
@@ -406,6 +408,48 @@ public class OrderService {
         return currentPosition >= 0
                 && newPosition >= 0
                 && newPosition < currentPosition;
+    }
+
+    private void validateStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
+        if (currentStatus == null || currentStatus == newStatus) {
+            return;
+        }
+
+        if (currentStatus == OrderStatus.CANCELADO || currentStatus == OrderStatus.ENTREGADO) {
+            throw new IllegalArgumentException(
+                    "No se puede modificar un pedido que ya está " + currentStatus.name().toLowerCase());
+        }
+
+        if (newStatus == OrderStatus.CANCELADO) {
+            if (currentStatus != OrderStatus.PENDIENTE
+                    && currentStatus != OrderStatus.PAGADO
+                    && currentStatus != OrderStatus.PREPARANDO) {
+                throw new IllegalArgumentException(
+                        "Un pedido enviado o entregado ya no puede ser cancelado");
+            }
+            return;
+        }
+
+        // Si es un retroceso en el flujo normal, se permite siempre que se justifique (validado aparte)
+        if (isStatusRegression(currentStatus, newStatus)) {
+            return;
+        }
+
+        // Validación de avance secuencial: no permitir saltar fases
+        if (currentStatus == OrderStatus.PENDIENTE || currentStatus == OrderStatus.PAGADO) {
+            if (newStatus != OrderStatus.PREPARANDO) {
+                throw new IllegalArgumentException(
+                        "Un pedido pendiente debe pasar a preparación antes de enviarse");
+            }
+        } else if (currentStatus == OrderStatus.PREPARANDO) {
+            if (newStatus != OrderStatus.ENVIADO) {
+                throw new IllegalArgumentException(
+                        "Un pedido en preparación solo puede pasar a enviado");
+            }
+        } else if (currentStatus == OrderStatus.ENVIADO) {
+            throw new IllegalArgumentException(
+                    "Un pedido enviado no puede modificarse directamente a este estado");
+        }
     }
 
     private SellerOrderDTO toSellerOrder(Order order, String sellerId, Set<String> sellerProductIds) {

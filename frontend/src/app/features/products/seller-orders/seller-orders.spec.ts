@@ -74,19 +74,37 @@ describe('SellerOrders', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should not offer delivered as a seller status option', () => {
-    component.toggleOrderDetails('PED-101');
+  it('should allow progressive lifecycle actions and not allow skipping phases', () => {
+    component.toggleOrderDetails('PED-101'); // PED-101 is 'PENDIENTE' -> 'Pendiente'
     fixture.detectChanges();
 
     const el = fixture.nativeElement as HTMLElement;
-    const statusSelects = Array.from(el.querySelectorAll('select')).filter(
-      (select) => select.id.startsWith('order-status-'),
-    );
+    const advanceBtn = el.querySelector('.btn-advance') as HTMLButtonElement;
+    expect(advanceBtn).toBeTruthy();
+    expect(advanceBtn.textContent).toContain('Iniciar preparación');
 
-    expect(statusSelects).toHaveLength(1);
-    expect(statusSelects.every((select) =>
-      Array.from(select.options).every((option) => option.value !== 'Entregado'),
-    )).toBe(true);
+    const cancelBtn = el.querySelector('.btn-cancel-link') as HTMLButtonElement;
+    expect(cancelBtn).toBeTruthy();
+    expect(cancelBtn.textContent).toContain('Cancelar pedido');
+
+    // Al pulsar cancelar, pide confirmación
+    cancelBtn.click();
+    fixture.detectChanges();
+    expect(el.querySelector('.cancel-confirmation-box')).toBeTruthy();
+
+    const confirmCancelBtn = el.querySelector('.btn-danger-confirm') as HTMLButtonElement;
+    expect(confirmCancelBtn).toBeTruthy();
+  });
+
+  it('should not allow cancelling an order once shipped', () => {
+    component.toggleOrderDetails('PED-102'); // PED-102 is 'ENVIADO' -> 'Enviado'
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    // Ya no debe haber botón de avanzar ni botón de cancelar
+    expect(el.querySelector('.btn-advance')).toBeNull();
+    expect(el.querySelector('.btn-cancel-link')).toBeNull();
+    expect(el.querySelector('.status-note')?.textContent).toContain('El comprador confirmará la entrega');
   });
 
   it('should render standard filters bar with search field and filter controls', () => {
