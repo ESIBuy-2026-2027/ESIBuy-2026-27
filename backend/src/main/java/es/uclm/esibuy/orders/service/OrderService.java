@@ -5,7 +5,9 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -264,11 +266,29 @@ public class OrderService {
                 .map(Product::getId)
                 .collect(Collectors.toSet());
 
-        return orderRepository.findAll().stream()
-                .sorted(Comparator.comparing(Order::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
-                .map(order -> toSellerOrder(order, sellerId, sellerProductIds))
+        List<Order> sellerOrders = orderRepository
+                .findAllByItemsSellerIdOrItemsProductIdInOrderByCreatedAtDesc(sellerId, sellerProductIds);
+        Map<String, User> customersById = loadCustomers(sellerOrders);
+
+        return sellerOrders.stream()
+                .sorted(Comparator.comparing(
+                        Order::getCreatedAt,
+                        Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .map(order -> toSellerOrder(order, sellerId, sellerProductIds, customersById))
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    private Map<String, User> loadCustomers(List<Order> orders) {
+        Set<String> customerIds = orders.stream()
+                .map(Order::getCustomerId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<String, User> customersById = new HashMap<>();
+        userRepository.findAllById(customerIds)
+                .forEach(customer -> customersById.put(customer.getId(), customer));
+        return customersById;
     }
 
     public List<CustomerOrderDTO> getCustomerOrders(String customerId) {
@@ -465,7 +485,11 @@ public class OrderService {
         }
     }
 
-    private SellerOrderDTO toSellerOrder(Order order, String sellerId, Set<String> sellerProductIds) {
+    private SellerOrderDTO toSellerOrder(
+            Order order,
+            String sellerId,
+            Set<String> sellerProductIds,
+            Map<String, User> customersById) {
         List<SellerOrderItemDTO> items = order.getItems().stream()
                 .filter(item -> sellerId.equals(item.sellerId())
                         || sellerProductIds.contains(item.productId()))
@@ -483,7 +507,7 @@ public class OrderService {
             return null;
         }
 
-        User customer = userRepository.findById(order.getCustomerId()).orElse(null);
+        User customer = customersById.get(order.getCustomerId());
 
         String customerName = customer == null
                 ? "Cliente no disponible"

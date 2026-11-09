@@ -649,7 +649,8 @@ class OrderServiceTest {
                 when(productRepository.findAllBySellerId(sellerId))
                                 .thenReturn(List.of());
 
-                when(orderRepository.findAll())
+                when(orderRepository.findAllByItemsSellerIdOrItemsProductIdInOrderByCreatedAtDesc(
+                                sellerId, java.util.Set.of()))
                                 .thenReturn(List.of(order));
 
                 List<SellerOrderDTO> result = orderService.getSellerOrders(sellerId);
@@ -665,7 +666,9 @@ class OrderServiceTest {
                 assertEquals(new BigDecimal("39.98"), result.get(0).total());
 
                 verify(productRepository).findAllBySellerId(sellerId);
-                verify(orderRepository).findAll();
+                verify(orderRepository)
+                                .findAllByItemsSellerIdOrItemsProductIdInOrderByCreatedAtDesc(
+                                                sellerId, java.util.Set.of());
         }
 
         @Test
@@ -698,7 +701,9 @@ class OrderServiceTest {
                                 newerOrder, "createdAt", java.time.LocalDateTime.now());
 
                 when(productRepository.findAllBySellerId(sellerId)).thenReturn(List.of());
-                when(orderRepository.findAll()).thenReturn(List.of(olderOrder, newerOrder));
+                when(orderRepository.findAllByItemsSellerIdOrItemsProductIdInOrderByCreatedAtDesc(
+                                sellerId, java.util.Set.of()))
+                                .thenReturn(List.of(olderOrder, newerOrder));
 
                 List<SellerOrderDTO> result = orderService.getSellerOrders(sellerId);
 
@@ -763,6 +768,8 @@ class OrderServiceTest {
                                 "Cliente",
                                 "eliminado",
                                 UserRole.CLIENT);
+                org.springframework.test.util.ReflectionTestUtils.setField(
+                                deletedCustomer, "id", CUSTOMER_ID);
 
                 OrderItem historicalItem = new OrderItem(
                                 PRODUCT_ID,
@@ -797,11 +804,12 @@ class OrderServiceTest {
                 when(productRepository.findAllBySellerId(sellerId))
                                 .thenReturn(List.of());
 
-                when(orderRepository.findAll())
+                when(orderRepository.findAllByItemsSellerIdOrItemsProductIdInOrderByCreatedAtDesc(
+                                sellerId, java.util.Set.of()))
                                 .thenReturn(List.of(order));
 
-                org.mockito.Mockito.doReturn(Optional.of(deletedCustomer))
-                                .when(userRepository).findById(CUSTOMER_ID);
+                when(userRepository.findAllById(any()))
+                                .thenReturn(List.of(deletedCustomer));
 
                 List<SellerOrderDTO> result = orderService.getSellerOrders(sellerId);
 
