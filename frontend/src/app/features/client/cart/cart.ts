@@ -90,13 +90,7 @@ export class ClientCart {
       return new Set(Array.from(manual).filter((id) => validIds.has(id)));
     }
 
-    const groups = this.sellerGroups();
-    // Si solo hay un único vendedor en el carrito, se preseleccionan sus artículos
-    if (groups.length === 1) {
-      return new Set(groups[0].items.map((item) => item.productoId));
-    }
-
-    // Si hay múltiples vendedores, el cliente debe seleccionar manualmente
+    // Por defecto nada seleccionado (total y subtotal a cero hasta que el usuario seleccione)
     return new Set();
   });
 
@@ -136,6 +130,36 @@ export class ClientCart {
       .reduce((total, item) => total + item.subtotal, 0);
     return Number(sum.toFixed(2));
   });
+
+  readonly selectedTotalSinDescuento = computed<number>(() => {
+    const cart = this.cartService.cart();
+    if (!cart?.items) {
+      return 0;
+    }
+    const selectedIds = this.selectedProductIds();
+    const sum = cart.items
+      .filter((item) => selectedIds.has(item.productoId))
+      .reduce((total, item) => {
+        const precioBase = item.precioOriginal ?? item.precioUnitario;
+        return total + precioBase * item.cantidad;
+      }, 0);
+    return Number(sum.toFixed(2));
+  });
+
+  readonly selectedDescuentoTotal = computed<number>(() => {
+    const sinDescuento = this.selectedTotalSinDescuento();
+    const conDescuento = this.selectedTotal() ?? 0;
+    const diff = sinDescuento - conDescuento;
+    return diff > 0 ? Number(diff.toFixed(2)) : 0;
+  });
+
+  getSellerSelectedSubtotal(group: SellerCartGroup): number {
+    const selected = this.selectedProductIds();
+    const sum = group.items
+      .filter((item) => selected.has(item.productoId))
+      .reduce((acc, item) => acc + item.subtotal, 0);
+    return Number(sum.toFixed(2));
+  }
 
   readonly selectedItemCount = computed<number | null>(() => {
     if (this.hasMixedSelection()) {
