@@ -1,4 +1,4 @@
-﻿import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
@@ -45,6 +45,10 @@ describe('ClientCart', () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('.item-information h2')?.textContent).toBe('<script>alert(1)</script>');
     expect(element.querySelector('.item-information h2 script')).toBeNull();
+    expect(element.querySelector('.total-line')?.textContent).toContain('0,00 €');
+
+    fixture.componentInstance.setSelectedProductIds(['product-1']);
+    fixture.detectChanges();
     expect(element.querySelector('.total-line')?.textContent).toContain('25,00 €');
     const navigationLinks = Array.from(element.querySelectorAll('.seller-navigation .navigation-link'));
     expect(navigationLinks).toHaveLength(4);
@@ -219,6 +223,8 @@ describe('ClientCart', () => {
 
     const fixture = TestBed.createComponent(ClientCart);
     fixture.detectChanges();
+    fixture.componentInstance.setSelectedProductIds(['product-1']);
+    fixture.detectChanges();
     (fixture.nativeElement.querySelector('.checkout-action') as HTMLButtonElement).click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -303,6 +309,8 @@ describe('ClientCart', () => {
     }).compileComponents();
 
     const fixture = TestBed.createComponent(ClientCart);
+    fixture.detectChanges();
+    fixture.componentInstance.setSelectedProductIds(['product-1']);
     fixture.detectChanges();
     (fixture.nativeElement.querySelector('.checkout-action') as HTMLButtonElement).click();
     fixture.detectChanges();
@@ -421,9 +429,18 @@ describe('ClientCart', () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('.seller-summary-name')?.textContent).toContain('Burger King');
     expect(element.querySelector('.seller-warning-alert')).toBeNull();
-    expect(element.querySelector('.total-line')?.textContent).toContain('20,50');
-
+    // Por defecto inicia en 0,00 € y checkout deshabilitado
+    expect(element.querySelector('.total-line')?.textContent).toContain('0,00');
+    expect(element.querySelector('.seller-summary-subtotal')?.textContent).toContain('0,00');
     const checkoutBtn = element.querySelector('.checkout-action') as HTMLButtonElement;
+    expect(checkoutBtn.disabled).toBe(true);
+
+    // Al seleccionar el vendedor, se seleccionan todos sus productos y se calcula el total
+    fixture.componentInstance.toggleSellerSelection(fixture.componentInstance.sellerGroups()[0]);
+    fixture.detectChanges();
+
+    expect(element.querySelector('.total-line')?.textContent).toContain('20,50');
+    expect(element.querySelector('.seller-summary-subtotal')?.textContent).toContain('20,50');
     expect(checkoutBtn.disabled).toBe(false);
   });
 
@@ -659,6 +676,14 @@ describe('ClientCart', () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('.item-original-price')?.textContent).toContain('100,00');
     expect(element.querySelector('.item-discount-tag')?.textContent).toContain('-20%');
+    // Inicialmente sin seleccionar no hay línea de descuento y total es 0,00
+    expect(element.querySelector('.total-line')?.textContent).toContain('0,00');
+    expect(element.querySelector('.discount-saving-line')).toBeNull();
+
+    // Al seleccionar el producto con descuento
+    fixture.componentInstance.setSelectedProductIds(['p-1']);
+    fixture.detectChanges();
+
     expect(element.querySelector('.discount-saving-line')?.textContent).toContain('20,00');
     expect(element.querySelector('.total-line')?.textContent).toContain('80,00');
   });

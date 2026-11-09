@@ -211,13 +211,13 @@
                   cambiar</span>
                 }
               </div>
-              <span class="seller-summary-subtotal">Subtotal vendedor: <strong>{{ formatPrice(group.subtotal)
+              <span class="seller-summary-subtotal">Subtotal vendedor: <strong>{{ formatPrice(getSellerSelectedSubtotal(group))
                   }}</strong></span>
             </summary>
 
             <div class="seller-items-container">
               @for (item of group.items; track item.productoId) {
-              <article class="cart-item" [class.is-deselected]="!isProductSelected(item.productoId)"
+              <article class="cart-item" [class.is-deselected]="selectedProductIds().size > 0 && !isProductSelected(item.productoId)"
                 [class.is-disabled-item]="isSellerDisabled(group.vendedorId)">
                 <label class="item-checkbox-wrapper" (click)="$event.stopPropagation()"
                   (keydown)="$event.stopPropagation()">
@@ -289,12 +289,12 @@
             Artículos seleccionados
             <span>{{ selectedItemCount() !== null ? selectedItemCount() : '—' }}</span>
           </p>
-          @if (cart.descuentoTotal && cart.descuentoTotal > 0) {
+          @if (selectedDescuentoTotal() > 0) {
           <p class="summary-line">
-            Subtotal sin descuento <span>{{ formatPrice(cart.totalSinDescuento ?? cart.precioTotal) }}</span>
+            Subtotal sin descuento <span>{{ formatPrice(selectedTotalSinDescuento()) }}</span>
           </p>
           <p class="summary-line discount-saving-line">
-            Descuento aplicado <span class="discount-saved-val">-{{ formatPrice(cart.descuentoTotal) }}</span>
+            Descuento aplicado <span class="discount-saved-val">-{{ formatPrice(selectedDescuentoTotal()) }}</span>
           </p>
           }
           <p class="total-line">
