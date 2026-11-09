@@ -1,7 +1,8 @@
 <div class="admin-layout seller-shell" [class.app-sidebar-collapsed]="sidebarCollapsed()">
-    <app-shared-sidebar variant="admin" [collapsed]="sidebarCollapsed()" (collapsedChange)="sidebarCollapsed.set($event)"></app-shared-sidebar>
+    <app-shared-sidebar variant="admin" [collapsed]="sidebarCollapsed()"
+        (collapsedChange)="sidebarCollapsed.set($event)"></app-shared-sidebar>
 
-  
+
     <div class="admin-workspace app-workspace">
         <main class="admin-content">
             <div class="users-main-card">
@@ -14,13 +15,6 @@
                             Administra las cuentas registradas y controla su acceso a ESIBuy.
                         </p>
                     </div>
-
-                    <a routerLink="/admin/altas" class="primary-action" id="btnDarAltaAdmin">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        <span>Dar de alta Administrador</span>
-                    </a>
                 </section>
 
                 @if (successMessage()) {
