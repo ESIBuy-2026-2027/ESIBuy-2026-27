@@ -17,37 +17,106 @@ public class UserResponseDTO {
     private final LocalDate birthDate;
     private final String defaultCategory;
 
-    public UserResponseDTO(String id, String email, String firstName, String lastName, String phone, String role) {
-        this(id, email, firstName, lastName, phone, role, null, null, null, null, null, null);
+    private UserResponseDTO(Builder builder) {
+        this.id = builder.id;
+        this.email = builder.email;
+        this.firstName = builder.firstName;
+        this.lastName = builder.lastName;
+        this.phone = builder.phone;
+        this.role = builder.role;
+        this.profileImage = builder.profileImage;
+        this.nationalId = builder.nationalId;
+        this.headquarters = builder.headquarters;
+        this.businessName = builder.businessName;
+        this.birthDate = builder.birthDate;
+        this.defaultCategory = builder.defaultCategory;
     }
 
-    public UserResponseDTO(String id, String email, String firstName, String lastName, String phone, String role,
-            String profileImage) {
-        this(id, email, firstName, lastName, phone, role, profileImage, null, null, null, null, null);
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public UserResponseDTO(String id, String email, String firstName, String lastName, String phone, String role,
-            String profileImage, String nationalId, String headquarters, String businessName) {
-        this(id, email, firstName, lastName, phone, role, profileImage, nationalId, headquarters, businessName, null,
-                null);
-    }
+    public static class Builder {
 
-    @SuppressWarnings("java:S107")
-    public UserResponseDTO(String id, String email, String firstName, String lastName, String phone, String role,
-            String profileImage, String nationalId, String headquarters, String businessName,
-            LocalDate birthDate, String defaultCategory) {
-        this.id = id;
-        this.email = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.phone = phone;
-        this.role = role;
-        this.profileImage = profileImage;
-        this.nationalId = nationalId;
-        this.headquarters = headquarters;
-        this.businessName = businessName;
-        this.birthDate = birthDate;
-        this.defaultCategory = defaultCategory;
+        private String id;
+        private String email;
+        private String firstName;
+        private String lastName;
+        private String phone;
+        private String role;
+        private String profileImage;
+        private String nationalId;
+        private String headquarters;
+        private String businessName;
+        private LocalDate birthDate;
+        private String defaultCategory;
+
+        private Builder() {
+        }
+
+        public Builder id(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder email(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public Builder firstName(String firstName) {
+            this.firstName = firstName;
+            return this;
+        }
+
+        public Builder lastName(String lastName) {
+            this.lastName = lastName;
+            return this;
+        }
+
+        public Builder phone(String phone) {
+            this.phone = phone;
+            return this;
+        }
+
+        public Builder role(String role) {
+            this.role = role;
+            return this;
+        }
+
+        public Builder profileImage(String profileImage) {
+            this.profileImage = profileImage;
+            return this;
+        }
+
+        public Builder nationalId(String nationalId) {
+            this.nationalId = nationalId;
+            return this;
+        }
+
+        public Builder headquarters(String headquarters) {
+            this.headquarters = headquarters;
+            return this;
+        }
+
+        public Builder businessName(String businessName) {
+            this.businessName = businessName;
+            return this;
+        }
+
+        public Builder birthDate(LocalDate birthDate) {
+            this.birthDate = birthDate;
+            return this;
+        }
+
+        public Builder defaultCategory(String defaultCategory) {
+            this.defaultCategory = defaultCategory;
+            return this;
+        }
+
+        public UserResponseDTO build() {
+            return new UserResponseDTO(this);
+        }
     }
 
     public String getId() {

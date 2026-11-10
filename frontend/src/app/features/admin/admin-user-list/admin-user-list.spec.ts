@@ -10,15 +10,15 @@ import { AdminUserList } from './admin-user-list';
 describe('AdminUserList', () => {
   let component: AdminUserList;
   let fixture: ComponentFixture<AdminUserList>;
-  let obtenerTodosLosUsuarios: ReturnType<typeof vi.fn>;
-  let eliminarUsuarioAdmin: ReturnType<typeof vi.fn>;
-  let desactivarUsuarioAdmin: ReturnType<typeof vi.fn>;
+  let getAllUsers: ReturnType<typeof vi.fn>;
+  let deleteUserAdmin: ReturnType<typeof vi.fn>;
+  let deactivateUserAdmin: ReturnType<typeof vi.fn>;
   let currentUser: ReturnType<typeof signal<{ id: string } | null>>;
 
   beforeEach(async () => {
-    obtenerTodosLosUsuarios = vi.fn().mockReturnValue(of([]));
-    eliminarUsuarioAdmin = vi.fn().mockReturnValue(of({ success: true, message: '', data: null, correlationId: null }));
-    desactivarUsuarioAdmin = vi.fn().mockReturnValue(of({ success: true, message: '', data: null, correlationId: null }));
+    getAllUsers = vi.fn().mockReturnValue(of([]));
+    deleteUserAdmin = vi.fn().mockReturnValue(of({ success: true, message: '', data: null, correlationId: null }));
+    deactivateUserAdmin = vi.fn().mockReturnValue(of({ success: true, message: '', data: null, correlationId: null }));
     currentUser = signal<{ id: string } | null>(null);
     await TestBed.configureTestingModule({
       imports: [AdminUserList],
@@ -26,7 +26,12 @@ describe('AdminUserList', () => {
         provideRouter([]),
         {
           provide: AuthService,
-          useValue: { obtenerTodosLosUsuarios, eliminarUsuarioAdmin, desactivarUsuarioAdmin, currentUser },
+          useValue: {
+            getAllUsers,
+            deleteAdminUser: deleteUserAdmin,
+            deactivateAdminUser: deactivateUserAdmin,
+            currentUser,
+          },
         },
       ],
     }).compileComponents();
@@ -40,21 +45,20 @@ describe('AdminUserList', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-  
-  it('renders the link to normal user creation', () => {
-    component.cargarUsuarios();
+
+  it('does not render a link to administrative user creation', () => {
+    component.loadUsers();
     fixture.detectChanges();
 
     const rendered = fixture.nativeElement as HTMLElement;
-    const btnAltaUsuario = rendered.querySelector('#btnDarAltaUsuario');
-    
-    expect(btnAltaUsuario).toBeTruthy();
-    expect(btnAltaUsuario?.getAttribute('href')).toContain('/admin/usuarios/alta');
+
+    expect(rendered.querySelector('#btnDarAltaUsuario')).toBeNull();
+    expect(rendered.textContent).not.toContain('Dar de alta usuario');
   });
 
-  it('renders a link to the home page', () => {
+  it('does not render a duplicate brand logo in the sidebar', () => {
     const rendered = fixture.nativeElement as HTMLElement;
-    expect(rendered.querySelector('.back-home-button')?.getAttribute('href')).toBe('/');
+    expect(rendered.querySelector('.admin-brand')).toBeNull();
   });
 
   it('renders users returned by the admin endpoint and links to admin creation', () => {
@@ -71,15 +75,44 @@ describe('AdminUserList', () => {
       blocked: false,
       createdAt: '2026-01-01T00:00:00Z',
     }];
-    obtenerTodosLosUsuarios.mockReturnValue(of(users));
+    getAllUsers.mockReturnValue(of(users));
 
-    component.cargarUsuarios();
+    component.loadUsers();
     fixture.detectChanges();
 
     const rendered = fixture.nativeElement as HTMLElement;
     expect(rendered.textContent).toContain('Ana López');
     expect(rendered.textContent).toContain('ana@example.com');
     expect(rendered.querySelector('#btnDarAltaAdmin')?.getAttribute('href')).toContain('/admin/altas');
+    expect(rendered.querySelector('.result-count')?.textContent?.trim()).toBe('1 usuario');
+  });
+
+  it('shows a seller commercial name without displaying the headquarters', () => {
+    component.users.set([{
+      id: 'seller-1',
+      email: 'seller@example.com',
+      firstName: 'Marcos',
+      lastName: 'Vendedor',
+      nationalId: '123',
+      phone: null,
+      profileImage: null,
+      role: 'SELLER',
+      active: true,
+      blocked: false,
+      createdAt: null,
+      sellerProfile: {
+        businessName: 'Marcos comercial',
+        headquarters: 'Canaleu',
+      },
+    }]);
+    fixture.detectChanges();
+
+    const rendered = fixture.nativeElement as HTMLElement;
+    const userInfo = rendered.querySelector('.user-info')?.textContent ?? '';
+
+    expect(userInfo).toContain('Marcos comercial');
+    expect(userInfo).not.toContain('Canaleu');
+    expect(userInfo).not.toContain('Sede:');
   });
 
   it('loads and displays the users returned by the admin endpoint', () => {
@@ -96,13 +129,13 @@ describe('AdminUserList', () => {
       blocked: false,
       createdAt: '2026-01-01T00:00:00Z',
     }];
-    obtenerTodosLosUsuarios.mockReturnValue(of(users));
+    getAllUsers.mockReturnValue(of(users));
 
-    component.cargarUsuarios();
+    component.loadUsers();
 
-    expect(component.usuarios()).toEqual(users);
-    expect(component.cargando()).toBe(false);
-    expect(obtenerTodosLosUsuarios).toHaveBeenCalled();
+    expect(component.users()).toEqual(users);
+    expect(component.loading()).toBe(false);
+    expect(getAllUsers).toHaveBeenCalled();
   });
 
   it('toggles a user active state through the admin endpoint', () => {
@@ -119,52 +152,52 @@ describe('AdminUserList', () => {
       blocked: false,
       createdAt: null,
     };
-    component.usuarios.set([user]);
+    component.users.set([user]);
 
-    component.cambiarEstadoUsuario(user, 'desactivar');
+    component.changeUserStatus(user, 'desactivar');
 
-    expect(desactivarUsuarioAdmin).toHaveBeenCalledWith(user.id);
-    expect(component.usuarios()[0].active).toBe(false);
+    expect(deactivateUserAdmin).toHaveBeenCalledWith(user.id);
+    expect(component.users()[0].active).toBe(false);
   });
 
   it('shows a permissions error only when the endpoint returns 403', () => {
-    obtenerTodosLosUsuarios.mockReturnValue(throwError(() =>
+    getAllUsers.mockReturnValue(throwError(() =>
       new HttpErrorResponse({ status: 403, statusText: 'Forbidden' })));
 
-    component.cargarUsuarios();
+    component.loadUsers();
 
     expect(component.error()).toBe('No tienes permisos para consultar los usuarios.');
-    expect(component.cargando()).toBe(false);
+    expect(component.loading()).toBe(false);
   });
 
   it('shows a general message for errors other than permission failures', () => {
-    obtenerTodosLosUsuarios.mockReturnValue(throwError(() =>
+    getAllUsers.mockReturnValue(throwError(() =>
       new HttpErrorResponse({ status: 404, statusText: 'Not Found' })));
 
-    component.cargarUsuarios();
+    component.loadUsers();
 
     expect(component.error()).toBe('No se pudo cargar la lista de usuarios. Inténtalo de nuevo.');
   });
 
-  it('requires two confirmations and removes the account after a successful response', () => {
+  it('requires two confirmations and removes another administrator after a successful response', () => {
     const user = {
       id: '507f1f77bcf86cd799439011',
-      email: 'ana@example.com',
+      email: 'admin@example.com',
       firstName: 'Ana',
       lastName: 'López',
       nationalId: null,
       phone: null,
       profileImage: null,
-      role: 'CLIENT' as const,
+      role: 'ADMIN' as const,
       active: true,
       blocked: false,
       createdAt: null,
     };
-    component.usuarios.set([user]);
+    component.users.set([user]);
     fixture.detectChanges();
 
     const rendered = fixture.nativeElement as HTMLElement;
-    rendered.querySelector<HTMLButtonElement>('[aria-label="Eliminar usuario Ana López"]')?.click();
+    rendered.querySelector<HTMLButtonElement>('[aria-label="Eliminar administrador Ana López"]')?.click();
     fixture.detectChanges();
     expect(rendered.querySelector('[role="alertdialog"]')?.textContent).toContain('Retirar cuenta');
 
@@ -173,10 +206,10 @@ describe('AdminUserList', () => {
     expect(rendered.querySelector('[role="alertdialog"]')?.textContent).toContain('Confirmación final');
     rendered.querySelector<HTMLButtonElement>('.dialog-actions .btn-danger')?.click();
 
-    expect(eliminarUsuarioAdmin).toHaveBeenCalledWith(user.id);
-    expect(component.usuarios()).toEqual([]);
-    expect(component.mensajeExito()).toContain('ana@example.com');
-    expect(component.usuarioPendiente()).toBeNull();
+    expect(deleteUserAdmin).toHaveBeenCalledWith(user.id);
+    expect(component.users()).toEqual([]);
+    expect(component.successMessage()).toContain('admin@example.com');
+    expect(component.pendingUser()).toBeNull();
   });
 
   it('prevents opening confirmation for the authenticated account', () => {
@@ -195,10 +228,10 @@ describe('AdminUserList', () => {
     };
     currentUser.set({ id: user.id });
 
-    component.abrirConfirmacion(user);
+    component.openConfirmation(user);
 
-    expect(component.usuarioPendiente()).toBeNull();
-    expect(component.puedeEliminar(user)).toBe(false);
+    expect(component.pendingUser()).toBeNull();
+    expect(component.canDelete(user)).toBe(false);
   });
 
   it('shows a safe permission message when deletion is rejected', () => {
@@ -210,45 +243,40 @@ describe('AdminUserList', () => {
       nationalId: null,
       phone: null,
       profileImage: null,
-      role: 'CLIENT' as const,
+      role: 'ADMIN' as const,
       active: true,
       blocked: false,
       createdAt: null,
     };
-    eliminarUsuarioAdmin.mockReturnValue(throwError(() =>
+    deleteUserAdmin.mockReturnValue(throwError(() =>
       new HttpErrorResponse({ status: 403, statusText: 'Forbidden' })));
-    component.abrirConfirmacion(user);
-    component.confirmarPrimerPaso();
+    component.openConfirmation(user);
+    component.confirmFirstStep();
 
-    component.eliminarUsuario();
+    component.deleteUser();
 
-    expect(component.errorEliminacion()).toBe('No tienes permisos para eliminar usuarios.');
-    expect(component.usuarios()).toEqual([]);
+    expect(component.deletionError()).toBe('No tienes permisos para eliminar usuarios.');
+    expect(component.users()).toEqual([]);
   });
 
-  it('explains that sellers with associated products cannot be deleted', () => {
-    const user = {
-      id: '507f1f77bcf86cd799439011',
-      email: 'seller@example.com',
-      firstName: 'Vera',
-      lastName: 'Seller',
-      nationalId: null,
-      phone: null,
-      profileImage: null,
-      role: 'SELLER' as const,
-      active: true,
-      blocked: false,
-      createdAt: null,
-    };
-    eliminarUsuarioAdmin.mockReturnValue(throwError(() =>
-      new HttpErrorResponse({ status: 409, statusText: 'Conflict' })));
-    component.abrirConfirmacion(user);
-    component.confirmarPrimerPaso();
+  it('does not offer deletion for client or seller accounts', () => {
+    const users = [
+      {
+        id: 'client-id', email: 'client@example.com', firstName: 'Ana', lastName: 'Client', nationalId: null,
+        phone: null, profileImage: null, role: 'CLIENT' as const, active: true, blocked: false, createdAt: null
+      },
+      {
+        id: 'seller-id', email: 'seller@example.com', firstName: 'Vera', lastName: 'Seller', nationalId: null,
+        phone: null, profileImage: null, role: 'SELLER' as const, active: true, blocked: false, createdAt: null
+      },
+    ];
+    component.users.set(users);
+    fixture.detectChanges();
 
-    component.eliminarUsuario();
-
-    expect(component.errorEliminacion()).toBe(
-      'No se puede eliminar este vendedor mientras tenga productos asociados.');
+    const rendered = fixture.nativeElement as HTMLElement;
+    expect(rendered.querySelector('[aria-label="Eliminar administrador Ana Client"]')).toBeNull();
+    expect(rendered.querySelector('[aria-label="Eliminar administrador Vera Seller"]')).toBeNull();
+    expect(users.every((user) => !component.canDelete(user))).toBe(true);
   });
 
   it('renders user-provided confirmation text as text rather than markup', () => {
@@ -260,12 +288,12 @@ describe('AdminUserList', () => {
       nationalId: null,
       phone: null,
       profileImage: null,
-      role: 'CLIENT' as const,
+      role: 'ADMIN' as const,
       active: true,
       blocked: false,
       createdAt: null,
     };
-    component.abrirConfirmacion(user);
+    component.openConfirmation(user);
     fixture.detectChanges();
 
     const rendered = fixture.nativeElement as HTMLElement;
@@ -282,22 +310,22 @@ describe('AdminUserList', () => {
       nationalId: null,
       phone: null,
       profileImage: null,
-      role: 'CLIENT' as const,
+      role: 'ADMIN' as const,
       active: true,
       blocked: false,
       createdAt: null,
     };
-    component.abrirConfirmacion(user);
-    expect(component.usuarioPendiente()).toEqual(user);
-    expect(component.pasoConfirmacion()).toBe(1);
+    component.openConfirmation(user);
+    expect(component.pendingUser()).toEqual(user);
+    expect(component.confirmationStep()).toBe(1);
 
-    component.confirmarPrimerPaso();
-    expect(component.pasoConfirmacion()).toBe(2);
+    component.confirmFirstStep();
+    expect(component.confirmationStep()).toBe(2);
 
-    component.cancelarConfirmacion();
-    expect(component.usuarioPendiente()).toBeNull();
-    expect(component.pasoConfirmacion()).toBe(1);
-    expect(component.errorEliminacion()).toBe('');
+    component.cancelConfirmation();
+    expect(component.pendingUser()).toBeNull();
+    expect(component.confirmationStep()).toBe(1);
+    expect(component.deletionError()).toBe('');
   });
 
   it('closes the modal when Escape key is pressed', () => {
@@ -309,25 +337,25 @@ describe('AdminUserList', () => {
       nationalId: null,
       phone: null,
       profileImage: null,
-      role: 'CLIENT' as const,
+      role: 'ADMIN' as const,
       active: true,
       blocked: false,
       createdAt: null,
     };
-    component.abrirConfirmacion(user);
-    expect(component.usuarioPendiente()).toEqual(user);
+    component.openConfirmation(user);
+    expect(component.pendingUser()).toEqual(user);
 
     const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
     document.dispatchEvent(escapeEvent);
 
-    expect(component.usuarioPendiente()).toBeNull();
-    expect(component.pasoConfirmacion()).toBe(1);
+    expect(component.pendingUser()).toBeNull();
+    expect(component.confirmationStep()).toBe(1);
   });
 
   it('initializes mensajeExito if history.state.successMessage is present', () => {
     history.replaceState({ successMessage: 'Los cambios se han guardado correctamente.' }, '');
     component.ngOnInit();
-    expect(component.mensajeExito()).toBe('Los cambios se han guardado correctamente.');
+    expect(component.successMessage()).toBe('Los cambios se han guardado correctamente.');
     history.replaceState(null, '');
   });
 });

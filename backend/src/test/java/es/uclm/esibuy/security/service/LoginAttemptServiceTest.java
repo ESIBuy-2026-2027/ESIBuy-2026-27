@@ -2,10 +2,11 @@ package es.uclm.esibuy.security.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -36,10 +37,15 @@ class LoginAttemptServiceTest {
 
     @BeforeEach
     void setUpRepository() {
-        when(loginAttemptRepository.findByEmailAndIpAddress(any(), any()))
-                .thenAnswer(invocation -> Optional.ofNullable(attempts.get(key(
-                        invocation.getArgument(0), invocation.getArgument(1)))));
-        when(loginAttemptRepository.save(any(LoginAttempt.class)))
+        attempts.clear();
+
+        lenient().when(loginAttemptRepository.findByEmailAndIpAddress(any(), any()))
+                .thenAnswer(invocation -> Optional.ofNullable(
+                        attempts.get(key(
+                                invocation.getArgument(0),
+                                invocation.getArgument(1)))));
+
+        lenient().when(loginAttemptRepository.save(any(LoginAttempt.class)))
                 .thenAnswer(invocation -> {
                     LoginAttempt attempt = invocation.getArgument(0);
                     attempts.put(key(attempt.getEmail(), attempt.getIpAddress()), attempt);
@@ -48,43 +54,109 @@ class LoginAttemptServiceTest {
     }
 
     @Test
+    void returnsZeroWhenThereIsNoPreviousAttempt() {
+        LoginAttemptService service = serviceAt(BASE_TIME);
+
+        assertFalse(service.isBlocked(EMAIL, IP_ADDRESS));
+        assertEquals(0, service.getRemainingBlockSeconds(EMAIL, IP_ADDRESS));
+    }
+
+    @Test
     void blocksAfterFiveFailuresAndAppliesProgressiveBackoff() {
         Instant currentTime = BASE_TIME;
 
         for (int level = 1; level <= 4; level++) {
             for (int failure = 0; failure < 5; failure++) {
-                serviceAt(currentTime.plusSeconds(failure)).loginFailed(EMAIL, IP_ADDRESS);
+                serviceAt(currentTime.plusSeconds(failure))
+                        .loginFailed(EMAIL, IP_ADDRESS);
             }
 
-            LoginAttemptService service = serviceAt(currentTime.plusSeconds(4));
+            Instant blockTime = currentTime.plusSeconds(4);
+            LoginAttemptService service = serviceAt(blockTime);
+
             assertTrue(service.isBlocked(EMAIL, IP_ADDRESS));
             assertEquals(expectedBlockSeconds(level),
                     service.getRemainingBlockSeconds(EMAIL, IP_ADDRESS));
-            currentTime = currentTime.plusSeconds(4 + expectedBlockSeconds(level) + 1);
+
+            currentTime = blockTime.plusSeconds(expectedBlockSeconds(level) + 1);
         }
     }
 
     @Test
-    void resetsCounterWhenTheAttemptWindowExpires() {
+    void returnsZeroWhenBlockHasExpired() {
+        LoginAttempt attempt = new LoginAttempt(EMAIL, IP_ADDRESS);
+        attempt.setBlockedUntil(BASE_TIME.minusSeconds(1));
+        attempts.put(key(EMAIL, IP_ADDRESS), attempt);
+
+        LoginAttemptService service = serviceAt(BASE_TIME);
+
+        assertFalse(service.isBlocked(EMAIL, IP_ADDRESS));
+        assertEquals(0, service.getRemainingBlockSeconds(EMAIL, IP_ADDRESS));
+    }
+
+    @Test
+    void roundsRemainingBlockTimeUpToWholeSeconds() {
+        LoginAttempt attempt = new LoginAttempt(EMAIL, IP_ADDRESS);
+        attempt.setBlockedUntil(BASE_TIME.plusMillis(1500));
+        attempts.put(key(EMAIL, IP_ADDRESS), attempt);
+
+        assertEquals(2,
+                serviceAt(BASE_TIME).getRemainingBlockSeconds(EMAIL, IP_ADDRESS));
+    }
+
+    @Test
+    void resetsCounterWhenAttemptWindowExpires() {
         serviceAt(BASE_TIME).loginFailed(EMAIL, IP_ADDRESS);
         serviceAt(BASE_TIME.plusSeconds(601)).loginFailed(EMAIL, IP_ADDRESS);
 
         LoginAttempt savedAttempt = attempts.get(key(EMAIL, IP_ADDRESS));
+
         assertEquals(1, savedAttempt.getFailedAttempts());
-        assertFalse(serviceAt(BASE_TIME.plusSeconds(601)).isBlocked(EMAIL, IP_ADDRESS));
+        assertNull(savedAttempt.getBlockedUntil());
     }
 
     @Test
-    void removesAttemptAfterSuccessfulLogin() {
+    void doesNotResetCounterAtExactAttemptWindowBoundary() {
+        serviceAt(BASE_TIME).loginFailed(EMAIL, IP_ADDRESS);
+        serviceAt(BASE_TIME.plusSeconds(600)).loginFailed(EMAIL, IP_ADDRESS);
+
+        LoginAttempt savedAttempt = attempts.get(key(EMAIL, IP_ADDRESS));
+
+        assertEquals(2, savedAttempt.getFailedAttempts());
+    }
+
+    @Test
+    void normalizesEmailBeforeFindingAndSavingAttempt() {
+        serviceAt(BASE_TIME).loginFailed("  USER@EXAMPLE.COM  ", IP_ADDRESS);
+
+        assertTrue(attempts.containsKey(key(EMAIL, IP_ADDRESS)));
+        assertEquals(1, attempts.get(key(EMAIL, IP_ADDRESS)).getFailedAttempts());
+    }
+
+    @Test
+    void removesAttemptAfterSuccessfulLoginUsingNormalizedEmail() {
         serviceAt(BASE_TIME).loginFailed(EMAIL, IP_ADDRESS);
 
-        serviceAt(BASE_TIME.plusSeconds(1)).loginSucceeded(EMAIL, IP_ADDRESS);
+        serviceAt(BASE_TIME.plusSeconds(1))
+                .loginSucceeded("  USER@EXAMPLE.COM  ", IP_ADDRESS);
 
-        verify(loginAttemptRepository).deleteByEmailAndIpAddress(EMAIL, IP_ADDRESS);
+        verify(loginAttemptRepository)
+                .deleteByEmailAndIpAddress(EMAIL, IP_ADDRESS);
+    }
+
+    @Test
+    void keepsAttemptsSeparateForDifferentIpAddresses() {
+        serviceAt(BASE_TIME).loginFailed(EMAIL, IP_ADDRESS);
+        serviceAt(BASE_TIME).loginFailed(EMAIL, "192.0.2.20");
+
+        assertEquals(1, attempts.get(key(EMAIL, IP_ADDRESS)).getFailedAttempts());
+        assertEquals(1, attempts.get(key(EMAIL, "192.0.2.20")).getFailedAttempts());
     }
 
     private LoginAttemptService serviceAt(Instant instant) {
-        return new LoginAttemptService(loginAttemptRepository, Clock.fixed(instant, ZoneOffset.UTC));
+        return new LoginAttemptService(
+                loginAttemptRepository,
+                Clock.fixed(instant, ZoneOffset.UTC));
     }
 
     private long expectedBlockSeconds(int level) {

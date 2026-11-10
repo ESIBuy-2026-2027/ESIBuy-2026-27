@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize, timeout } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -12,7 +13,8 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { Category, ProductsService } from '../../products/products.service';
+import { Category, ProductsService } from '../../../core/services/products.service';
+import { CLIENT_AVATARS, SELLER_AVATARS } from '../../../core/constants/avatars';
 
 export function isAdultValidator(control: AbstractControl): ValidationErrors | null {
   if (!control.value) return null;
@@ -66,41 +68,39 @@ export class Register {
   form: FormGroup;
 
   serverError: string | null = null;
-
   loading = false;
-
+  registrationSuccess = false;
+  showCancelConfirmation = false;
   showPassword = false;
+  get passwordChecks() {
+    const pwdControl = this.form?.get('password');
+    const pwd = pwdControl?.value || '';
+    const showErrorStates = this.submitAttempted || pwd.length > 0;
 
-  clientAvatars = [
-    'assets/images/avatars/av_client_1.jpeg',
-    'assets/images/avatars/av_client_2.jpeg',
-    'assets/images/avatars/av_client_3.jpeg',
-    'assets/images/avatars/av_client_4.jpeg',
-    'assets/images/avatars/av_client_5.jpeg'
-  ];
+    return [
+      { label: 'Mínimo de 12 caracteres', met: pwd.length >= 12, showErrors: showErrorStates },
+      { label: 'Al menos una letra mayúscula', met: /[A-Z]/.test(pwd), showErrors: showErrorStates },
+      { label: 'Al menos una letra minúscula', met: /[a-z]/.test(pwd), showErrors: showErrorStates },
+      { label: 'Al menos un número', met: /\d/.test(pwd), showErrors: showErrorStates },
+      { label: 'Al menos un carácter especial', met: /[^A-Za-z0-9]/.test(pwd), showErrors: showErrorStates },
+    ];
+  }
+  submitAttempted = false;
 
-  sellerAvatars = [
-    'assets/images/avatars/av_seller_1.jpeg',
-    'assets/images/avatars/av_seller_2.jpeg',
-    'assets/images/avatars/av_seller_3.jpeg',
-    'assets/images/avatars/av_seller_4.jpeg',
-    'assets/images/avatars/av_seller_5.jpeg'
-  ];
-
-  selectedAvatar: string = this.clientAvatars[0];
+  clientAvatars = CLIENT_AVATARS.map((path) => path.replace(/^\/+/, ''));
+  sellerAvatars = SELLER_AVATARS.map((path) => path.replace(/^\/+/, ''));
+  selectedAvatar = this.clientAvatars[0];
 
   categories: Category[] = [];
-
   categoriesLoading = true;
-
   categoriesError = false;
 
   constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private authService: AuthService,
-    private productsService: ProductsService,
-    private changeDetector: ChangeDetectorRef
+    private readonly fb: FormBuilder,
+    private readonly router: Router,
+    private readonly authService: AuthService,
+    private readonly productsService: ProductsService,
+    private readonly changeDetector: ChangeDetectorRef
   ) {
     this.form = this.createForm();
     this.loadCategories();
@@ -111,9 +111,13 @@ export class Register {
       .pipe(takeUntilDestroyed())
       .subscribe({
         next: (categories) => {
-          this.categories = categories;
+          this.categories = [...categories].sort((first, second) => {
+            const firstIsOther = first.name.trim().toLocaleLowerCase() === 'otros';
+            const secondIsOther = second.name.trim().toLocaleLowerCase() === 'otros';
+            return Number(firstIsOther) - Number(secondIsOther);
+          });
           this.categoriesLoading = false;
-          this.form.get('defaultCategory')?.setValue(categories[0]?.name ?? '');
+          this.form.get('defaultCategory')?.setValue(this.categories[0]?.name ?? '');
         },
         error: () => {
           this.categoriesLoading = false;
@@ -317,6 +321,7 @@ export class Register {
   }
 
   onSubmit(): void {
+    this.submitAttempted = true;
     this.serverError = null;
 
     if (this.form.invalid) {
@@ -341,26 +346,17 @@ export class Register {
         repeatedPassword: this.form.value.repeatedPassword
       };
 
-      this.authService.registerClient(payload).subscribe({
-
-        next: () => {
-          alert(
-            'Registro completado exitosamente. Tu cuenta requiere activación por un administrador.'
-          );
-
-          this.router.navigate(['/']);
-        },
-
-        error: (err) => {
-          this.serverError = this.getRegistrationErrorMessage(err);
-          this.changeDetector.markForCheck();
-          this.scrollToEmailError();
-        }
-
-      }).add(() => {
-        this.loading = false;
-        this.changeDetector.markForCheck();
-      });
+      this.authService.registerClient(payload)
+        .pipe(
+          timeout({ each: 10000 }),
+          finalize(() => this.finishRegistrationRequest())
+        )
+        .subscribe({
+          next: () => {
+            this.registrationSuccess = true;
+          },
+          error: (err) => this.showRegistrationError(err)
+        });
 
     } else {
 
@@ -377,41 +373,76 @@ export class Register {
         repeatedPassword: this.form.value.repeatedPassword
       };
 
-      this.authService.registerSeller(payload).subscribe({
-
-        next: () => {
-          alert(
-            'Registro completado exitosamente. Tu cuenta requiere activación por un administrador.'
-          );
-
-          this.router.navigate(['/']);
-        },
-
-        error: (err) => {
-          this.serverError = this.getRegistrationErrorMessage(err);
-          this.changeDetector.markForCheck();
-          this.scrollToEmailError();
-        }
-
-      }).add(() => {
-        this.loading = false;
-        this.changeDetector.markForCheck();
-      });
+      this.authService.registerSeller(payload)
+        .pipe(
+          timeout({ each: 10000 }),
+          finalize(() => this.finishRegistrationRequest())
+        )
+        .subscribe({
+          next: () => {
+            this.registrationSuccess = true;
+          },
+          error: (err) => this.showRegistrationError(err)
+        });
     }
+  }
+
+  private showRegistrationError(error: unknown): void {
+    this.serverError = this.getRegistrationErrorMessage(error);
+    this.changeDetector.markForCheck();
+    this.scrollToServerError();
+  }
+
+  private finishRegistrationRequest(): void {
+    this.loading = false;
+    this.changeDetector.markForCheck();
+  }
+
+  get isPasswordSecurityError(): boolean {
+    const message = this.serverError?.toLocaleLowerCase() ?? '';
+    return message.includes('contraseña') &&
+      (message.includes('filtraciones') || message.includes('comprobar la seguridad'));
   }
 
   cancelRegistration(): void {
-    const confirmed = window.confirm(
-      '¿Seguro que quieres cancelar el registro? Se perderán los datos introducidos.'
-    );
-
-    if (confirmed) {
-      void this.router.navigate(['/']);
+    if (this.loading) {
+      return;
     }
+
+    this.showCancelConfirmation = true;
+    this.changeDetector.markForCheck();
+  }
+
+  dismissCancelConfirmation(): void {
+    this.showCancelConfirmation = false;
+    this.changeDetector.markForCheck();
+  }
+
+  confirmCancelRegistration(): void {
+    this.showCancelConfirmation = false;
+
+    void this.router.navigate(['/login'], {
+      state: {
+        registrationCancelled: true
+      }
+    });
+  }
+
+  finishRegistration(): void {
+    void this.router.navigate(['/']);
   }
 
   private getRegistrationErrorMessage(error: unknown): string {
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      return 'No se ha podido comprobar la seguridad de la contraseña. Inténtalo de nuevo más tarde.';
+    }
+
     if (error instanceof HttpErrorResponse) {
+      const serverMessage = this.getServerMessage(error.error);
+      if (serverMessage) {
+        return serverMessage;
+      }
+
       if (error.status === 409) {
         return 'No se ha podido completar el registro. Comprueba los datos introducidos e inténtalo de nuevo.';
       }
@@ -442,9 +473,13 @@ export class Register {
       : 'No se ha podido completar el registro. Comprueba los datos introducidos e inténtalo de nuevo';
   }
 
-  private scrollToEmailError(): void {
+  private scrollToServerError(): void {
     setTimeout(() => {
-      document.querySelector('.server-field-error')?.scrollIntoView({
+      const selector = this.isPasswordSecurityError
+        ? '#password-server-error'
+        : '.server-error-banner';
+
+      document.querySelector<HTMLElement>(selector)?.scrollIntoView({
         behavior: 'smooth',
         block: 'center'
       });

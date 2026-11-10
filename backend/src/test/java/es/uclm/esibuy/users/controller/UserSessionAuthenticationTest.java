@@ -9,8 +9,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import es.uclm.esibuy.security.config.SecurityConfig;
+import es.uclm.esibuy.security.service.EmailOtpService;
+import es.uclm.esibuy.security.service.EncryptionService;
 import es.uclm.esibuy.security.service.LoginAttemptService;
 import es.uclm.esibuy.security.service.SessionAuthenticationService;
+import es.uclm.esibuy.security.service.TotpService;
+import es.uclm.esibuy.security.service.TwoFactorAuthenticationService;
 import es.uclm.esibuy.users.dto.LoginRequest;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
@@ -18,11 +22,11 @@ import es.uclm.esibuy.users.service.AdminUserService;
 import es.uclm.esibuy.users.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -34,20 +38,32 @@ class UserSessionAuthenticationTest {
         @Autowired
         private MockMvc mockMvc;
 
-        @MockitoBean
+        @MockBean
         private UserService userService;
 
-        @MockitoBean
+        @MockBean
         private AdminUserService adminUserService;
 
-        @MockitoBean
+        @MockBean
         private LoginAttemptService loginAttemptService;
+
+        @MockBean
+        private TotpService totpService;
+
+        @MockBean
+        private EncryptionService encryptionService;
+
+        @MockBean
+        private TwoFactorAuthenticationService twoFactorAuthenticationService;
+
+        @MockBean
+        private EmailOtpService emailOtpService;
 
         @Test
         void adminLoginCreatesSessionAcceptedByAdminEndpoint() throws Exception {
                 User admin = user("admin-1", UserRole.ADMIN);
                 when(userService.login(any(LoginRequest.class))).thenReturn(admin);
-                when(adminUserService.obtenerPorId("admin-1")).thenReturn(admin);
+                when(adminUserService.findById("admin-1")).thenReturn(admin);
 
                 MvcResult loginResult = mockMvc.perform(post("/api/users/login")
                                 .with(csrf())

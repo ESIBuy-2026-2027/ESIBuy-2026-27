@@ -1,7 +1,17 @@
+
 import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { AuthService, AuthenticatedUser } from './auth.service';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import {
+  AuthService,
+  AuthenticatedUser,
+  CreateAdminRequest,
+} from './auth.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -16,25 +26,43 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     });
+
     service = TestBed.inject(AuthService);
     httpTesting = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => httpTesting.verify());
+  afterEach(() => TestBed.resetTestingModule());
 
   it('stores the authenticated user after login and sends cookies', () => {
-    service.login({ email: user.email, password: 'short' }).subscribe((result) => {
-      expect(result).toEqual(user);
-      expect(service.currentUser()).toEqual(user);
-      expect(service.isAuthenticated()).toBe(true);
-    });
+    service
+      .login({ email: user.email, password: 'short' })
+      .subscribe((result) => {
+        expect(result).toEqual(user);
+        expect(service.currentUser()).toEqual(user);
+        expect(service.isAuthenticated()).toBe(true);
+      });
 
     const request = httpTesting.expectOne('/api/users/login');
+
     expect(request.request.method).toBe('POST');
     expect(request.request.withCredentials).toBe(true);
+
     request.flush(user);
+
+    const profileRequest = httpTesting.expectOne(
+      '/api/users/me/profile',
+    );
+
+    expect(profileRequest.request.method).toBe('GET');
+    expect(profileRequest.request.withCredentials).toBe(true);
+
+    profileRequest.flush({ profileImage: null });
   });
 
   it('loads the current user from the server', () => {
@@ -44,8 +72,12 @@ describe('AuthService', () => {
     });
 
     const request = httpTesting.expectOne('/api/users/me');
+
     expect(request.request.withCredentials).toBe(true);
+
     request.flush(user);
+
+    httpTesting.expectNone('/api/users/me/profile');
   });
 
   it('treats an absent session at startup as unauthenticated', () => {
@@ -58,11 +90,21 @@ describe('AuthService', () => {
       { message: 'Autenticación requerida' },
       { status: 401, statusText: 'Unauthorized' },
     );
+
+    httpTesting.expectNone('/api/users/me/profile');
   });
 
   it('clears the user after successful logout', () => {
-    service.login({ email: user.email, password: 'short' }).subscribe();
+    service.login({
+      email: user.email,
+      password: 'short',
+    }).subscribe();
+
     httpTesting.expectOne('/api/users/login').flush(user);
+
+    httpTesting
+      .expectOne('/api/users/me/profile')
+      .flush({ profileImage: null });
 
     service.logout().subscribe(() => {
       expect(service.currentUser()).toBeNull();
@@ -70,50 +112,69 @@ describe('AuthService', () => {
     });
 
     const request = httpTesting.expectOne('/api/users/logout');
+
     expect(request.request.method).toBe('POST');
     expect(request.request.withCredentials).toBe(true);
+
     request.flush(null);
   });
 
-  it('calls DELETE on /api/admin/usuarios/:id with credentials to delete an admin user', () => {
-    service.eliminarUsuarioAdmin('user-123').subscribe();
+  it('deletes an admin user using DELETE and credentials', () => {
+    service.deleteAdminUser('user-123').subscribe();
 
-    const request = httpTesting.expectOne('/api/admin/usuarios/user-123');
+    const request = httpTesting.expectOne(
+      '/api/admin/users/user-123',
+    );
+
     expect(request.request.method).toBe('DELETE');
     expect(request.request.withCredentials).toBe(true);
-    request.flush({ success: true, message: 'Usuario eliminado correctamente', data: null, correlationId: null });
+
+    request.flush({
+      success: true,
+      message: 'Usuario eliminado correctamente',
+      data: null,
+      correlationId: null,
+    });
   });
 
-  it('calls POST on /api/admin/alta with credentials to create an admin user', () => {
-    const adminData = {
-      dni: '12345678Z',
-      nombre: 'Carlos',
-      apellidos: 'Gómez Pérez',
+  it('creates an admin user using POST and credentials', () => {
+    const adminData: CreateAdminRequest = {
+      nationalId: '12345678Z',
+      firstName: 'Carlos',
+      lastName: 'Gómez Pérez',
       email: 'carlos.admin@esibuy.com',
-      contrasena: 'Admin123456!#',
-      repetirContrasena: 'Admin123456!#',
-      sede: 'Ciudad Real',
-      imagenPerfil: 'https://avatar.ejemplo.com/carlos.png'
+      password: 'Admin123456!#',
+      confirmPassword: 'Admin123456!#',
+      headquarters: 'Ciudad Real',
+      profileImage: 'assets/images/avatars/av_client_1.jpeg',
     };
 
-    service.crearAdministrador(adminData).subscribe((response: any) => {
-      expect(response.email).toBe('carlos.admin@esibuy.com');
-      expect(response.rol).toBe('ADMIN');
+    service.createAdmin(adminData).subscribe((response) => {
+      expect(response).toEqual({
+        id: 'admin-1',
+        email: 'carlos.admin@esibuy.com',
+        firstName: 'Carlos',
+        lastName: 'Gómez Pérez',
+        nationalId: '12345678Z',
+        role: 'ADMIN',
+        active: true,
+      });
     });
 
-    const request = httpTesting.expectOne('/api/admin/alta');
+    const request = httpTesting.expectOne('/api/admin/create-admin');
+
     expect(request.request.method).toBe('POST');
     expect(request.request.withCredentials).toBe(true);
     expect(request.request.body).toEqual(adminData);
+
     request.flush({
       id: 'admin-1',
       email: 'carlos.admin@esibuy.com',
-      nombre: 'Carlos',
-      apellidos: 'Gómez Pérez',
-      dni: '12345678Z',
-      rol: 'ADMIN',
-      activo: true,
-      fechaIncorporacion: '2026-10-07T12:00:00'
+      firstName: 'Carlos',
+      lastName: 'Gómez Pérez',
+      nationalId: '12345678Z',
+      role: 'ADMIN',
+      active: true,
     });
   });
 });

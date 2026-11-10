@@ -1,0 +1,275 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
+import { signal } from '@angular/core';
+import { NEVER, of, throwError } from 'rxjs';
+import { describe, beforeEach, it, expect, vi } from 'vitest';
+import { Home } from './home';
+import { ProductsService, ProductItem, Category } from '../../core/services/products.service';
+import { WishlistService } from '../../core/services/wishlist.service';
+import { ToastService } from '../../core/services/toast.service';
+import { AuthService, AuthenticatedUser } from '../../core/services/auth.service';
+import { CartService } from '../../core/services/cart.service';
+
+describe('Home', () => {
+  let component: Home;
+  let fixture: ComponentFixture<Home>;
+  let productsServiceMock: any;
+  let wishlistServiceMock: any;
+  let toastServiceMock: any;
+  let cartServiceMock: any;
+  let currentUserSignal = signal<AuthenticatedUser | null>(null);
+
+  const mockCategories: Category[] = [
+    { id: 'cat-1', name: 'Libros' },
+    { id: 'cat-2', name: 'Material' },
+  ];
+
+  const mockProducts: ProductItem[] = [
+    {
+      id: 'p-1',
+      name: 'Libro de Cálculo',
+      categoryIds: ['cat-1'],
+      stock: 5,
+      description: 'Libro universitario',
+      price: 25.0,
+      available: true,
+      sellerId: 's-1',
+      rating: 4.7,
+    },
+  ];
+
+  beforeEach(async () => {
+    currentUserSignal.set(null);
+    currentUserSignal = signal<AuthenticatedUser | null>(null);
+
+    productsServiceMock = {
+      getCategories: vi.fn(() => of(mockCategories)),
+      getPublicCatalog: vi.fn(() => of(mockProducts)),
+    };
+
+    wishlistServiceMock = {
+      refreshIfClient: vi.fn(),
+      isFavorite: vi.fn(() => false),
+      toggleWishlist: vi.fn(() => of({ message: 'Añadido a favoritos', inWishlist: true })),
+    };
+
+    const toastSignal = signal<any>(null);
+    toastServiceMock = {
+      toast: toastSignal,
+      show: vi.fn((text, type = 'success') => toastSignal.set({ text, type })),
+      clear: vi.fn(() => toastSignal.set(null)),
+    };
+
+    cartServiceMock = {
+      addItem: vi.fn(() => of({})),
+      itemCount: vi.fn(() => 0),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [Home],
+      providers: [
+        provideRouter([]),
+        { provide: ProductsService, useValue: productsServiceMock },
+        { provide: WishlistService, useValue: wishlistServiceMock },
+        { provide: ToastService, useValue: toastServiceMock },
+        { provide: AuthService, useValue: { currentUser: currentUserSignal } },
+        { provide: CartService, useValue: cartServiceMock },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(Home);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  it('should render the public showcase and products', () => {
+    expect(component).toBeTruthy();
+    const el: HTMLElement = fixture.nativeElement;
+
+    expect(el.querySelector('#hero-title')?.textContent).toContain('Compra con confianza');
+    expect(el.querySelector('#public-search')).not.toBeNull();
+    expect(el.querySelector('.filters-panel')).not.toBeNull();
+
+    const cards = el.querySelectorAll('.showcase-card');
+    expect(cards.length).toBe(1);
+    expect(cards[0].querySelector('.card-title')?.textContent).toContain('Libro de Cálculo');
+  });
+
+  it('should redirect unauthenticated users to /login when clicking the heart icon', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const el: HTMLElement = fixture.nativeElement;
+    const heartBtn = el.querySelector('.center-heart-action') as HTMLButtonElement;
+    expect(heartBtn).not.toBeNull();
+
+    heartBtn.click();
+
+    expect(toastServiceMock.show).toHaveBeenCalledWith(
+      'Debes iniciar sesión con tu cuenta de cliente para guardar favoritos.',
+      'info'
+    );
+    expect(navigateSpy).toHaveBeenCalledWith(['/login']);
+    expect(wishlistServiceMock.toggleWishlist).not.toHaveBeenCalled();
+  });
+
+  it('should redirect unauthenticated users to /login when clicking añadir al carrito', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const el: HTMLElement = fixture.nativeElement;
+    const addBtn = el.querySelector('.add-to-cart-action-btn') as HTMLButtonElement;
+    expect(addBtn).not.toBeNull();
+    addBtn.click();
+
+    expect(toastServiceMock.show).toHaveBeenCalledWith(
+      'Debes iniciar sesión con tu cuenta de cliente para realizar compras.',
+      'info'
+    );
+    expect(navigateSpy).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('should add to cart when authenticated as CLIENT', () => {
+    currentUserSignal.set({
+      id: 'c-1',
+      email: 'client@example.com',
+      role: 'CLIENT',
+      active: true,
+    });
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    const addBtn = el.querySelector('.add-to-cart-action-btn') as HTMLButtonElement;
+    addBtn.click();
+
+    expect(cartServiceMock.addItem).toHaveBeenCalledWith('p-1', 1);
+    expect(toastServiceMock.show).toHaveBeenCalledWith('Producto añadido al carrito', 'success');
+  });
+
+  it('should ignore repeated add-to-cart clicks while the request is pending', () => {
+    currentUserSignal.set({
+      id: 'c-1',
+      email: 'client@example.com',
+      role: 'CLIENT',
+      active: true,
+    });
+    cartServiceMock.addItem.mockReturnValue(NEVER);
+    fixture.detectChanges();
+
+    const addBtn = fixture.nativeElement.querySelector('.add-to-cart-action-btn') as HTMLButtonElement;
+    addBtn.click();
+    addBtn.click();
+
+    expect(cartServiceMock.addItem).toHaveBeenCalledTimes(1);
+    expect(component.cartAdding()['p-1']).toBe(true);
+  });
+
+  it('should toggle favorite when authenticated as CLIENT', () => {
+    currentUserSignal.set({
+      id: 'c-1',
+      email: 'client@example.com',
+      role: 'CLIENT',
+      active: true,
+    });
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    const heartBtn = el.querySelector('.center-heart-action') as HTMLButtonElement;
+    heartBtn.click();
+
+    expect(wishlistServiceMock.toggleWishlist).toHaveBeenCalledWith('p-1');
+    expect(toastServiceMock.show).toHaveBeenCalledWith('Añadido a favoritos', 'success');
+  });
+
+  it('should expose a category error and recover on retry', () => {
+    productsServiceMock.getCategories.mockReturnValueOnce(
+      throwError(() => new Error('categories unavailable')),
+    );
+
+    component.loadCategories();
+    expect(component.categoryError()).toBe(true);
+
+    productsServiceMock.getCategories.mockReturnValueOnce(of(mockCategories));
+    component.loadCategories();
+
+    expect(component.categoryError()).toBe(false);
+    expect(component.categories()).toEqual(mockCategories);
+  });
+  it('should redirect logged in CLIENT to /client/catalog on initialization', () => {
+    currentUserSignal.set({
+      id: 'c-1',
+      email: 'client@example.com',
+      role: 'CLIENT',
+      active: true,
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const testFixture = TestBed.createComponent(Home);
+    testFixture.componentInstance.ngOnInit();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/client/catalog'], { replaceUrl: true });
+  });
+
+  it('should redirect logged in SELLER to /seller/catalog on initialization', () => {
+    currentUserSignal.set({
+      id: 's-1',
+      email: 'seller@example.com',
+      role: 'SELLER',
+      active: true,
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const testFixture = TestBed.createComponent(Home);
+    testFixture.componentInstance.ngOnInit();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/seller/catalog'], { replaceUrl: true });
+  });
+
+  it('should redirect logged in ADMIN to /client/catalog on initialization', () => {
+    currentUserSignal.set({
+      id: 'a-1',
+      email: 'admin@example.com',
+      role: 'ADMIN',
+      active: true,
+    });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const testFixture = TestBed.createComponent(Home);
+    testFixture.componentInstance.ngOnInit();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/client/catalog'], { replaceUrl: true });
+  });
+
+  it('correctly calculates accumulated discount and premium price for products', () => {
+    const discountedItem: ProductItem = {
+      id: 'p-disc',
+      name: 'Mochila',
+      categoryIds: ['cat-2'],
+      stock: 4,
+      price: 50.0,
+      discount: 10,
+      premiumDiscount: 5,
+      available: true,
+      sellerId: 's-1',
+    };
+
+    expect(component.getTotalDiscount(discountedItem)).toBe(15);
+    expect(component.getDiscountedPrice(discountedItem)).toBe(45);
+    expect(component.getPremiumPrice(discountedItem)).toBe(42.5);
+    expect(component.getDisplayPrice(discountedItem)).toBe(45);
+
+    currentUserSignal.set({
+      id: 'prem-client',
+      email: 'prem@example.com',
+      role: 'CLIENT',
+      active: true,
+      customerType: 'PREMIUM',
+    });
+    expect(component.isPremiumUser()).toBe(true);
+    expect(component.getDisplayPrice(discountedItem)).toBe(42.5);
+  });
+});

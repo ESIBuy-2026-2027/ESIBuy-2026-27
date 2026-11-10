@@ -5,11 +5,7 @@ import org.springframework.stereotype.Service;
 import es.uclm.esibuy.common.exception.DuplicateUserException;
 import es.uclm.esibuy.common.exception.UserDeletionConflictException;
 import es.uclm.esibuy.common.exception.UserNotFoundException;
-import es.uclm.esibuy.products.repository.ProductRepository;
-import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
-import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.dto.UpdateUserRequestDTO;
-import es.uclm.esibuy.users.dto.UserResponseDTO;
 import es.uclm.esibuy.users.model.AdminProfile;
 import es.uclm.esibuy.users.model.ClientProfile;
 import es.uclm.esibuy.users.model.SellerProfile;
@@ -21,34 +17,29 @@ import es.uclm.esibuy.users.repository.UserRepository;
 public class AdminUserService {
 
     private final UserRepository userRepository;
-    private final ProductRepository productRepository;
-    private final UserService userService;
 
-    public AdminUserService(UserRepository userRepository, ProductRepository productRepository,
-            UserService userService) {
+    public AdminUserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.productRepository = productRepository;
-        this.userService = userService;
     }
 
-    public User obtenerPorId(String id) {
+    public User findById(String id) {
         return userRepository.findById(id).orElseThrow(UserNotFoundException::new);
     }
 
-    public User actualizar(String id, UpdateUserRequestDTO request) {
-        User user = obtenerPorId(id);
-        actualizarDatosGenerales(user, request);
+    public User update(String id, UpdateUserRequestDTO request) {
+        User user = findById(id);
+        updateGeneralData(user, request);
 
         switch (user.getRole()) {
-            case ADMIN -> actualizarPerfilAdmin(user, request);
-            case SELLER -> actualizarPerfilSeller(user, request);
-            case CLIENT -> actualizarPerfilCliente(user, request);
+            case ADMIN -> updateAdminProfile(user, request);
+            case SELLER -> updateSellerProfile(user, request);
+            case CLIENT -> updateClientProfile(user, request);
         }
 
         return userRepository.save(user);
     }
 
-    private void actualizarDatosGenerales(User user, UpdateUserRequestDTO request) {
+    private void updateGeneralData(User user, UpdateUserRequestDTO request) {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setNationalId(blankToNull(request.getNationalId()));
@@ -59,7 +50,7 @@ public class AdminUserService {
         }
     }
 
-    private void actualizarPerfilAdmin(User user, UpdateUserRequestDTO request) {
+    private void updateAdminProfile(User user, UpdateUserRequestDTO request) {
         if (request.getHeadquarters() == null) {
             return;
         }
@@ -72,7 +63,7 @@ public class AdminUserService {
         profile.setHeadquarters(blankToNull(request.getHeadquarters()));
     }
 
-    private void actualizarPerfilSeller(User user, UpdateUserRequestDTO request) {
+    private void updateSellerProfile(User user, UpdateUserRequestDTO request) {
         SellerProfile profile = user.getSellerProfile();
         if (profile == null) {
             profile = new SellerProfile();
@@ -93,7 +84,7 @@ public class AdminUserService {
         }
     }
 
-    private void actualizarPerfilCliente(User user, UpdateUserRequestDTO request) {
+    private void updateClientProfile(User user, UpdateUserRequestDTO request) {
         if (request.getBirthDate() == null) {
             return;
         }
@@ -106,7 +97,7 @@ public class AdminUserService {
         profile.setBirthDate(request.getBirthDate());
     }
 
-    public void eliminar(String id, String authenticatedUserId) {
+    public void delete(String id, String authenticatedUserId) {
         if (id == null || !id.matches("[a-fA-F0-9]{24}")) {
             throw new IllegalStateException("El identificador del usuario no es válido");
         }
@@ -114,8 +105,8 @@ public class AdminUserService {
             throw new IllegalStateException("No puedes eliminar tu propia cuenta");
         }
 
-        User user = obtenerPorId(id);
-        if (user.getRole() == UserRole.SELLER && productRepository.countBySellerId(id) > 0) {
+        User user = findById(id);
+        if (user.getRole() != UserRole.ADMIN) {
             throw new UserDeletionConflictException();
         }
 
@@ -126,23 +117,4 @@ public class AdminUserService {
         return value == null || value.isBlank() ? null : value;
     }
 
-    public UserResponseDTO createClientAdmin(ClientRegistrationRequest request) {
-        User createdUser = userService.registerClient(request, true);
-        return mapToDTO(createdUser);
-    }
-
-    public UserResponseDTO createSellerAdmin(SellerRegistrationRequest request) {
-        User createdUser = userService.registerSeller(request, true);
-        return mapToDTO(createdUser);
-    }
-
-    private UserResponseDTO mapToDTO(User user) {
-        return new UserResponseDTO(
-                user.getId(),
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getPhone(),
-                user.getRole().name());
-    }
 }

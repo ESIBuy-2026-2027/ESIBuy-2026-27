@@ -2,9 +2,12 @@ package es.uclm.esibuy.users.controller;
 
 import es.uclm.esibuy.common.exception.ApiExceptionHandler;
 import es.uclm.esibuy.common.exception.InvalidCredentialsException;
+import es.uclm.esibuy.security.AuthenticatedUserPrincipal;
 import es.uclm.esibuy.security.config.SecurityConfig;
+import es.uclm.esibuy.security.service.EmailOtpService;
 import es.uclm.esibuy.security.service.LoginAttemptService;
 import es.uclm.esibuy.security.service.SessionAuthenticationService;
+import es.uclm.esibuy.security.service.TwoFactorAuthenticationService;
 import es.uclm.esibuy.users.dto.AdminCreateRequest;
 import es.uclm.esibuy.users.dto.ClientRegistrationRequest;
 import es.uclm.esibuy.users.dto.LoginRequest;
@@ -12,96 +15,144 @@ import es.uclm.esibuy.users.dto.SellerRegistrationRequest;
 import es.uclm.esibuy.users.model.User;
 import es.uclm.esibuy.users.model.UserRole;
 import es.uclm.esibuy.users.service.UserService;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
-
-import java.util.concurrent.atomic.AtomicInteger;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
-@Import({ ApiExceptionHandler.class, SecurityConfig.class, SessionAuthenticationService.class })
+@Import({
+                ApiExceptionHandler.class,
+                SecurityConfig.class,
+                SessionAuthenticationService.class
+})
 class UserControllerTest {
 
         private static final String SELLER_EMAIL = "seller@example.com";
         private static final String SELLER_ID = "seller-id";
+        private static final String CLIENT_EMAIL = "client@example.com";
+        private static final String CLIENT_ID = "client-id";
         private static final String LOGIN_API = "/api/users/login";
+        private static final String VERIFY_OTP_API = "/api/users/login/verify-otp";
         private static final String CURRENT_USER_API = "/api/users/me";
+        private static final String EMAIL_OTP_SETTINGS_API = "/api/users/me/email-otp-settings";
+        private static final String TEST_OTP = "123456";
 
         @Autowired
         private MockMvc mockMvc;
 
-        @MockitoBean
+        @MockBean
         private UserService userService;
 
-        @MockitoBean
+        @MockBean
         private LoginAttemptService loginAttemptService;
 
+        @MockBean
+        private TwoFactorAuthenticationService twoFactorAuthenticationService;
+
+        @MockBean
+        private EmailOtpService emailOtpService;
+
+        @SpyBean
+        private SessionAuthenticationService sessionAuthenticationService;
+
         @Test
-        void shouldCreateSessionOnLoginAndKeepItAcrossRequestsWithConfiguredTimeout() throws Exception {
-                User seller = mock(User.class);
-                when(seller.getId()).thenReturn(SELLER_ID);
-                when(seller.getEmail()).thenReturn(SELLER_EMAIL);
-                when(seller.getRole()).thenReturn(UserRole.SELLER);
-                when(seller.isActive()).thenReturn(false);
+        void shouldCreateSessionOnLoginAndKeepItAcrossRequestsWithConfiguredTimeout()
+                        throws Exception {
+
+                User seller = activeSeller();
+
                 when(userService.login(any(LoginRequest.class))).thenReturn(seller);
+                when(userService.findById(SELLER_ID)).thenReturn(seller);
+                doNothing().when(emailOtpService).verifyChallenge(SELLER_ID, TEST_OTP);
 
                 MockHttpSession preLoginSession = new MockHttpSession();
                 String oldSessionId = preLoginSession.getId();
-                MvcResult loginResult = mockMvc.perform(post(LOGIN_API)
-                                .with(csrf())
-                                .session(preLoginSession)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                                {"email":"seller@example.com","password":"Password123!"}
-                                                """))
+
+                MvcResult loginResult = mockMvc.perform(
+                                post(LOGIN_API)
+                                                .with(csrf())
+                                                .session(preLoginSession)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content("""
+                                                                {"email":"seller@example.com","password":"Password123!"}
+                                                                """))
+                                .andExpect(status().isAccepted())
+                                .andExpect(jsonPath("$.requires3fa").value(true))
+                                .andExpect(jsonPath("$.expiresInSeconds").value(600))
+                                .andReturn();
+
+                MockHttpSession pendingSession = (MockHttpSession) loginResult.getRequest().getSession(false);
+
+                assertNotNull(pendingSession);
+                assertEquals(oldSessionId, pendingSession.getId());
+                assertEquals(30 * 60, pendingSession.getMaxInactiveInterval());
+
+                MvcResult verificationResult = mockMvc.perform(
+                                post(VERIFY_OTP_API)
+                                                .with(csrf())
+                                                .session(pendingSession)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content("""
+                                                                {"code":"123456"}
+                                                                """))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.email").value("seller@example.com"))
+                                .andExpect(jsonPath("$.id").value(SELLER_ID))
+                                .andExpect(jsonPath("$.email").value(SELLER_EMAIL))
                                 .andExpect(jsonPath("$.role").value("SELLER"))
                                 .andReturn();
 
-                MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
-                assertNotNull(session);
-                assertNotEquals(oldSessionId, session.getId());
-                assertEquals(30 * 60, session.getMaxInactiveInterval());
+                MockHttpSession authenticatedSession = (MockHttpSession) verificationResult.getRequest()
+                                .getSession(false);
 
-                mockMvc.perform(get(CURRENT_USER_API).session(session))
+                assertNotNull(authenticatedSession);
+                assertNotEquals(oldSessionId, authenticatedSession.getId());
+                assertEquals(30 * 60, authenticatedSession.getMaxInactiveInterval());
+
+                mockMvc.perform(get(CURRENT_USER_API).session(authenticatedSession))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.id").value("seller-id"))
-                                .andExpect(jsonPath("$.email").value("seller@example.com"))
+                                .andExpect(jsonPath("$.id").value(SELLER_ID))
+                                .andExpect(jsonPath("$.email").value(SELLER_EMAIL))
                                 .andExpect(jsonPath("$.role").value("SELLER"));
         }
 
         @Test
         void shouldReturnUnauthorizedWithoutSession() throws Exception {
                 mockMvc.perform(get(CURRENT_USER_API))
-                                .andExpect(status().isUnauthorized())
-                                .andReturn();
+                                .andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -123,31 +174,17 @@ class UserControllerTest {
 
         @Test
         void shouldInvalidateSessionOnLogout() throws Exception {
-                User seller = mock(User.class);
-                when(seller.getId()).thenReturn(SELLER_ID);
-                when(seller.getEmail()).thenReturn(SELLER_EMAIL);
-                when(seller.getRole()).thenReturn(UserRole.SELLER);
-                when(seller.isActive()).thenReturn(false);
-                when(userService.login(any(LoginRequest.class))).thenReturn(seller);
-
-                MvcResult loginResult = mockMvc.perform(post("/api/users/login")
-                                .with(csrf())
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                                {"email":"seller@example.com","password":"Password123!"}
-                                                """))
-                                .andExpect(status().isOk())
-                                .andReturn();
-                MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
-                assertNotNull(session);
+                MockHttpSession authenticatedSession = new MockHttpSession();
 
                 mockMvc.perform(post("/api/users/logout")
-                                .session(session)
+                                .session(authenticatedSession)
+                                .with(user("seller@example.com").roles("SELLER"))
                                 .with(csrf()))
                                 .andExpect(status().isNoContent());
 
-                assertTrue(session.isInvalid());
-                mockMvc.perform(get("/api/users/me"))
+                assertTrue(authenticatedSession.isInvalid());
+
+                mockMvc.perform(get(CURRENT_USER_API))
                                 .andExpect(status().isUnauthorized());
         }
 
@@ -158,13 +195,18 @@ class UserControllerTest {
                 when(client.getEmail()).thenReturn("ana@example.com");
                 when(client.getRole()).thenReturn(UserRole.CLIENT);
                 when(client.isActive()).thenReturn(true);
-                when(userService.registerClient(any(ClientRegistrationRequest.class))).thenReturn(client);
+
+                when(userService.registerClient(any(ClientRegistrationRequest.class)))
+                                .thenReturn(client);
 
                 mockMvc.perform(post("/api/users/register/client")
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                                {"firstName":"Ana","lastName":"García","email":"ana@example.com","nationalId":"12345678Z","birthDate":"2002-01-01","password":"Password123!","repeatedPassword":"Password123!","customerType":"PREMIUM"}
+                                                {"firstName":"Ana","lastName":"García",
+                                                 "email":"ana@example.com","nationalId":"12345678Z",
+                                                 "birthDate":"2002-01-01","password":"Password123!",
+                                                 "repeatedPassword":"Password123!","customerType":"PREMIUM"}
                                                 """))
                                 .andExpect(status().isCreated())
                                 .andExpect(jsonPath("$.email").value("ana@example.com"))
@@ -174,17 +216,22 @@ class UserControllerTest {
         @Test
         void shouldRegisterSeller() throws Exception {
                 User seller = mock(User.class);
-                when(seller.getId()).thenReturn("seller-id");
+                when(seller.getId()).thenReturn(SELLER_ID);
                 when(seller.getEmail()).thenReturn("carlos@example.com");
                 when(seller.getRole()).thenReturn(UserRole.SELLER);
                 when(seller.isActive()).thenReturn(true);
-                when(userService.registerSeller(any(SellerRegistrationRequest.class))).thenReturn(seller);
+
+                when(userService.registerSeller(any(SellerRegistrationRequest.class)))
+                                .thenReturn(seller);
 
                 mockMvc.perform(post("/api/users/register/seller")
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                                {"firstName":"Carlos","lastName":"López","email":"carlos@example.com","nationalId":"87654321A","businessName":"Carlos Tech","defaultCategory":"Informatica","password":"Password123!","repeatedPassword":"Password123!"}
+                                                {"firstName":"Carlos","lastName":"López",
+                                                 "email":"carlos@example.com","nationalId":"87654321A",
+                                                 "businessName":"Carlos Tech","defaultCategory":"Informatica",
+                                                 "password":"Password123!","repeatedPassword":"Password123!"}
                                                 """))
                                 .andExpect(status().isCreated())
                                 .andExpect(jsonPath("$.email").value("carlos@example.com"))
@@ -192,13 +239,18 @@ class UserControllerTest {
         }
 
         @Test
-        void shouldPreserveEmailValidationMessagesOnAdminAndRegistrationRequests() throws Exception {
+        void shouldPreserveEmailValidationMessagesOnAdminAndRegistrationRequests()
+                        throws Exception {
+
                 mockMvc.perform(post("/api/users/admin")
                                 .with(user("admin@esibuy.com").roles("ADMIN"))
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                                {"firstName":"Admin","lastName":"Root","email":"invalid","password":"Admin123!Safe","repeatedPassword":"Admin123!Safe","headquarters":"Ciudad Real"}
+                                                {"firstName":"Admin","lastName":"Root",
+                                                 "email":"invalid","password":"Admin123!Safe",
+                                                 "repeatedPassword":"Admin123!Safe",
+                                                 "headquarters":"Ciudad Real"}
                                                 """))
                                 .andExpect(status().isBadRequest())
                                 .andExpect(jsonPath("$.errors.email")
@@ -208,10 +260,14 @@ class UserControllerTest {
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                                {"firstName":"Ana","lastName":"García","email":"invalid","nationalId":"documento-1","birthDate":"2002-01-01","password":"Password123!","repeatedPassword":"Password123!","customerType":"PREMIUM"}
+                                                {"firstName":"Ana","lastName":"García",
+                                                 "email":"invalid","nationalId":"documento-1",
+                                                 "birthDate":"2002-01-01","password":"Password123!",
+                                                 "repeatedPassword":"Password123!","customerType":"PREMIUM"}
                                                 """))
                                 .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.errors.email").value("El formato de email no es válido"));
+                                .andExpect(jsonPath("$.errors.email")
+                                                .value("El formato de email no es válido"));
         }
 
         @Test
@@ -221,6 +277,7 @@ class UserControllerTest {
                 when(admin.getEmail()).thenReturn("admin@esibuy.com");
                 when(admin.getRole()).thenReturn(UserRole.ADMIN);
                 when(admin.isActive()).thenReturn(true);
+
                 when(userService.createAdmin(any(AdminCreateRequest.class))).thenReturn(admin);
 
                 mockMvc.perform(post("/api/users/admin")
@@ -228,7 +285,10 @@ class UserControllerTest {
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                                {"firstName":"Admin","lastName":"Root","email":"admin@esibuy.com","password":"Admin123!Safe","repeatedPassword":"Admin123!Safe","headquarters":"Ciudad Real"}
+                                                {"firstName":"Admin","lastName":"Root",
+                                                 "email":"admin@esibuy.com","password":"Admin123!Safe",
+                                                 "repeatedPassword":"Admin123!Safe",
+                                                 "headquarters":"Ciudad Real"}
                                                 """))
                                 .andExpect(status().isCreated())
                                 .andExpect(jsonPath("$.email").value("admin@esibuy.com"))
@@ -240,49 +300,34 @@ class UserControllerTest {
                 doThrow(new InvalidCredentialsException())
                                 .when(userService).login(any(LoginRequest.class));
 
-                mockMvc.perform(post(LOGIN_API)
-                                .with(csrf())
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                                {"email":"seller@example.com","password":"wrong-password"}
-                                                """))
+                loginRequest()
                                 .andExpect(status().isUnauthorized());
 
-                verify(loginAttemptService).loginFailed("seller@example.com", "127.0.0.1");
+                verify(loginAttemptService).loginFailed(SELLER_EMAIL, "127.0.0.1");
         }
 
         @Test
-        void shouldResetLoginAttemptsAfterSuccessfulLogin() throws Exception {
-                User seller = mock(User.class);
-                when(seller.getId()).thenReturn("seller-id");
-                when(seller.getEmail()).thenReturn("seller@example.com");
-                when(seller.getRole()).thenReturn(UserRole.SELLER);
-                when(seller.isActive()).thenReturn(false);
+        void shouldNotMarkSellerLoginAsSuccessfulBeforeOtpVerification() throws Exception {
+                User seller = activeSeller();
                 when(userService.login(any(LoginRequest.class))).thenReturn(seller);
 
-                mockMvc.perform(post(LOGIN_API)
-                                .with(csrf())
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                                {"email":"seller@example.com","password":"Password123!"}
-                                                """))
-                                .andExpect(status().isOk());
+                loginRequest()
+                                .andExpect(status().isAccepted())
+                                .andExpect(jsonPath("$.requires3fa").value(true));
 
-                verify(loginAttemptService).loginSucceeded("seller@example.com", "127.0.0.1");
+                verify(loginAttemptService, never())
+                                .loginSucceeded(SELLER_EMAIL, "127.0.0.1");
+                verify(emailOtpService).issueChallenge(seller);
         }
 
         @Test
         void shouldReturnTooManyRequestsWhenLoginIsBlocked() throws Exception {
-                when(loginAttemptService.isBlocked("seller@example.com", "127.0.0.1")).thenReturn(true);
-                when(loginAttemptService.getRemainingBlockSeconds("seller@example.com", "127.0.0.1"))
+                when(loginAttemptService.isBlocked(SELLER_EMAIL, "127.0.0.1"))
+                                .thenReturn(true);
+                when(loginAttemptService.getRemainingBlockSeconds(SELLER_EMAIL, "127.0.0.1"))
                                 .thenReturn(42L);
 
-                mockMvc.perform(post(LOGIN_API)
-                                .with(csrf())
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                                {"email":"seller@example.com","password":"Password123!"}
-                                                """))
+                loginRequest()
                                 .andExpect(status().isTooManyRequests())
                                 .andExpect(header().string("Retry-After", "42"))
                                 .andExpect(jsonPath("$.message")
@@ -293,10 +338,11 @@ class UserControllerTest {
 
         @Test
         void shouldBlockTheSixthLoginAfterFiveInvalidCredentials() throws Exception {
-                when(loginAttemptService.isBlocked("seller@example.com", "127.0.0.1"))
+                when(loginAttemptService.isBlocked(SELLER_EMAIL, "127.0.0.1"))
                                 .thenReturn(false, false, false, false, false, true);
-                when(loginAttemptService.getRemainingBlockSeconds("seller@example.com", "127.0.0.1"))
+                when(loginAttemptService.getRemainingBlockSeconds(SELLER_EMAIL, "127.0.0.1"))
                                 .thenReturn(30L);
+
                 doThrow(new InvalidCredentialsException())
                                 .when(userService).login(any(LoginRequest.class));
 
@@ -313,31 +359,227 @@ class UserControllerTest {
 
         @Test
         void shouldEvaluateTheSeventhLoginAfterTheBlockExpires() throws Exception {
-                when(loginAttemptService.isBlocked("seller@example.com", "127.0.0.1"))
+                when(loginAttemptService.isBlocked(SELLER_EMAIL, "127.0.0.1"))
                                 .thenReturn(true, false);
-                when(loginAttemptService.getRemainingBlockSeconds("seller@example.com", "127.0.0.1"))
+                when(loginAttemptService.getRemainingBlockSeconds(SELLER_EMAIL, "127.0.0.1"))
                                 .thenReturn(30L);
 
-                User seller = mock(User.class);
-                when(seller.getId()).thenReturn("seller-id");
-                when(seller.getEmail()).thenReturn("seller@example.com");
-                when(seller.getRole()).thenReturn(UserRole.SELLER);
-                when(seller.isActive()).thenReturn(false);
-                AtomicInteger evaluatedAttempts = new AtomicInteger();
-                when(userService.login(any(LoginRequest.class))).thenAnswer(invocation -> {
-                        if (evaluatedAttempts.incrementAndGet() == 1) {
-                                throw new InvalidCredentialsException();
-                        }
-                        return seller;
-                });
+                User seller = activeSeller();
+                when(userService.login(any(LoginRequest.class))).thenReturn(seller);
 
                 loginRequest()
                                 .andExpect(status().isTooManyRequests())
                                 .andExpect(header().string("Retry-After", "30"));
+
                 loginRequest()
-                                .andExpect(status().isUnauthorized());
+                                .andExpect(status().isAccepted())
+                                .andExpect(jsonPath("$.requires3fa").value(true));
 
                 verify(userService).login(any(LoginRequest.class));
+        }
+
+        @Test
+        void sellerLoginRequiresEmailOtp() throws Exception {
+                User seller = activeSeller();
+                when(userService.login(any(LoginRequest.class))).thenReturn(seller);
+
+                loginRequest()
+                                .andExpect(status().isAccepted())
+                                .andExpect(jsonPath("$.requires3fa").value(true))
+                                .andExpect(jsonPath("$.expiresInSeconds").value(600));
+
+                verify(emailOtpService).issueChallenge(seller);
+                verify(sessionAuthenticationService, never())
+                                .authenticate(any(), any(), any());
+        }
+
+        @Test
+        void clientLoginRequiresEmailOtpWhenEnabled() throws Exception {
+                User client = mock(User.class);
+                when(client.getId()).thenReturn(CLIENT_ID);
+                when(client.getEmail()).thenReturn(CLIENT_EMAIL);
+                when(client.getRole()).thenReturn(UserRole.CLIENT);
+                when(client.isActive()).thenReturn(true);
+                when(client.isBlocked()).thenReturn(false);
+                when(client.isTotpEnabled()).thenReturn(true);
+                when(client.isEmailOtpEnabled()).thenReturn(true);
+
+                when(userService.login(any(LoginRequest.class))).thenReturn(client);
+                when(twoFactorAuthenticationService.verifyLoginCode(client, TEST_OTP))
+                                .thenReturn(true);
+                when(userService.findById(CLIENT_ID)).thenReturn(client);
+
+                MvcResult loginResult = mockMvc.perform(post(LOGIN_API)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"email":"client@example.com","password":"Password123!",
+                                                 "totpCode":"123456"}
+                                                """))
+                                .andExpect(status().isAccepted())
+                                .andExpect(jsonPath("$.requires3fa").value(true))
+                                .andReturn();
+
+                MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
+
+                mockMvc.perform(post(VERIFY_OTP_API)
+                                .with(csrf())
+                                .session(session)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"code":"123456"}
+                                                """))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.role").value("CLIENT"));
+
+                verify(emailOtpService).issueChallenge(client);
+                verify(emailOtpService).verifyChallenge(CLIENT_ID, TEST_OTP);
+                verify(sessionAuthenticationService).authenticate(any(), any(), any());
+        }
+
+        @Test
+        void emailOtpSettingsExposeWhetherTotpIsEnabled() throws Exception {
+                User seller = activeSeller();
+                when(userService.findById(SELLER_ID)).thenReturn(seller);
+
+                mockMvc.perform(get(EMAIL_OTP_SETTINGS_API)
+                                .with(sellerAuthentication()))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.enabled").value(true))
+                                .andExpect(jsonPath("$.totpEnabled").value(false))
+                                .andExpect(jsonPath("$.email").value(SELLER_EMAIL));
+        }
+
+        @Test
+        void shouldRejectEnablingEmailOtpWhenTotpIsDisabled() throws Exception {
+                User seller = activeSeller();
+                when(userService.findById(SELLER_ID)).thenReturn(seller);
+
+                mockMvc.perform(put(EMAIL_OTP_SETTINGS_API)
+                                .with(sellerAuthentication())
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"enabled":true}
+                                                """))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.message").value(
+                                                "Activa primero la verificación en dos pasos con una aplicación Authenticator."));
+
+                verify(userService, never()).save(any(User.class));
+        }
+
+        @Test
+        void shouldAllowEnablingEmailOtpWhenTotpIsEnabled() throws Exception {
+                User seller = activeSeller();
+                when(seller.isTotpEnabled()).thenReturn(true);
+                when(userService.findById(SELLER_ID)).thenReturn(seller);
+
+                mockMvc.perform(put(EMAIL_OTP_SETTINGS_API)
+                                .with(sellerAuthentication())
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"enabled":true}
+                                                """))
+                                .andExpect(status().isOk());
+
+                verify(userService).save(seller);
+        }
+
+        @Test
+        void shouldAllowClientToEnableEmailOtpWhenTotpIsEnabled() throws Exception {
+                User client = mock(User.class);
+                when(client.getId()).thenReturn(CLIENT_ID);
+                when(client.getEmail()).thenReturn(CLIENT_EMAIL);
+                when(client.getRole()).thenReturn(UserRole.CLIENT);
+                when(client.isTotpEnabled()).thenReturn(true);
+                when(userService.findById(CLIENT_ID)).thenReturn(client);
+
+                mockMvc.perform(put(EMAIL_OTP_SETTINGS_API)
+                                .with(clientAuthentication())
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"enabled":true}
+                                                """))
+                                .andExpect(status().isOk());
+
+                verify(userService).save(client);
+        }
+
+        @Test
+        void shouldRejectOtpVerificationWithoutPendingSession() throws Exception {
+                mockMvc.perform(post(VERIFY_OTP_API)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"code":"123456"}
+                                                """))
+                                .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        void shouldRejectInvalidOtpAndKeepAuthenticationUnauthenticated() throws Exception {
+                User seller = activeSeller();
+                when(userService.login(any(LoginRequest.class))).thenReturn(seller);
+                when(userService.findById(SELLER_ID)).thenReturn(seller);
+
+                doThrow(new es.uclm.esibuy.common.exception.InvalidOtpException())
+                                .when(emailOtpService).verifyChallenge(SELLER_ID, "000000");
+
+                MvcResult loginResult = loginRequest()
+                                .andExpect(status().isAccepted())
+                                .andReturn();
+
+                MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
+                assertNotNull(session);
+
+                mockMvc.perform(post(VERIFY_OTP_API)
+                                .with(csrf())
+                                .session(session)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                {"code":"000000"}
+                                                """))
+                                .andExpect(status().isUnauthorized());
+
+                verify(sessionAuthenticationService, never())
+                                .authenticate(any(), any(), any());
+        }
+
+        private User activeSeller() {
+                User seller = mock(User.class);
+
+                when(seller.getId()).thenReturn(SELLER_ID);
+                when(seller.getEmail()).thenReturn(SELLER_EMAIL);
+                when(seller.getRole()).thenReturn(UserRole.SELLER);
+                when(seller.isActive()).thenReturn(true);
+                when(seller.isBlocked()).thenReturn(false);
+                when(seller.isTotpEnabled()).thenReturn(false);
+                when(seller.isEmailOtpEnabled()).thenReturn(true);
+
+                return seller;
+        }
+
+        private RequestPostProcessor sellerAuthentication() {
+                AuthenticatedUserPrincipal principal = new AuthenticatedUserPrincipal(
+                                SELLER_ID, SELLER_EMAIL, UserRole.SELLER, true);
+
+                return authentication(UsernamePasswordAuthenticationToken.authenticated(
+                                principal,
+                                null,
+                                AuthorityUtils.createAuthorityList("ROLE_SELLER")));
+        }
+
+        private RequestPostProcessor clientAuthentication() {
+                AuthenticatedUserPrincipal principal = new AuthenticatedUserPrincipal(
+                                CLIENT_ID, CLIENT_EMAIL, UserRole.CLIENT, true);
+
+                return authentication(UsernamePasswordAuthenticationToken.authenticated(
+                                principal,
+                                null,
+                                AuthorityUtils.createAuthorityList("ROLE_CLIENT")));
         }
 
         private ResultActions loginRequest() throws Exception {

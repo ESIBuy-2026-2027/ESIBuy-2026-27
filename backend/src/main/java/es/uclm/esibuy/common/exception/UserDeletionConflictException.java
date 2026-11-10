@@ -3,6 +3,10 @@ package es.uclm.esibuy.common.exception;
 public class UserDeletionConflictException extends RuntimeException {
 
     public UserDeletionConflictException() {
-        super("No se puede eliminar el vendedor mientras tenga productos asociados");
+        super("Solo se pueden eliminar cuentas de otros administradores");
+    }
+
+    public UserDeletionConflictException(String message) {
+        super(message);
     }
 }

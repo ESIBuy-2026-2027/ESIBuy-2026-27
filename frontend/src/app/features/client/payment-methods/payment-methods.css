@@ -1,0 +1,1473 @@
+:host {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    color: #172b3a;
+    font-family: Inter, "Segoe UI", sans-serif;
+}
+
+:host *,
+:host *::before,
+:host *::after {
+    box-sizing: border-box;
+}
+
+/* PANEL PRINCIPAL */
+
+.payment-page {
+    display: block;
+    width: min(100%, 1000px);
+    min-width: 0;
+    margin: 0 auto;
+    padding: 30px 28px;
+    border: 1px solid #d9e3eb;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(16 44 64 / 5%);
+}
+
+/* CABECERA */
+
+.page-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.heading-copy {
+    min-width: 0;
+}
+
+.eyebrow {
+    display: block;
+    margin: 0 0 7px;
+    color: #528477;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 1.1px;
+}
+
+.page-heading h1 {
+    margin: 0 0 8px;
+    color: var(--color-text-primary);
+    font-size: clamp(25px, 3vw, 32px);
+    font-weight: 750;
+    letter-spacing: -0.7px;
+    overflow-wrap: anywhere;
+}
+
+.page-description {
+    max-width: 580px;
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* ICONOS GENERALES */
+
+.page-heading svg,
+.panel-heading-icon svg,
+.default-badge svg,
+.set-default-button svg,
+.detail-row svg,
+.success-message svg,
+.form-error svg,
+.payment-notice svg,
+.payment-icon svg,
+.icon-action svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.page-heading .primary-action svg {
+    width: 17px;
+    height: 17px;
+}
+
+/* BOTÓN PRINCIPAL */
+
+.primary-action {
+    display: inline-flex;
+    min-height: 42px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    border: 1px solid var(--color-brand-dark);
+    border-radius: 8px;
+    background: var(--color-brand-dark);
+    color: #fff;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.primary-action:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: #173f56;
+    background: #173f56;
+}
+
+.primary-action:disabled,
+.secondary-button:disabled,
+.set-default-button:disabled,
+.icon-action:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+/* MENSAJES */
+
+.success-message,
+.form-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border: 1px solid;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.success-message {
+    border-color: #a9ddc5;
+    background: #edf9f2;
+    color: #17633c;
+}
+
+.success-message svg {
+    margin-top: 1px;
+    color: #1f9d62;
+}
+
+.form-error {
+    border-color: #f1aeb5;
+    background: #fff1f2;
+    color: #842029;
+}
+
+.form-error svg {
+    color: #dc2626;
+}
+
+/* PANEL DEL FORMULARIO */
+
+.panel {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 32px;
+    padding: 24px;
+    border: 1px solid #d9e3eb;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 4px 16px rgb(16 44 64 / 3%);
+}
+
+.panel-heading {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 23px;
+}
+
+.panel-heading-icon {
+    display: grid;
+    width: 43px;
+    height: 43px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid #b9e6d8;
+    border-radius: 11px;
+    background: #edf9f2;
+    color: #17633c;
+}
+
+.panel-heading-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.panel-heading-text {
+    min-width: 0;
+}
+
+.panel-heading h2 {
+    margin: 0 0 5px;
+    color: var(--color-text-primary);
+    font-size: 17px;
+    font-weight: 750;
+    letter-spacing: -0.25px;
+}
+
+.panel-heading p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* CAMPOS */
+
+.payment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 16px;
+    align-items: start;
+}
+
+.form-field {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.field-full {
+    grid-column: 1 / -1;
+}
+
+.form-field-group {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    min-width: 0;
+}
+
+.form-field label {
+    color: #3a5871;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.required-mark {
+    color: #b42332;
+}
+
+.form-field input,
+.form-field select {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 43px;
+    padding: 10px 12px;
+    border: 1px solid #d9e3eb;
+    border-radius: 8px;
+    outline: none;
+    background: #f8fafc;
+    color: #203b4e;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.45;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.form-field input::placeholder {
+    color: #8a9ba5;
+    opacity: 1;
+}
+
+.form-field select {
+    cursor: pointer;
+}
+
+.form-field input:hover:not(:disabled),
+.form-field select:hover:not(:disabled) {
+    border-color: #9aafbf;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+    border-color: #42bfa3;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgb(66 191 163 / 16%);
+}
+
+.form-field input:disabled,
+.form-field select:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.form-field small {
+    display: block;
+    min-height: 16px;
+    color: var(--color-text-secondary);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* OPCIÓN PREDETERMINADA */
+
+.default-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 14px;
+    border: 1px solid #d9e3eb;
+    border-radius: 9px;
+    background: #f8fafc;
+    cursor: pointer;
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.default-option:hover {
+    border-color: #b9cbd3;
+    background: #f4f8f9;
+}
+
+.default-option input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+.custom-checkbox {
+    display: grid;
+    width: 19px;
+    height: 19px;
+    flex: 0 0 auto;
+    place-items: center;
+    margin-top: 1px;
+    border: 1.5px solid #9aafbf;
+    border-radius: 5px;
+    background: #fff;
+    color: #fff;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.custom-checkbox svg {
+    width: 13px;
+    height: 13px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0;
+}
+
+.default-option input:checked + .custom-checkbox {
+    border-color: #17633c;
+    background: #17633c;
+}
+
+.default-option input:checked + .custom-checkbox svg {
+    opacity: 1;
+}
+
+.default-option input:focus-visible + .custom-checkbox {
+    outline: 3px solid rgb(66 191 163 / 30%);
+    outline-offset: 3px;
+}
+
+.default-option input:disabled + .custom-checkbox {
+    opacity: 0.55;
+}
+
+.default-option-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.default-option-copy strong {
+    color: var(--color-text-primary);
+    font-size: 12px;
+    font-weight: 750;
+    line-height: 1.45;
+}
+
+.default-option-copy small {
+    color: var(--color-text-secondary);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* AVISO INFORMATIVO */
+
+.payment-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: -4px 0 0;
+    padding: 12px 14px;
+    border: 1px solid #d9e3eb;
+    border-radius: 8px;
+    background: #f4f8f9;
+    color: var(--color-text-secondary);
+}
+
+.payment-notice svg {
+    width: 17px;
+    height: 17px;
+    margin-top: 1px;
+    color: #528477;
+}
+
+.payment-notice p {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+/* ACCIONES DEL FORMULARIO */
+
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 1px solid #e7edf0;
+}
+
+.secondary-button {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 15px;
+    border: 1px solid #d9e3eb;
+    border-radius: 8px;
+    background: #fff;
+    color: #3a5871;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.secondary-button:hover:not(:disabled) {
+    border-color: #9aafbf;
+    background: #f4f8f9;
+}
+
+.button-spinner,
+.loading-spinner {
+    display: inline-block;
+    width: 17px;
+    height: 17px;
+    flex: 0 0 auto;
+    border: 2px solid rgb(16 44 64 / 20%);
+    border-top-color: var(--color-brand-dark);
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* SECCIÓN DE MÉTODOS GUARDADOS */
+
+.payment-section {
+    min-width: 0;
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 17px;
+}
+
+.section-heading h2 {
+    margin: 0 0 5px;
+    color: var(--color-text-primary);
+    font-size: 17px;
+    font-weight: 750;
+    letter-spacing: -0.3px;
+}
+
+.section-heading p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.method-count {
+    display: inline-flex;
+    min-height: 27px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    border: 1px solid #d9e3eb;
+    border-radius: 999px;
+    background: #f4f8f9;
+    color: #3a5871;
+    font-size: 10px;
+    font-weight: 750;
+}
+
+/* CARGA Y ESTADO VACÍO */
+
+.state-card {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    min-height: 185px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 28px 20px;
+    border: 1px dashed #cbdde2;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: var(--color-text-secondary);
+    text-align: center;
+}
+
+.state-card > p {
+    margin: 0;
+    font-size: 12px;
+}
+
+.state-card .loading-spinner {
+    width: 24px;
+    height: 24px;
+    border-width: 3px;
+    border-color: #d9e3eb;
+    border-top-color: #17633c;
+}
+
+.empty-state-icon {
+    display: grid;
+    width: 53px;
+    height: 53px;
+    flex: 0 0 auto;
+    place-items: center;
+    margin-bottom: 2px;
+    border: 1px solid #d9e3eb;
+    border-radius: 15px;
+    background: #f4f8f9;
+    color: #3a5871;
+}
+
+.empty-state-icon svg {
+    display: block;
+    width: 27px;
+    height: 27px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.empty-state h3 {
+    margin: 0;
+    color: var(--color-text-primary);
+    font-size: 15px;
+    font-weight: 750;
+    line-height: normal;
+}
+
+.empty-state > p {
+    max-width: 360px;
+    margin: 0 0 5px;
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.empty-state .primary-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    margin-top: 5px;
+    padding: 0 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.empty-state .primary-action svg {
+    display: block;
+    width: 17px;
+    height: 17px;
+    flex: 0 0 17px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* GRUPOS */
+
+.group-title {
+    margin: 26px 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e7edf0;
+    color: var(--color-text-primary);
+    font-size: 15px;
+    font-weight: 750;
+}
+
+.payment-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 16px;
+}
+
+/* TARJETA DE MÉTODO DE PAGO */
+
+.payment-card {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    padding: 19px;
+    border: 1px solid #d9e3eb;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 4px 15px rgb(16 44 64 / 3%);
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.payment-card:hover {
+    transform: translateY(-2px);
+    border-color: #b9cbd3;
+    box-shadow: 0 8px 22px rgb(16 44 64 / 6%);
+}
+
+.payment-card.is-default {
+    border-color: #a9ddc5;
+    box-shadow: inset 0 0 0 1px rgb(31 157 98 / 6%);
+}
+
+.payment-card.is-default:hover {
+    border-color: #7dcba4;
+}
+
+.payment-card-top {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.payment-identity {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 11px;
+}
+
+.payment-icon {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid #d9e3eb;
+    border-radius: 10px;
+    background: #f4f8f9;
+    color: #3a5871;
+}
+
+.payment-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* LOGOTIPOS DE LOS MÉTODOS DE PAGO */
+
+.payment-logo {
+    display: block;
+    width: 30px;
+    height: 24px;
+    flex: 0 0 auto;
+    object-fit: contain;
+}
+
+.payment-logo.paypal-logo {
+    width: 32px;
+    height: 24px;
+}
+
+.payment-logo.bizum-logo {
+    width: 32px;
+    height: 24px;
+}
+
+.payment-card.is-default .payment-icon {
+    border-color: #b9e6d8;
+    background: #edf9f2;
+    color: #17633c;
+}
+
+.payment-icon.paypal-icon {
+    border-color: #c8d9ee;
+    background: #edf3fb;
+    color: #175b9d;
+}
+
+.payment-icon.bizum-icon {
+    border-color: #dfd0ef;
+    background: #f2eafa;
+    color: #683aa0;
+}
+
+.payment-letter {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+/* INFORMACIÓN */
+
+.payment-name {
+    min-width: 0;
+    padding-top: 2px;
+}
+
+.payment-name h3 {
+    margin: 0 0 5px;
+    overflow-wrap: anywhere;
+    color: var(--color-text-primary);
+    font-size: 13px;
+    font-weight: 750;
+    line-height: 1.4;
+}
+
+.payment-name p {
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: #3a5871;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+/* ETIQUETA PREDETERMINADA */
+
+.default-badge {
+    display: inline-flex;
+    min-height: 25px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 4px 9px;
+    border: 1px solid #a9ddc5;
+    border-radius: 999px;
+    background: #edf9f2;
+    color: #17633c;
+    font-size: 10px;
+    font-weight: 750;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.default-badge svg {
+    width: 13px;
+    height: 13px;
+    stroke-width: 2.2;
+}
+
+/* BOTÓN PREDETERMINADO */
+
+.set-default-button {
+    display: inline-flex;
+    min-height: 30px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+    border: 1px solid #d9e3eb;
+    border-radius: 8px;
+    background: #fff;
+    color: #3a5871;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.set-default-button:hover:not(:disabled) {
+    border-color: #9aafbf;
+    background: #f4f8f9;
+    color: var(--color-text-primary);
+}
+
+/* DETALLES */
+
+.payment-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 15px 0;
+    border-top: 1px solid #e7edf0;
+    border-bottom: 1px solid #e7edf0;
+}
+
+.detail-row {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 9px;
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.detail-row svg {
+    width: 15px;
+    height: 15px;
+    margin-top: 1px;
+    color: #728b99;
+}
+
+.detail-row span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* ACCIONES DE LAS TARJETAS */
+
+.payment-card-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 13px;
+    margin-top: auto;
+    padding-top: 15px;
+}
+
+.payment-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.icon-action {
+    display: inline-flex;
+    min-height: 35px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 10px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.icon-action svg {
+    width: 15px;
+    height: 15px;
+}
+
+.edit-button {
+    border-color: #d9e3eb;
+    background: #fff;
+    color: #3a5871;
+}
+
+.edit-button:hover:not(:disabled) {
+    border-color: #9aafbf;
+    background: #f4f8f9;
+    color: var(--color-text-primary);
+}
+
+.delete-button {
+    border-color: #f1d2d5;
+    background: #fff;
+    color: #a12632;
+}
+
+.delete-button:hover:not(:disabled) {
+    border-color: #d9a0a5;
+    background: #fff1f2;
+    color: #842029;
+}
+
+/* FOCO ACCESIBLE */
+
+:where(
+    .primary-action,
+    .secondary-button,
+    .set-default-button,
+    .icon-action
+):focus-visible {
+    outline: 3px solid rgb(66 191 163 / 35%);
+    outline-offset: 3px;
+}
+
+/* MODAL DE CONFIRMACIÓN: ESTILO SIMILAR AL DE DIRECCIONES */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    overflow-y: auto;
+    padding: 20px;
+    background: rgb(15 31 44 / 62%);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+.confirm-modal {
+    width: min(100%, 420px);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding: 27px;
+    border: 1px solid #d9e3eb;
+    border-top: 4px solid #dc3545;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgb(15 31 44 / 25%);
+    animation: modal-appear 0.18s ease-out;
+}
+
+/* ICONO DE ADVERTENCIA */
+
+.confirm-modal-icon {
+    display: grid;
+    width: 45px;
+    height: 45px;
+    flex: 0 0 auto;
+    place-items: center;
+    margin-bottom: 17px;
+    border: 1px solid #f1aeb5;
+    border-radius: 12px;
+    background: #fff1f2;
+    color: #b42332;
+}
+
+/*
+ * Reglas específicas para evitar que estilos globales rellenen
+ * el SVG de negro. El icono del modal debe ser solo un trazo.
+ */
+.confirm-modal-icon svg {
+    display: block;
+    width: 23px;
+    height: 23px;
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    overflow: visible;
+}
+
+.confirm-modal-icon svg path,
+.confirm-modal-icon svg line,
+.confirm-modal-icon svg polyline,
+.confirm-modal-icon svg polygon,
+.confirm-modal-icon svg circle {
+    fill: none !important;
+    stroke: currentColor !important;
+}
+
+/* TEXTO DEL MODAL */
+
+.confirm-modal h2 {
+    margin: 0 0 10px;
+    color: var(--color-text-primary);
+    font-size: 19px;
+    font-weight: 750;
+    letter-spacing: -0.3px;
+}
+
+.confirm-modal p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.confirm-modal p strong {
+    color: var(--color-text-primary);
+    font-weight: 750;
+}
+
+/* AVISO DE ACCIÓN IRREVERSIBLE */
+
+.confirm-modal .dialog-warning {
+    margin-top: 15px;
+    padding: 11px 12px;
+    border-left: 3px solid #dc3545;
+    background: #fff5f5;
+    color: #842029;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* ERROR DENTRO DEL MODAL */
+
+.confirm-modal .form-error {
+    margin-top: 14px;
+    margin-bottom: 0;
+}
+
+/* BOTONES DEL MODAL */
+
+.confirm-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 23px;
+    padding-top: 0;
+    border-top: none;
+}
+
+.confirm-modal-actions .secondary-button {
+    min-height: 40px;
+}
+
+.confirm-delete-button {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 15px;
+    border: 1px solid #b42332;
+    border-radius: 8px;
+    background: #b42332;
+    color: #fff;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.confirm-delete-button:hover:not(:disabled) {
+    border-color: #842029;
+    background: #842029;
+}
+
+.confirm-delete-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Si el botón incluye un SVG, mantenerlo como trazo blanco */
+
+.confirm-delete-button svg {
+    display: block;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.confirm-delete-button svg path,
+.confirm-delete-button svg line,
+.confirm-delete-button svg polyline,
+.confirm-delete-button svg polygon {
+    fill: none !important;
+    stroke: currentColor !important;
+}
+
+.confirm-modal-actions button:focus-visible {
+    outline: 3px solid rgb(66 191 163 / 35%);
+    outline-offset: 3px;
+}
+
+/* ANIMACIÓN */
+
+@keyframes modal-appear {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 760px) {
+    .payment-page {
+        padding: 25px 20px;
+    }
+
+    .payment-list {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .payment-card {
+        padding: 18px;
+    }
+
+    .panel {
+        padding: 22px 18px;
+    }
+}
+
+@media (max-width: 520px) {
+    .payment-page {
+        padding: 22px 15px;
+        border-radius: 12px;
+    }
+
+    .page-heading {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 24px;
+    }
+
+    .page-heading .primary-action {
+        width: 100%;
+    }
+
+    .field-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 15px;
+    }
+
+    .form-field-group {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 15px;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .form-actions button {
+        width: 100%;
+    }
+
+    .payment-card-top {
+        flex-wrap: wrap;
+    }
+
+    .set-default-button {
+        width: 100%;
+    }
+
+    .payment-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .section-heading {
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .confirm-modal {
+        padding: 22px;
+    }
+
+    .confirm-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .confirm-modal-actions button {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .confirm-modal {
+        animation: none;
+    }
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+
+/* =========================================================
+   REDISEÑO ESIBUY — MISMO LENGUAJE VISUAL QUE SEGURIDAD
+   ========================================================= */
+
+/* CONTENEDOR PRINCIPAL */
+:host .payment-page {
+    width: 100%;
+    padding: 28px;
+    border: 1px solid rgb(194 210 222 / 85%);
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at 100% 0%, rgb(66 214 178 / 4%), transparent 32%),
+        rgb(255 255 255 / 94%);
+    box-shadow: 0 12px 30px rgb(16 44 64 / 6%);
+}
+
+/* CABECERA PRINCIPAL: HERO NAVY DE SEGURIDAD */
+:host .page-heading {
+    position: relative;
+    min-height: 170px;
+    align-items: center;
+    margin-bottom: 26px;
+    padding: 30px 34px;
+    overflow: hidden;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 88% 15%, rgb(66 214 178 / 18%), transparent 28%),
+        radial-gradient(circle at 100% 100%, rgb(66 214 178 / 10%), transparent 35%),
+        linear-gradient(118deg, #102c40 0%, #173d52 58%, #1c5360 100%);
+    box-shadow: 0 13px 30px rgb(16 44 64 / 15%);
+}
+
+:host .page-heading::after {
+    position: absolute;
+    top: -105px;
+    right: 35px;
+    width: 250px;
+    height: 250px;
+    border: 1px solid rgb(255 255 255 / 10%);
+    border-radius: 50%;
+    content: "";
+    pointer-events: none;
+}
+
+:host .heading-copy {
+    position: relative;
+    z-index: 1;
+}
+
+:host .page-heading .eyebrow {
+    color: #6ce5ca;
+    letter-spacing: 1.3px;
+}
+
+:host .page-heading h1 {
+    color: #fff;
+    font-size: clamp(27px, 3vw, 34px);
+    font-weight: 800;
+    letter-spacing: -.8px;
+}
+
+:host .page-description {
+    color: rgb(255 255 255 / 76%);
+    line-height: 1.7;
+}
+
+/* ACCIÓN PRINCIPAL LEGIBLE SOBRE EL HERO */
+:host .page-heading .primary-action {
+    position: relative;
+    z-index: 1;
+    min-height: 43px;
+    padding: 0 18px;
+    border: 1px solid #6ce5ca;
+    border-radius: 11px;
+    background: #6ce5ca;
+    color: #102c40;
+    box-shadow: 0 5px 14px rgb(0 0 0 / 12%);
+    font-weight: 800;
+}
+
+:host .page-heading .primary-action:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: #8aefda;
+    background: #8aefda;
+}
+
+/* PANELES INTERNOS */
+:host .panel {
+    padding: 27px;
+    border-color: #dce6ed;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 7px 22px rgb(16 44 64 / 5%);
+}
+
+:host .panel-heading h2 {
+    color: #102c40;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -.4px;
+}
+
+:host .panel-heading p {
+    line-height: 1.65;
+}
+
+/* TARJETAS DE DATOS */
+:host .payment-card {
+    border-color: #dce6ed;
+    border-radius: 14px;
+    box-shadow: 0 5px 17px rgb(16 44 64 / 4%);
+}
+
+:host .payment-card:hover {
+    border-color: #c6d9e3;
+    box-shadow: 0 10px 25px rgb(16 44 64 / 7%);
+}
+
+:host .payment-card.is-default {
+    border-color: #bce6d7;
+}
+
+/* CONTROLES Y ACENTOS */
+:host .form-field input:focus,
+:host .form-field select:focus {
+    border-color: #42bfa3;
+    box-shadow: 0 0 0 3px rgb(66 214 178 / 22%);
+}
+
+:host .default-option {
+    border-radius: 11px;
+    background: #f7f9fc;
+}
+
+:host .default-option input:checked + .custom-checkbox {
+    border-color: #168c75;
+    background: #168c75;
+}
+
+:host .method-count {
+    border-color: #dce6ed;
+    background: #f4f7fa;
+    color: #526b7c;
+}
+
+/* RESPONSIVE DEL CONTENEDOR Y DEL HERO */
+@media (max-width: 760px) {
+    :host .payment-page {
+        padding: 24px 20px;
+    }
+
+    :host .page-heading {
+        min-height: 150px;
+        padding: 26px;
+    }
+
+    :host .panel {
+        padding: 22px 19px;
+    }
+}
+
+@media (max-width: 520px) {
+    :host .payment-page {
+        padding: 20px 15px;
+        border-radius: 15px;
+    }
+
+    :host .page-heading {
+        min-height: 145px;
+        align-items: stretch;
+        flex-direction: column;
+        justify-content: center;
+        gap: 13px;
+        padding: 23px 19px;
+        border-radius: 15px;
+    }
+
+    :host .page-heading h1 {
+        font-size: 25px;
+    }
+
+    :host .page-heading .primary-action {
+        width: 100%;
+    }
+
+    :host .panel {
+        padding: 20px 15px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :host .page-heading .primary-action,
+    :host .payment-card,
+    :host .address-card {
+        transition: none;
+    }
+
+    :host .page-heading .primary-action:hover:not(:disabled),
+    :host .payment-card:hover,
+    :host .address-card:hover {
+        transform: none;
+    }
+}

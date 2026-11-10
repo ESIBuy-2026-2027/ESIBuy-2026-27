@@ -16,13 +16,110 @@ public record ProductResponse(
         BigDecimal premiumDiscount,
         String imageUrl,
         boolean available,
-        String sellerId) {
+        String sellerId,
+        Double rating,
+        String sellerName,
+        int reviewCount) {
 
     public ProductResponse {
         categoryIds = List.copyOf(categoryIds);
     }
 
+    public ProductResponse(
+            String id,
+            String name,
+            List<String> categoryIds,
+            int stock,
+            String description,
+            BigDecimal price,
+            BigDecimal discount,
+            BigDecimal premiumDiscount,
+            String imageUrl,
+            boolean available,
+            String sellerId) {
+        this(
+                id,
+                name,
+                categoryIds,
+                stock,
+                description,
+                price,
+                discount,
+                premiumDiscount,
+                imageUrl,
+                available,
+                sellerId,
+                null,
+                null,
+                0);
+    }
+
+    public ProductResponse(
+            String id,
+            String name,
+            List<String> categoryIds,
+            int stock,
+            String description,
+            BigDecimal price,
+            BigDecimal discount,
+            BigDecimal premiumDiscount,
+            String imageUrl,
+            boolean available,
+            String sellerId,
+            Double rating) {
+        this(
+                id,
+                name,
+                categoryIds,
+                stock,
+                description,
+                price,
+                discount,
+                premiumDiscount,
+                imageUrl,
+                available,
+                sellerId,
+                rating,
+                null,
+                0);
+    }
+
+    public ProductResponse(
+            String id,
+            String name,
+            List<String> categoryIds,
+            int stock,
+            String description,
+            BigDecimal price,
+            BigDecimal discount,
+            BigDecimal premiumDiscount,
+            String imageUrl,
+            boolean available,
+            String sellerId,
+            Double rating,
+            String sellerName) {
+        this(
+                id,
+                name,
+                categoryIds,
+                stock,
+                description,
+                price,
+                discount,
+                premiumDiscount,
+                imageUrl,
+                available,
+                sellerId,
+                rating,
+                sellerName,
+                0);
+    }
+
     public static ProductResponse from(Product product) {
+        return from(product, null);
+    }
+
+    public static ProductResponse from(Product product, String sellerName) {
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
@@ -34,6 +131,9 @@ public record ProductResponse(
                 product.getPremiumDiscount(),
                 product.getImageUrl(),
                 product.isAvailable(),
-                product.getSellerId());
+                product.getSellerId(),
+                product.getRating(),
+                sellerName,
+                product.getReviewCount());
     }
 }

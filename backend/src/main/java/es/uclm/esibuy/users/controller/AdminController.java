@@ -31,10 +31,10 @@ public class AdminController {
         this.adminService = adminService;
     }
 
-    @PostMapping("/alta")
-    public ResponseEntity<Map<String, Object>> darAltaAdministrador(
+    @PostMapping("/create-admin")
+    public ResponseEntity<Map<String, Object>> createAdmin(
             @Valid @RequestBody AltaAdminDTO request) {
-        User user = adminService.crearAdministrador(request);
+        User user = adminService.createAdmin(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(buildAdminResponse(user));
     }
 
@@ -42,52 +42,52 @@ public class AdminController {
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("id", user.getId());
         response.put("email", user.getEmail());
-        response.put("nombre", user.getFirstName());
-        response.put("apellidos", user.getLastName());
-        response.put("dni", user.getNationalId());
-        response.put("rol", user.getRole() != null ? user.getRole().name() : null);
-        response.put("activo", user.isActive());
-        response.put("fechaIncorporacion",
+        response.put("firstName", user.getFirstName());
+        response.put("lastName", user.getLastName());
+        response.put("nationalId", user.getNationalId());
+        response.put("role", user.getRole() != null ? user.getRole().name() : null);
+        response.put("active", user.isActive());
+        response.put("hireDate",
                 user.getAdminProfile() != null ? user.getAdminProfile().getHireDate() : null);
-        response.put("sede", user.getAdminProfile() != null ? user.getAdminProfile().getHeadquarters() : null);
-        response.put("imagenPerfil", user.getProfileImage());
+        response.put("headquarters", user.getAdminProfile() != null ? user.getAdminProfile().getHeadquarters() : null);
+        response.put("profileImage", user.getProfileImage());
         return response;
     }
 
-    @GetMapping("/usuarios")
+    @GetMapping({ "/users", "/usuarios" })
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserAdminDTO>> obtenerTodosLosUsuarios(
-            @RequestParam(required = false) String rol,
-            @RequestParam(required = false) String estado) {
+    public ResponseEntity<List<UserAdminDTO>> getAllUsers(
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status) {
 
-        return ResponseEntity.ok(adminService.obtenerUsuariosFiltrados(rol, estado));
+        return ResponseEntity.ok(adminService.getFilteredUsers(role, status));
     }
 
-    @PostMapping("/usuarios/{id}/bloquear")
+    @PostMapping({ "/usuarios/{id}/bloquear", "/users/{id}/block" })
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> bloquearUsuario(@PathVariable String id) {
-        adminService.bloquearUsuario(id);
+    public ResponseEntity<Void> blockUser(@PathVariable String id) {
+        adminService.blockUser(id);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/usuarios/{id}/desbloquear")
+    @PostMapping({ "/usuarios/{id}/desbloquear", "/users/{id}/unblock" })
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> desbloquearUsuario(@PathVariable String id) {
-        adminService.desbloquearUsuario(id);
+    public ResponseEntity<Void> unblockUser(@PathVariable String id) {
+        adminService.unblockUser(id);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/usuarios/{id}/activar")
+    @PostMapping({ "/usuarios/{id}/activar", "/users/{id}/activate" })
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> activarUsuario(@PathVariable String id) {
-        adminService.activarUsuario(id);
+    public ResponseEntity<Void> activateUser(@PathVariable String id) {
+        adminService.activateUser(id);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/usuarios/{id}/desactivar")
+    @PostMapping({ "/usuarios/{id}/desactivar", "/users/{id}/deactivate" })
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> desactivarUsuario(@PathVariable String id) {
-        adminService.desactivarUsuario(id);
+    public ResponseEntity<Void> deactivateUser(@PathVariable String id) {
+        adminService.deactivateUser(id);
         return ResponseEntity.ok().build();
     }
 }

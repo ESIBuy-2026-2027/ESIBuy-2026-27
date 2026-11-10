@@ -1,0 +1,165 @@
+# ==============================================================================
+# Pipeline de CI - ESIBuy 2026-2027 (Rama DEVELOP)
+# Historia de Usuario: 301 (Integración Continua)
+# Tareas: 487 (Triggers), 488 (Compilación CI), 490 (JaCoCo + SonarQube) y 503 (Frontend CI)
+# ==============================================================================
+
+name: $(date:yyyyMMdd)$(rev:.r)-develop
+
+# ------------------------------------------------------------------------------
+# Triggers automáticos y PRs EXCLUSIVAMENTE para la rama develop
+# ------------------------------------------------------------------------------
+trigger:
+  branches:
+    include:
+      - develop
+
+pr:
+  branches:
+    include:
+      - develop
+
+# Agente predeterminado para trabajos en Develop (Microsoft-hosted Ubuntu 24.04)
+# Permite que cualquier desarrollador lance CI sin depender de agentes locales
+pool:
+  vmImage: 'ubuntu-24.04'
+
+variables:
+  - group: 'esibuy-secrets'
+  - name: MAVEN_OPTS
+    value: '-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
+
+stages:
+  # ============================================================================
+  # STAGE 1: INTEGRACIÓN CONTINUA (CI)
+  # ============================================================================
+  - stage: CI
+    displayName: 'Stage 1: Integración Continua (Develop)'
+    jobs:
+
+      # ------------------------------------------------------------------------
+      # Backend CI: Java 21, Maven, JaCoCo y SonarQube
+      # Agente Microsoft-hosted (ubuntu-24.04)
+      # ------------------------------------------------------------------------
+      - job: Backend_CI
+        displayName: 'Backend CI (Java 21 / Maven / JaCoCo / SonarQube)'
+        steps:
+          - task: JavaToolInstaller@0
+            displayName: 'Configurar JDK 21'
+            inputs:
+              versionSpec: '21'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+
+          - task: Maven@4
+            displayName: 'Compilar backend y ejecutar tests con JaCoCo'
+            inputs:
+              mavenPomFile: 'backend/pom.xml'
+              goals: 'clean verify'
+              options: '-B'
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.21'
+              mavenVersionOption: 'Default'
+
+          - task: PublishCodeCoverageResults@2
+            displayName: 'Publicar reporte de cobertura JaCoCo'
+            inputs:
+              summaryFileLocation: '$(System.DefaultWorkingDirectory)/backend/target/site/jacoco/jacoco.xml'
+              pathToSources: '$(System.DefaultWorkingDirectory)/backend/src/main/java'
+            condition: succeeded()
+
+          # Análisis SonarQube Backend (opcional en Develop para no depender de la VPN privada)
+          - script: |
+              echo "Comprobando disponibilidad del servidor SonarQube UCLM (seralu4.esi.uclm.es:1521)..."
+              if curl -s --connect-timeout 4 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
+                echo "Servidor SonarQube alcanzable. Ejecutando análisis de Backend..."
+                cd backend
+                mvn sonar:sonar -B \
+                  -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
+                  -Dsonar.token="$(SONAR_TOKEN)" \
+                  -Dsonar.coverage.jacoco.xmlReportPaths="target/site/jacoco/jacoco.xml"
+              else
+                echo "[INFO] Servidor SonarQube en red privada ESI/UCLM. Se omite análisis en Develop sin bloquear la integración."
+              fi
+            displayName: 'Ejecutar análisis de SonarQube Backend (opcional/VPN)'
+            env:
+              SONAR_TOKEN: $(SONAR_TOKEN)
+
+      # ------------------------------------------------------------------------
+      # Frontend CI: Node 22, Angular, tests y SonarQube
+      # Agente Microsoft-hosted (ubuntu-24.04)
+      # ------------------------------------------------------------------------
+      - job: Frontend_CI
+        displayName: 'Frontend CI (Node 22 / Angular / Tests / SonarQube)'
+        steps:
+          - task: UseNode@1
+            displayName: 'Configurar Node.js 22.x'
+            inputs:
+              version: '22.x'
+
+          - script: |
+              cd frontend
+              npm ci
+            displayName: 'Instalar dependencias Frontend (npm ci)'
+
+          - script: |
+              cd frontend
+              npx ng test --watch=false
+            displayName: 'Ejecutar tests unitarios de Angular'
+
+          - script: |
+              cd frontend
+              npm run build
+            displayName: 'Compilación de verificación Frontend'
+
+          # Análisis SonarQube Frontend (opcional en Develop para no depender de la VPN privada)
+          - script: |
+              echo "Comprobando disponibilidad del servidor SonarQube UCLM (seralu4.esi.uclm.es:1521)..."
+              if curl -s --connect-timeout 4 http://seralu4.esi.uclm.es:1521/api/system/status > /dev/null 2>&1; then
+                echo "Servidor SonarQube alcanzable. Ejecutando análisis de Frontend..."
+                cd frontend
+                npx --yes sonar-scanner \
+                  -Dsonar.host.url="http://seralu4.esi.uclm.es:1521" \
+                  -Dsonar.token="$(SONAR_TOKEN)"
+              else
+                echo "[INFO] Servidor SonarQube en red privada ESI/UCLM. Se omite análisis en Develop sin bloquear la integración."
+              fi
+            displayName: 'Ejecutar análisis de SonarQube Frontend (opcional/VPN)'
+            env:
+              SONAR_TOKEN: $(SONAR_TOKEN)
+
+      # ------------------------------------------------------------------------
+      # Sync_Azure_Repos: Sincronización automática a Azure Repos
+      # Se mantiene en agente Microsoft-hosted
+      # ------------------------------------------------------------------------
+      - job: Sync_Azure_Repos
+        displayName: 'Sincronizar rama con Azure Repos'
+        dependsOn: [Backend_CI, Frontend_CI]
+        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+
+        steps:
+          - checkout: self
+            persistCredentials: true
+            fetchDepth: 0
+
+          - script: |
+              echo "Sincronizando rama $(Build.SourceBranchName) hacia Azure Repos..."
+              if [ -z "$AZURE_REPO_TOKEN" ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta AZURE_REPO_TOKEN en el grupo 'esibuy-secrets'."
+                exit 1
+              fi
+
+              echo "Intentando sincronizar con repositorio ESIBuy-G6..."
+              if git push "https://pat:$AZURE_REPO_TOKEN@dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy-G6" HEAD:refs/heads/$(Build.SourceBranchName) --force; then
+                echo "Rama $(Build.SourceBranchName) sincronizada con exito en ESIBuy-G6."
+              elif git push "https://pat:$AZURE_REPO_TOKEN@dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy" HEAD:refs/heads/$(Build.SourceBranchName) --force; then
+                echo "Rama $(Build.SourceBranchName) sincronizada con exito en ESIBuy."
+              else
+                echo "##vso[task.logissue type=error]No se pudo sincronizar con Azure Repos. Verifica el nombre del repositorio y los permisos del token."
+                exit 1
+              fi
+            displayName: 'Push a Azure Repos'
+            env:
+              AZURE_REPO_TOKEN: $(AZURE_REPO_TOKEN)

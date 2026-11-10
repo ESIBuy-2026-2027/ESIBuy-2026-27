@@ -1,0 +1,301 @@
+:host {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    font-family: Inter, "Segoe UI", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* =========================================================
+   ZONA DE PELIGRO
+   ========================================================= */
+
+.danger-zone {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.danger-text {
+    min-width: 0;
+}
+
+.danger-text h2 {
+    margin: 0 0 7px;
+    color: #a33131;
+    font-size: 16px;
+    font-weight: 750;
+    letter-spacing: -.2px;
+}
+
+.danger-text p {
+    max-width: 620px;
+    margin: 0;
+    color: #698294;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+/* =========================================================
+   BOTONES
+   ========================================================= */
+
+.danger-button,
+.secondary-button {
+    display: inline-flex;
+    min-height: 42px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 17px;
+    border-radius: 11px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 750;
+    line-height: 1.25;
+    text-align: center;
+    cursor: pointer;
+    transition:
+        background-color .18s ease,
+        border-color .18s ease,
+        color .18s ease,
+        box-shadow .18s ease,
+        opacity .18s ease;
+}
+
+.danger-button {
+    border: 1px solid #b93636;
+    background: #b93636;
+    color: #fff;
+    box-shadow: 0 4px 10px rgb(185 54 54 / 12%);
+}
+
+.danger-button:hover:not(:disabled) {
+    border-color: #982d2d;
+    background: #982d2d;
+    box-shadow: 0 6px 14px rgb(185 54 54 / 17%);
+}
+
+.danger-button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+    box-shadow: none;
+}
+
+.secondary-button {
+    border: 1px solid #dce6ec;
+    background: #fff;
+    color: #31536b;
+}
+
+.secondary-button:hover:not(:disabled) {
+    border-color: #c6d8e2;
+    background: #f4f8fa;
+    color: #102c40;
+}
+
+.secondary-button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+}
+
+.danger-button:focus-visible,
+.secondary-button:focus-visible,
+.modal input:focus-visible {
+    outline: 3px solid rgb(66 214 178 / 40%);
+    outline-offset: 2px;
+}
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgb(16 44 64 / 55%);
+    backdrop-filter: blur(5px);
+}
+
+.modal {
+    width: min(480px, 100%);
+    max-height: min(700px, calc(100vh - 40px));
+    overflow-y: auto;
+    padding: 28px;
+    border: 1px solid #e0e9ef;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 24px 60px rgb(16 44 64 / 20%);
+    color: #173247;
+}
+
+.modal-step {
+    margin: 0 0 8px;
+    color: #168c75;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+}
+
+.modal h2 {
+    margin: 0 0 15px;
+    color: #102c40;
+    font-size: 21px;
+    font-weight: 750;
+    letter-spacing: -.45px;
+    line-height: 1.3;
+}
+
+.modal p {
+    margin: 0 0 12px;
+    color: #698294;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.modal ul {
+    margin: 0 0 8px;
+    padding-left: 21px;
+    color: #526b7c;
+    font-size: 13px;
+    line-height: 1.75;
+}
+
+.modal li + li {
+    margin-top: 5px;
+}
+
+.modal input {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    margin-top: 7px;
+    padding: 10px 13px;
+    border: 1px solid #dbe5ec;
+    border-radius: 11px;
+    background: #f7f9fc;
+    color: #173247;
+    font: inherit;
+    font-size: 13px;
+    transition:
+        border-color .18s ease,
+        background-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.modal input:focus-visible {
+    border-color: #42bfa3;
+    background: #fff;
+}
+
+.modal input:disabled {
+    cursor: not-allowed;
+    opacity: .65;
+}
+
+.modal-error {
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    border: 1px solid #efc1c1;
+    border-radius: 11px;
+    background: #fff3f3;
+    color: #963737;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.5;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+/* =========================================================
+   ACCESIBILIDAD
+   ========================================================= */
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+     .danger-zone {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .danger-zone .danger-button {
+        align-self: flex-start;
+    }
+
+    .modal {
+        padding: 24px;
+    }
+
+    .modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .modal-actions button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 520px) {
+    .danger-zone {
+        padding: 19px 16px;
+        border-radius: 14px;
+    }
+
+    .danger-zone .danger-button {
+        width: 100%;
+    }
+
+    .modal-backdrop {
+        padding: 12px;
+    }
+
+    .modal {
+        padding: 21px 17px;
+        border-radius: 15px;
+    }
+
+    .modal h2 {
+        font-size: 19px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .danger-button,
+    .secondary-button,
+    .modal input {
+        transition: none;
+    }
+}

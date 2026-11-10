@@ -1,0 +1,281 @@
+# ==============================================================================
+# Pipeline de CI/CD - ESIBuy 2026-2027 (Rama RELEASE - Banco de Pruebas de Despliegue)
+# Historias de Usuario: 301 (Integración Continua) y 302 (Despliegue Continuo)
+# Tareas: 487 (Triggers), 488 (Compilación CI), 490 (JaCoCo + SonarQube), 498 (Secretos), 499 (JAR) y 500 (Firebase)
+# ==============================================================================
+
+name: $(date:yyyyMMdd)$(rev:.r)-release
+
+# ------------------------------------------------------------------------------
+# Triggers automáticos y PRs EXCLUSIVAMENTE para la rama release
+# ------------------------------------------------------------------------------
+trigger:
+  branches:
+    include:
+      - release
+      - release/*
+
+pr:
+  branches:
+    include:
+      - release
+      - release/*
+
+pool:
+  vmImage: 'ubuntu-24.04'
+
+variables:
+  - group: 'esibuy-secrets'
+  - name: MAVEN_OPTS
+    value: '-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
+
+stages:
+  # ============================================================================
+  # STAGE 1: INTEGRACIÓN CONTINUA (CI)
+  # ============================================================================
+  - stage: CI
+    displayName: 'Stage 1: Integración Continua (Release)'
+    jobs:
+      # ------------------------------------------------------------------------
+      # Backend CI: Compilación Java 21, Tests con JaCoCo y análisis SonarQube
+      # Ejecución en agente conectado a la VPN de la UCLM
+      # ------------------------------------------------------------------------
+      - job: Backend_CI
+        displayName: 'Backend CI (Java 21 / Maven / JaCoCo / SonarQube)'
+        pool:
+          name: 'UCLM-VPN-Agents'
+
+        steps:
+          - task: Maven@4
+            displayName: 'Compilar backend y ejecutar tests con JaCoCo'
+            inputs:
+              mavenPomFile: 'backend/pom.xml'
+              goals: 'clean verify'
+              options: '-B'
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.21'
+              mavenVersionOption: 'Default'
+
+          # Publicar reporte de cobertura JaCoCo
+          - task: PublishCodeCoverageResults@2
+            displayName: 'Publicar reporte de cobertura JaCoCo'
+            inputs:
+              summaryFileLocation: '$(System.DefaultWorkingDirectory)/backend/target/site/jacoco/jacoco.xml'
+              pathToSources: '$(System.DefaultWorkingDirectory)/backend/src/main/java'
+            condition: succeeded()
+
+          # SonarQube Backend: ejecución obligatoria desde la VPN (Agente UCLM-VPN-Agents)
+          - powershell: |
+              $ErrorActionPreference = 'Stop'
+
+              Write-Host "Comprobando disponibilidad de SonarQube..."
+
+              $status = Invoke-RestMethod `
+                -Uri "http://seralu4.esi.uclm.es:1521/api/system/status" `
+                -TimeoutSec 10
+
+              if ($status.status -ne 'UP') {
+                throw "SonarQube no está disponible."
+              }
+
+              Write-Host "Ejecutando análisis de SonarQube Backend..."
+
+              Set-Location "$(Build.SourcesDirectory)\backend"
+
+              .\mvnw.cmd sonar:sonar `
+                "-Dsonar.host.url=http://seralu4.esi.uclm.es:1521/" `
+                "-Dsonar.projectKey=2026-g06-backend" `
+                "-Dsonar.token=$env:SONAR_TOKEN"
+
+              if ($LASTEXITCODE -ne 0) {
+                throw "El análisis de SonarQube Backend ha fallado."
+              }
+            displayName: 'Ejecutar análisis de SonarQube Backend'
+            env:
+              SONAR_TOKEN: $(SONAR_TOKEN)
+
+      # ------------------------------------------------------------------------
+      # Frontend CI: Node 22, dependencias, tests unitarios, build y SonarQube
+      # Ejecución en agente conectado a la VPN de la UCLM
+      # ------------------------------------------------------------------------
+      - job: Frontend_CI
+        displayName: 'Frontend CI (Node 22 / Angular / Tests / SonarQube)'
+        pool:
+          name: 'UCLM-VPN-Agents'
+
+        steps:
+          - task: UseNode@1
+            displayName: 'Configurar Node.js 22.x'
+            inputs:
+              version: '22.x'
+
+          - script: |
+              cd frontend
+              npm ci
+            displayName: 'Instalar dependencias Frontend (npm ci)'
+
+          - script: |
+              cd frontend
+              npx ng test --watch=false
+            displayName: 'Ejecutar tests unitarios de Angular'
+
+          - script: |
+              cd frontend
+              npm run build
+            displayName: 'Compilación de verificación Frontend'
+
+          # SonarQube Frontend: ejecución obligatoria desde la VPN (Agente UCLM-VPN-Agents)
+          - powershell: |
+              $ErrorActionPreference = 'Stop'
+
+              Write-Host "Comprobando disponibilidad de SonarQube..."
+
+              $status = Invoke-RestMethod `
+                -Uri "http://seralu4.esi.uclm.es:1521/api/system/status" `
+                -TimeoutSec 10
+
+              if ($status.status -ne 'UP') {
+                throw "SonarQube no está disponible."
+              }
+
+              Write-Host "Ejecutando análisis de SonarQube Frontend..."
+
+              Set-Location "$(Build.SourcesDirectory)\frontend"
+
+              npx --yes sonar-scanner `
+                "-Dsonar.token=$env:SONAR_TOKEN"
+
+              if ($LASTEXITCODE -ne 0) {
+                throw "El análisis de SonarQube Frontend ha fallado."
+              }
+            displayName: 'Ejecutar análisis de SonarQube Frontend'
+            env:
+              SONAR_TOKEN: $(SONAR_TOKEN)
+
+      # ------------------------------------------------------------------------
+      # Sync_Azure_Repos: Sincronización automática a Azure Repos (ESIBuy)
+      # Se ejecuta sólo si Backend_CI y Frontend_CI terminan con éxito
+      # y NO es una Pull Request (sólo en pushes reales a release)
+      # ------------------------------------------------------------------------
+      - job: Sync_Azure_Repos
+        displayName: 'Sincronizar rama con Azure Repos (ESIBuy)'
+        dependsOn: [Backend_CI, Frontend_CI]
+        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+        steps:
+          - checkout: self
+            persistCredentials: true
+            fetchDepth: 0
+          - script: |
+              echo "Sincronizando rama $(Build.SourceBranchName) hacia Azure Repos..."
+              if [ -z "$AZURE_REPO_TOKEN" ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta AZURE_REPO_TOKEN en el grupo 'esibuy-secrets'."
+                exit 1
+              fi
+              echo "Intentando sincronizar con repositorio ESIBuy-G6..."
+              if git push "https://pat:$AZURE_REPO_TOKEN@dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy-G6" HEAD:refs/heads/$(Build.SourceBranchName) --force; then
+                echo "Rama $(Build.SourceBranchName) sincronizada con exito en ESIBuy-G6."
+              elif git push "https://pat:$AZURE_REPO_TOKEN@dev.azure.com/ESIBuy-G6/ESIBuy-G6/_git/ESIBuy" HEAD:refs/heads/$(Build.SourceBranchName) --force; then
+                echo "Rama $(Build.SourceBranchName) sincronizada con exito en ESIBuy."
+              else
+                echo "##vso[task.logissue type=error]No se pudo sincronizar con Azure Repos. Verifica el nombre del repositorio y los permisos del token."
+                exit 1
+              fi
+            displayName: 'Push a Azure Repos'
+            env:
+              AZURE_REPO_TOKEN: $(AZURE_REPO_TOKEN)
+
+  # ============================================================================
+  # STAGE 2: DESPLIEGUE CONTINUO (CD) - Pruebas de Despliegue en Release
+  # Se ejecuta tras CI exitoso en la rama release (nunca en PRs)
+  # ============================================================================
+  - stage: CD
+    displayName: 'Stage 2: Despliegue Continuo (Release)'
+    dependsOn: CI
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    variables:
+      - group: 'esibuy-secrets'
+    jobs:
+      - job: Release_Deploy
+        displayName: 'Empaquetado y Despliegue de Release'
+        variables:
+          - group: 'esibuy-secrets'
+        steps:
+          - task: JavaToolInstaller@0
+            displayName: 'Configurar JDK 21 para empaquetado'
+            inputs:
+              versionSpec: '21'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+
+          - task: UseNode@1
+            displayName: 'Configurar Node.js 22.x para frontend'
+            inputs:
+              version: '22.x'
+
+          # Validación silenciosa de variables secretas
+          - script: |
+              echo "Validando variables de entorno seguras para el despliegue de Release..."
+              MISSING=0
+              if [ -z "$MONGODB_URI" ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta MONGODB_URI en el grupo 'esibuy-secrets'."
+                MISSING=1
+              fi
+              if [ -z "$JWT_SECRET" ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta JWT_SECRET en el grupo 'esibuy-secrets'."
+                MISSING=1
+              fi
+              if [ -z "$AES_KEY" ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta AES_KEY en el grupo 'esibuy-secrets'."
+                MISSING=1
+              fi
+              if [ -z "$FIREBASE_TOKEN" ]; then
+                echo "##vso[task.logissue type=error]Falta la variable secreta FIREBASE_TOKEN en el grupo 'esibuy-secrets'."
+                MISSING=1
+              fi
+              if [ $MISSING -ne 0 ]; then
+                echo "##vso[task.logissue type=error]Verifica la configuración de 'Library -> esibuy-secrets' en Azure DevOps."
+                exit 1
+              fi
+              echo "Variables de entorno verificadas correctamente (MONGODB_URI: OK, JWT_SECRET: OK, AES_KEY: OK, FIREBASE_TOKEN: OK)."
+            displayName: 'Validación silenciosa de secretos (Library: esibuy-secrets)'
+            env:
+              MONGODB_URI: $(MONGODB_URI)
+              JWT_SECRET: $(JWT_SECRET)
+              AES_KEY: $(AES_KEY)
+              FIREBASE_TOKEN: $(FIREBASE_TOKEN)
+
+          # Empaquetado del Backend (JAR ejecutable)
+          - task: Maven@4
+            displayName: 'Empaquetar Backend (JAR ejecutable)'
+            inputs:
+              mavenPomFile: 'backend/pom.xml'
+              goals: 'clean package'
+              options: '-DskipTests -B'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.21'
+              mavenVersionOption: 'Default'
+
+          # Publicación del artefacto JAR en Azure Pipelines
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publicar artefacto JAR Backend (esibuy-backend-drop)'
+            inputs:
+              PathtoPublish: '$(System.DefaultWorkingDirectory)/backend/target'
+              ArtifactName: 'esibuy-backend-drop'
+              publishLocation: 'Container'
+
+          # Compilación de producción del Frontend
+          - script: |
+              cd frontend
+              npm ci
+              npm run build -- --configuration production
+            displayName: 'Compilar Frontend para Producción'
+
+          # Despliegue en Firebase Hosting
+          - script: |
+              cd frontend
+              npx --yes firebase-tools deploy --only hosting --project esibuy-2627 --non-interactive
+            displayName: 'Desplegar Frontend en Firebase Hosting (esibuy-2627)'
+            env:
+              FIREBASE_TOKEN: $(FIREBASE_TOKEN)

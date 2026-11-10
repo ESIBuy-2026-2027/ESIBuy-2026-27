@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, Input, OnDestroy, computed } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, computed, inject } from '@angular/core';
+import { ToastService } from '../../../core/services/toast.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -15,7 +16,9 @@ import { AuthService, AuthenticatedUser, UserRole } from '../../../core/services
 })
 export class Login implements OnDestroy {
   @Input() embedded = false;
-  
+
+  readonly toastService = inject(ToastService);
+
   readonly currentUser = computed<AuthenticatedUser | null>(() => {
     if (typeof this.authService?.currentUser === 'function') {
       return this.authService.currentUser();
@@ -24,11 +27,14 @@ export class Login implements OnDestroy {
   });
 
   readonly loginForm: FormGroup;
+  successMessage: string | null = null;
   serverError: string | null = null;
-  forgotPasswordMessage: string | null = null;
   retryAfterSeconds = 0;
   loading = false;
   showPassword = false;
+  requires2FA = false;
+  requires3FA = false;
+
   private retryCountdownId: ReturnType<typeof setInterval> | null = null;
   private retryBaseMessage: string | null = null;
 
@@ -48,11 +54,15 @@ export class Login implements OnDestroy {
       password: ['', [
         Validators.required,
         Validators.maxLength(128),
-      ]]
+      ]],
+      totpCode: ['']
     });
 
     if (this.route.snapshot.queryParamMap.get('expired') === 'true') {
       this.serverError = 'Tu sesión ha expirado';
+    }
+    if (this.route.snapshot.queryParamMap.get('deleted') === 'true') {
+      this.successMessage = 'Tu cuenta se ha eliminado correctamente.';
     }
   }
 
@@ -62,22 +72,66 @@ export class Login implements OnDestroy {
       return;
     }
 
+    if (this.requires2FA || this.requires3FA) {
+      const codeVal = this.loginForm.get('totpCode')?.value;
+      if (!codeVal || codeVal.trim().length === 0) {
+        this.loginForm.get('totpCode')?.setErrors({ required: true });
+        this.loginForm.markAllAsTouched();
+        return;
+      }
+
+      if (this.requires3FA && !/^\d{6}$/.test(codeVal.trim())) {
+        this.loginForm.get('totpCode')?.setErrors({ pattern: true });
+        this.loginForm.markAllAsTouched();
+        return;
+      }
+    }
+
     this.serverError = null;
     this.loading = true;
 
-    this.authService.login(this.loginForm.value).pipe(
+    const code = String(this.loginForm.get('totpCode')?.value ?? '').trim();
+    const request = this.requires3FA
+      ? this.authService.verifyLoginOtp(code)
+      : this.authService.login(this.loginForm.value);
+
+    request.pipe(
       finalize(() => {
         this.loading = false;
         this.changeDetectorRef.markForCheck();
       })
     ).subscribe({
       next: (response) => {
+        if (response.requires2fa) {
+          this.requires2FA = true;
+          this.serverError = null;
+          const totpCtrl = this.loginForm.get('totpCode');
+          totpCtrl?.setValidators([Validators.required]);
+          totpCtrl?.updateValueAndValidity();
+          this.changeDetectorRef.markForCheck();
+          return;
+        }
+
+        if (response.requires3fa) {
+          this.requires2FA = false;
+          this.requires3FA = true;
+          this.successMessage = 'Hemos enviado un código de verificación a tu correo electrónico.';
+          const otpControl = this.loginForm.get('totpCode');
+          otpControl?.setValue('');
+          otpControl?.setValidators([Validators.required, Validators.pattern(/^\d{6}$/)]);
+          otpControl?.updateValueAndValidity();
+          this.changeDetectorRef.markForCheck();
+          return;
+        }
+
+        this.requires2FA = false;
+        this.requires3FA = false;
         if (response.role === 'ADMIN') {
           void this.router.navigate(['/admin/usuarios']);
         } else if (response.role === 'SELLER') {
           void this.router.navigate(['/seller/catalog']);
         } else if (response.role === 'CLIENT') {
-          void this.router.navigate(['/client/dashboard']);
+          void this.router.navigate(['/client/catalog']);
         } else {
           void this.router.navigate(['/']);
         }
@@ -100,6 +154,15 @@ export class Login implements OnDestroy {
         this.changeDetectorRef.markForCheck();
       }
     });
+  }
+
+  cancel2FA() {
+    this.requires2FA = false;
+    this.requires3FA = false;
+    this.successMessage = null;
+    this.loginForm.get('totpCode')?.setValue('');
+    this.loginForm.get('totpCode')?.clearValidators();
+    this.loginForm.get('totpCode')?.updateValueAndValidity();
   }
 
   ngOnDestroy(): void {
@@ -157,8 +220,8 @@ export class Login implements OnDestroy {
     }
   }
 
-  showForgotPasswordMessage() {
-    this.forgotPasswordMessage = 'La recuperación de contraseña estará disponible próximamente.';
+  showForgotPasswordMessage(): void {
+    void this.router.navigate(['/recuperar-password']);
   }
 
   getUserDisplayName(user: AuthenticatedUser | null): string {
@@ -176,7 +239,7 @@ export class Login implements OnDestroy {
       case 'SELLER':
         return '/seller/catalog';
       case 'CLIENT':
-        return '/client/dashboard';
+        return '/client/catalog';
       default:
         return '/';
     }
@@ -189,7 +252,7 @@ export class Login implements OnDestroy {
       case 'SELLER':
         return 'Ir a mi catálogo de vendedor';
       case 'CLIENT':
-        return 'Ir a mi panel de cliente';
+        return 'Ir a mi catálogo';
       default:
         return 'Ir a mi panel';
     }

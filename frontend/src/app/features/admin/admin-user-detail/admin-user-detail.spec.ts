@@ -4,11 +4,18 @@ import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { AdminUserDetail } from './admin-user-detail';
 import { AuthService, ApiResponse, UserResponse } from '../../../core/services/auth.service';
+import { Category, ProductsService } from '../../../core/services/products.service';
 
 describe('AdminUserDetail', () => {
   let component: AdminUserDetail;
   let fixture: ComponentFixture<AdminUserDetail>;
   let authServiceSpy: any;
+  let productsServiceSpy: { getCategories: ReturnType<typeof vi.fn> };
+  const categories: Category[] = [
+    { id: 'category-1', name: 'Electrónica' },
+    { id: 'category-2', name: 'Hogar' },
+    { id: 'category-3', name: 'Moda' },
+  ];
 
   const mockUserResponse: ApiResponse<UserResponse> = {
     success: true,
@@ -29,16 +36,19 @@ describe('AdminUserDetail', () => {
 
   beforeEach(async () => {
     authServiceSpy = {
-      obtenerUsuarioAdmin: vi.fn().mockReturnValue(of(mockUserResponse)),
-      actualizarUsuarioAdmin: vi.fn().mockReturnValue(of({
+      getAdminUser: vi.fn().mockReturnValue(of(mockUserResponse)),
+      updateAdminUser: vi.fn().mockReturnValue(of({
         success: true,
         message: 'Usuario actualizado correctamente',
         data: {
           ...mockUserResponse.data,
-          profileImage: 'assets/images/avatars/av_client_1.jpeg'
+          profileImage: 'assets/images/avatars/av_client_1.jpeg',
         },
-        correlationId: 'cid-2'
-      }))
+        correlationId: 'cid-2',
+      })),
+    };
+    productsServiceSpy = {
+      getCategories: vi.fn().mockReturnValue(of(categories)),
     };
 
     await TestBed.configureTestingModule({
@@ -55,7 +65,8 @@ describe('AdminUserDetail', () => {
             }
           }
         },
-        { provide: AuthService, useValue: authServiceSpy }
+        { provide: AuthService, useValue: authServiceSpy },
+        { provide: ProductsService, useValue: productsServiceSpy }
       ]
     }).compileComponents();
 
@@ -70,7 +81,7 @@ describe('AdminUserDetail', () => {
   it('should load user data and initialize form and selected avatar', () => {
     fixture.detectChanges();
 
-    expect(authServiceSpy.obtenerUsuarioAdmin).toHaveBeenCalledWith('user-123');
+    expect(authServiceSpy.getAdminUser).toHaveBeenCalledWith('user-123');
     expect(component.getEmail()).toBe('test@example.com');
     expect(component.getRole()).toBe('CLIENT');
     expect(component.isClient()).toBe(true);
@@ -90,7 +101,7 @@ describe('AdminUserDetail', () => {
   });
 
   it('should return seller avatars when user role is SELLER', () => {
-    authServiceSpy.obtenerUsuarioAdmin.mockReturnValue(of({
+    authServiceSpy.getAdminUser.mockReturnValue(of({
       ...mockUserResponse,
       data: {
         ...mockUserResponse.data,
@@ -110,6 +121,30 @@ describe('AdminUserDetail', () => {
     expect(component.selectedAvatar).toBe('assets/images/avatars/av_seller_2.jpeg');
     expect(component.form.value.businessName).toBe('Tienda de Prueba');
     expect(component.form.value.defaultCategory).toBe('Hogar');
+    expect(component.categories).toEqual(['Electrónica', 'Hogar', 'Moda']);
+    expect(productsServiceSpy.getCategories).toHaveBeenCalled();
+  });
+
+  it('should require choosing a current category when the seller default no longer exists', () => {
+    authServiceSpy.getAdminUser.mockReturnValue(of({
+      ...mockUserResponse,
+      data: {
+        ...mockUserResponse.data,
+        role: 'SELLER',
+        businessName: 'Tienda de Prueba',
+        defaultCategory: 'Categoría antigua',
+        profileImage: 'assets/images/avatars/av_seller_2.jpeg'
+      }
+    }));
+
+    fixture = TestBed.createComponent(AdminUserDetail);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(component.categories).toEqual(['Electrónica', 'Hogar', 'Moda']);
+    expect(component.form.controls.defaultCategory.value).toBe('');
+    expect(component.categorySelectionUnavailable()).toBe(true);
+    expect(component.form.controls.defaultCategory.hasError('required')).toBe(true);
   });
 
   it('should submit form including selected avatar and navigate to user list with success message', () => {
@@ -121,7 +156,7 @@ describe('AdminUserDetail', () => {
     component.selectAvatar('assets/images/avatars/av_client_1.jpeg');
     component.onSubmit();
 
-    expect(authServiceSpy.actualizarUsuarioAdmin).toHaveBeenCalledWith('user-123', {
+    expect(authServiceSpy.updateAdminUser).toHaveBeenCalledWith('user-123', {
       firstName: 'Carlos',
       lastName: 'García',
       nationalId: '12345678A',
@@ -136,7 +171,7 @@ describe('AdminUserDetail', () => {
   });
 
   it('should submit seller specific defaultCategory and businessName', () => {
-    authServiceSpy.obtenerUsuarioAdmin.mockReturnValue(of({
+    authServiceSpy.getAdminUser.mockReturnValue(of({
       ...mockUserResponse,
       data: {
         ...mockUserResponse.data,
@@ -154,7 +189,7 @@ describe('AdminUserDetail', () => {
     component.form.patchValue({ defaultCategory: 'Moda' });
     component.onSubmit();
 
-    expect(authServiceSpy.actualizarUsuarioAdmin).toHaveBeenCalledWith('user-123', expect.objectContaining({
+    expect(authServiceSpy.updateAdminUser).toHaveBeenCalledWith('user-123', expect.objectContaining({
       defaultCategory: 'Moda',
       businessName: 'Mi Tienda',
       phone: '612345678'
@@ -165,7 +200,7 @@ describe('AdminUserDetail', () => {
     const router = TestBed.inject(Router);
     vi.spyOn(router, 'navigate');
 
-    authServiceSpy.obtenerUsuarioAdmin.mockReturnValue(of({
+    authServiceSpy.getAdminUser.mockReturnValue(of({
       ...mockUserResponse,
       data: {
         ...mockUserResponse.data,
@@ -181,7 +216,7 @@ describe('AdminUserDetail', () => {
     component.form.patchValue({ headquarters: 'Toledo' });
     component.onSubmit();
 
-    expect(authServiceSpy.actualizarUsuarioAdmin).toHaveBeenCalledWith('user-123', {
+    expect(authServiceSpy.updateAdminUser).toHaveBeenCalledWith('user-123', {
       firstName: 'Carlos',
       lastName: 'García',
       nationalId: '12345678A',
@@ -208,7 +243,7 @@ describe('AdminUserDetail', () => {
   });
 
   it('should invalidate seller form when businessName is too short or empty', () => {
-    authServiceSpy.obtenerUsuarioAdmin.mockReturnValue(of({
+    authServiceSpy.getAdminUser.mockReturnValue(of({
       ...mockUserResponse,
       data: {
         ...mockUserResponse.data,
@@ -240,7 +275,7 @@ describe('AdminUserDetail', () => {
   });
 
   it('should display error message when loading user fails', () => {
-    authServiceSpy.obtenerUsuarioAdmin.mockReturnValue(
+    authServiceSpy.getAdminUser.mockReturnValue(
       throwError(() => ({ status: 404 }))
     );
 

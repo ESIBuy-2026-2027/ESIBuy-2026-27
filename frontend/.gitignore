@@ -47,3 +47,5 @@ __screenshots__/
 Thumbs.db
 
 .scannerwork
+.firebase/
+repomix-output.xml

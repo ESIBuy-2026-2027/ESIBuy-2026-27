@@ -1,6 +1,8 @@
 package es.uclm.esibuy.users.model;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -29,6 +31,11 @@ public class User {
     private ClientProfile clientProfile;
     private SellerProfile sellerProfile;
     private AdminProfile adminProfile;
+
+    private String totpSecret;
+    private boolean totpEnabled = false;
+    private List<String> backupCodes = new ArrayList<>();
+    private boolean emailOtpEnabled = false;
 
     protected User() {
     }
@@ -149,5 +156,37 @@ public class User {
 
     public void setAdminProfile(AdminProfile adminProfile) {
         this.adminProfile = adminProfile;
+    }
+
+    public String getTotpSecret() {
+        return totpSecret;
+    }
+
+    public void setTotpSecret(String totpSecret) {
+        this.totpSecret = totpSecret;
+    }
+
+    public boolean isTotpEnabled() {
+        return totpEnabled;
+    }
+
+    public void setTotpEnabled(boolean totpEnabled) {
+        this.totpEnabled = totpEnabled;
+    }
+
+    public List<String> getBackupCodes() {
+        return backupCodes;
+    }
+
+    public void setBackupCodes(List<String> backupCodes) {
+        this.backupCodes = backupCodes;
+    }
+
+    public boolean isEmailOtpEnabled() {
+        return emailOtpEnabled;
+    }
+
+    public void setEmailOtpEnabled(boolean emailOtpEnabled) {
+        this.emailOtpEnabled = emailOtpEnabled;
     }
 }

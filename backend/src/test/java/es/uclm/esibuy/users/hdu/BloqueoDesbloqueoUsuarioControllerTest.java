@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import es.uclm.esibuy.users.controller.AdminController;
 import es.uclm.esibuy.users.service.AdminService;
 
-
 @ExtendWith(MockitoExtension.class)
 class BloqueoDesbloqueoUsuarioControllerTest {
 
@@ -39,6 +38,6 @@ class BloqueoDesbloqueoUsuarioControllerTest {
                 .andExpect(status().isOk());
 
         // Assert
-        verify(adminService).bloquearUsuario("123");
+        verify(adminService).blockUser("123");
     }
 }

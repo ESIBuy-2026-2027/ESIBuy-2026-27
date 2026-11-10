@@ -1,8 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
-import { Category, CreatedProduct, ProductCreateRequest, ProductsService } from '../products.service';
+import { Category, CreatedProduct, ProductCreateRequest, ProductDetails, ProductsService } from '../../../core/services/products.service';
 import { ProductCreate as ProductCreateComponent } from './product-create';
 
 describe('ProductCreate', () => {
@@ -11,28 +11,75 @@ describe('ProductCreate', () => {
     { id: 'category-home', name: 'Hogar' },
   ];
   let fixture: ComponentFixture<ProductCreateComponent>;
-  let productService: Pick<ProductsService, 'getCategories' | 'createProduct'>;
+  let productService: Pick<ProductsService, 'getCategories' | 'createProduct' | 'createProductWithImage' | 'getProduct' | 'updateProduct' | 'updateProductWithImage' | 'uploadProductImage'>;
   let createProduct: ReturnType<typeof vi.fn<(request: ProductCreateRequest) => Observable<CreatedProduct>>>;
+  let getProduct: ReturnType<typeof vi.fn<(id: string) => Observable<ProductDetails>>>;
+  let updateProduct: ReturnType<typeof vi.fn<
+    (id: string, request: ProductCreateRequest) => Observable<ProductDetails>
+  >>;
+  let uploadProductImage: ReturnType<typeof vi.fn<(id: string, image: File) => Observable<ProductDetails>>>;
   let categoriesResponse: Observable<Category[]>;
+  let routeProductId: string | null;
 
   beforeEach(async () => {
     categoriesResponse = of(categories);
+    routeProductId = null;
+    uploadProductImage = vi.fn<(id: string, image: File) => Observable<ProductDetails>>(() => of({
+      id: 'product-1', name: 'Auriculares', categoryIds: ['category-tech'], stock: 3, description: 'Inalámbricos',
+      price: 19.99, discount: 5, premiumDiscount: 10, imageUrl: '/api/products/product-1/image', available: true, sellerId: 'seller-1',
+    }));
     createProduct = vi.fn<(request: ProductCreateRequest) => Observable<CreatedProduct>>(
       () => of({ id: 'product-1' }),
     );
+    getProduct = vi.fn<(id: string) => Observable<ProductDetails>>(() => of({
+      id: 'product-1',
+      name: 'Auriculares',
+      categoryIds: ['category-tech'],
+      stock: 3,
+      description: 'Inalámbricos',
+      price: 19.99,
+      discount: 5,
+      premiumDiscount: 10,
+      imageUrl: 'https://example.com/auriculares.png',
+      available: true,
+      sellerId: 'seller-1',
+    }));
+    updateProduct = vi.fn<
+      (id: string, request: ProductCreateRequest) => Observable<ProductDetails>
+    >(() => of({
+      id: 'product-1',
+      name: 'Auriculares',
+      categoryIds: ['category-tech'],
+      stock: 3,
+      description: 'Inalámbricos',
+      price: 19.99,
+      discount: 5,
+      premiumDiscount: 10,
+      imageUrl: 'https://example.com/auriculares.png',
+      available: true,
+      sellerId: 'seller-1',
+    }));
     productService = {
       getCategories: () => categoriesResponse,
       createProduct,
+      createProductWithImage: vi.fn((req, img) => createProduct(req)),
+      getProduct,
+      updateProduct,
+      updateProductWithImage: vi.fn((id, req, img) => updateProduct(id, req)),
+      uploadProductImage,
     };
 
     await TestBed.configureTestingModule({
       imports: [ProductCreateComponent],
       providers: [
         provideRouter([{ path: 'seller/catalog', children: [] }]),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { paramMap: { get: (key: string) => key === 'id' ? routeProductId : null } } },
+        },
         { provide: ProductsService, useValue: productService },
       ],
     }).compileComponents();
-    fixture = TestBed.createComponent(ProductCreateComponent);
     fixture = TestBed.createComponent(ProductCreateComponent);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -57,7 +104,6 @@ describe('ProductCreate', () => {
       'precio',
       'descuento',
       'descuentoPremium',
-      'imagen',
       'disponible',
     ]) {
       expect(element.querySelector(`[formControlName="${field}"]`)).not.toBeNull();
@@ -73,7 +119,6 @@ describe('ProductCreate', () => {
       precio: 0,
       descuento: 101,
       descuentoPremium: -1,
-      imagen: 'not-a-url',
       disponible: null,
     });
 
@@ -88,7 +133,6 @@ describe('ProductCreate', () => {
     expect(fixture.componentInstance.form.controls.precio.hasError('min')).toBe(true);
     expect(fixture.componentInstance.form.controls.descuento.hasError('max')).toBe(true);
     expect(fixture.componentInstance.form.controls.descuentoPremium.hasError('min')).toBe(true);
-    expect(fixture.componentInstance.form.controls.imagen.hasError('pattern')).toBe(true);
     expect(fixture.componentInstance.form.controls.disponible.hasError('required')).toBe(true);
     expect(createProduct).not.toHaveBeenCalled();
   });
@@ -99,10 +143,9 @@ describe('ProductCreate', () => {
       categoriaIds: ['category-tech', 'category-home'],
       stock: 7,
       descripcion: 'Auriculares inalámbricos',
-      precio: 19.99,
+      precio: 10,
       descuento: null,
       descuentoPremium: 15,
-      imagen: 'https://example.com/auriculares.png',
       disponible: true,
     });
 
@@ -114,14 +157,48 @@ describe('ProductCreate', () => {
       categoryIds: ['category-tech', 'category-home'],
       stock: 7,
       description: 'Auriculares inalámbricos',
-      price: 19.99,
+      price: 12.1,
       premiumDiscount: 15,
-      imageUrl: 'https://example.com/auriculares.png',
       available: true,
     } satisfies ProductCreateRequest);
     expect(fixture.componentInstance.submitting()).toBe(false);
     expect(fixture.componentInstance.submitSuccess()).toBe(true);
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Producto registrado correctamente.');
+  });
+
+  it('should preload and update the selected product', async () => {
+    fixture.destroy();
+    routeProductId = 'product-1';
+    fixture = TestBed.createComponent(ProductCreateComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    expect(getProduct).toHaveBeenCalledWith('product-1');
+    expect(component.form.getRawValue()).toEqual({
+      nombre: 'Auriculares',
+      categoriaIds: ['category-tech'],
+      stock: 3,
+      descripcion: 'Inalámbricos',
+      precio: 16.52,
+      descuento: 5,
+      descuentoPremium: 10,
+      disponible: true,
+    });
+
+    component.form.controls.nombre.setValue('Auriculares actualizados');
+    component.onSubmit();
+    await fixture.whenStable();
+
+    expect(updateProduct).toHaveBeenCalledWith('product-1', expect.objectContaining({
+      name: 'Auriculares actualizados',
+      categoryIds: ['category-tech'],
+      price: 19.99,
+      available: true,
+    }));
+    expect(createProduct).not.toHaveBeenCalled();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Producto actualizado correctamente.');
   });
 
   it('should show all backend validation errors under their fields', () => {
@@ -130,8 +207,8 @@ describe('ProductCreate', () => {
       error: {
         message: 'La solicitud contiene errores',
         errors: {
-          nombre: 'El nombre no puede estar vacío.',
-          precio: 'El precio debe ser mayor que 0.',
+          name: 'El nombre no puede estar vacío.',
+          price: 'El precio debe ser mayor que 0.',
         },
       },
     })));
@@ -143,7 +220,6 @@ describe('ProductCreate', () => {
       precio: 5,
       descuento: null,
       descuentoPremium: null,
-      imagen: '',
       disponible: true,
     });
 
@@ -173,7 +249,6 @@ describe('ProductCreate', () => {
       precio: 5,
       descuento: null,
       descuentoPremium: null,
-      imagen: '',
       disponible: true,
     });
 
@@ -193,7 +268,6 @@ describe('ProductCreate', () => {
       precio: 5,
       descuento: null,
       descuentoPremium: null,
-      imagen: '',
       disponible: true,
     });
 
@@ -202,9 +276,20 @@ describe('ProductCreate', () => {
     expect(createProduct).toHaveBeenCalledWith({
       name: 'Producto nuevo',
       categoryIds: ['category-tech'],
-      price: 5,
+      price: 6.05,
       available: true,
     } satisfies ProductCreateRequest);
+  });
+
+  it('should display real-time final price with VAT when base price is entered', () => {
+    fixture.componentInstance.form.controls.precio.setValue(10);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.finalPriceWithVat()).toBe(12.1);
+    const vatPreview = fixture.nativeElement.querySelector('.price-vat-preview');
+    expect(vatPreview).toBeTruthy();
+    expect(vatPreview.textContent).toContain('Precio final con IVA');
+    expect(vatPreview.textContent).toContain('12,10');
   });
 
   it('should surface category loading failures instead of showing fake categories', () => {

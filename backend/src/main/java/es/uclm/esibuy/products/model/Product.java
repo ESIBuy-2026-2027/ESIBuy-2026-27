@@ -20,33 +20,29 @@ public class Product {
     private BigDecimal discount;
     private BigDecimal premiumDiscount;
     private String imageUrl;
+    private String imageFileId;
+    private String imageContentType;
     private boolean available;
     private String sellerId;
+    private Double rating;
+    private int reviewCount;
 
     protected Product() {
     }
 
-    public Product(
-            String name,
-            List<String> categoryIds,
-            int stock,
-            String description,
-            BigDecimal price,
-            BigDecimal discount,
-            BigDecimal premiumDiscount,
-            String imageUrl,
-            boolean available,
-            String sellerId) {
-        this.name = name;
-        this.categoryIds = List.copyOf(categoryIds);
-        this.stock = stock;
-        this.description = description;
-        this.price = price;
-        this.discount = discount;
-        this.premiumDiscount = premiumDiscount;
-        this.imageUrl = imageUrl;
-        this.available = available;
-        this.sellerId = sellerId;
+    public Product(ProductDetails details) {
+        this.name = details.name();
+        this.categoryIds = details.categoryIds() != null
+                ? List.copyOf(details.categoryIds())
+                : List.of();
+        this.stock = details.stock();
+        this.description = details.description();
+        this.price = details.price();
+        this.discount = details.discount();
+        this.premiumDiscount = details.premiumDiscount();
+        this.imageUrl = details.imageUrl();
+        this.available = details.available();
+        this.sellerId = details.sellerId();
     }
 
     public String getId() {
@@ -85,11 +81,104 @@ public class Product {
         return imageUrl;
     }
 
+    public String getImageFileId() {
+        return imageFileId;
+    }
+
+    public void setImageFileId(String imageFileId) {
+        this.imageFileId = imageFileId;
+    }
+
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public void setImageContentType(String imageContentType) {
+        this.imageContentType = imageContentType;
+    }
+
     public boolean isAvailable() {
         return available;
     }
 
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
     public String getSellerId() {
         return sellerId;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setCategoryIds(List<String> categoryIds) {
+        this.categoryIds = categoryIds != null ? List.copyOf(categoryIds) : List.of();
+    }
+
+    public void setStock(int stock) {
+        this.stock = stock;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public void setDiscount(BigDecimal discount) {
+        this.discount = discount;
+    }
+
+    public void setPremiumDiscount(BigDecimal premiumDiscount) {
+        this.premiumDiscount = premiumDiscount;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setSellerId(String sellerId) {
+        this.sellerId = sellerId;
+    }
+
+    public Double getRating() {
+        return reviewCount > 0 ? rating : null;
+    }
+
+    public void setRating(Double rating) {
+        this.rating = rating;
+    }
+
+    public int getReviewCount() {
+        return reviewCount;
+    }
+
+    public void addRating(int newRating) {
+        Double previousRating = getRating();
+        double previousTotal = previousRating == null ? 0.0 : previousRating * reviewCount;
+        this.rating = (previousTotal + newRating) / (reviewCount + 1);
+        reviewCount++;
+    }
+
+    public void updateDetails(ProductDetails details) {
+        this.name = details.name();
+        this.categoryIds = details.categoryIds() != null
+                ? List.copyOf(details.categoryIds())
+                : List.of();
+        this.stock = details.stock();
+        this.description = details.description();
+        this.price = details.price();
+        this.discount = details.discount();
+        this.premiumDiscount = details.premiumDiscount();
+        this.imageUrl = details.imageUrl();
+        this.available = details.available();
     }
 }

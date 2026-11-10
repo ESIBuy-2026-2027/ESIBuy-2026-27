@@ -1,0 +1,215 @@
+<main class="order-detail-page">
+  <a class="back-link" routerLink="/client/orders">← Volver a mis compras</a>
+  @if (loading()) {
+  <p aria-live="polite">Cargando el pedido...</p>
+  } @else if (error()) {
+  <p class="feedback-error" role="alert">{{ error() }}</p>
+  <button type="button" class="buy-again-button" (click)="retryLoadOrder()">
+    Reintentar
+  </button>
+  } @else if (order(); as currentOrder) {
+  @if (actionError(); as message) {
+  <p class="feedback-error action-feedback" role="alert">{{ message }}</p>
+  }
+  <header class="detail-header">
+    <div>
+      <h1>Pedido #{{ currentOrder.pedidoId }}</h1>
+      <p>{{ formatDate(currentOrder.fechaCreacion) }}</p>
+    </div>
+    <span class="order-status" [class.status-delivered]="getFulfillmentStatus(currentOrder) === 'ENTREGADO'"
+      [class.status-pending]="getFulfillmentStatus(currentOrder) === 'PENDIENTE'"
+      [class.status-preparing]="getFulfillmentStatus(currentOrder) === 'PREPARANDO'"
+      [class.status-shipped]="getFulfillmentStatus(currentOrder) === 'ENVIADO'"
+      [class.status-cancelled]="getFulfillmentStatus(currentOrder) === 'CANCELADO'">
+      {{ getFulfillmentStatusLabel(currentOrder) }}
+    </span>
+  </header>
+
+  @if (canConfirmReceipt(currentOrder)) {
+  <section class="receipt-action-banner" aria-label="Confirmación de entrega del pedido">
+    <div class="receipt-banner-content">
+      <div class="receipt-banner-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16.5 9.4 7.55 4.24a1.78 1.78 0 0 0-1.8 0l-3 1.73A1.78 1.78 0 0 0 1.87 7.5v9a1.78 1.78 0 0 0 .88 1.53l3 1.73a1.78 1.78 0 0 0 1.8 0l8.95-5.16a1.78 1.78 0 0 0 .88-1.53V9.4Z"></path>
+          <polyline points="3.29 7 12 12.01 20.71 7"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+      </div>
+      <div class="receipt-banner-text">
+        <h2>¿Ya tienes tu paquete contigo?</h2>
+        <p>Confirma que has recibido tu pedido para finalizar la compra y poder valorar los productos.</p>
+      </div>
+    </div>
+    <button type="button" class="confirm-receipt-button" [disabled]="confirmingReceipt()"
+      (click)="openReceiptDialog(currentOrder)">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      <span>{{ confirmingReceipt() ? 'Confirmando...' : 'He recibido mi pedido' }}</span>
+    </button>
+  </section>
+  }
+  <section class="detail-card" aria-labelledby="products-title">
+    <h2 id="products-title">Productos</h2>
+    @for (item of currentOrder.items; track item.productoId) {
+    <div class="detail-item">
+      @if (item.imageUrl) {
+      <img class="detail-item-image" [src]="item.imageUrl" [alt]="item.nombre" />
+      } @else {
+      <span class="detail-item-placeholder" aria-hidden="true">{{ item.nombre.charAt(0) }}</span>
+      }
+      <div>
+        <h3>{{ item.nombre }}</h3>
+        <p>{{ item.cantidad }} x {{ formatPrice(item.precioUnitario) }}</p>
+        <div class="item-actions">
+          <button type="button" class="buy-again-button" [disabled]="addingProductId() === item.productoId"
+            (click)="buyAgain(item.productoId, item.cantidad)">
+            <span aria-hidden="true">↻</span>
+            {{ addingProductId() === item.productoId ? 'Añadiendo...' : 'Comprar de nuevo' }}
+          </button>
+          <button type="button" class="view-product-button" (click)="viewProduct(item.productoId)">
+            Ver el artículo
+          </button>
+        </div>
+      </div>
+      <strong>{{ formatPrice(item.subtotal) }}</strong>
+    </div>
+    }
+
+    <div class="economic-row">
+      <span>Subtotal de productos</span>
+      <strong>{{ formatPrice(getItemsSubtotal(currentOrder)) }}</strong>
+    </div>
+    <p class="unitemized-costs">Descuentos, impuestos y envío: no desglosados en los datos del pedido.</p>
+    <div class="detail-total">
+      <span>Importe total</span>
+      <strong>{{ formatPrice(currentOrder.total) }}</strong>
+    </div>
+  </section>
+  <section class="tracking-section" aria-label="Seguimiento y acciones del pedido">
+    <app-client-shipment-tracking [pedidoId]="currentOrder.pedidoId" [currentStatus]="currentOrder.estado"
+      displayMode="progress" />
+  </section>
+  <section class="order-information" aria-label="Información del pedido">
+    <article class="information-card">
+      <span class="information-icon" aria-hidden="true">
+        <svg class="information-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 10.2c0 5.2-8 11-8 11s-8-5.8-8-11a8 8 0 1 1 16 0Z" />
+          <circle cx="12" cy="10" r="2.5" />
+        </svg>
+      </span>
+      <div>
+        <h2>Dirección de envío</h2>
+        @if (currentOrder.direccionEnvio; as address) {
+        <p><strong>{{ address.recipientName }}</strong></p>
+        <p>{{ address.street }}</p>
+        <p>{{ address.postalCode }} {{ address.city }}, {{ address.province }}</p>
+        @if (address.additionalInfo) {
+        <p>{{ address.additionalInfo }}</p>
+        }
+        @if (address.phone) {
+        <p>Tel. {{ address.phone }}</p>
+        }
+        } @else {
+        <p>No disponible</p>
+        }
+        <p>Método de envío: <strong>No disponible</strong></p>
+        <p>Número de seguimiento: <strong>No disponible</strong></p>
+      </div>
+    </article>
+    <article class="information-card">
+      <span class="information-icon" aria-hidden="true">
+        <svg class="information-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="5" width="18" height="14" rx="2" />
+          <path d="M3 10h18M7 15h3" />
+        </svg>
+      </span>
+      <div>
+        <h2>Pago</h2>
+        <p>Estado del pago:
+          <strong [class]="'payment-status ' + getPaymentClass(currentOrder)">{{ getPaymentLabel(currentOrder)
+            }}</strong>
+        </p>
+        @if (currentOrder.metodoPago; as payment) {
+        @switch (payment.tipo) {
+        @case ('CARD') {
+        <p>Tarjeta terminada en <strong>**** {{ payment.lastFourDigits || '----' }}</strong></p>
+        }
+        @case ('PAYPAL') {
+        <p>PayPal</p>
+        }
+        @case ('BIZUM') {
+        <p>Bizum</p>
+        }
+        }
+        } @else {
+        <p>Método de pago: <strong>No disponible</strong></p>
+        }
+      </div>
+    </article>
+  </section>
+  @if (canCancelOrder(currentOrder)) {
+  <div class="order-actions">
+    <button type="button" class="cancel-order-button" [disabled]="cancellingOrder()"
+      (click)="openCancellationDialog(currentOrder)">
+      {{ cancellingOrder() ? 'Cancelando...' : 'Cancelar pedido' }}
+    </button>
+  </div>
+  }
+  }
+</main>
+
+@if (cancellationDialogOpen()) {
+<div class="modal-backdrop" tabindex="-1" (click)="closeCancellationDialog()"
+  (keydown.escape)="closeCancellationDialog()">
+  <section class="cancellation-dialog" role="alertdialog" aria-modal="true" aria-labelledby="cancellation-title"
+    aria-describedby="cancellation-description" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <span class="cancellation-icon" aria-hidden="true">!</span>
+    <div>
+      <p class="modal-step">Cancelar pedido</p>
+      <h2 id="cancellation-title">¿Quieres cancelar este pedido?</h2>
+      <p id="cancellation-description">
+        Esta acción no se puede deshacer. El importe se devolverá según el método de pago utilizado.
+      </p>
+    </div>
+    @if (actionError(); as message) {
+    <p class="modal-error" role="alert">{{ message }}</p>
+    }
+    <div class="modal-actions">
+      <button type="button" class="secondary-button" [disabled]="cancellingOrder()"
+        (click)="closeCancellationDialog()">No, mantener pedido</button>
+      <button type="button" class="danger-modal-button" [disabled]="cancellingOrder()" (click)="confirmCancellation()">
+        {{ cancellingOrder() ? 'Cancelando...' : 'Sí, cancelar pedido' }}
+      </button>
+    </div>
+  </section>
+</div>
+}
+
+@if (receiptDialogOpen()) {
+<div class="modal-backdrop" tabindex="-1" (click)="closeReceiptDialog()" (keydown.escape)="closeReceiptDialog()">
+  <section class="receipt-dialog" role="alertdialog" aria-modal="true" aria-labelledby="receipt-title"
+    aria-describedby="receipt-description" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <span class="receipt-icon" aria-hidden="true">✓</span>
+    <div>
+      <p class="modal-step">Recepción del pedido</p>
+      <h2 id="receipt-title">¿Has recibido tu pedido?</h2>
+      <p id="receipt-description">
+        Al confirmar, el pedido pasará a estado entregado. Comprueba que lo has recibido antes de continuar.
+      </p>
+    </div>
+    @if (actionError(); as message) {
+    <p class="modal-error receipt-error" role="alert">{{ message }}</p>
+    }
+    <div class="modal-actions">
+      <button type="button" class="secondary-button" [disabled]="confirmingReceipt()"
+        (click)="closeReceiptDialog()">Todavía no</button>
+      <button type="button" class="receipt-modal-button" [disabled]="confirmingReceipt()" (click)="confirmReceipt()">
+        {{ confirmingReceipt() ? 'Confirmando...' : 'Sí, he recibido mi pedido' }}
+      </button>
+    </div>
+  </section>
+</div>
+}

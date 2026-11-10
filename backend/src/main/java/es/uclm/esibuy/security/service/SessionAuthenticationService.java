@@ -19,30 +19,30 @@ import org.springframework.stereotype.Service;
 @Service
 public class SessionAuthenticationService {
 
-    private final SecurityContextRepository securityContextRepository;
-    private final Duration sessionTimeout;
+        private final SecurityContextRepository securityContextRepository;
+        private final Duration sessionTimeout;
 
-    public SessionAuthenticationService(
-            SecurityContextRepository securityContextRepository,
-            @Value("${server.servlet.session.timeout:30m}") Duration sessionTimeout) {
-        this.securityContextRepository = securityContextRepository;
-        this.sessionTimeout = sessionTimeout;
-    }
+        public SessionAuthenticationService(
+                        SecurityContextRepository securityContextRepository,
+                        @Value("${server.servlet.session.timeout:30m}") Duration sessionTimeout) {
+                this.securityContextRepository = securityContextRepository;
+                this.sessionTimeout = sessionTimeout;
+        }
 
-    public void authenticate(User user, HttpServletRequest request, HttpServletResponse response) {
-        HttpSession session = request.getSession(true);
-        session.setMaxInactiveInterval(Math.toIntExact(sessionTimeout.toSeconds()));
-        request.changeSessionId();
+        public void authenticate(User user, HttpServletRequest request, HttpServletResponse response) {
+                HttpSession session = request.getSession(true);
+                session.setMaxInactiveInterval(Math.toIntExact(sessionTimeout.toSeconds()));
+                request.changeSessionId();
 
-        List<SimpleGrantedAuthority> authorities = user.getRole() == null
-                ? List.of()
-                : List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
-        AuthenticatedUserPrincipal principal = new AuthenticatedUserPrincipal(
-                user.getId(), user.getEmail(), user.getRole(), user.isActive());
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
-                principal, null, authorities));
-        SecurityContextHolder.setContext(context);
-        securityContextRepository.saveContext(context, request, response);
-    }
+                List<SimpleGrantedAuthority> authorities = user.getRole() == null
+                                ? List.of()
+                                : List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+                AuthenticatedUserPrincipal principal = new AuthenticatedUserPrincipal(
+                                user.getId(), user.getEmail(), user.getRole(), user.isActive());
+                SecurityContext context = SecurityContextHolder.createEmptyContext();
+                context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
+                                principal, null, authorities));
+                SecurityContextHolder.setContext(context);
+                securityContextRepository.saveContext(context, request, response);
+        }
 }

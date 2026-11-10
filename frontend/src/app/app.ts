@@ -1,10 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, HostListener, inject, signal } from '@angular/core';
+import { Component, effect, HostListener, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
+import { CartService } from './core/services/cart.service';
+import { WishlistSelectModalComponent } from './shared/wishlist-select-modal/wishlist-select-modal';
 
 @Component({
-  imports: [RouterLink, RouterOutlet],
+  imports: [RouterLink, RouterOutlet, WishlistSelectModalComponent],
   standalone: true,
   selector: 'app-root',
   styleUrl: './app.css',
@@ -12,9 +14,31 @@ import { AuthService } from './core/services/auth.service';
 })
 export class App {
   readonly authService = inject(AuthService);
+  readonly cartService = inject(CartService);
   private readonly router = inject(Router);
   readonly logoutError = signal<string | null>(null);
   readonly profileMenuOpen = signal(false);
+
+  constructor() {
+    effect(() => {
+      if (this.authService.currentUser()?.role === 'CLIENT') {
+        this.cartService.load();
+      } else {
+        this.cartService.clear();
+      }
+    });
+  }
+
+  brandDestination(): string {
+    const role = this.authService.currentUser()?.role;
+    if (role === 'CLIENT' || role === 'ADMIN') {
+      return '/client/catalog';
+    }
+    if (role === 'SELLER') {
+      return '/seller/catalog';
+    }
+    return '/';
+  }
 
   toggleProfileMenu(): void {
     this.profileMenuOpen.update((isOpen) => !isOpen);
@@ -27,10 +51,16 @@ export class App {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const target = event.target;
-    if (target instanceof Node && (event.composedPath().some((node) => (
-      node instanceof HTMLElement
-      && (node.id === 'profile-menu' || node.classList.contains('profile-button'))
-    )))) {
+    if (
+      target instanceof Node &&
+      event
+        .composedPath()
+        .some(
+          (node) =>
+            node instanceof HTMLElement &&
+            (node.id === 'profile-menu' || node.classList.contains('profile-button')),
+        )
+    ) {
       return;
     }
     this.closeProfileMenu();
@@ -41,14 +71,33 @@ export class App {
     this.closeProfileMenu();
   }
 
+  goClientCatalog(): void {
+    this.closeProfileMenu();
+    void this.router.navigate(['/client/catalog']);
+  }
+
   goCatalog(): void {
     this.closeProfileMenu();
     void this.router.navigate(['/seller/catalog']);
   }
 
-  goUsersManagement(): void{
+  goUsersManagement(): void {
     this.closeProfileMenu();
     void this.router.navigate(['/admin/usuarios']);
+  }
+
+  goToProfile(): void {
+    this.closeProfileMenu();
+
+    const role = this.authService.currentUser()?.role;
+
+    if (role === 'SELLER') {
+      void this.router.navigate(['/seller/profile']);
+    } else if (role === 'CLIENT') {
+      void this.router.navigate(['/client/profile']);
+    } else if (role === 'ADMIN') {
+      void this.router.navigate(['/admin/profile']);
+    }
   }
 
   logout(): void {
