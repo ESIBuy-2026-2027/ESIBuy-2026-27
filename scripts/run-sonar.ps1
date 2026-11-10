@@ -11,7 +11,7 @@ Write-Host "==========================================================" -Foregro
 $sonarHost = "seralu4.esi.uclm.es"
 $sonarPort = 1521
 $sonarUrl = "http://seralu4.esi.uclm.es:1521"
-$sonarToken = "squ_11efbdd2b29294aaa690ecc31fd36bc8eb3dea53"
+$sonarToken = $sonarToken
 
 Write-Host "Comprobando conexion con el servidor $sonarUrl..." -ForegroundColor Yellow
 
@@ -25,7 +25,8 @@ try {
         $tcp.EndConnect($iar)
     }
     $tcp.Close()
-} catch {
+}
+catch {
     $connected = $false
 }
 
@@ -53,7 +54,8 @@ try {
         Write-Host "[ERROR] El analisis del backend ha fallado." -ForegroundColor Red
         exit $LASTEXITCODE
     }
-} finally {
+}
+finally {
     Pop-Location
 }
 
@@ -69,7 +71,8 @@ try {
         Write-Host "[ERROR] El analisis del frontend ha fallado." -ForegroundColor Red
         exit $LASTEXITCODE
     }
-} finally {
+}
+finally {
     Pop-Location
 }
 

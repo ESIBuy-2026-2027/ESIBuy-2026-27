@@ -2,7 +2,7 @@
 set -e
 
 SONAR_URL="http://seralu4.esi.uclm.es:1521"
-SONAR_TOKEN="squ_11efbdd2b29294aaa690ecc31fd36bc8eb3dea53"
+SONAR_TOKEN=SONAR_TOKEN
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
